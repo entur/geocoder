@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.guava)
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.0")
+    testImplementation(kotlin("test"))
 }
 
 testing {

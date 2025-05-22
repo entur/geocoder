@@ -15,26 +15,23 @@ data class StopPlace(
     @JacksonXmlProperty(isAttribute = true) val created: String?,
     @JacksonXmlProperty(isAttribute = true) val changed: String?,
 
-    val ValidBetween: ValidBetween? = null,
+    val validBetween: ValidBetween? = null,
     val keyList: KeyList? = null,
-    val Name: LocalizedText? = null,
-    val Description: LocalizedText? = null,
-    val Centroid: Centroid? = null,
-    val AccessibilityAssessment: AccessibilityAssessment? = null,
+    val name: LocalizedText? = null,
+    val description: LocalizedText? = null,
+    val centroid: Centroid? = null,
+    val accessibilityAssessment: AccessibilityAssessment? = null,
     val alternativeNames: AlternativeNames? = null,
-    val TopographicPlaceRef: TopographicPlaceRef? = null,
-    val TransportMode: String? = null,
-    val StopPlaceType: String? = null,
-    val Weighting: String? = null,
+    val topographicPlaceRef: TopographicPlaceRef? = null,
+    val transportMode: String? = null,
+    val stopPlaceType: String? = null,
+    val weighting: String? = null,
     val tariffZones: TariffZones? = null,
     val quays: QuayList? = null
 )
 
 class ValidBetween {
-    @JacksonXmlProperty(localName = "FromDate")
     var fromDate: String? = null
-
-    @JacksonXmlProperty(localName = "ToDate")
     var toDate: String? = null
 }
 
@@ -44,7 +41,10 @@ class KeyList {
     var keyValue: List<KeyValue>? = null
 }
 
-data class KeyValue(val Key: String?, val Value: String?)
+data class KeyValue(
+    val key: String?,
+    val value: String?
+)
 
 class LocalizedText {
     @JacksonXmlProperty(isAttribute = true)
@@ -55,15 +55,11 @@ class LocalizedText {
 }
 
 class Centroid {
-    @JacksonXmlProperty(localName = "Location")
     var location: Location? = null
 }
 
 class Location {
-    @JacksonXmlProperty(localName = "Longitude")
     var longitude: Double? = null
-
-    @JacksonXmlProperty(localName = "Latitude")
     var latitude: Double? = null
 }
 
@@ -90,11 +86,11 @@ class AccessibilityLimitation {
     @JacksonXmlProperty(isAttribute = true)
     var modification: String? = null
 
-    var audibleSignalsAvailable: Boolean? = null
-    var liftFreeAccess: Boolean? = null
-    var stepFreeAccess: Boolean? = null
-    var wheelchairAccess: Boolean? = null
-    var escalatorFreeAccess: Boolean? = null
+    var audibleSignalsAvailable: String? = null
+    var liftFreeAccess: String? = null
+    var stepFreeAccess: String? = null
+    var wheelchairAccess: String? = null
+    var escalatorFreeAccess: String? = null
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -115,8 +111,8 @@ class AlternativeName {
     @JacksonXmlProperty(isAttribute = true)
     var modification: String? = null
 
-    var NameType: String? = null
-    var Name: LocalizedText? = null
+    var nameType: String? = null
+    var name: LocalizedText? = null
 }
 
 data class TopographicPlaceRef(
@@ -151,10 +147,10 @@ data class Quay(
     @JacksonXmlProperty(isAttribute = true) val version: String? = null,
     @JacksonXmlProperty(isAttribute = true) val modification: String? = null,
     @JacksonXmlProperty(isAttribute = true) val changed: String? = null,
-    val PrivateCode: String? = null,
-    val PublicCode: String? = null,
-    val OtherTransportModes: String? = null,
+    val privateCode: String? = null,
+    val publicCode: String? = null,
+    val otherTransportModes: String? = null,
     val keyList: KeyList? = null,
-    val Centroid: Centroid? = null,
-    val CompassBearing: Double? = null
+    val centroid: Centroid? = null,
+    val compassBearing: Double? = null
 )

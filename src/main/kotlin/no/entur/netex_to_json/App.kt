@@ -1,50 +1,21 @@
 package no.entur.netex_to_json
 
-import com.fasterxml.jackson.dataformat.xml.XmlFactory
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
-import java.io.InputStream
-import javax.xml.stream.XMLInputFactory
-import javax.xml.stream.XMLStreamConstants
-import javax.xml.stream.XMLStreamReader
+import kotlin.system.exitProcess
 
-
-fun main(args: Array<String>) {
-    val xmlFile = File(args[0])
-    App().parseXmlFile(xmlFile)
-}
 
 class App {
+}
 
-    fun parseXmlFile(xmlFile: File) {
-        parseXml(xmlFile.inputStream())
+fun main(args: Array<String>) {
+    if (args.isEmpty()) {
+        println("Please provide the path to the XML file as an argument.")
+        exitProcess(1)
     }
-
-    fun parseXml(inputStream: InputStream) {
-        val xmlInputFactory = XMLInputFactory.newInstance()
-        val streamReader: XMLStreamReader = xmlInputFactory.createXMLStreamReader(inputStream)
-        val xmlMapper = XmlMapper(XmlFactory()).apply {
-            registerKotlinModule()
-        }
-
-        while (streamReader.hasNext()) {
-            val event = streamReader.next()
-            if (event == XMLStreamConstants.START_ELEMENT && streamReader.localName == "stopPlaces") {
-                break
-            }
-        }
-
-        while (streamReader.hasNext()) {
-            val event = streamReader.next()
-            if (event == XMLStreamConstants.START_ELEMENT && streamReader.localName == "StopPlace") {
-                val stopPlace: StopPlace = xmlMapper.readValue(streamReader, StopPlace::class.java)
-                println("Parsed StopPlace: ${stopPlace.id}, Name: ${stopPlace.Name?.text}")
-            } else if (event == XMLStreamConstants.END_ELEMENT && streamReader.localName == "stopPlaces") {
-                break
-            }
-        }
-
-        streamReader.close()
+    val xmlFile = File(args[0])
+    if (!xmlFile.exists()) {
+        println("The file ${xmlFile.absolutePath} does not exist.")
+        exitProcess(1)
     }
+    NetexParser().parseXmlFile(xmlFile)
 }
