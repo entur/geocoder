@@ -1,0 +1,62 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "R",
+        "osm_id": 406091,
+        "osm_key": "place",
+        "osm_value": "county",
+        "type": "city",
+        "countrycode": "NO",
+        "name": "Oslo",
+        "country": "Norway",
+        "extent": [
+          10.4891652,
+          60.1351064,
+          10.9513894,
+          59.8093113
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7389701,
+          59.9133301
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "R",
+        "osm_id": 7757342,
+        "osm_key": "amenity",
+        "osm_value": "university",
+        "type": "house",
+        "postcode": "0256",
+        "countrycode": "NO",
+        "name": "University of Oslo",
+        "country": "Norway",
+        "city": "Oslo",
+        "district": "Frogner",
+        "locality": "Uranienborg",
+        "street": "Inkognito terrasse",
+        "extent": [
+          10.7122999,
+          59.9478121,
+          10.73783,
+          59.9146656
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7227683407509,
+          59.9414173
+        ]
+      }
+    }
+  ]
+}

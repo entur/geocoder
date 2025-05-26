@@ -276,6 +276,203 @@
                         </Quay>
                     </quays>
                 </StopPlace>
+                <StopPlace created="2018-09-05T14:32:54.19" changed="2024-01-01T02:43:19.34" modification="new" version="3" id="NSR:StopPlace:59649">
+                    <ValidBetween>
+                        <FromDate>2021-08-19T17:25:32</FromDate>
+                    </ValidBetween>
+                    <keyList>
+                        <KeyValue>
+                            <Key>VERSION_COMMENT</Key>
+                            <Value></Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>IS_PARENT_STOP_PLACE</Key>
+                            <Value>true</Value>
+                        </KeyValue>
+                    </keyList>
+                    <Name lang="nor">Nydalen stasjon</Name>
+                    <Description lang="no"/>
+                    <Centroid>
+                        <Location>
+                            <Longitude>10.771837</Longitude>
+                            <Latitude>59.951841</Latitude>
+                        </Location>
+                    </Centroid>
+                    <TopographicPlaceRef ref="KVE:TopographicPlace:0301" created="2025-05-13T12:00:13.849" version="13"/>
+                    <OtherTransportModes></OtherTransportModes>
+                    <tariffZones>
+                        <TariffZoneRef ref="RUT:FareZone:4" version="8"/>
+                        <TariffZoneRef ref="RUT:TariffZone:1" version="9"/>
+                    </tariffZones>
+                    <Weighting>interchangeAllowed</Weighting>
+                </StopPlace>
+                <StopPlace created="2017-06-19T21:12:46.288" changed="2024-02-05T19:56:03.859" modification="new" version="14" id="NSR:StopPlace:305">
+                    <keyList>
+                        <KeyValue>
+                            <Key>jbvCode</Key>
+                            <Value>NYL</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>uicCode</Key>
+                            <Value>7610201</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>grailsId</Key>
+                            <Value>512</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>iffCode</Key>
+                            <Value>760201A</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>lisaId</Key>
+                            <Value>0201A</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>imported-id</Key>
+                            <Value>FLT:StopPlace:7610201,RUT:StopPlace:3011960,NSB:StopPlace:07610201,NSB:StopPlace:007610201</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>tpsiId</Key>
+                            <Value>007610201</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>IS_PARENT_STOP_PLACE</Key>
+                            <Value>false</Value>
+                        </KeyValue>
+                    </keyList>
+                    <Name lang="nor">Nyland stasjon</Name>
+                    <Description lang="nor"></Description>
+                    <Centroid>
+                        <Location>
+                            <Longitude>10.871645</Longitude>
+                            <Latitude>59.943941</Latitude>
+                        </Location>
+                    </Centroid>
+                    <AccessibilityAssessment modification="new" version="14" id="NSR:AccessibilityAssessment:305">
+                        <MobilityImpairedAccess>unknown</MobilityImpairedAccess>
+                        <limitations>
+                            <AccessibilityLimitation modification="new" version="8" id="139130">
+                                <WheelchairAccess>true</WheelchairAccess>
+                                <StepFreeAccess>true</StepFreeAccess>
+                                <EscalatorFreeAccess>unknown</EscalatorFreeAccess>
+                                <LiftFreeAccess>unknown</LiftFreeAccess>
+                                <AudibleSignalsAvailable>unknown</AudibleSignalsAvailable>
+                            </AccessibilityLimitation>
+                        </limitations>
+                    </AccessibilityAssessment>
+                    <TopographicPlaceRef ref="KVE:TopographicPlace:0301" created="2025-05-13T12:00:13.871" version="13"/>
+                    <ParentSiteRef ref="NSR:StopPlace:59650" version="7"/>
+                    <placeEquipments id="NSR:PlaceEquipment:58299">
+                        <ShelterEquipment modification="new" version="1" id="98961"/>
+                        <TicketingEquipment modification="new" version="1" id="98972">
+                            <VehicleModes></VehicleModes>
+                            <TicketMachines>true</TicketMachines>
+                            <NumberOfMachines>1</NumberOfMachines>
+                            <TicketingFacilityList></TicketingFacilityList>
+                            <TicketOffice>true</TicketOffice>
+                            <PaymentMethods></PaymentMethods>
+                            <TicketTypesAvailable></TicketTypesAvailable>
+                            <ScopeOfTicketsAvailable></ScopeOfTicketsAvailable>
+                        </TicketingEquipment>
+                    </placeEquipments>
+                    <TransportMode>rail</TransportMode>
+                    <OtherTransportModes></OtherTransportModes>
+                    <tariffZones>
+                        <TariffZoneRef ref="RUT:FareZone:4" version="8"/>
+                        <TariffZoneRef ref="RUT:TariffZone:1" version="9"/>
+                    </tariffZones>
+                    <StopPlaceType>railStation</StopPlaceType>
+                    <Weighting>interchangeAllowed</Weighting>
+                    <quays>
+                        <Quay changed="2019-07-01T16:15:20.409" modification="new" version="14" id="NSR:Quay:505">
+                            <keyList>
+                                <KeyValue>
+                                    <Key>grails-platformId</Key>
+                                    <Value>6137</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>uicCode</Key>
+                                    <Value>7610201</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>imported-id</Key>
+                                    <Value>NSB:Quay:0076102012</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>tpsiId</Key>
+                                    <Value>761020102</Value>
+                                </KeyValue>
+                            </keyList>
+                            <PrivateCode>2</PrivateCode>
+                            <Centroid>
+                                <Location>
+                                    <Longitude>10.871594</Longitude>
+                                    <Latitude>59.943980</Latitude>
+                                </Location>
+                            </Centroid>
+                            <AccessibilityAssessment modification="new" version="5" id="NSR:AccessibilityAssessment:61383">
+                                <MobilityImpairedAccess>unknown</MobilityImpairedAccess>
+                                <limitations>
+                                    <AccessibilityLimitation modification="new" version="5" id="139131">
+                                        <WheelchairAccess>true</WheelchairAccess>
+                                        <StepFreeAccess>true</StepFreeAccess>
+                                        <EscalatorFreeAccess>unknown</EscalatorFreeAccess>
+                                        <LiftFreeAccess>unknown</LiftFreeAccess>
+                                        <AudibleSignalsAvailable>unknown</AudibleSignalsAvailable>
+                                    </AccessibilityLimitation>
+                                </limitations>
+                            </AccessibilityAssessment>
+                            <OtherTransportModes></OtherTransportModes>
+                            <PublicCode>2</PublicCode>
+                        </Quay>
+                        <Quay created="2017-06-19T23:32:00.07" changed="2019-07-01T16:15:20.409" modification="new" version="14" id="NSR:Quay:504">
+                            <keyList>
+                                <KeyValue>
+                                    <Key>merged-id</Key>
+                                    <Value>NSR:Quay:99439</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>grails-platformId</Key>
+                                    <Value>6136</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>uicCode</Key>
+                                    <Value>7610201</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>imported-id</Key>
+                                    <Value>NSB:Quay:007610201,NSB:Quay:0076102011,NSB:Quay:076102011,FLT:Quay:7610201</Value>
+                                </KeyValue>
+                                <KeyValue>
+                                    <Key>tpsiId</Key>
+                                    <Value>761020101</Value>
+                                </KeyValue>
+                            </keyList>
+                            <PrivateCode>1</PrivateCode>
+                            <Centroid>
+                                <Location>
+                                    <Longitude>10.871696</Longitude>
+                                    <Latitude>59.943902</Latitude>
+                                </Location>
+                            </Centroid>
+                            <AccessibilityAssessment modification="new" version="5" id="NSR:AccessibilityAssessment:61384">
+                                <MobilityImpairedAccess>unknown</MobilityImpairedAccess>
+                                <limitations>
+                                    <AccessibilityLimitation modification="new" version="5" id="139142">
+                                        <WheelchairAccess>true</WheelchairAccess>
+                                        <StepFreeAccess>true</StepFreeAccess>
+                                        <EscalatorFreeAccess>unknown</EscalatorFreeAccess>
+                                        <LiftFreeAccess>unknown</LiftFreeAccess>
+                                        <AudibleSignalsAvailable>unknown</AudibleSignalsAvailable>
+                                    </AccessibilityLimitation>
+                                </limitations>
+                            </AccessibilityAssessment>
+                            <OtherTransportModes></OtherTransportModes>
+                            <PublicCode>1</PublicCode>
+                        </Quay>
+                    </quays>
+                </StopPlace>
             </stopPlaces>
         </SiteFrame>
     </dataObjects>

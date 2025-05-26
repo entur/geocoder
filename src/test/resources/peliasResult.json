@@ -1,0 +1,177 @@
+{
+  "geocoding": {
+    "version": "0.2",
+    "attribution": "http://pelias.mapzen.com/v1/attribution",
+    "query": {
+      "text": "sons sons",
+      "parser": "addressit",
+      "tokens": [
+        "sons",
+        "sons"
+      ],
+      "size": 10,
+      "layers": [
+        "address",
+        "venue"
+      ],
+      "sources": [
+        "openstreetmap",
+        "whosonfirst"
+      ],
+      "private": false,
+      "lang": {
+        "name": "English",
+        "iso6391": "en",
+        "iso6393": "eng",
+        "defaulted": false
+      },
+      "querySize": 20
+    },
+    "engine": {
+      "name": "Pelias",
+      "author": "Mapzen",
+      "version": "1.0"
+    },
+    "timestamp": 1747731551223
+  },
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7808798927311,
+          59.9143600311369
+        ]
+      },
+      "properties": {
+        "id": "KVE:TopographicPlace:0301-Sons gate",
+        "gid": "whosonfirst:address:KVE:TopographicPlace:0301-Sons gate",
+        "layer": "address",
+        "source": "whosonfirst",
+        "source_id": "KVE:TopographicPlace:0301-Sons gate",
+        "name": "Sons gate",
+        "street": "Sons gate",
+        "accuracy": "point",
+        "country_a": "NOR",
+        "county": "Oslo",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
+        "locality": "Oslo",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
+        "borough": "Kampen Rode 8",
+        "borough_gid": "whosonfirst:borough:03012608",
+        "label": "Sons gate, Oslo",
+        "category": [
+          "street"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.725322,
+          59.514887
+        ]
+      },
+      "properties": {
+        "id": "NSR:StopPlace:59639",
+        "gid": "openstreetmap:venue:NSR:StopPlace:59639",
+        "layer": "venue",
+        "source": "openstreetmap",
+        "source_id": "NSR:StopPlace:59639",
+        "name": "Sonsveien stasjon",
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:59639",
+        "accuracy": "point",
+        "country_a": "NOR",
+        "county": "Akershus",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:32",
+        "locality": "Vestby",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:3216",
+        "label": "Sonsveien stasjon, Vestby",
+        "category": [
+          "onstreetBus",
+          "railStation"
+        ],
+        "tariff_zones": [
+          "RUT:TariffZone:3S",
+          "RUT:FareZone:8"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.7322, 59.914994]
+      },
+      "properties": {
+        "id": "NSR:StopPlace:58404",
+        "gid": "openstreetmap:venue:NSR:StopPlace:58404",
+        "layer": "venue",
+        "source": "openstreetmap",
+        "source_id": "NSR:StopPlace:58404",
+        "name": "Nationaltheatret",
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:58404",
+        "accuracy": "point",
+        "country_a": "NOR",
+        "county": "Oslo",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
+        "locality": "Oslo",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
+        "label": "Nationaltheatret, Oslo",
+        "category": [
+          "railStation",
+          "onstreetBus",
+          "metroStation",
+          "onstreetBus",
+          "onstreetTram",
+          "onstreetBus",
+          "onstreetBus",
+          "onstreetBus",
+          "onstreetBus",
+          "onstreetBus",
+          "onstreetBus"
+        ],
+        "tariff_zones": [
+          "BRA:TariffZone:311",
+          "RUT:FareZone:4",
+          "RUT:TariffZone:1"
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.771837, 59.951841]
+      },
+      "properties": {
+        "id": "NSR:StopPlace:59649",
+        "gid": "openstreetmap:venue:NSR:StopPlace:59649",
+        "layer": "venue",
+        "source": "openstreetmap",
+        "source_id": "NSR:StopPlace:59649",
+        "name": "Nydalen stasjon",
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:59649",
+        "accuracy": "point",
+        "country_a": "NOR",
+        "county": "Oslo",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
+        "locality": "Oslo",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
+        "label": "Nydalen stasjon, Oslo",
+        "category": [
+          "railStation",
+          "onstreetBus"
+        ],
+        "tariff_zones": [
+          "RUT:FareZone:4",
+          "RUT:TariffZone:1"
+        ]
+      }
+    }
+  ]
+}

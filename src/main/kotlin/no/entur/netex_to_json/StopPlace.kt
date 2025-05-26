@@ -1,12 +1,10 @@
 package no.entur.netex_to_json
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JacksonXmlRootElement(localName = "StopPlace")
 data class StopPlace(
     @JacksonXmlProperty(isAttribute = true) val id: String?,
@@ -37,7 +35,6 @@ class ValidBetween {
 
 class KeyList {
     @JacksonXmlElementWrapper(useWrapping = false)
-    @JacksonXmlProperty(localName = "KeyValue")
     var keyValue: List<KeyValue>? = null
 }
 
@@ -63,7 +60,6 @@ class Location {
     var latitude: Double? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class AccessibilityAssessment {
     @JacksonXmlProperty(isAttribute = true)
     var version: String? = null
@@ -81,7 +77,6 @@ class Limitations {
     var accessibilityLimitations: List<AccessibilityLimitation>? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class AccessibilityLimitation {
     @JacksonXmlProperty(isAttribute = true)
     var modification: String? = null
@@ -93,14 +88,12 @@ class AccessibilityLimitation {
     var escalatorFreeAccess: String? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class AlternativeNames {
     @JacksonXmlProperty(localName = "AlternativeName")
     @JacksonXmlElementWrapper(useWrapping = false)
     var alternativeName: List<AlternativeName>? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class AlternativeName {
     @JacksonXmlProperty(isAttribute = true)
     var id: String? = null
@@ -121,27 +114,23 @@ data class TopographicPlaceRef(
     @JacksonXmlProperty(isAttribute = true) val created: String?
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class TariffZones {
     @JacksonXmlProperty(localName = "TariffZoneRef")
     @JacksonXmlElementWrapper(useWrapping = false)
     var tariffZoneRef: List<TariffZoneRef>? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class TariffZoneRef {
     @JacksonXmlProperty(isAttribute = true)
     var ref: String? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 class QuayList {
     @JacksonXmlProperty(localName = "Quay")
     @JacksonXmlElementWrapper(useWrapping = false)
     var quay: List<Quay>? = null
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class Quay(
     @JacksonXmlProperty(isAttribute = true) val id: String? = null,
     @JacksonXmlProperty(isAttribute = true) val version: String? = null,

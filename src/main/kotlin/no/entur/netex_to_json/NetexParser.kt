@@ -3,6 +3,7 @@ package no.entur.netex_to_json
 import com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.databind.DeserializationFeature
 import java.io.File
 import java.io.InputStream
 import javax.xml.stream.XMLInputFactory
@@ -22,6 +23,7 @@ class NetexParser {
     val xmlMapper: XmlMapper = XmlMapper.builder()
         .enable(ACCEPT_CASE_INSENSITIVE_PROPERTIES)
         .addModule(KotlinModule.Builder().build())
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .build()
 
     fun parseXmlFile(xmlFile: File): Sequence<StopPlace> =

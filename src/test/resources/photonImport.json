@@ -1,0 +1,5 @@
+{"type":"NominatimDumpFile","content":{"version":"0.1.0","generator":"photon","database_version":"0.3.6-1","data_timestamp":"2021-01-06T15:53:42.000+00:00","features":{"sorted_by_country":true,"has_addresslines":false}}}
+{"type":"CountryInfo","content":[{"country_code":"ps","name":{"name":"Palestinian Territory"}},{"country_code":"pt","name":{"name:bs":"Portugal","name:se":"Portugal","name:sk":"Portugalsko","name:sh":"Portugal","name:ka":"პორტუგალი
+  ა","name:si":"පෘතුගාලය","name:kg":"Mputulukesi","name:so":"Bortuqaal","name:sl":"Portugalska","name:sm":"Portugal","name:sr":"Португалија","name:kk":"Португалия","name:ss":"IPhuthukezi","name:ca":"Portugal","name:sq":"Portugalia","na
+  me:kn":"ಪೋರ್ಚುಗಲ್","name:sv":"Portugal","name:ko":"포르투갈","name:sw":"Ureno","name:kl":"Portugal","name:st":"Portugal","name:ce":"Португали","name:km":"ប្រទេស ព័រទុយហ្គាល់","name:su":"Portugal","name:kv":"Португалия","name:co":"Portugall
+  u","name:kw":"Portyngal","name:ku":"Portûgal","name:cs":"Portugalsko","name:ta":"போர்த்துகல்","name:ky":"Португалия","name:ar":"البرتغال","name:ja":"ポルトガル","name:ay":"Purtuwal","name:rm":"Portugal","name:zu":"IPhothugali","name:rn
