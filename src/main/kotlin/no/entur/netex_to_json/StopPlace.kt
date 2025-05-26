@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 
 @JacksonXmlRootElement(localName = "StopPlace")
 data class StopPlace(
-    @JacksonXmlProperty(isAttribute = true) val id: String?,
+    @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val version: String?,
     @JacksonXmlProperty(isAttribute = true) val modification: String?,
     @JacksonXmlProperty(isAttribute = true) val created: String?,

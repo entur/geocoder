@@ -473,6 +473,59 @@
                         </Quay>
                     </quays>
                 </StopPlace>
+                <StopPlace created="2018-04-13T17:16:50.111" changed="2024-04-09T19:15:23.929" modification="new" version="6" id="NSR:StopPlace:59291">
+                    <ValidBetween>
+                        <FromDate>2018-10-19T18:42:18</FromDate>
+                    </ValidBetween>
+                    <keyList>
+                        <KeyValue>
+                            <Key>VERSION_COMMENT</Key>
+                            <Value>Lagt til alternative navn</Value>
+                        </KeyValue>
+                        <KeyValue>
+                            <Key>IS_PARENT_STOP_PLACE</Key>
+                            <Value>true</Value>
+                        </KeyValue>
+                    </keyList>
+                    <Name lang="nor">Alta lufthavn</Name>
+                    <Description lang="nor"/>
+                    <Centroid>
+                        <Location>
+                            <Longitude>23.346945</Longitude>
+                            <Latitude>69.977739</Latitude>
+                        </Location>
+                    </Centroid>
+                    <alternativeNames>
+                        <AlternativeName modification="new" version="1" id="NSR:AlternativeName:2907">
+                            <NameType>translation</NameType>
+                            <Name lang="eng">Alta Airport</Name>
+                        </AlternativeName>
+                        <AlternativeName modification="new" version="1" id="NSR:AlternativeName:2908">
+                            <NameType>translation</NameType>
+                            <Name lang="fra">Aéroport d'Alta</Name>
+                        </AlternativeName>
+                        <AlternativeName modification="new" version="1" id="NSR:AlternativeName:2909">
+                            <NameType>translation</NameType>
+                            <Name lang="rus">Аэропорт Альта</Name>
+                        </AlternativeName>
+                        <AlternativeName modification="new" version="1" id="NSR:AlternativeName:2910">
+                            <NameType>translation</NameType>
+                            <Name lang="fin">Altan lentokenttä</Name>
+                        </AlternativeName>
+                        <AlternativeName modification="new" version="1" id="NSR:AlternativeName:2911">
+                            <NameType>translation</NameType>
+                            <Name lang="est">Alta lennuväljak</Name>
+                        </AlternativeName>
+                    </alternativeNames>
+                    <TopographicPlaceRef ref="KVE:TopographicPlace:5601" created="2025-05-13T12:07:31.814" version="1"/>
+                    <OtherTransportModes></OtherTransportModes>
+                    <tariffZones>
+                        <TariffZoneRef ref="FIN:TariffZone:54500" version="2"/>
+                        <TariffZoneRef ref="TRO:TariffZone:54500" version="4"/>
+                        <TariffZoneRef ref="FIN:FareZone:26" version="5"/>
+                    </tariffZones>
+                    <Weighting>interchangeAllowed</Weighting>
+                </StopPlace>
             </stopPlaces>
         </SiteFrame>
     </dataObjects>

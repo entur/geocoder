@@ -19,6 +19,7 @@ class NetexParserTest {
         assertEquals("NSR:StopPlace:63329", places.next().id)
         places.next()
         places.next()
+        places.next()
         assertFalse(places.hasNext(), "Expected only five StopPlaces.")
     }
 }

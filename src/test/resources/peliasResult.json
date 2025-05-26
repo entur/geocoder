@@ -172,6 +172,37 @@
           "RUT:TariffZone:1"
         ]
       }
-    }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [23.346945, 69.977739]
+      },
+      "properties": {
+        "id": "NSR:StopPlace:59291",
+        "gid": "openstreetmap:venue:NSR:StopPlace:59291",
+        "layer": "venue",
+        "source": "openstreetmap",
+        "source_id": "NSR:StopPlace:59291",
+        "name": "Alta lufthavn",
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:59291",
+        "accuracy": "point",
+        "country_a": "NOR",
+        "county": "Finnmark",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:56",
+        "locality": "Alta",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:5601",
+        "label": "Alta lufthavn, Alta",
+        "category": [
+          "onstreetBus",
+          "airport"
+        ],
+        "tariff_zones": [
+          "FIN:TariffZone:54500",
+          "TRO:TariffZone:54500",
+          "FIN:FareZone:26"
+        ]
+      }
   ]
 }

@@ -16,15 +16,27 @@ class Converter {
             importance = 0.00001,
             name = stopPlace.name?.text?.let { mapOf("name" to it) },
             address = mapOfNotNull(
-                "city" to stopPlace.topographicPlaceRef?.ref,
-                "street" to stopPlace.keyList?.keyValue?.find { it.key == "street" }?.value
+                "street" to "NOT_AN_ADDRESS-${stopPlace.id}",
+                "county" to "Finnmark", // TODO: Hvor kommer dette fra?
+                "locality" to "Alta", // TODO: Hvor kommer dette fra?
             ),
             postcode = stopPlace.keyList?.keyValue?.find { it.key == "postcode" }?.value,
             country_code = "no", // or derive from context
             centroid = listOf(lon, lat),
-            bbox = listOf(lon, lat, lon, lat), // approximate
             parent_place_id = null,
-            housenumber = stopPlace.keyList?.keyValue?.find { it.key == "housenumber" }?.value
+            extratags = mapOf(
+                "id" to stopPlace.id,
+                "gid" to "openstreetmap:venue:${stopPlace.id}",
+                "layer" to "venue",
+                "source" to "openstreetmap",
+                "source_id" to stopPlace.id,
+                "accuracy" to "point",
+                "country_a" to stopPlace.id.substringBefore(":"),
+                "county_gid" to "whosonfirst:county:KVE:TopographicPlace:32", // TODO: Hvor kommer dette fra?
+                "locality_gid" to "whosonfirst:locality:${stopPlace.topographicPlaceRef?.ref}",
+                "category" to listOf("onstreetBus", "airport"),
+                "tariff_zones" to (stopPlace.tariffZones?.tariffZoneRef?.map { it.ref } ?: emptyList()),
+            )
         )
         entries.add(NominatimEntry("Place", listOf(stopPlaceEntry)))
 

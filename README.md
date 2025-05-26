@@ -30,8 +30,9 @@
         "tariff_zones": [ //mangler
           "RUT:TariffZone:3S",
           "RUT:FareZone:8"
-        ]
+        ],
       }
+}
 ```
 
 ### photon
