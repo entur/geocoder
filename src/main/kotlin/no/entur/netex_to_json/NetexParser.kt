@@ -15,6 +15,7 @@ import javax.xml.stream.XMLStreamReader
 
 
 class NetexParser {
+    val topoPlaces = mutableMapOf<String, TopographicPlace>()
 
     val xmlInputFactory: XMLInputFactory = XMLInputFactory.newInstance().apply {
         setProperty(IS_NAMESPACE_AWARE, false)
@@ -31,10 +32,15 @@ class NetexParser {
 
     fun parseXml(inputStream: InputStream): Sequence<StopPlace> {
         val streamReader: XMLStreamReader = xmlInputFactory.createXMLStreamReader(inputStream)
+
+        moveToStartElement(streamReader, "topographicPlaces")
+        for (topoPlace in elementSequence(streamReader, "TopographicPlace", "topographicPlaces", TopographicPlace::class.java)) {
+            topoPlaces.put(topoPlace.id, topoPlace)
+        }
         return sequence {
             try {
                 moveToStartElement(streamReader, "stopPlaces")
-                for (stopPlace in stopPlaceSequence(streamReader)) {
+                for (stopPlace in elementSequence(streamReader, "StopPlace", "stopPlaces", StopPlace::class.java)) {
                     yield(stopPlace)
                 }
             } finally {
@@ -59,14 +65,19 @@ class NetexParser {
         throw IllegalStateException("Element <$elementName> not found in XML stream.")
     }
 
-    private fun stopPlaceSequence(reader: XMLStreamReader): Sequence<StopPlace> = sequence {
+    private inline fun <reified C> elementSequence(
+        reader: XMLStreamReader,
+        startElement: String,
+        endElement: String,
+        valueType: Class<C>
+    ): Sequence<C> = sequence {
         while (reader.hasNext()) {
             nextRelevantEvent(reader)
             when {
-                isStartElement(reader, "StopPlace") ->
-                    yield(xmlMapper.readValue(reader, StopPlace::class.java))
+                isStartElement(reader, startElement) ->
+                    yield(xmlMapper.readValue(reader, valueType))
 
-                isEndElement(reader, "stopPlaces") -> break
+                isEndElement(reader, endElement) -> break
             }
         }
     }

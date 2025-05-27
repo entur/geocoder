@@ -126,7 +126,9 @@
         "name": "Dorvonjárga"
       },
       "address": {
-        "city": "KVE:TopographicPlace:5610"
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:56697",
+        "county": "Finnmark",
+        "locality": "Alta"
       },
       "postcode": null,
       "country_code": "no",
@@ -134,15 +136,28 @@
         25.815626,
         69.401136
       ],
-      "bbox": [
-        25.815626,
-        69.401136,
-        25.815626,
-        69.401136
-      ],
+      "bbox": [],
       "parent_place_id": null,
       "housenumber": null,
-      "extratags": {}
+      "extratags": {
+        "id": "NSR:StopPlace:56697",
+        "gid": "openstreetmap:venue:NSR:StopPlace:56697",
+        "layer": "venue",
+        "source": "openstreetmap",
+        "source_id": "NSR:StopPlace:56697",
+        "accuracy": "point",
+        "country_a": "NSR",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:32",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:5610",
+        "category": [
+          "onstreetBus",
+          "airport"
+        ],
+        "tariff_zones": [
+          "FIN:TariffZone:54540",
+          "FIN:FareZone:31"
+        ]
+      }
     }
   ]
 }

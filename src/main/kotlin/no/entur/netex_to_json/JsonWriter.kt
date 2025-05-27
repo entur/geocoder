@@ -10,16 +10,31 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
-class Exporter {
+class JsonWriter {
 
-    fun export(entries: Sequence<NominatimEntry>, outputPath: Path) {
+    fun export(entries: Sequence<NominatimPlace>, outputPath: Path) {
         val objectMapper = jacksonObjectMapper()
         addDecimalFormatter(objectMapper)
 
         Files.createDirectories(outputPath.parent)
 
+        val headerContent = HeaderContent(
+            version = "0.1.0",
+            generator = "netex-to-json",
+            database_version = "0.3.6-1",
+            data_timestamp = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+            features = Features(true, false)
+        )
+        val header = NominatimHeader(
+            type = "NominatimDumpFile",
+            content = headerContent
+        )
         Files.newBufferedWriter(outputPath).use { writer ->
+            writer.write(objectMapper.writeValueAsString(header))
+            writer.newLine()
             entries.forEach { entry ->
                 writer.write(objectMapper.writeValueAsString(entry))
                 writer.newLine()
