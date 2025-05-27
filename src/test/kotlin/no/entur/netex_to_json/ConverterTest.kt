@@ -10,12 +10,13 @@ class ConverterTest {
     fun `convert stopPlaces xml to nominatimDumpFile json`() {
         val parser = NetexParser()
         val converter = Converter()
-        val xmlStream = this::class.java.getResourceAsStream("/finnmark.xml")
+        val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
+//        val xmlStream = this::class.java.getResourceAsStream("/finnmark.xml")
 //        val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream) { "stopPlaces.xml not found in test resources" }
 
-        val stopPlaces: Sequence<StopPlace> = parser.parseXml(xmlStream)
-        val entries: Sequence<NominatimPlace> = converter.convertAll(stopPlaces, parser.topoPlaces)
+        val result: NetexParser.ParseResult = parser.parseXml(xmlStream)
+        val entries: Sequence<NominatimPlace> = converter.convertAll(result)
 
         val outputPath = Paths.get("build/test-output/nominatimDumpFile.ndjson")
         JsonWriter().export(entries, outputPath)

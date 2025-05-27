@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.entur.netex_to_json.NominatimHeader.Features
+import no.entur.netex_to_json.NominatimHeader.HeaderContent
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path

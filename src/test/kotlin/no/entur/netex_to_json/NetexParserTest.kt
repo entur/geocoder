@@ -12,7 +12,7 @@ class NetexParserTest {
         val stream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         assertNotNull(stream, "Test file /stopPlaces.xml not found.")
 
-        val places = parser.parseXml(stream).iterator()
+        val places = parser.parseXml(stream).stopPlaces.iterator()
 
         assertEquals("NSR:StopPlace:56697", places.next().id)
         assertEquals("NSR:StopPlace:56769", places.next().id)

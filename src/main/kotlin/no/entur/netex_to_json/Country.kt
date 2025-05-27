@@ -54,12 +54,7 @@ enum class Country(val threeLetterCode: String) {
     va("VAT"); // Vatican City
 
     companion object {
-        fun getThreeLetterCode(twoLetterCode: String): String {
-            return try {
-                valueOf(twoLetterCode.lowercase()).threeLetterCode
-            } catch (e: IllegalArgumentException) {
-                "unknown"
-            }
-        }
+        fun getThreeLetterCode(twoLetterCode: String?): String =
+            entries.toTypedArray().firstOrNull { it.name == twoLetterCode }?.threeLetterCode ?: "unknown"
     }
 }

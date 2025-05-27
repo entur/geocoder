@@ -17,5 +17,5 @@ fun main(args: Array<String>) {
         println("The file ${xmlFile.absolutePath} does not exist.")
         exitProcess(1)
     }
-    NetexParser().parseXmlFile(xmlFile)
+    NetexParser().parseXml(xmlFile)
 }

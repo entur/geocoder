@@ -1,11 +1,12 @@
 package no.entur.netex_to_json
 
-import com.fasterxml.jackson.annotation.*
-import com.fasterxml.jackson.dataformat.xml.annotation.*
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 
 @JacksonXmlRootElement(localName = "TopographicPlace")
 data class TopographicPlace(
-    @JacksonXmlProperty(isAttribute = true) val created: String,
+    @JacksonXmlProperty(isAttribute = true) val created: String? = null,
     @JacksonXmlProperty(isAttribute = true) val modification: String,
     @JacksonXmlProperty(isAttribute = true) val version: String,
     @JacksonXmlProperty(isAttribute = true) val id: String,
@@ -24,39 +25,52 @@ data class TopographicPlace(
     val countryRef: CountryRef? = null,
 
     val parentTopographicPlaceRef: ParentTopographicPlaceRef? = null
-)
+) {
+    class ValidBetween {
+        var fromDate: String? = null
+        var toDate: String? = null
+    }
 
-data class Polygon(
-    @JacksonXmlProperty(isAttribute = true, localName = "id", namespace = "ns2")
-    val id: String,
+    data class Polygon(
+        @JacksonXmlProperty(isAttribute = true, localName = "id", namespace = "ns2")
+        val id: String,
 
-    @JacksonXmlProperty(localName = "exterior", namespace = "ns2")
-    val exterior: Exterior
-)
+        @JacksonXmlProperty(localName = "exterior", namespace = "ns2")
+        val exterior: Exterior
+    )
 
-data class Exterior(
-    @JacksonXmlProperty(localName = "LinearRing", namespace = "ns2")
-    val linearRing: LinearRing
-)
+    data class Exterior(
+        @JacksonXmlProperty(localName = "LinearRing", namespace = "ns2")
+        val linearRing: LinearRing
+    )
 
-data class LinearRing(
-    @JacksonXmlProperty(localName = "posList", namespace = "ns2")
-    val posList: String
-)
+    data class LinearRing(
+        @JacksonXmlProperty(localName = "posList", namespace = "ns2")
+        val posList: String
+    )
 
-data class Descriptor(
-    val name: LocalizedText
-)
+    class LocalizedText {
+        @JacksonXmlProperty(isAttribute = true)
+        var lang: String? = null
 
-data class CountryRef(
-    @JacksonXmlProperty(isAttribute = true)
-    val ref: String
-)
+        @JacksonXmlText
+        var text: String? = null
+    }
 
-data class ParentTopographicPlaceRef(
-    @JacksonXmlProperty(isAttribute = true)
-    val ref: String,
+    data class Descriptor(
+        val name: LocalizedText
+    )
 
-    @JacksonXmlProperty(isAttribute = true)
-    val version: String
-)
+    data class CountryRef(
+        @JacksonXmlProperty(isAttribute = true)
+        val ref: String
+    )
+
+    data class ParentTopographicPlaceRef(
+        @JacksonXmlProperty(isAttribute = true)
+        val ref: String,
+
+        @JacksonXmlProperty(isAttribute = true)
+        val version: String
+    )
+}

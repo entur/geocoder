@@ -1,6 +1,26 @@
-<PublicationDelivery>
+<PublicationDelivery xmlns:ns2="http://www.opengis.net/gml/3.2">
     <dataObjects>
         <SiteFrame>
+            <topographicPlaces>
+                <TopographicPlace created="2024-01-01T01:52:48.304" modification="new" version="1" id="KVE:TopographicPlace:56">
+                    <ValidBetween>
+                        <FromDate>2024-01-01T01:00:00</FromDate>
+                    </ValidBetween>
+                    <ns2:Polygon ns2:id="GEN-PolygonType-133813">
+                        <ns2:exterior>
+                            <ns2:LinearRing>
+                                <ns2:posList>71.22860699685518 23.457607332726084</ns2:posList>
+                            </ns2:LinearRing>
+                        </ns2:exterior>
+                    </ns2:Polygon>
+                    <IsoCode>NO-56</IsoCode>
+                    <Descriptor>
+                        <Name lang="nor">Finnmark</Name>
+                    </Descriptor>
+                    <TopographicPlaceType>county</TopographicPlaceType>
+                    <CountryRef ref="no"></CountryRef>
+                </TopographicPlace>
+            </topographicPlaces>
             <stopPlaces>
                 <StopPlace created="2017-06-19T22:10:00.846" changed="2024-04-09T19:15:12.888" modification="new"
                            version="2" id="NSR:StopPlace:56697">

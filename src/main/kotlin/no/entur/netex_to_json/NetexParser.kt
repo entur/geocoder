@@ -1,11 +1,14 @@
 package no.entur.netex_to_json
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.databind.DeserializationFeature
 import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLInputFactory.IS_COALESCING
 import javax.xml.stream.XMLInputFactory.IS_NAMESPACE_AWARE
@@ -15,8 +18,6 @@ import javax.xml.stream.XMLStreamReader
 
 
 class NetexParser {
-    val topoPlaces = mutableMapOf<String, TopographicPlace>()
-
     val xmlInputFactory: XMLInputFactory = XMLInputFactory.newInstance().apply {
         setProperty(IS_NAMESPACE_AWARE, false)
         setProperty(IS_COALESCING, true)
@@ -27,26 +28,67 @@ class NetexParser {
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .build()
 
-    fun parseXmlFile(xmlFile: File): Sequence<StopPlace> =
-        parseXml(xmlFile.inputStream())
+    fun parseXml(netexStream: InputStream): ParseResult =
+        parseXml(streamToFile(netexStream))
 
-    fun parseXml(inputStream: InputStream): Sequence<StopPlace> {
-        val streamReader: XMLStreamReader = xmlInputFactory.createXMLStreamReader(inputStream)
+    fun parseXml(netexXml: File): ParseResult {
+        val categories = extractCategories(netexXml)
 
-        moveToStartElement(streamReader, "topographicPlaces")
-        for (topoPlace in elementSequence(streamReader, "TopographicPlace", "topographicPlaces", TopographicPlace::class.java)) {
+        val netexReader: XMLStreamReader = createReader(netexXml)
+
+        moveToStartElement(netexReader, "topographicPlaces")
+        val topoPlaces = mutableMapOf<String, TopographicPlace>()
+        for (topoPlace in elementSequence(
+            netexReader,
+            "TopographicPlace",
+            "topographicPlaces",
+            TopographicPlace::class.java
+        )) {
             topoPlaces.put(topoPlace.id, topoPlace)
         }
-        return sequence {
-            try {
-                moveToStartElement(streamReader, "stopPlaces")
-                for (stopPlace in elementSequence(streamReader, "StopPlace", "stopPlaces", StopPlace::class.java)) {
-                    yield(stopPlace)
+        val seq = sequence {
+            moveToStartElement(netexReader, "stopPlaces")
+            for (stopPlace in elementSequence(netexReader, "StopPlace", "stopPlaces", StopPlace::class.java)) {
+                yield(stopPlace)
+            }
+            netexReader.close()
+        }
+
+        return ParseResult(
+            stopPlaces = seq,
+            topoPlaces = topoPlaces,
+            categories = categories
+        )
+    }
+
+    private fun extractCategories(netexXml: File): MutableMap<String, List<String>> {
+        val netexStream: XMLStreamReader = createReader(netexXml)
+
+        moveToStartElement(netexStream, "stopPlaces")
+        val categories = mutableMapOf<String, List<String>>()
+        for (stopPlace in elementSequence(netexStream, "StopPlace", "stopPlaces", StopPlace::class.java)) {
+            if (stopPlace.parentSiteRef?.ref != null && stopPlace.stopPlaceType != null) {
+                val key = stopPlace.parentSiteRef.ref
+                val newValue = stopPlace.stopPlaceType
+                categories.compute(key) { _, existingValue ->
+                    existingValue?.plus(newValue) ?: listOf(newValue)
                 }
-            } finally {
-                streamReader.close()
             }
         }
+        netexStream.close()
+        return categories
+    }
+
+    private fun createReader(netexXml: File): XMLStreamReader {
+        val secondPass: InputStream = FileInputStream(netexXml)
+        val streamReader: XMLStreamReader = xmlInputFactory.createXMLStreamReader(secondPass)
+        return streamReader
+    }
+
+    private fun streamToFile(inputStream: InputStream): File {
+        val tempFile = File.createTempFile("stream", ".tmp")
+        Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return tempFile
     }
 
     private fun isStartElement(reader: XMLStreamReader, name: String) =
@@ -88,4 +130,10 @@ class NetexParser {
             event = reader.next()
         } while (reader.hasNext() && event != START_ELEMENT && event != END_ELEMENT)
     }
+
+    data class ParseResult(
+        val stopPlaces: Sequence<StopPlace>,
+        val topoPlaces: Map<String, TopographicPlace>,
+        val categories: Map<String, List<String>>
+    )
 }
