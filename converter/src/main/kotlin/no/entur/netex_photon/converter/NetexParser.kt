@@ -1,10 +1,10 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import no.entur.netex_photon.File.streamToFile
-import no.entur.netex_photon.Xml.createReader
-import no.entur.netex_photon.Xml.elementSequence
-import no.entur.netex_photon.Xml.moveToStartElement
+import no.entur.netex_photon.converter.File.streamToFile
+import no.entur.netex_photon.converter.Xml.createReader
+import no.entur.netex_photon.converter.Xml.elementSequence
+import no.entur.netex_photon.converter.Xml.moveToStartElement
 import java.io.File
 import java.io.InputStream
 import javax.xml.stream.XMLInputFactory

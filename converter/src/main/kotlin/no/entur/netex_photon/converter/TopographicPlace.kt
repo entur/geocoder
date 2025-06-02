@@ -1,4 +1,4 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement

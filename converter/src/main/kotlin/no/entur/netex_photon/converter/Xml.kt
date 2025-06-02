@@ -1,4 +1,4 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES

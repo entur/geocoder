@@ -1,4 +1,4 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
 data class NominatimPlace(
     val type: String,

@@ -1,8 +1,9 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
-import no.entur.netex_photon.NominatimPlace.PlaceContent
+import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.File
 import java.nio.file.Paths
+import kotlin.collections.get
 import kotlin.math.abs
 
 class Converter {

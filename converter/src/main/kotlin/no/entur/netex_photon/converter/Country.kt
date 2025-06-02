@@ -1,4 +1,4 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
 enum class Country(val threeLetterCode: String) {
     al("ALB"), // Albania

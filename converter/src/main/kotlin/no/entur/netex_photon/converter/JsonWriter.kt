@@ -1,4 +1,4 @@
-package no.entur.netex_photon
+package no.entur.netex_photon.converter
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN
@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.entur.netex_photon.NominatimHeader.Features
-import no.entur.netex_photon.NominatimHeader.HeaderContent
+import no.entur.netex_photon.converter.NominatimHeader.Features
+import no.entur.netex_photon.converter.NominatimHeader.HeaderContent
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
