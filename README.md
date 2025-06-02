@@ -16,6 +16,7 @@ java -jar build/libs/netex-photon-all.jar input-netex.xml output-photon.nbjson
 * [Nominatim DB fields](https://nominatim.org/release-docs/latest/develop/Database-Layout/)
 * [Photon JSON import PR](https://github.com/komoot/photon/pull/885)
 * [Pelias](https://github.com/entur/pelias-api)
+* [bau - geocoder comparison tool](https://github.com/entur/bau)
 
 ## Relevant example data formats
 
