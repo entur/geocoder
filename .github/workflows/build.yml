@@ -20,3 +20,7 @@ jobs:
 
       - name: Build
         run: ./gradlew clean build
+
+      - name: Test CLI tool
+        run: |
+          java -jar build/libs/netex-photon-all.jar src/test/resources/oslo.xml photon-oslo.nbjson
