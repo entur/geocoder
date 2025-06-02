@@ -1,4 +1,11 @@
+## Usage
 
+```
+./gradlew clean build
+java -jar build/libs/netex-photon-all.jar input-netex.xml output-photon.nbjson
+```
+
+## Relevant example data formats
 
 ### pelias
 ```json5
