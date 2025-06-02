@@ -1,9 +1,18 @@
 ## Usage
 
+```bash
+./gradlew build
+java -jar build/libs/netex-photon-all.jar input-netex.xml /tmp/output-photon.nbjson
 ```
-./gradlew clean build
-java -jar build/libs/netex-photon-all.jar input-netex.xml output-photon.nbjson
+
+#### Importing to photon
+```bash
+cd ../photon
+./gradlew build
+java -jar target/photon-opensearch-0.7.0.jar -nominatim-import -import-file /tmp/output-photon.nbjson -extra-tags id,gid,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,category,tariff_zones -languages no
+java -jar target/photon-opensearch-0.7.0.jar
 ```
+Visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 
 ## Some references
 
@@ -17,6 +26,7 @@ java -jar build/libs/netex-photon-all.jar input-netex.xml output-photon.nbjson
 * [Photon JSON import PR](https://github.com/komoot/photon/pull/885)
 * [Pelias](https://github.com/entur/pelias-api)
 * [bau - geocoder comparison tool](https://github.com/entur/bau)
+* [Nominatim](https://github.com/osm-search/Nominatim)
 
 ## Relevant example data formats
 
