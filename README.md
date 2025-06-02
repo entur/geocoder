@@ -114,49 +114,46 @@
   "type": "Place",
   "content": [
     {
-      "place_id": -820042863,
+      "place_id": 854487540,
       "object_type": "N",
-      "object_id": -820042863,
-      "categories": [
-        "osm.stop_place"
-      ],
+      "object_id": 854487540,
+      "categories": [],
       "rank_address": 30,
       "importance": 0.000010,
+      "parent_place_id": 0,
       "name": {
-        "name": "Dorvonjárga"
+        "name": "Skøyen stasjon"
       },
       "address": {
-        "street": "NOT_AN_ADDRESS-NSR:StopPlace:56697",
-        "county": "Finnmark",
-        "locality": "Alta"
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:152",
+        "county": "Oslo"
       },
-      "postcode": null,
+      "postcode": "unknown",
       "country_code": "no",
       "centroid": [
-        25.815626,
-        69.401136
+        10.678831,
+        59.922353
       ],
-      "bbox": [],
-      "parent_place_id": null,
-      "housenumber": null,
+      "bbox": [
+        59.922353,
+        10.678831,
+        59.922353,
+        10.678831
+      ],
       "extratags": {
-        "id": "NSR:StopPlace:56697",
-        "gid": "openstreetmap:venue:NSR:StopPlace:56697",
+        "id": "NSR:StopPlace:152",
+        "gid": "openstreetmap:venue:NSR:StopPlace:152",
         "layer": "venue",
         "source": "openstreetmap",
-        "source_id": "NSR:StopPlace:56697",
+        "source_id": "NSR:StopPlace:152",
         "accuracy": "point",
-        "country_a": "NSR",
-        "county_gid": "whosonfirst:county:KVE:TopographicPlace:32",
-        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:5610",
-        "category": [
-          "onstreetBus",
-          "airport"
-        ],
-        "tariff_zones": [
-          "FIN:TariffZone:54540",
-          "FIN:FareZone:31"
-        ]
+        "country_a": "NOR",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
+        "locality": "Oslo",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
+        "label": "Skøyen stasjon,Oslo",
+        "category": "railStation",
+        "tariff_zones": "BRA:TariffZone:311,RUT:FareZone:4,RUT:TariffZone:1"
       }
     }
   ]
