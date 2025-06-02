@@ -5,6 +5,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.ContentType.Application.Json
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
@@ -15,7 +16,7 @@ fun main() {
         routing {
             get("/photon") {
                 val query = call.request.queryParameters["q"] ?: ""
-                val rewrittenQuery = query // TODO: Rewrite query logic
+                val rewrittenQuery = query // TODO: Add rewrite logic if needed
                 val client = HttpClient(CIO)
                 val response: String = client.get("http://localhost:2322/api") {
                     url {
@@ -24,9 +25,10 @@ fun main() {
                 }.bodyAsText()
 
                 val transformer = FeatureTransformer()
-                val transformed = transformer.parseAndTransform(response)
-                call.respondText(transformer.encodeToString(transformed), contentType = Json)
+                val transformed: FeatureCollection = transformer.parseAndTransform(response)
+                call.respondText(transformer.toJsonString(transformed), contentType = Json)
             }
         }
     }.start(wait = true)
 }
+
