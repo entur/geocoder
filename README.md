@@ -17,6 +17,16 @@ java -jar target/photon-opensearch-0.7.0.jar -nominatim-import -import-file /tmp
 ```
 Start the server with `java -jar target/photon-opensearch-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 
+#### Running the pelias proxy
+```bash
+java -jar proxy/build/libs/proxy-all.jar
+```
+Now try some example requests, e.g.
+
+* http://localhost:8080/v1/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
+* http://localhost:8080/v1/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
+
+
 ## Some references
 
 * [Boost calculation in kakka](https://github.com/entur/kakka/blob/f8dbc8225e0cd84c013f6f4695a60e9f0b82c280/src/main/java/no/entur/kakka/geocoder/routes/pelias/mapper/netex/StopPlaceToPeliasMapper.java#L120)
