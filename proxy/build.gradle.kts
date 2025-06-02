@@ -11,7 +11,7 @@ java {
 }
 
 application {
-    mainClass.set("no.entur.proxy.ProxyKt")
+    mainClass.set("no.entur.netex_photon.proxy.ProxyKt")
 }
 
 dependencies {

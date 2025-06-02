@@ -30,5 +30,5 @@ java {
 }
 
 application {
-    mainClass = "no.entur.netex_photon.AppKt"
+    mainClass = "no.entur.netex_photon.converter.AppKt"
 }
