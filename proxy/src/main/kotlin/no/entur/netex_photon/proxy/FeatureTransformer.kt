@@ -7,11 +7,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 class FeatureTransformer {
     private val mapper: ObjectMapper = jacksonObjectMapper()
 
-    fun parseAndTransform(input: String): FeatureCollection {
+    fun parseAndTransform(input: String): String {
         val collection: FeatureCollection = mapper.readValue(input)
-        return collection.copy(
+        val copy = collection.copy(
             features = collection.features.map { transformFeature(it) }
         )
+        return mapper.writeValueAsString(copy)
     }
 
     fun transformFeature(feature: Feature): Feature {
@@ -31,7 +32,7 @@ class FeatureTransformer {
             county_gid = extra?.county_gid,
             locality = extra?.locality,
             locality_gid = extra?.locality_gid,
-            label = extra?.label?.replace(",", ", ") ?: props.label,
+            label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
             category = extra?.category?.split(',')?.map { it.trim() },
             tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
             // All other fields from properties (for compatibility, but not in output)
@@ -45,6 +46,4 @@ class FeatureTransformer {
             extra = null // Remove extra from output
         ))
     }
-
-    fun toJsonString(collection: FeatureCollection): String = mapper.writeValueAsString(collection)
 }
