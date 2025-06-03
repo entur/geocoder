@@ -151,7 +151,7 @@ Now try some example requests, e.g.
 }
 ```
 
-### Exporter WIP (ndjson)
+### Converter output WIP (ndjson)
 ```json5
 {
   "type": "Place",
@@ -200,5 +200,85 @@ Now try some example requests, e.g.
       }
     }
   ]
+}
+```
+
+### Proxy output WIP
+```json5
+{
+  "geocoding": {
+    "version": "0.2",
+    "attribution": "http://pelias.mapzen.com/v1/attribution",
+    "query": {
+      "text": "Skøyen stasjon",
+      "parser": "addressit",
+      "tokens": [
+        "Skøyen",
+        "stasjon"
+      ],
+      "size": 10,
+      "layers": [
+        "address",
+        "venue"
+      ],
+      "sources": [
+        "openstreetmap",
+        "whosonfirst"
+      ],
+      "private": false,
+      "lang": {
+        "name": "Norwegian Bokmål",
+        "iso6391": "nb",
+        "iso6393": "nob",
+        "defaulted": false
+      },
+      "querySize": 20
+    },
+    "engine": {
+      "name": "Pelias",
+      "author": "Mapzen",
+      "version": "1.0"
+    },
+    "timestamp": 1748934188216
+  },
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.678512, 59.922383]
+      },
+      "properties": {
+        "name": "Skøyen stasjon",
+        "street": "NOT_AN_ADDRESS-NSR:StopPlace:59651",
+        "county": "Oslo",
+        "id": "NSR:StopPlace:59651",
+        "gid": "openstreetmap:venue:NSR:StopPlace:59651",
+        "layer": "venue",
+        "source": "openstreetmap",
+        "source_id": "NSR:StopPlace:59651",
+        "accuracy": "point",
+        "country_a": "NOR",
+        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
+        "locality": "Oslo",
+        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
+        "label": "Skøyen stasjon, Oslo",
+        "category": [
+          "railStation",
+          "onstreetBus",
+          "onstreetBus",
+          "onstreetBus"
+        ],
+        "tariff_zones": [
+          "BRA:TariffZone:311",
+          "RUT:FareZone:4",
+          "RUT:TariffZone:1"
+        ]
+      }
+    },
+    ...
+  ],
+  "bbox": [10.677136, 59.921956, 10.6793, 59.922865]
 }
 ```
