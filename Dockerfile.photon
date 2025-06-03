@@ -1,0 +1,34 @@
+FROM eclipse-temurin:23-jdk-alpine AS build-image
+
+RUN apk add curl unzip
+
+RUN mkdir -p /app
+WORKDIR /app
+
+COPY . ./
+
+RUN ./gradlew --no-daemon :converter:build
+RUN curl -s https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar xv
+RUN java -jar converter/build/libs/converter-all.jar tiamat*.xml oslo.ndjson
+RUN wget https://github.com/komoot/photon/releases/download/0.7.0/photon-opensearch-0.7.0.jar
+RUN java \
+    -jar photon-opensearch-0.7.0.jar \
+    -nominatim-import \
+    -import-file oslo.ndjson \
+    -languages no \
+    -extra-tags id,gid,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,category,tariff_zones
+
+
+FROM eclipse-temurin:23-jre-alpine
+
+RUN mkdir -p /app
+WORKDIR /app
+
+COPY --from=build-image /app/photon-opensearch-0.7.0.jar photon-opensearch-0.7.0.jar
+COPY --from=build-image /app/photon_data photon_data
+COPY start-photon.sh start-photon.sh
+
+RUN chown -R 10001:10001 /app
+USER 10001:10001
+
+CMD ["./start-photon.sh"]

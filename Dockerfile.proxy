@@ -2,7 +2,7 @@ FROM gradle:jdk23-alpine AS build-image
 
 WORKDIR /app
 COPY . ./
-RUN ./gradlew --no-daemon build
+RUN ./gradlew --no-daemon :proxy:build
 
 FROM eclipse-temurin:23-jre-alpine
 EXPOSE 8080

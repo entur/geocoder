@@ -15,4 +15,5 @@ fun main(args: Array<String>) {
     }
     val output = File(args[1])
     Converter().convert(input, output)
+    println("Conversion completed. Output written to ${output.absolutePath}, size: ${output.length()} bytes.")
 }

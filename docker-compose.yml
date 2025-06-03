@@ -1,0 +1,21 @@
+services:
+  photon:
+    build:
+      context: .
+      dockerfile: Dockerfile.photon
+    ports:
+      - "2322:2322"
+    restart: unless-stopped
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    environment:
+      - PHOTON_BASE_URL=http://photon:2322
+    ports:
+      - "8080:8080"
+    depends_on:
+      - photon
+    restart: unless-stopped
+
