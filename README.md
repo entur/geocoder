@@ -2,7 +2,7 @@
 
 ```bash
 ./gradlew build
-java -jar converter/build/libs/netex-photon-all.jar input-netex.xml /tmp/output-photon.nbjson
+java -jar converter/build/libs/converter-all.jar input-netex.xml /tmp/output-photon.nbjson
 ```
 
 #### Importing to photon
@@ -17,7 +17,7 @@ java -jar target/photon-opensearch-0.7.0.jar -nominatim-import -import-file /tmp
 ```
 Start the server with `java -jar target/photon-opensearch-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 
-#### Running the pelias proxy
+#### Running the pelias-impersonating proxy
 ```bash
 java -jar proxy/build/libs/proxy-all.jar
 ```

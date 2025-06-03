@@ -4,19 +4,31 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.ContentType.Application.Json
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.serialization.jackson.*
 
-private val httpClient = HttpClient(CIO)
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
+
+private val httpClient = HttpClient(CIO) {
+    install(ClientContentNegotiation) {
+        jackson()
+    }
+}
 private val transformer = FeatureTransformer()
 
 fun main() {
     embeddedServer(Netty, port = 8080) {
+        install(ServerContentNegotiation) {
+            jackson()
+        }
         configureRouting(httpClient, transformer, "http://localhost:2322")
+        configureHealthEndpoints()
     }.start(wait = true)
 }
 
@@ -32,15 +44,13 @@ fun Application.configureRouting(
             val lang = call.request.queryParameters["lang"] ?: "no"
 
             val photonResponse = client.get("$photonBaseUrl/api") {
-                url {
-                    parameters.append("q", query)
-                    parameters.append("limit", size.toString())
-                    parameters.append("lang", lang)
-                }
+                parameter("q", query)
+                parameter("limit", size.toString())
+                parameter("lang", lang)
             }.bodyAsText()
 
             val json = transformer.parseAndTransform(photonResponse)
-            call.respondText(json, contentType = Json)
+            call.respondText(json, contentType = ContentType.Application.Json)
         }
 
         get("/v1/reverse") {
@@ -51,17 +61,35 @@ fun Application.configureRouting(
             val lang = call.request.queryParameters["lang"] ?: "no"
 
             val photonResponse = client.get("$photonBaseUrl/reverse") {
-                url {
-                    parameters.append("lat", lat)
-                    parameters.append("lon", lon)
-                    parameters.append("lang", lang)
-                    parameters.append("radius", radius)
-                    parameters.append("limit", size.toString())
-                }
+                parameter("lat", lat)
+                parameter("lon", lon)
+                parameter("lang", lang)
+                parameter("radius", radius)
+                parameter("limit", size.toString())
             }.bodyAsText()
 
             val json = transformer.parseAndTransform(photonResponse)
-            call.respondText(json, contentType = Json)
+            call.respondText(json, contentType = ContentType.Application.Json)
+        }
+    }
+}
+
+fun Application.configureHealthEndpoints() {
+    routing {
+        get("/actuator/health/liveness") {
+            call.respondText("""{"status":"UP"}""", contentType = ContentType.Application.Json)
+        }
+
+        get("/actuator/health/readiness") {
+            try {
+                call.respondText("""{"status":"UP"}""", contentType = ContentType.Application.Json)
+            } catch (e: Exception) {
+                call.respondText(
+                    """{"status":"DOWN","details":{"error":"${e.message}"}}""",
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.ServiceUnavailable
+                )
+            }
         }
     }
 }

@@ -24,4 +24,3 @@ class ConverterTest {
         assertTrue(lines[1].contains("NSR:StopPlace:152"))
     }
 }
-

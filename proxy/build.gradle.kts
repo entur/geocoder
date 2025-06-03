@@ -4,12 +4,6 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
 application {
     mainClass.set("no.entur.netex_photon.proxy.ProxyKt")
 }
@@ -22,6 +16,11 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.kotlin)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.metrics)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.client.content.negotiation)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)

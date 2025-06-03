@@ -83,16 +83,7 @@ class FeatureTransformer {
                 locality_gid = extra?.locality_gid,
                 label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
                 category = extra?.category?.split(',')?.map { it.trim() },
-                tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
-                // All other fields from properties (for compatibility, but not in output)
-                osmType = null,
-                osmId = null,
-                osmKey = null,
-                osmValue = null,
-                type = null,
-                postcode = null,
-                countrycode = null,
-                extra = null // Remove extra from output
+                tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() } // Remove extra from output
             )
         )
     }

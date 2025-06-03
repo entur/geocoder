@@ -4,31 +4,21 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-repositories {
-    mavenCentral()
+application {
+    mainClass = "no.entur.netex_photon.converter.CommandKt"
 }
 
 dependencies {
-    implementation(libs.guava)
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.xml)
     testImplementation(libs.kotlin.test)
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class) {
-            useKotlinTest("2.1.20")
-        }
+    testImplementation(libs.junit.api)
+    testImplementation(libs.junit.engine)
+    testImplementation(libs.kotlin.test.junit5) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit")
     }
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-application {
-    mainClass = "no.entur.netex_photon.converter.AppKt"
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
