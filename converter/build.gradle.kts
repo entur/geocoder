@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     application
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    alias(libs.plugins.shadow)
 }
 
 repositories {
@@ -10,9 +10,9 @@ repositories {
 
 dependencies {
     implementation(libs.guava)
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.0")
-    testImplementation(kotlin("test"))
+    implementation(libs.jackson.kotlin)
+    implementation(libs.jackson.xml)
+    testImplementation(libs.kotlin.test)
 }
 
 testing {

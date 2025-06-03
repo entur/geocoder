@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     application
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    alias(libs.plugins.shadow)
 }
 
 java {
@@ -15,11 +15,25 @@ application {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-netty:2.3.0")
-    implementation("io.ktor:ktor-server-core:2.3.0")
-    implementation("io.ktor:ktor-client-core:2.3.0")
-    implementation("io.ktor:ktor-client-cio:2.3.0")
-    implementation("ch.qos.logback:logback-classic:1.4.11")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.logback)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.kotlin)
+
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.junit.api)
+    testImplementation(libs.junit.engine)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.test.junit5) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit")
+    }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
