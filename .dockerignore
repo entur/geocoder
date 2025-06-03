@@ -1,0 +1,4 @@
+*
+!gradle**
+!**/src/**
+!**.gradle.kts

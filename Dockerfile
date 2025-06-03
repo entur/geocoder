@@ -1,0 +1,12 @@
+FROM gradle:jdk23-alpine AS build-image
+
+WORKDIR /app
+COPY . ./
+RUN ./gradlew --no-daemon build
+
+FROM eclipse-temurin:23-jre-alpine
+EXPOSE 8080
+WORKDIR /app
+COPY --from=build-image /app/proxy/build/libs/proxy-all.jar app.jar
+USER 10001:10001
+CMD ["java", "-jar", "app.jar"]
