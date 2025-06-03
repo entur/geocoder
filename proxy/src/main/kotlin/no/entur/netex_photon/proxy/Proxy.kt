@@ -76,6 +76,13 @@ fun Application.configureRouting(
 
 fun Application.configureHealthEndpoints() {
     routing {
+        get("/") {
+            val indexHtml = this::class.java.classLoader.getResourceAsStream("index.html")?.readBytes()
+                ?: throw IllegalStateException("index.html not found in resources")
+
+            call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
+        }
+
         get("/actuator/health/liveness") {
             call.respondText("""{"status":"UP"}""", contentType = ContentType.Application.Json)
         }

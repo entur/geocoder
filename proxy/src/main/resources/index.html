@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EnTur Geocoding API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #0066cc;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #0066cc;
+            margin-top: 30px;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .example {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .description {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>EnTur Geocoding API</h1>
+
+    <p>Welcome to the EnTur Geocoding API. This service provides geocoding and reverse geocoding functionality for Norway.</p>
+
+    <h2>Autocomplete Endpoint</h2>
+    <div class="endpoint">
+        <code>/v1/autocomplete</code>
+        <p>Search for places by name with autocomplete functionality.</p>
+
+        <div class="example">
+            <div class="description">Search for Oslo:</div>
+            <a href="/v1/autocomplete?text=oslo">/v1/autocomplete?text=oslo</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Search with size limit of 5:</div>
+            <a href="/v1/autocomplete?text=skøyen&size=5">/v1/autocomplete?text=skøyen&size=5</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Search with English language:</div>
+            <a href="/v1/autocomplete?text=bergen&lang=en">/v1/autocomplete?text=bergen&lang=en</a>
+        </div>
+    </div>
+
+    <h2>Reverse Geocoding Endpoint</h2>
+    <div class="endpoint">
+        <code>/v1/reverse</code>
+        <p>Find places near a specific coordinate.</p>
+
+        <div class="example">
+            <div class="description">Lookup Oslo Central Station:</div>
+            <a href="/v1/reverse?point.lat=59.911&point.lon=10.753">/v1/reverse?point.lat=59.911&point.lon=10.753</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Lookup with radius of 200 meters:</div>
+            <a href="/v1/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=200">/v1/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=200</a>
+        </div>
+    </div>
+
+    <h2>Health Endpoints</h2>
+    <div class="endpoint">
+        <div class="example">
+            <div class="description">Liveness check:</div>
+            <a href="/actuator/health/liveness">/actuator/health/liveness</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Readiness check:</div>
+            <a href="/actuator/health/readiness">/actuator/health/readiness</a>
+        </div>
+    </div>
+
+    <footer style="margin-top: 50px; font-size: 0.8em; color: #666; border-top: 1px solid #eee; padding-top: 10px;">
+        &copy; EnTur
+    </footer>
+</body>
+</html>
+
