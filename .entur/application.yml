@@ -1,0 +1,13 @@
+apiVersion: orchestrator.entur.io/apps/v1
+kind: GoogleCloudApplication
+metadata:
+  id: photonprxy
+  displayName: Netex Photon Proxy
+  name: netex-photon-proxy
+  owner: team-ror
+  domain: journey-planner
+  trigger: 1748952665
+spec:
+  organization: entur
+  environments: [dev]
+  repositories: [netex-photon]
