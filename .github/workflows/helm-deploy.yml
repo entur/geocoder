@@ -10,3 +10,4 @@ jobs:
       environment: dev
       image: netex-photon-proxy:latest
       chart: helm/netex-photon-proxy
+      namespace: netex-photon-proxy
