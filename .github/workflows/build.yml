@@ -5,6 +5,11 @@ on:
   pull_request:
 
 jobs:
+
+  #
+  # Proxy
+  #
+
   proxy-lint:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
@@ -30,6 +35,20 @@ jobs:
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
       image_artifact: ${{ needs.proxy-build.outputs.image_artifact }}
+
+  proxy-deploy:
+    needs: proxy-push
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: dev
+      image: ${{ needs.proxy-push.outputs.image_name }}:${{ needs.proxy-push.outputs.image_tag}}
+      chart: helm/netex-photon-proxy
+      namespace: netex-photon-proxy
+    secrets: inherit
+
+  #
+  # Photon
+  #
 
   photon-lint:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
@@ -57,4 +76,6 @@ jobs:
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
       image_artifact: ${{ needs.photon-build.outputs.image_artifact }}
+
+
 
