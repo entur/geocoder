@@ -2,12 +2,13 @@ FROM bellsoft/liberica-runtime-container:jdk-23-musl AS build-image
 
 WORKDIR /srv
 COPY . ./
-RUN apk add --no-cache curl
-RUN ./gradlew --no-daemon :converter:build
-RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
-RUN java -jar converter/build/libs/converter-all.jar tiamat*.xml oslo.ndjson
-RUN curl -sfLo photon.jar https://github.com/komoot/photon/releases/download/0.7.0/photon-opensearch-0.7.0.jar
-RUN java \
+SHELL ["/bin/ash", "-co", "pipefail"]
+RUN apk add --no-cache curl && \
+    ./gradlew --no-daemon :converter:build && \
+    curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv  && \
+    java -jar converter/build/libs/converter-all.jar tiamat*.xml oslo.ndjson && \
+    curl -sfLo photon.jar https://github.com/komoot/photon/releases/download/0.7.0/photon-opensearch-0.7.0.jar  && \
+    java \
     -jar photon.jar \
     -nominatim-import \
     -import-file oslo.ndjson \
