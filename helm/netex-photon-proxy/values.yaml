@@ -4,7 +4,7 @@ common:
   team: team-ror
   ingress:
     enabled: true
-    trafficType: api  # The ingress.host url is only available behind the Apigee API Gateway (https://api.entur.io/yourAPI)
+    trafficType: public
   service:
     internalPort: 8080  # What TCP port the application listens on the pod, must match the port in the Dockerfile
   deployment:
