@@ -48,7 +48,7 @@ jobs:
       environment: dev
       image: ${{ needs.proxy-push.outputs.image_name }}:${{ needs.proxy-push.outputs.image_tag}}
       chart: helm/netex-photon-proxy
-      namespace: netex-photon-proxy
+      namespace: netex-photon
       release_name: netex-photon-proxy
     secrets: inherit
 
@@ -91,7 +91,7 @@ jobs:
       environment: dev
       image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
       chart: helm/netex-photon-server
-      namespace: netex-photon-proxy
+      namespace: netex-photon
       release_name: netex-photon-server
     secrets: inherit
 
