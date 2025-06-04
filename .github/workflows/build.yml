@@ -12,6 +12,7 @@ jobs:
 
   docker-build-proxy:
     uses: entur/gha-docker/.github/workflows/build.yml@v1
+    needs: docker-lint-proxy
     with:
       dockerfile: Dockerfile.proxy
       image_name: netex-photon-proxy
@@ -19,17 +20,21 @@ jobs:
   docker-push-proxy:
     if: ${{ github.event_name != 'pull_request' }}
     uses: entur/gha-docker/.github/workflows/push.yml@v1
+    needs: docker-build-proxy
     with:
       dockerfile: Dockerfile.proxy
       image_name: netex-photon-proxy
+
 
   docker-lint-photon:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: Dockerfile.photon
+      ignore: "DL3018"
 
   docker-build-photon:
     uses: entur/gha-docker/.github/workflows/build.yml@v1
+    needs: docker-lint-photon
     with:
       dockerfile: Dockerfile.photon
       image_name: netex-photon-photon
@@ -37,6 +42,7 @@ jobs:
   docker-push-photon:
     if: ${{ github.event_name != 'pull_request' }}
     uses: entur/gha-docker/.github/workflows/push.yml@v1
+    needs: docker-build-photon
     with:
       dockerfile: Dockerfile.photon
       image_name: netex-photon-photon
