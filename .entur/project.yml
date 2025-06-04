@@ -3,7 +3,7 @@ kind: GoogleCloudApplication
 metadata:
   id: photonprxy
   displayName: Netex Photon Proxy
-  name: netex-photon-proxy
+  name: netex-photon
   owner: team-ror
   domain: journey-planner
   trigger: 1748952665
