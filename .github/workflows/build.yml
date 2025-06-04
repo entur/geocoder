@@ -5,48 +5,34 @@ on:
   pull_request:
 
 jobs:
-  proxy:
-    runs-on: ubuntu-latest
+  docker-lint-proxy:
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: Dockerfile.proxy
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  docker-build-proxy:
+    uses: entur/gha-docker/.github/workflows/build.yml@v1
+    with:
+      dockerfile: Dockerfile.proxy
 
-      - name: Docker Lint
-        uses: entur/gha-docker/.github/workflows/lint.yml@v1
-        with:
-          dockerfile: Dockerfile.proxy
+  docker-push-proxy:
+    if: ${{ github.event_name != 'pull_request' }}
+    uses: entur/gha-docker/.github/workflows/push.yml@v1
+    with:
+      dockerfile: Dockerfile.proxy
 
-      - name: Docker Build
-        uses: entur/gha-docker/.github/workflows/build.yml@v1
-        with:
-          dockerfile: Dockerfile.proxy
+  docker-lint-photon:
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: Dockerfile.photon
 
-      - name: Docker Push
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: entur/gha-docker/.github/workflows/push.yml@v1
-        with:
-          dockerfile: Dockerfile.proxy
+  docker-build-photon:
+    uses: entur/gha-docker/.github/workflows/build.yml@v1
+    with:
+      dockerfile: Dockerfile.photon
 
-  photon:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Docker Lint
-        uses: entur/gha-docker/.github/workflows/lint.yml@v1
-        with:
-          dockerfile: Dockerfile.photon
-
-      - name: Docker Build
-        uses: entur/gha-docker/.github/workflows/build.yml@v1
-        with:
-          dockerfile: Dockerfile.photon
-
-      - name: Docker Push
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: entur/gha-docker/.github/workflows/push.yml@v1
-        with:
-          dockerfile: Dockerfile.photon
+  docker-push-photon:
+    if: ${{ github.event_name != 'pull_request' }}
+    uses: entur/gha-docker/.github/workflows/push.yml@v1
+    with:
+      dockerfile: Dockerfile.photon
