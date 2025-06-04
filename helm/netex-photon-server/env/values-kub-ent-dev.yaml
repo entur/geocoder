@@ -1,0 +1,4 @@
+common:
+  env: dev
+  ingress:
+    host: netex-photon-server.dev.entur.org
