@@ -5,22 +5,48 @@ on:
   pull_request:
 
 jobs:
-  build:
+  proxy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Docker Lint
+        uses: entur/gha-docker/.github/workflows/lint.yml@v1
         with:
-          java-version: '21'
-          distribution: 'liberica'
+          dockerfile: Dockerfile.proxy
 
-      - name: Build
-        run: ./gradlew clean build
+      - name: Docker Build
+        uses: entur/gha-docker/.github/workflows/build.yml@v1
+        with:
+          dockerfile: Dockerfile.proxy
 
-      - name: Test CLI tool
-        run: |
-          java -jar converter/build/libs/converter-all.jar converter/src/test/resources/oslo.xml /tmp/photon-oslo.nbjson
+      - name: Docker Push
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: entur/gha-docker/.github/workflows/push.yml@v1
+        with:
+          dockerfile: Dockerfile.proxy
+
+  photon:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Docker Lint
+        uses: entur/gha-docker/.github/workflows/lint.yml@v1
+        with:
+          dockerfile: Dockerfile.photon
+
+      - name: Docker Build
+        uses: entur/gha-docker/.github/workflows/build.yml@v1
+        with:
+          dockerfile: Dockerfile.photon
+
+      - name: Docker Push
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: entur/gha-docker/.github/workflows/push.yml@v1
+        with:
+          dockerfile: Dockerfile.photon
