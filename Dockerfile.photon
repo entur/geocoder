@@ -24,4 +24,4 @@ COPY --from=build-image /srv/photon_data photon_data
 RUN chown -R 10001:10001 /srv
 USER 10001:10001
 
-CMD ["sh", "-c", "find photon_data -name '*.lock' -delete && exec java -jar photon.jar"]
+CMD ["sh", "-c", "ls -Rl . && find photon_data -name '*.lock' -delete && exec java -jar photon.jar"]
