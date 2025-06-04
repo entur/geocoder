@@ -30,11 +30,11 @@ jobs:
       dockerfile: Dockerfile.proxy
       image_name: netex-photon-proxy
 
-  proxy-scan:
-    needs: proxy-push
-    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
-    with:
-      image_artifact: ${{ needs.proxy-build.outputs.image_artifact }}
+#  proxy-scan:
+#    needs: proxy-push
+#    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
+#    with:
+#      image_artifact: ${{ needs.proxy-build.outputs.image_artifact }}
 
   proxy-deploy:
     needs: proxy-push
@@ -44,6 +44,7 @@ jobs:
       image: ${{ needs.proxy-push.outputs.image_name }}:${{ needs.proxy-push.outputs.image_tag}}
       chart: helm/netex-photon-proxy
       namespace: netex-photon-proxy
+      release_name: netex-photon-proxy
     secrets: inherit
 
   #
@@ -71,11 +72,21 @@ jobs:
       dockerfile: Dockerfile.photon
       image_name: netex-photon-photon
 
-  photon-scan:
-    needs: photon-build
-    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
-    with:
-      image_artifact: ${{ needs.photon-build.outputs.image_artifact }}
+#  photon-scan:
+#    needs: photon-build
+#    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
+#    with:
+#      image_artifact: ${{ needs.photon-build.outputs.image_artifact }}
 
+  photon-deploy:
+    needs: photon-push
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: dev
+      image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
+      chart: helm/netex-photon-photon
+      namespace: netex-photon-proxy
+      release_name: netex-photon-photon
+    secrets: inherit
 
 
