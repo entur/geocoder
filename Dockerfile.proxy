@@ -1,12 +1,14 @@
-FROM gradle:jdk23-alpine AS build-image
+FROM bellsoft/liberica-runtime-container:jdk-23-musl AS build-image
 
-WORKDIR /app
+WORKDIR /srv
 COPY . ./
 RUN ./gradlew --no-daemon :proxy:build
 
-FROM eclipse-temurin:23-jre-alpine
-EXPOSE 8080
-WORKDIR /app
-COPY --from=build-image /app/proxy/build/libs/proxy-all.jar app.jar
+
+FROM bellsoft/liberica-runtime-container:jre-23-slim-musl
+WORKDIR /srv
+COPY --from=build-image /srv/proxy/build/libs/proxy-all.jar srv.jar
+RUN chown -R 10001:10001 /srv
 USER 10001:10001
-CMD ["java", "-jar", "app.jar"]
+
+CMD ["sh", "-c", "exec java -jar srv.jar"]

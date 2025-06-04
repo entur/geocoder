@@ -2,4 +2,3 @@
 !gradle**
 !**/src/**
 !**.gradle.kts
-!start-photon.sh
