@@ -55,7 +55,7 @@ jobs:
 
   scan-photon:
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
-    needs: build-proxy
+    needs: build-photon
     with:
       image_artifact: ${{ needs.build-photon.outputs.image_artifact }}
 
