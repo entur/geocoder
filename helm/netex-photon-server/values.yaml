@@ -1,6 +1,6 @@
 common:
   app: netex-photon-server
-  shortname: photonsrv
+  shortname: photonprxy
   team: team-ror
   ingress:
     enabled: true
