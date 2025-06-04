@@ -31,7 +31,7 @@ jobs:
       image_name: netex-photon-proxy
 
   proxy-scan:
-    needs: proxy-build
+    needs: proxy-push
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
       image_artifact: ${{ needs.proxy-build.outputs.image_artifact }}
