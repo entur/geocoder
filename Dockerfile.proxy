@@ -8,7 +8,7 @@ RUN ./gradlew --no-daemon :proxy:build
 FROM bellsoft/liberica-runtime-container:jre-23-slim-musl
 WORKDIR /srv
 COPY --from=build-image /srv/proxy/build/libs/proxy-all.jar srv.jar
-RUN chown -R 10001:10001 /srv
-USER 10001:10001
+RUN chown -R 1000:1000 /srv
+USER 1000:1000
 
 CMD ["sh", "-c", "exec java -jar srv.jar"]

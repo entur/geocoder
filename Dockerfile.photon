@@ -21,7 +21,7 @@ FROM bellsoft/liberica-runtime-container:jre-23-slim-musl
 WORKDIR /srv
 COPY --from=build-image /srv/photon.jar photon.jar
 COPY --from=build-image /srv/photon_data photon_data
-RUN chown -R 10001:10001 /srv
-USER 10001:10001
+RUN chown -R 1000:1000 /srv
+USER 1000:1000
 
-CMD ["sh", "-c", "ls -Rl . && find photon_data -name '*.lock' -delete && exec java -jar photon.jar"]
+CMD ["sh", "-c", "find photon_data -name '*.lock' -delete && exec java -jar photon.jar"]
