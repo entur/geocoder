@@ -2,7 +2,11 @@ name: Build it
 
 on:
   push:
+    paths-ignore:
+      - '.entur/**'
   pull_request:
+    paths-ignore:
+      - '.entur/**'
 
 jobs:
 
@@ -37,6 +41,7 @@ jobs:
 #      image_artifact: ${{ needs.proxy-build.outputs.image_artifact }}
 
   proxy-deploy:
+    if: ${{ github.event_name != 'pull_request' }}
     needs: proxy-push
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -62,7 +67,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/build.yml@v1
     with:
       dockerfile: Dockerfile.photon
-      image_name: netex-photon-photon
+      image_name: netex-photon-server
 
   photon-push:
     if: ${{ github.event_name != 'pull_request' }}
@@ -70,7 +75,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/push.yml@v1
     with:
       dockerfile: Dockerfile.photon
-      image_name: netex-photon-photon
+      image_name: netex-photon-server
 
 #  photon-scan:
 #    needs: photon-build
@@ -79,14 +84,14 @@ jobs:
 #      image_artifact: ${{ needs.photon-build.outputs.image_artifact }}
 
   photon-deploy:
+    if: ${{ github.event_name != 'pull_request' }}
     needs: photon-push
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
       image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
-      chart: helm/netex-photon-photon
+      chart: helm/netex-photon-server
       namespace: netex-photon-proxy
-      release_name: netex-photon-photon
+      release_name: netex-photon-server
     secrets: inherit
-
 
