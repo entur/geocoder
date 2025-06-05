@@ -60,7 +60,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: Dockerfile.photon
-      ignore: "DL3018"
+      ignore: "DL3018,DL3059"
 
   photon-build:
     needs: photon-lint
