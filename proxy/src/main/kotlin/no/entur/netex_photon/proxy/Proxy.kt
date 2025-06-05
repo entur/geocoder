@@ -59,7 +59,7 @@ fun Application.configureRouting(
         get("/v1/reverse") {
             val lat = call.request.queryParameters["point.lat"] ?: ""
             val lon = call.request.queryParameters["point.lon"] ?: ""
-            val radius = call.request.queryParameters["boundary.circle.radius"] ?: ""
+            val radius = call.request.queryParameters["boundary.circle.radius"]
             val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
             val lang = call.request.queryParameters["lang"] ?: "no"
 
@@ -67,7 +67,7 @@ fun Application.configureRouting(
                 parameter("lat", lat)
                 parameter("lon", lon)
                 parameter("lang", lang)
-                parameter("radius", radius)
+                radius?.let { parameter("radius", radius) }
                 parameter("limit", size.toString())
             }.bodyAsText()
 
