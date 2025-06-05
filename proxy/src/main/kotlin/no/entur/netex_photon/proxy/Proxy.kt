@@ -5,13 +5,14 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.serialization.jackson.*
-
+import io.ktor.util.*
+import org.slf4j.LoggerFactory
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
 
@@ -21,6 +22,7 @@ private val httpClient = HttpClient(CIO) {
     }
 }
 private val transformer = FeatureTransformer()
+private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {
     val photonBaseUrl = System.getenv("PHOTON_BASE_URL") ?: "http://netex-photon-server"
@@ -46,14 +48,26 @@ fun Application.configureRouting(
             val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
             val lang = call.request.queryParameters["lang"] ?: "no"
 
-            val photonResponse = client.get("$photonBaseUrl/api") {
-                parameter("q", query)
-                parameter("limit", size.toString())
-                parameter("lang", lang)
-            }.bodyAsText()
+            val url = "$photonBaseUrl/api"
+            logger.info("Proxying /v1/autocomplete to $url with ${call.request.queryParameters.toMap()}")
 
-            val json = transformer.parseAndTransform(photonResponse)
-            call.respondText(json, contentType = ContentType.Application.Json)
+            try {
+                val photonResponse = client.get(url) {
+                    parameter("q", query)
+                    parameter("limit", size.toString())
+                    parameter("lang", lang)
+                }.bodyAsText()
+
+                val json = transformer.parseAndTransform(photonResponse)
+                call.respondText(json, contentType = ContentType.Application.Json)
+            } catch (e: Exception) {
+                logger.error("Error proxying to Photon: ${e.message}", e)
+                call.respondText(
+                    """{"error":"Failed to connect to Photon backend: ${e.message}"}""",
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.ServiceUnavailable
+                )
+            }
         }
 
         get("/v1/reverse") {
@@ -63,16 +77,28 @@ fun Application.configureRouting(
             val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
             val lang = call.request.queryParameters["lang"] ?: "no"
 
-            val photonResponse = client.get("$photonBaseUrl/reverse") {
-                parameter("lat", lat)
-                parameter("lon", lon)
-                parameter("lang", lang)
-                radius?.let { parameter("radius", radius) }
-                parameter("limit", size.toString())
-            }.bodyAsText()
+            val url = "$photonBaseUrl/reverse"
+            logger.info("Proxying /v1/reverse to $url with ${call.request.queryParameters.toMap()}")
 
-            val json = transformer.parseAndTransform(photonResponse)
-            call.respondText(json, contentType = ContentType.Application.Json)
+            try {
+                val photonResponse = client.get(url) {
+                    parameter("lat", lat)
+                    parameter("lon", lon)
+                    parameter("lang", lang)
+                    radius?.let { parameter("radius", radius) }
+                    parameter("limit", size.toString())
+                }.bodyAsText()
+
+                val json = transformer.parseAndTransform(photonResponse)
+                call.respondText(json, contentType = ContentType.Application.Json)
+            } catch (e: Exception) {
+                logger.error("Error proxying to Photon: ${e.message}", e)
+                call.respondText(
+                    """{"error":"Failed to connect to Photon backend: ${e.message}"}""",
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.ServiceUnavailable
+                )
+            }
         }
     }
 }

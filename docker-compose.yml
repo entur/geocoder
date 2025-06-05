@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.photon
+    image: netex-photon-server
     environment:
       - PHOTON_PORT=80 # Read in Dockerfile.photon
     ports:
@@ -15,6 +16,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.proxy
+    image: netex-photon-proxy
     environment:
       - PROXY_PORT=80 # Read in Proxy.kt
     ports:
