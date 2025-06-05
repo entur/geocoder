@@ -1,3 +1,5 @@
+name: netex-photon
+
 services:
   server:
     build:
