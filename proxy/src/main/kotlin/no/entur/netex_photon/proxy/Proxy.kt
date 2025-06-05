@@ -23,8 +23,10 @@ private val httpClient = HttpClient(CIO) {
 private val transformer = FeatureTransformer()
 
 fun main() {
-    val photonBaseUrl = System.getenv("PHOTON_BASE_URL") ?: "http://photon:2322"
-    embeddedServer(Netty, port = 8080) {
+    val photonBaseUrl = System.getenv("PHOTON_BASE_URL") ?: "http://netex-photon-server"
+    val proxyPort = System.getenv("PROXY_PORT")?.toIntOrNull() ?: 8080
+
+    embeddedServer(Netty, port = proxyPort) {
         install(ServerContentNegotiation) {
             jackson()
         }
