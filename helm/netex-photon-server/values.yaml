@@ -1,6 +1,6 @@
 common:
   app: netex-photon-server
-  shortname: photonprxy
+  shortname: photonprxy # This ID is defined in .entur/project.yml and is shared with netex-photon-proxy
   team: team-ror
   ingress:
     enabled: true
