@@ -24,7 +24,8 @@ common:
           timeoutSeconds: 1
           failureThreshold: 300
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /api?q=zzz
             port: 2322
           periodSeconds: 5
           successThreshold: 1
