@@ -41,6 +41,7 @@ Now try some example requests, e.g.
 * [bau - geocoder comparison tool](https://github.com/entur/bau)
 * [Nominatim](https://github.com/osm-search/Nominatim)
 
+
 ## Relevant example data formats
 
 ### pelias
