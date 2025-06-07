@@ -1,4 +1,4 @@
 rootProject.name = "netex-photon"
-include("converter-BREAKTHEBUILD")
+include("converter")
 include("proxy")
 
