@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonInclude(NON_NULL)
 data class FeatureCollection(
-    val geocoding: GeocodingMetadata? = null,
     val type: String = "FeatureCollection",
     val features: List<Feature>,
     val bbox: List<Double>? = null

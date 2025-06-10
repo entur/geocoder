@@ -9,32 +9,15 @@ class FeatureTransformer {
 
     fun parseAndTransform(input: String): String {
         val collection: FeatureCollection = mapper.readValue(input)
-        val geocoding: GeocodingMetadata? = createGeocodingMetadata(collection)
         val transformedFeatures = collection.features.map { transformFeature(it) }
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
         val enhancedCollection = collection.copy(
             features = transformedFeatures,
-            geocoding = geocoding,
             bbox = bbox
         )
         return mapper.writeValueAsString(enhancedCollection)
-    }
-
-    private fun createGeocodingMetadata(collection: FeatureCollection): GeocodingMetadata {
-        val queryText = collection.features.firstOrNull()?.properties?.name ?: ""
-        val tokens = if (queryText.isNotEmpty()) queryText.split(" ").filter { it.isNotEmpty() } else null
-
-        return GeocodingMetadata(
-            query = QueryMetadata(
-                text = queryText,
-                tokens = tokens,
-                lang = LangMetadata()
-            ),
-            engine = EngineMetadata(),
-            timestamp = System.currentTimeMillis()
-        )
     }
 
     private fun calculateBoundingBox(features: List<Feature>): List<Double>? {

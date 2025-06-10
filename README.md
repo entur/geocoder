@@ -207,41 +207,6 @@ Now try some example requests, e.g.
 ### Proxy output WIP
 ```json5
 {
-  "geocoding": {
-    "version": "0.2",
-    "attribution": "http://pelias.mapzen.com/v1/attribution",
-    "query": {
-      "text": "Skøyen stasjon",
-      "parser": "addressit",
-      "tokens": [
-        "Skøyen",
-        "stasjon"
-      ],
-      "size": 10,
-      "layers": [
-        "address",
-        "venue"
-      ],
-      "sources": [
-        "openstreetmap",
-        "whosonfirst"
-      ],
-      "private": false,
-      "lang": {
-        "name": "Norwegian Bokmål",
-        "iso6391": "nb",
-        "iso6393": "nob",
-        "defaulted": false
-      },
-      "querySize": 20
-    },
-    "engine": {
-      "name": "Pelias",
-      "author": "Mapzen",
-      "version": "1.0"
-    },
-    "timestamp": 1748934188216
-  },
   "type": "FeatureCollection",
   "features": [
     {
