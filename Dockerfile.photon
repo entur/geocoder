@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-runtime-container:jdk-23-musl AS build-image
+FROM gradle:alpine AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
@@ -7,7 +7,7 @@ RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_la
 RUN curl -sfLo photon.jar https://github.com/komoot/photon/releases/download/0.7.0/photon-opensearch-0.7.0.jar
 
 COPY . ./
-RUN ./gradlew --no-daemon :converter:build
+RUN gradle --no-daemon :converter:build
 RUN java -jar converter/build/libs/converter-all.jar tiamat*.xml oslo.ndjson
 RUN exec java -jar photon.jar \
     -nominatim-import \
