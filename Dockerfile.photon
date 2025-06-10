@@ -13,7 +13,7 @@ RUN exec java -jar photon.jar \
     -nominatim-import \
     -import-file oslo.ndjson \
     -languages no,en \
-    -extra-tags id,gid,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,category,tariff_zones
+    -extra-tags id,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,transport_modes,tariff_zones
 
 
 FROM bellsoft/liberica-runtime-container:jre-23-slim-musl

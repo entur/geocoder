@@ -31,7 +31,7 @@ class Converter {
         val countyGid = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.parentTopographicPlaceRef?.ref
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
         val country = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.countryRef?.ref
-        val categoryList =
+        val transportModes =
             categories.getOrDefault(stopPlace.id, emptyList()).plus(stopPlace.stopPlaceType).filterNotNull()
 
         val stopPlaceContent = PlaceContent(
@@ -44,7 +44,7 @@ class Converter {
             parent_place_id = 0,
             name = stopPlace.name.text?.let { mapOf("name" to it) },
             address = mapOfNotNull(
-                "street" to "NOT_AN_ADDRESS-${stopPlace.id}",
+                //"street" to "NOT_AN_ADDRESS-${stopPlace.id}",
                 "county" to county, // "Finnmark",
             ),
             postcode = "unknown",
@@ -53,17 +53,16 @@ class Converter {
             bbox = listOf(lat, lon, lat, lon),
             extratags = mapOf(
                 "id" to stopPlace.id,
-                "gid" to "openstreetmap:venue:${stopPlace.id}",
-                "layer" to "venue",
-                "source" to "openstreetmap",
+                "layer" to "stopplace",
+                "source" to "nsr",
                 "source_id" to stopPlace.id,
                 "accuracy" to "point",
                 "country_a" to Country.getThreeLetterCode(country),
-                "county_gid" to "whosonfirst:county:$countyGid", // KVE:TopographicPlace:32
+                "county_gid" to "$countyGid", // KVE:TopographicPlace:32
                 "locality" to (locality ?: "unknown"), // "Alta",
-                "locality_gid" to "whosonfirst:locality:$localityGid",
+                "locality_gid" to "$localityGid",
                 "label" to listOfNotNull(stopPlace.name.text, locality).joinToString(","),
-                "category" to categoryList.joinToString(","),
+                "transport_modes" to transportModes.joinToString(","),
                 "tariff_zones" to (stopPlace.tariffZones?.tariffZoneRef?.mapNotNull { it.ref }?.joinToString(",")
                     ?: "unknown"),
             )

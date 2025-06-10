@@ -39,7 +39,7 @@ class ProxyTest {
                   "locality": "Oslo",
                   "locality_gid": "locality:1",
                   "label": "Oslo, Norway",
-                  "category": "city,transport",
+                  "transport_modes": "city,transport",
                   "tariff_zones": "zone1,zone2"
                 }
               }
@@ -83,12 +83,11 @@ class ProxyTest {
 
         val feature = collection.features[0]
         assertEquals("1", feature.properties.id)
-        assertEquals("osm:1", feature.properties.gid)
         assertEquals("city", feature.properties.layer)
         assertEquals("Oslo", feature.properties.name)
         assertEquals("Oslo", feature.properties.county)
         assertEquals("Oslo, Norway", feature.properties.label)
-        assertEquals(listOf("city", "transport"), feature.properties.category)
+        assertEquals(listOf("city", "transport"), feature.properties.transport_modes)
         assertEquals(listOf("zone1", "zone2"), feature.properties.tariff_zones)
         assertEquals(null, feature.properties.extra)
     }

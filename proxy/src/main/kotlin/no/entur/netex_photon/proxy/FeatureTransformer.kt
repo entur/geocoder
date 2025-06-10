@@ -69,7 +69,6 @@ class FeatureTransformer {
         return feature.copy(
             properties = Properties(
                 id = extra?.id,
-                gid = extra?.gid,
                 layer = extra?.layer,
                 source = extra?.source,
                 source_id = extra?.source_id,
@@ -82,7 +81,7 @@ class FeatureTransformer {
                 locality = extra?.locality,
                 locality_gid = extra?.locality_gid,
                 label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
-                category = extra?.category?.split(',')?.map { it.trim() },
+                transport_modes = extra?.transport_modes?.split(',')?.map { it.trim() },
                 tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() } // Remove extra from output
             )
         )
