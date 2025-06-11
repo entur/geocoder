@@ -33,7 +33,6 @@ fun main() {
             jackson()
         }
         configureRouting(httpClient, transformer, photonBaseUrl)
-        configureHealthEndpoints()
     }.start(wait = true)
 }
 
@@ -100,11 +99,7 @@ fun Application.configureRouting(
                 )
             }
         }
-    }
-}
 
-fun Application.configureHealthEndpoints() {
-    routing {
         get("/") {
             val indexHtml = this::class.java.classLoader.getResourceAsStream("index.html")?.readBytes()
                 ?: throw IllegalStateException("index.html not found in resources")

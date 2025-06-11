@@ -2,7 +2,6 @@ FROM gradle:alpine AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
-RUN apk add --no-cache curl
 RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
 RUN curl -sfLo photon.jar https://github.com/komoot/photon/releases/download/0.7.0/photon-opensearch-0.7.0.jar
 
