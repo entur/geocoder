@@ -25,17 +25,18 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.client.content.negotiation)
-    testImplementation(libs.junit.api)
-    testImplementation(libs.junit.engine)
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit5) {
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit")
+}
+
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter()
+        }
     }
 }
 
 tasks.withType<Test> {
-    useJUnitPlatform()
-
     testLogging {
         events("failed")
         showExceptions = true
