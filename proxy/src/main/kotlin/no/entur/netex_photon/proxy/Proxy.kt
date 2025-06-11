@@ -43,18 +43,35 @@ fun Application.configureRouting(
 ) {
     routing {
         get("/v1/autocomplete") {
-            val query = call.request.queryParameters["text"] ?: ""
-            val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
-            val lang = call.request.queryParameters["lang"] ?: "no"
+            val params = call.request.queryParameters
+
+            val query = params["text"] ?: ""
+            val size = params["size"]?.toIntOrNull() ?: 10
+            val lang = params["lang"] ?: "no"
+            val boundaryCountry = params["boundary.country"]
+            val boundaryCountyIds = params["boundary.county.ids"]?.split(",") ?: emptyList()
+            val boundaryLocalityIds = params["boundary.locality.ids"]?.split(",") ?: emptyList()
+            val tariffZones = params["tariff_zone_ids"]?.split(",") ?: emptyList()
+            val tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",") ?: emptyList()
+            val sources = params["sources"]?.split(",") ?: emptyList()
+            val layers = params["layers"]?.split(",") ?: emptyList()
 
             val url = "$photonBaseUrl/api"
-            logger.info("Proxying /v1/autocomplete to $url with ${call.request.queryParameters.toMap()}")
+            logger.info("Proxying /v1/autocomplete to $url with ${params.toMap()}")
 
             try {
                 val photonResponse = client.get(url) {
                     parameter("q", query)
                     parameter("limit", size.toString())
                     parameter("lang", lang)
+
+                    boundaryCountry?.let { parameter("osm_tag", "extra.country:$it") }
+                    for (id in boundaryCountyIds) { parameter("osm_tag", "extra.county_gid:$id") }
+                    for (id in boundaryLocalityIds) { parameter("osm_tag", "extra.locality_gid:$id") }
+                    for (zone in tariffZones) { parameter("osm_tag", "extra.tariff_zones:*$zone*") }
+                    for (authority in tariffZoneAuthorities) { parameter("osm_tag", "extra.tariff_zones:*$authority:*") }
+                    for (source in sources) { parameter("osm_tag", "extra.source:$source") }
+                    for (layer in layers) { parameter("osm_tag", "extra.layer:$layer") }
                 }.bodyAsText()
 
                 val json = transformer.parseAndTransform(photonResponse)
@@ -70,14 +87,15 @@ fun Application.configureRouting(
         }
 
         get("/v1/reverse") {
-            val lat = call.request.queryParameters["point.lat"] ?: ""
-            val lon = call.request.queryParameters["point.lon"] ?: ""
-            val radius = call.request.queryParameters["boundary.circle.radius"]
-            val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
-            val lang = call.request.queryParameters["lang"] ?: "no"
+            val params = call.request.queryParameters
+            val lat = params["point.lat"] ?: ""
+            val lon = params["point.lon"] ?: ""
+            val radius = params["boundary.circle.radius"]
+            val size = params["size"]?.toIntOrNull() ?: 10
+            val lang = params["lang"] ?: "no"
 
             val url = "$photonBaseUrl/reverse"
-            logger.info("Proxying /v1/reverse to $url with ${call.request.queryParameters.toMap()}")
+            logger.info("Proxying /v1/reverse to $url with ${params.toMap()}")
 
             try {
                 val photonResponse = client.get(url) {
