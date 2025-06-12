@@ -23,4 +23,4 @@ COPY --from=build-image /srv/photon_data photon_data
 RUN chown -R 1000:1000 /srv
 USER 1000:1000
 
-CMD ["sh", "-c", "find photon_data -name '*.lock' -delete && exec java -jar photon.jar -default-language no -listen-port ${PHOTON_PORT:-2322}"]
+CMD ["sh", "-c", "find photon_data -name '*.lock' -delete && exec java -jar photon.jar -default-language no -listen-port ${SERVER_PORT:-2322}"]

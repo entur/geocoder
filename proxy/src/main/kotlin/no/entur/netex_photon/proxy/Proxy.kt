@@ -26,7 +26,7 @@ private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {
     val photonBaseUrl = System.getenv("PHOTON_BASE_URL") ?: "http://netex-photon-server"
-    val proxyPort = System.getenv("PROXY_PORT")?.toIntOrNull() ?: 8080
+    val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
 
     embeddedServer(Netty, port = proxyPort) {
         install(ServerContentNegotiation) {
@@ -55,6 +55,7 @@ fun Application.configureRouting(
             val tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",") ?: emptyList()
             val sources = params["sources"]?.split(",") ?: emptyList()
             val layers = params["layers"]?.split(",") ?: emptyList()
+            val transportModes = params["transport_mode"]?.split(",") ?: emptyList()
 
             val url = "$photonBaseUrl/api"
             logger.info("Proxying /v1/autocomplete to $url with ${params.toMap()}")

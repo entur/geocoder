@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.photon
     hostname: netex-photon-server
     environment:
-      - PHOTON_PORT=80 # Accessed from Dockerfile.photon
+      - SERVER_PORT=80 # Accessed from Dockerfile.photon
     ports:
       - "2322:80"
     sysctls:
@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile.proxy
     hostname: netex-photon-proxy
     environment:
-      - PROXY_PORT=80 # Accessed from Proxy.kt
+      - SERVER_PORT=80 # Accessed from Proxy.kt
     ports:
       - "8080:80"
     sysctls:
