@@ -1,11 +1,28 @@
 ## Usage
 
+#### Building everything, converting and importing NeTEx data, and running photon + the proxy
+
+```bash
+docker compose build
+docker compose up
+```
+Now try some example requests, e.g.
+
+* http://localhost:8080/v1/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
+* http://localhost:8080/v1/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
+
+
+## Manual usage
+
+If you don't like docker, you can also run the converter and photon manually.
+
+#### Manually building the converter and converting data
 ```bash
 ./gradlew build
 java -jar converter/build/libs/converter-all.jar input-netex.xml /tmp/output-photon.nbjson
 ```
 
-#### Importing to photon
+#### Manually importing the converted data to photon
 
 ```bash
 cd ..
@@ -17,14 +34,10 @@ java -jar target/photon-opensearch-0.7.0.jar -nominatim-import -import-file /tmp
 ```
 Start the server with `java -jar target/photon-opensearch-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 
-#### Running the pelias-impersonating proxy
+#### Manually running the pelias-impersonating proxy
 ```bash
-java -jar proxy/build/libs/proxy-all.jar
+PHOTON_BASE_URL=http://localhost:2322 java -jar proxy/build/libs/proxy-all.jar
 ```
-Now try some example requests, e.g.
-
-* http://localhost:8080/v1/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
-* http://localhost:8080/v1/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
 
 
 ## Some references
