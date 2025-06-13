@@ -11,6 +11,9 @@ application {
 dependencies {
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.xml)
+    implementation(libs.geotools.referencing)
+    implementation(libs.geotools.main)
+    implementation(libs.geotools.epsg.wkt)
     testImplementation(libs.kotlin.test)
 }
 
@@ -25,10 +28,6 @@ testing {
 tasks.withType<Test> {
     testLogging {
         events("failed")
-        showExceptions = true
-        showCauses = true
-        showStackTraces = true
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        showStandardStreams = false
     }
 }
