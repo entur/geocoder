@@ -1,20 +1,23 @@
 package no.entur.netex_photon.converter
 
+import no.entur.netex_photon.converter.ConverterUtils.mapOfNotNull
 import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.File
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.file.Paths
 import kotlin.collections.get
 import kotlin.math.abs
 
-class Converter {
+class StopPlaceConverter {
 
-    fun convert(input: File, output: File) {
+    fun convert(input: File, output: File, isAppending: Boolean = false) {
         val parser = NetexParser()
         val result: NetexParser.ParseResult = parser.parseXml(input)
         val entries: Sequence<NominatimPlace> = convertNetexParseResult(result)
 
         val outputPath = Paths.get(output.absolutePath)
-        JsonWriter().export(entries, outputPath)
+        JsonWriter().export(entries, outputPath, isAppending)
     }
 
     fun convertStopPlaceToNominatim(
@@ -23,8 +26,8 @@ class Converter {
         categories: Map<String, List<String>>
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
-        val lat = stopPlace.centroid?.location?.latitude ?: 0.0
-        val lon = stopPlace.centroid?.location?.longitude ?: 0.0
+        val lat = stopPlace.centroid?.location?.latitude?.setScale(6, RoundingMode.HALF_UP) ?: BigDecimal.ZERO
+        val lon = stopPlace.centroid?.location?.longitude?.setScale(6, RoundingMode.HALF_UP) ?: BigDecimal.ZERO
 
         val localityGid = stopPlace.topographicPlaceRef?.ref
         val locality = topoPlaces[localityGid]?.descriptor?.name?.text
@@ -44,13 +47,12 @@ class Converter {
             parent_place_id = 0,
             name = stopPlace.name.text?.let { mapOf("name" to it) },
             address = mapOfNotNull(
-                //"street" to "NOT_AN_ADDRESS-${stopPlace.id}",
-                "county" to county, // "Finnmark",
+                "county" to county,
             ),
             postcode = "unknown",
-            country_code = (country ?: "no"), // "no",
-            centroid = listOf(lon, lat),
-            bbox = listOf(lat, lon, lat, lon),
+            country_code = (country ?: "no"),
+            centroid = listOf(lon.toDouble(), lat.toDouble()),
+            bbox = listOf(lat.toDouble(), lon.toDouble(), lat.toDouble(), lon.toDouble()),
             extratags = mapOf(
                 "id" to stopPlace.id,
                 "layer" to "stopplace",
@@ -58,8 +60,8 @@ class Converter {
                 "source_id" to stopPlace.id,
                 "accuracy" to "point",
                 "country_a" to Country.getThreeLetterCode(country),
-                "county_gid" to "$countyGid", // KVE:TopographicPlace:32
-                "locality" to (locality ?: "unknown"), // "Alta",
+                "county_gid" to "$countyGid",
+                "locality" to (locality ?: "unknown"),
                 "locality_gid" to "$localityGid",
                 "label" to listOfNotNull(stopPlace.name.text, locality).joinToString(","),
                 "transport_modes" to transportModes.joinToString(","),
@@ -72,9 +74,6 @@ class Converter {
         return entries
     }
 
-    private fun mapOfNotNull(vararg pairs: Pair<String, String?>): Map<String, String> =
-        pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
-
     fun convertNetexParseResult(result: NetexParser.ParseResult): Sequence<NominatimPlace> =
         result.stopPlaces.flatMap {
             convertStopPlaceToNominatim(
@@ -83,5 +82,4 @@ class Converter {
                 result.categories
             ).asSequence()
         }
-
 }

@@ -1,5 +1,6 @@
 package no.entur.netex_photon.converter
 
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -12,7 +13,7 @@ class CoordinateConverterTest {
 
         val (latitude, longitude) = CoordinateConverter.convertUTM33ToLatLon(eastingValue, northingValue)
 
-        assertEquals(61.025715, latitude, 0.000001)
-        assertEquals(11.483291, longitude, 0.000001)
+        assertEquals(BigDecimal("61.025715"), latitude)
+        assertEquals(BigDecimal("11.483291"), longitude)
     }
 }

@@ -5,10 +5,10 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class ConverterTest {
+class StopPlaceConverterTest {
     @Test
     fun `convert stopPlaces xml to nominatimDumpFile json`() {
-        val converter = Converter()
+        val converter = StopPlaceConverter()
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream) { "stopPlaces.xml not found in test resources" }
 

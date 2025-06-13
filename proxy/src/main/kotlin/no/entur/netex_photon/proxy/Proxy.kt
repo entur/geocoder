@@ -27,6 +27,8 @@ private val logger = LoggerFactory.getLogger("Proxy")
 fun main() {
     val photonBaseUrl = System.getenv("PHOTON_BASE_URL") ?: "http://netex-photon-server"
     val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
+    logger.info("Starting Photon proxy server on port $proxyPort, forwarding to $photonBaseUrl")
+
 
     embeddedServer(Netty, port = proxyPort) {
         install(ServerContentNegotiation) {
@@ -78,9 +80,9 @@ fun Application.configureRouting(
                 val json = transformer.parseAndTransform(photonResponse)
                 call.respondText(json, contentType = ContentType.Application.Json)
             } catch (e: Exception) {
-                logger.error("Error proxying to Photon: ${e.message}", e)
+                logger.error("Error proxying to Photon: $e", e)
                 call.respondText(
-                    """{"error":"Failed to connect to Photon backend: ${e.message}"}""",
+                    """{"error":"Failed to connect to Photon backend: $e"}""",
                     contentType = ContentType.Application.Json,
                     status = HttpStatusCode.ServiceUnavailable
                 )
@@ -110,9 +112,9 @@ fun Application.configureRouting(
                 val json = transformer.parseAndTransform(photonResponse)
                 call.respondText(json, contentType = ContentType.Application.Json)
             } catch (e: Exception) {
-                logger.error("Error proxying to Photon: ${e.message}", e)
+                logger.error("Error proxying to Photon: $e", e)
                 call.respondText(
-                    """{"error":"Failed to connect to Photon backend: ${e.message}"}""",
+                    """{"error":"Failed to connect to Photon backend: $e"}""",
                     contentType = ContentType.Application.Json,
                     status = HttpStatusCode.ServiceUnavailable
                 )

@@ -3,14 +3,15 @@ FROM gradle:alpine AS build-image
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
+RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_3420_Elverum_25832_MatrikkelenAdresse_CSV.zip | jar -xv
 RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/0.7.0-with-extra-search/photon-opensearch-with-extra-search-0.7.0.jar
 
 COPY . ./
 RUN gradle --no-daemon :converter:build
-RUN java -jar converter/build/libs/converter-all.jar tiamat*.xml oslo.ndjson
+RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -m Basis*/*.csv -o nominatim.ndjson
 RUN exec java -jar photon.jar \
     -nominatim-import \
-    -import-file oslo.ndjson \
+    -import-file nominatim.ndjson \
     -languages no,en \
     -extra-tags id,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,transport_modes,tariff_zones
 

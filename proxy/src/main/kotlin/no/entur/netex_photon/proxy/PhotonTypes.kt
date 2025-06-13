@@ -39,6 +39,7 @@ data class Properties(
     val source_id: String? = null,
     val name: String? = null,
     val street: String? = null,
+    val city: String? = null,
     val accuracy: String? = null,
     val country_a: String? = null,
     val county: String? = null,

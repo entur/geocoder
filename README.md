@@ -3,8 +3,7 @@
 #### Building everything, converting and importing NeTEx data, and running photon + the proxy
 
 ```bash
-docker compose build
-docker compose up
+docker compose up --build
 ```
 Now try some example requests, e.g.
 
