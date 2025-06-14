@@ -35,7 +35,7 @@ Start the server with `java -jar target/photon-opensearch-0.7.0.jar`, and visit 
 
 #### Manually running the pelias-impersonating proxy
 ```bash
-PHOTON_BASE_URL=http://localhost:2322 java -jar proxy/build/libs/proxy-all.jar
+java -jar proxy/build/libs/proxy-all.jar
 ```
 
 
