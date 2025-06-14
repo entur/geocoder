@@ -12,6 +12,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
+import no.entur.netex_photon.proxy.Environment.CONSOLE
 import org.slf4j.LoggerFactory
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
@@ -25,7 +26,7 @@ private val transformer = FeatureTransformer()
 private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {
-    val photonBaseUrl = System.getenv("PHOTON_BASE_URL") ?: "http://netex-photon-server"
+    val photonBaseUrl = if (Environment.detect() == CONSOLE) "http://localhost:2322" else "http://netex-photon-server"
     val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
     logger.info("Starting Photon proxy server on port $proxyPort, forwarding to $photonBaseUrl")
 
