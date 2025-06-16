@@ -27,7 +27,7 @@ class MatrikkelConverter {
                 var line: String? = reader.readLine()
                 while (line != null) {
                     val tokens = line.split(';')
-                    if (tokens.size >= 46) {
+                    if (tokens.size >= 46 && tokens[3] == "vegadresse") {
                         val adresse = MatrikkelAdresse(
                             lokalid = tokens[0].ifEmpty { null },
                             kommunenummer = tokens[1].ifEmpty { null },
