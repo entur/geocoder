@@ -36,7 +36,9 @@ class StopPlaceConverter {
         val transportModes =
             categories.getOrDefault(stopPlace.id, emptyList()).plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance = 0.2 + (transportModes.size * 0.1).coerceAtMost(0.5)
+        val importance = 0.2 +
+                (transportModes.size * 0.1).coerceAtMost(0.4) +
+                (if (transportModes.contains("railStation")) 0.2 else 0.0)
 
         val stopPlaceContent = PlaceContent(
             place_id = abs(stopPlace.id.hashCode().toLong()),
