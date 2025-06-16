@@ -1,5 +1,7 @@
 package no.entur.netex_photon.converter
 
+import java.math.BigDecimal
+
 data class NominatimPlace(
     val type: String,
     val content: List<PlaceContent>
@@ -16,8 +18,8 @@ data class NominatimPlace(
         val address: Map<String, String>?,
         val postcode: String?,
         val country_code: String,
-        val centroid: List<Double>,
-        val bbox: List<Double> = emptyList(),
+        val centroid: List<BigDecimal>,
+        val bbox: List<BigDecimal> = emptyList(),
         val extratags: Map<String, String> = emptyMap()
     )
 }

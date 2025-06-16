@@ -3,6 +3,8 @@ package no.entur.netex_photon.proxy
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class FeatureTransformer {
     private val mapper: ObjectMapper = jacksonObjectMapper()
@@ -15,18 +17,18 @@ class FeatureTransformer {
 
         val enhancedCollection = collection.copy(
             features = transformedFeatures,
-            bbox = bbox
+            bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) }
         )
         return mapper.writeValueAsString(enhancedCollection)
     }
 
-    private fun calculateBoundingBox(features: List<Feature>): List<Double>? {
+    private fun calculateBoundingBox(features: List<Feature>): List<BigDecimal>? {
         if (features.isEmpty()) return null
 
-        var minLon = Double.MAX_VALUE
-        var minLat = Double.MAX_VALUE
-        var maxLon = Double.MIN_VALUE
-        var maxLat = Double.MIN_VALUE
+        var minLon = BigDecimal(Double.MAX_VALUE)
+        var minLat = BigDecimal(Double.MAX_VALUE)
+        var maxLon = BigDecimal(Double.MIN_VALUE)
+        var maxLat = BigDecimal(Double.MIN_VALUE)
 
         features.forEach { feature ->
             val coords = feature.geometry.coordinates
@@ -41,7 +43,7 @@ class FeatureTransformer {
             }
         }
 
-        return if (minLon != Double.MAX_VALUE) {
+        return if (minLon != BigDecimal(Double.MAX_VALUE)) {
             listOf(minLon, minLat, maxLon, maxLat)
         } else null
     }

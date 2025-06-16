@@ -1,12 +1,10 @@
 package no.entur.netex_photon.converter
 
 import no.entur.netex_photon.converter.ConverterUtils.mapOfNotNull
+import no.entur.netex_photon.converter.ConverterUtils.toBigDecimalWithScale
 import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.File
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.nio.file.Paths
-import kotlin.collections.get
 import kotlin.math.abs
 
 class StopPlaceConverter {
@@ -26,8 +24,8 @@ class StopPlaceConverter {
         categories: Map<String, List<String>>
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
-        val lat = stopPlace.centroid?.location?.latitude?.setScale(6, RoundingMode.HALF_UP) ?: BigDecimal.ZERO
-        val lon = stopPlace.centroid?.location?.longitude?.setScale(6, RoundingMode.HALF_UP) ?: BigDecimal.ZERO
+        val lat = stopPlace.centroid.location.latitude
+        val lon = stopPlace.centroid.location.longitude
 
         val localityGid = stopPlace.topographicPlaceRef?.ref
         val locality = topoPlaces[localityGid]?.descriptor?.name?.text
@@ -51,8 +49,8 @@ class StopPlaceConverter {
             ),
             postcode = "unknown",
             country_code = (country ?: "no"),
-            centroid = listOf(lon.toDouble(), lat.toDouble()),
-            bbox = listOf(lat.toDouble(), lon.toDouble(), lat.toDouble(), lon.toDouble()),
+            centroid = listOf(lon, lat),
+            bbox = listOf(lat, lon, lat, lon),
             extratags = mapOf(
                 "id" to stopPlace.id,
                 "layer" to "stopplace",

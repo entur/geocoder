@@ -1,7 +1,7 @@
 package no.entur.netex_photon.converter
 
-import no.entur.netex_photon.converter.ConverterUtils.titleize
 import no.entur.netex_photon.converter.ConverterUtils.mapOfNotNull
+import no.entur.netex_photon.converter.ConverterUtils.titleize
 import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.BufferedReader
 import java.io.File
@@ -126,8 +126,8 @@ class MatrikkelConverter {
             ),
             postcode = adresse.postnummer,
             country_code = "no",
-            centroid = listOf(lon.toDouble(), lat.toDouble()),
-            bbox = listOf(lon.toDouble(), lat.toDouble(), lon.toDouble(), lat.toDouble()),
+            centroid = listOf(lon, lat),
+            bbox = listOf(lon, lat, lon, lat),
             extratags = extratags
         )
         return NominatimPlace("Place", listOf(properties))

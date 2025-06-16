@@ -18,7 +18,7 @@ class StopPlace(
     val keyList: KeyList? = null,
     val name: LocalizedText,
     val description: LocalizedText? = null,
-    val centroid: Centroid? = null,
+    val centroid: Centroid,
     val accessibilityAssessment: AccessibilityAssessment? = null,
     val alternativeNames: AlternativeNames? = null,
     val topographicPlaceRef: PlaceRef? = null,
@@ -52,14 +52,9 @@ class StopPlace(
         var text: String? = null
     }
 
-    class Centroid {
-        var location: Location? = null
-    }
+    data class Centroid(val location: Location)
 
-    class Location {
-        var longitude: BigDecimal? = null
-        var latitude: BigDecimal? = null
-    }
+    data class Location(val longitude: BigDecimal, val latitude: BigDecimal)
 
     class AccessibilityAssessment {
         @JacksonXmlProperty(isAttribute = true)

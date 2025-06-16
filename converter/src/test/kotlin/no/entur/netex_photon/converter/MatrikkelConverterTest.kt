@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.math.BigDecimal
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -60,15 +61,13 @@ class MatrikkelConverterTest {
 
         val categoryFromExtratags = properties["category"]
         assertNotNull(categoryFromExtratags)
-        assertTrue(categoryFromExtratags?.contains("vegadresse") == true)
+        assertTrue(categoryFromExtratags.contains("vegadresse"))
 
         val placeContent = nominatimPlace.content.first()
         assertNotNull(placeContent.centroid, "Centroid should not be null")
         assertEquals(2, placeContent.centroid.size, "Centroid should have 2 coordinates")
 
-        assertEquals(11.483291, placeContent.centroid[0], 0.000001)
-        assertEquals(61.025715, placeContent.centroid[1], 0.000001)
+        assertEquals(BigDecimal("11.483291"), placeContent.centroid[0])
+        assertEquals(BigDecimal("61.025715"), placeContent.centroid[1])
     }
 }
-
-

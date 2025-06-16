@@ -9,6 +9,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import kotlin.test.assertEquals
 
 class ProxyTest {
@@ -21,7 +22,7 @@ class ProxyTest {
               "type": "Feature",
               "geometry": {
                 "type": "Point",
-                "coordinates": [10.7522, 59.9139]
+                "coordinates": [10.752200, 59.913900]
               },
               "properties": {
                 "name": "Oslo",
@@ -82,6 +83,7 @@ class ProxyTest {
         assertEquals(1, collection.features.size)
 
         val feature = collection.features[0]
+        assertEquals(listOf(BigDecimal("10.752200"), BigDecimal("59.913900")), feature.geometry.coordinates)
         assertEquals("1", feature.properties.id)
         assertEquals("city", feature.properties.layer)
         assertEquals("Oslo", feature.properties.name)
@@ -128,6 +130,9 @@ class ProxyTest {
 
         val collection: FeatureCollection = jacksonObjectMapper().readValue(response.bodyAsText())
         assertEquals(1, collection.features.size)
+        assertEquals(
+            listOf(BigDecimal("10.752200"), BigDecimal("59.913900")),
+            collection.features[0].geometry.coordinates
+        )
     }
 }
-

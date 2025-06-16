@@ -3,12 +3,13 @@ package no.entur.netex_photon.proxy
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
 
 @JsonInclude(NON_NULL)
 data class FeatureCollection(
     val type: String = "FeatureCollection",
     val features: List<Feature>,
-    val bbox: List<Double>? = null
+    val bbox: List<BigDecimal>? = null
 )
 
 @JsonInclude(NON_NULL)
@@ -21,7 +22,7 @@ data class Feature(
 @JsonInclude(NON_NULL)
 data class Geometry(
     val type: String,
-    val coordinates: List<Double>
+    val coordinates: List<BigDecimal>
 )
 
 @JsonInclude(NON_NULL)
