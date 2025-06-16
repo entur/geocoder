@@ -36,13 +36,15 @@ class StopPlaceConverter {
         val transportModes =
             categories.getOrDefault(stopPlace.id, emptyList()).plus(stopPlace.stopPlaceType).filterNotNull()
 
+        val importance = 0.2 + (transportModes.size * 0.1).coerceAtMost(0.5)
+
         val stopPlaceContent = PlaceContent(
             place_id = abs(stopPlace.id.hashCode().toLong()),
             object_type = "N",
             object_id = abs(stopPlace.id.hashCode().toLong()),
             categories = emptyList(),
             rank_address = 30,
-            importance = 0.2,
+            importance = importance,
             parent_place_id = 0,
             name = stopPlace.name.text?.let { Name(it) },
             address = Address(
