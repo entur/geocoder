@@ -1,6 +1,8 @@
 package no.entur.netex_photon.converter
 
-import no.entur.netex_photon.converter.ConverterUtils.mapOfNotNull
+import no.entur.netex_photon.converter.NominatimPlace.Address
+import no.entur.netex_photon.converter.NominatimPlace.Extra
+import no.entur.netex_photon.converter.NominatimPlace.Name
 import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.File
 import java.nio.file.Paths
@@ -42,27 +44,27 @@ class StopPlaceConverter {
             rank_address = 30,
             importance = 0.2,
             parent_place_id = 0,
-            name = stopPlace.name.text?.let { mapOf("name" to it) },
-            address = mapOfNotNull(
-                "county" to county,
+            name = stopPlace.name.text?.let { Name(it) },
+            address = Address(
+                county = county,
             ),
             postcode = "unknown",
             country_code = (country ?: "no"),
             centroid = listOf(lon, lat),
             bbox = listOf(lat, lon, lat, lon),
-            extratags = mapOf(
-                "id" to stopPlace.id,
-                "layer" to "stopplace",
-                "source" to "nsr",
-                "source_id" to stopPlace.id,
-                "accuracy" to "point",
-                "country_a" to Country.getThreeLetterCode(country),
-                "county_gid" to "$countyGid",
-                "locality" to (locality ?: "unknown"),
-                "locality_gid" to "$localityGid",
-                "label" to listOfNotNull(stopPlace.name.text, locality).joinToString(","),
-                "transport_modes" to transportModes.joinToString(","),
-                "tariff_zones" to (stopPlace.tariffZones?.tariffZoneRef?.mapNotNull { it.ref }?.joinToString(",")
+            extratags = Extra(
+                id = stopPlace.id,
+                layer = "stopplace",
+                source = "nsr",
+                source_id = stopPlace.id,
+                accuracy = "point",
+                country_a = Country.getThreeLetterCode(country),
+                county_gid = "$countyGid",
+                locality = (locality ?: "unknown"),
+                locality_gid = "$localityGid",
+                label = listOfNotNull(stopPlace.name.text, locality).joinToString(","),
+                transport_modes = transportModes.joinToString(","),
+                tariff_zones = (stopPlace.tariffZones?.tariffZoneRef?.mapNotNull { it.ref }?.joinToString(",")
                     ?: "unknown"),
             )
         )

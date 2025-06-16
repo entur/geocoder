@@ -59,6 +59,7 @@ class FeatureTransformer {
                 source_id = extra?.source_id,
                 name = props.name,
                 street = props.street,
+                housenumber = props.housenumber,
                 accuracy = extra?.accuracy,
                 country_a = extra?.country_a,
                 county = props.county,

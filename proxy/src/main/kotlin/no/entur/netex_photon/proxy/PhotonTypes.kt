@@ -40,7 +40,9 @@ data class Properties(
     val source_id: String? = null,
     val name: String? = null,
     val street: String? = null,
+    val housenumber: String? = null,
     val city: String? = null,
+    val borough: String? = null, // TODO: Not read by Photon?
     val accuracy: String? = null,
     val country_a: String? = null,
     val county: String? = null,
@@ -67,7 +69,8 @@ data class Extra(
     val id: String? = null,
     val source_id: String? = null,
     val county_gid: String? = null,
-    val transport_modes: String? = null
+    val transport_modes: String? = null,
+    val borough_gid: String? = null,
 )
 
 @JsonInclude(NON_NULL)

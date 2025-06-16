@@ -1,8 +1,7 @@
 package no.entur.netex_photon.converter
 
-import no.entur.netex_photon.converter.ConverterUtils.mapOfNotNull
 import no.entur.netex_photon.converter.ConverterUtils.titleize
-import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
+import no.entur.netex_photon.converter.NominatimPlace.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -86,25 +85,18 @@ class MatrikkelConverter {
     fun convertMatrikkelAdresseToNominatim(adresse: MatrikkelAdresse): NominatimPlace {
         val (lat, lon) = CoordinateConverter.convertUTM33ToLatLon(adresse.ost, adresse.nord)
 
-        val extratags = mapOfNotNull(
-            "id" to adresse.lokalid,
-            "layer" to "address",
-            "source" to "kartverket",
-            "source_id" to adresse.lokalid,
-            "name" to adresse.adresseTekst,
-            "housenumber" to adresse.nummer,
-            "street" to adresse.adressenavn,
-            "postalcode" to adresse.postnummer,
-            "accuracy" to "point",
-            "country_a" to "NOR",
-            "county" to "TODO",
-            "county_gid" to adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" }, // TODO: just guessing
-            "locality" to adresse.kommunenavn?.titleize(),
-            "locality_gid" to adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
-            "borough" to adresse.grunnkretsnavn?.titleize(),
-            "borough_gid" to adresse.grunnkretsnummer?.let { "borough:$it" },
-            "label" to (adresse.adresseTekst + ", " + adresse.poststed.titleize()),
-            "category" to adresse.adressetype
+        val extratags = Extra(
+            id = adresse.lokalid,
+            layer = "address",
+            source = "kartverket",
+            source_id = adresse.lokalid,
+            accuracy = "point",
+            country_a = "NOR",
+            county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" }, // TODO: just guessing
+            locality = adresse.kommunenavn?.titleize(),
+            locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
+            borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
+            label = (adresse.adresseTekst + ", " + adresse.poststed.titleize()),
         )
 
         val properties = PlaceContent(
@@ -115,13 +107,13 @@ class MatrikkelConverter {
             rank_address = 26,
             importance = if (adresse.nummer == null) 0.1 else 0.09,
             parent_place_id = 0,
-            name = mapOf("name" to adresse.adresseTekst),
-            address = mapOfNotNull(
-                "housenumber" to adresse.nummer,
-                "street" to adresse.adressenavn,
-                "postcode" to adresse.postnummer,
-                "city" to adresse.poststed.titleize(),
-                "county" to "TODO" // Placeholder for county, needs proper mapping
+            name = Name(adresse.adresseTekst),
+            housenumber = adresse.nummer,
+            address = Address(
+                street = adresse.adressenavn,
+                city = adresse.poststed.titleize(),
+                county = "TODO", // Placeholder for county, needs proper mapping
+                borough = adresse.grunnkretsnavn?.titleize(),
             ),
             postcode = adresse.postnummer,
             country_code = "no",
