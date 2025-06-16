@@ -1,20 +1,9 @@
 plugins {
     kotlin("jvm")
-    application
-    alias(libs.plugins.shadow)
-}
-
-application {
-    mainClass = "no.entur.netex_photon.converter.CommandKt"
 }
 
 dependencies {
-    implementation(project(":common"))
-    implementation(libs.jackson.kotlin)
-    implementation(libs.jackson.xml)
-    implementation(libs.geotools.referencing)
-    implementation(libs.geotools.main)
-    implementation(libs.geotools.epsg.wkt)
+    api(libs.jackson.databind)
     testImplementation(libs.kotlin.test)
 }
 
@@ -32,3 +21,4 @@ tasks.withType<Test> {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
+

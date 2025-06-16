@@ -1,4 +1,5 @@
 rootProject.name = "netex-photon"
+include("common")
 include("converter")
 include("proxy")
 

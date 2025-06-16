@@ -1,7 +1,7 @@
 package no.entur.netex_photon.converter
 
+import no.entur.netex_photon.common.domain.Extra
 import no.entur.netex_photon.converter.NominatimPlace.Address
-import no.entur.netex_photon.converter.NominatimPlace.Extra
 import no.entur.netex_photon.converter.NominatimPlace.Name
 import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.File

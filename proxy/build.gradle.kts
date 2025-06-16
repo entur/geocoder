@@ -9,6 +9,7 @@ application {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.client.core)

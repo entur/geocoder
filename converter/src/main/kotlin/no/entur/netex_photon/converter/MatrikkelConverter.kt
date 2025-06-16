@@ -1,5 +1,6 @@
 package no.entur.netex_photon.converter
 
+import no.entur.netex_photon.common.domain.Extra
 import no.entur.netex_photon.converter.ConverterUtils.titleize
 import no.entur.netex_photon.converter.NominatimPlace.*
 import java.io.BufferedReader

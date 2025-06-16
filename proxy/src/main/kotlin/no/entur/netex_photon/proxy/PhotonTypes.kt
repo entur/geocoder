@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.math.BigDecimal
+import no.entur.netex_photon.common.domain.Extra
 
 @JsonInclude(NON_NULL)
 data class FeatureCollection(
@@ -54,25 +55,6 @@ data class FeatureCollection(
         val transport_modes: List<String>? = null,
         val tariff_zones: List<String>? = null,
         val extra: Extra? = null
-    )
-
-    @JsonInclude(NON_NULL)
-    data class Extra(
-        val gid: String? = null,
-        val locality_gid: String? = null,
-        val country_a: String? = null,
-        val locality: String? = null,
-        val accuracy: String? = null,
-        val source: String? = null,
-        val label: String? = null,
-        val tariff_zones: String? = null,
-        val layer: String? = null,
-        val id: String? = null,
-        val source_id: String? = null,
-        val county_gid: String? = null,
-        val transport_modes: String? = null,
-        val borough: String? = null,
-        val borough_gid: String? = null,
     )
 }
 
