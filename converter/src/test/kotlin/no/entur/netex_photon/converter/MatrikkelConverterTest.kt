@@ -38,19 +38,20 @@ class MatrikkelConverterTest {
         val nominatimPlace: NominatimPlace = objectMapper.readValue(firstPlaceJson)
 
         assertNotNull(nominatimPlace.content.firstOrNull()?.extratags, "Extratags should not be null")
-        val properties = nominatimPlace.content.first().extratags
+        val extra = nominatimPlace.content.first().extratags
 
-        assertEquals("399524883", properties.id)
-        assertEquals("address", properties.layer)
-        assertEquals("kartverket", properties.source)
-        assertEquals("399524883", properties.source_id)
-        assertEquals("point", properties.accuracy)
-        assertEquals("NOR", properties.country_a)
-        assertEquals("KVE:TopographicPlace:34", properties.county_gid)
-        assertEquals("Elverum", properties.locality)
-        assertEquals("KVE:TopographicPlace:3420", properties.locality_gid)
-        assertEquals("borough:34200104", properties.borough_gid)
-        assertEquals("Gobakkvegen 438, Hernes", properties.label)
+        assertEquals("399524883", extra.id)
+        assertEquals("address", extra.layer)
+        assertEquals("kartverket", extra.source)
+        assertEquals("399524883", extra.source_id)
+        assertEquals("point", extra.accuracy)
+        assertEquals("NOR", extra.country_a)
+        assertEquals("KVE:TopographicPlace:34", extra.county_gid)
+        assertEquals("Elverum", extra.locality)
+        assertEquals("KVE:TopographicPlace:3420", extra.locality_gid)
+        assertEquals("Svanåsen", extra.borough)
+        assertEquals("borough:34200104", extra.borough_gid)
+        assertEquals("Gobakkvegen 438, Hernes", extra.label)
 
         val placeContent = nominatimPlace.content.first()
         assertNotNull(placeContent.centroid, "Centroid should not be null")
@@ -59,7 +60,6 @@ class MatrikkelConverterTest {
         assertEquals("Gobakkvegen", placeContent.address?.street)
         assertEquals("TODO", placeContent.address?.county)
         assertEquals("2410", placeContent.postcode)
-        assertEquals("Svanåsen", placeContent.address?.borough)
         assertEquals("Gobakkvegen 438", placeContent.name?.name)
 
         assertEquals(BigDecimal("11.483291"), placeContent.centroid[0])

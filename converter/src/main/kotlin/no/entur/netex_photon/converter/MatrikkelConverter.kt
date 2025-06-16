@@ -95,6 +95,7 @@ class MatrikkelConverter {
             county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" }, // TODO: just guessing
             locality = adresse.kommunenavn?.titleize(),
             locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
+            borough = adresse.grunnkretsnavn?.titleize(),
             borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
             label = (adresse.adresseTekst + ", " + adresse.poststed.titleize()),
         )
@@ -113,7 +114,6 @@ class MatrikkelConverter {
                 street = adresse.adressenavn,
                 city = adresse.poststed.titleize(),
                 county = "TODO", // Placeholder for county, needs proper mapping
-                borough = adresse.grunnkretsnavn?.titleize(),
             ),
             postcode = adresse.postnummer,
             country_code = "no",

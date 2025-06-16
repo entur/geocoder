@@ -38,14 +38,14 @@ data class NominatimPlace(
         val source_id: String? = null,
         val county_gid: String? = null,
         val transport_modes: String? = null,
+        val borough: String? = null,
         val borough_gid: String? = null,
     )
 
     data class Address(
         val street: String? = null,
         val city: String? = null,
-        val county: String? = null,
-        val borough: String? = null  // TODO: Not read by Photon?
+        val county: String? = null, // Fylke
     )
 
     data class Name(

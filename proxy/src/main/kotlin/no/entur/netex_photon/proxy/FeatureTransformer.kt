@@ -3,6 +3,8 @@ package no.entur.netex_photon.proxy
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.entur.netex_photon.proxy.FeatureCollection.Feature
+import no.entur.netex_photon.proxy.FeatureCollection.Properties
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -66,6 +68,8 @@ class FeatureTransformer {
                 county_gid = extra?.county_gid,
                 locality = extra?.locality,
                 locality_gid = extra?.locality_gid,
+                borough = extra?.borough,
+                borough_gid = extra?.borough_gid,
                 label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
                 transport_modes = extra?.transport_modes?.split(',')?.map { it.trim() },
                 tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() } // Remove extra from output

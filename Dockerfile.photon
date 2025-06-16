@@ -13,7 +13,7 @@ RUN exec java -jar photon.jar \
     -nominatim-import \
     -import-file nominatim.ndjson \
     -languages no,en \
-    -extra-tags id,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,transport_modes,tariff_zones,borough_gid
+    -extra-tags id,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,transport_modes,tariff_zones,borough_gid,borough
 
 
 FROM bellsoft/liberica-runtime-container:jre-23-slim-musl
