@@ -41,7 +41,6 @@ class MatrikkelConverterTest {
         val properties = nominatimPlace.content.first().extratags
 
         assertEquals("399524883", properties["id"])
-        assertEquals("openaddresses:address:399524883", properties["gid"])
         assertEquals("address", properties["layer"])
         assertEquals("kartverket", properties["source"])
         assertEquals("399524883", properties["source_id"])

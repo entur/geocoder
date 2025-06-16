@@ -1,7 +1,6 @@
 package no.entur.netex_photon.converter
 
 import no.entur.netex_photon.converter.ConverterUtils.mapOfNotNull
-import no.entur.netex_photon.converter.ConverterUtils.toBigDecimalWithScale
 import no.entur.netex_photon.converter.NominatimPlace.PlaceContent
 import java.io.File
 import java.nio.file.Paths

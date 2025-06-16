@@ -88,7 +88,6 @@ class MatrikkelConverter {
 
         val extratags = mapOfNotNull(
             "id" to adresse.lokalid,
-            "gid" to "openaddresses:address:${adresse.lokalid}",
             "layer" to "address",
             "source" to "kartverket",
             "source_id" to adresse.lokalid,
@@ -114,7 +113,7 @@ class MatrikkelConverter {
             object_id = abs(adresse.adresseId.hashCode().toLong()),
             categories = emptyList(),
             rank_address = 26,
-            importance = 0.1,
+            importance = if (adresse.nummer == null) 0.1 else 0.09,
             parent_place_id = 0,
             name = mapOf("name" to adresse.adresseTekst),
             address = mapOfNotNull(
