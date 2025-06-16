@@ -43,7 +43,7 @@ class StopPlaceConverter {
             object_id = abs(stopPlace.id.hashCode().toLong()),
             categories = emptyList(),
             rank_address = 30,
-            importance = 0.00001,
+            importance = 0.2,
             parent_place_id = 0,
             name = stopPlace.name.text?.let { mapOf("name" to it) },
             address = mapOfNotNull(
