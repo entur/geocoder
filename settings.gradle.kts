@@ -7,7 +7,7 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral {
             content {
-                excludeGroup("javax.media") // jai_core is missing from mavenCentral
+                excludeGroup("javax.media") // geotools requires jai_core, which is missing from mavenCentral
             }
         }
         maven {

@@ -2,10 +2,11 @@ plugins {
     kotlin("jvm")
     application
     alias(libs.plugins.shadow)
+    alias(libs.plugins.ktlint)
 }
 
 application {
-    mainClass.set("no.entur.netex_photon.proxy.ProxyKt")
+    mainClass.set("no.entur.netexphoton.proxy.ProxyKt")
 }
 
 dependencies {

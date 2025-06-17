@@ -2,10 +2,11 @@ plugins {
     kotlin("jvm")
     application
     alias(libs.plugins.shadow)
+    alias(libs.plugins.ktlint)
 }
 
 application {
-    mainClass = "no.entur.netex_photon.converter.CommandKt"
+    mainClass = "no.entur.netexphoton.converter.CommandKt"
 }
 
 dependencies {
