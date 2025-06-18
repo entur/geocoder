@@ -17,6 +17,7 @@ class Command(
 
         var stopplaceInputPath: String? = null
         var matrikkelInputPath: String? = null
+        var osmInputPath: String? = null
         var outputPath: String? = null
 
         var i = 0
@@ -38,6 +39,14 @@ class Command(
                     i += 2
                 }
 
+                "-p" -> {
+                    if (i + 1 >= args.size) {
+                        exit("Error: -p flag requires <input-pbf-file> argument.")
+                    }
+                    osmInputPath = args[i + 1]
+                    i += 2
+                }
+
                 "-o" -> {
                     if (i + 1 >= args.size) {
                         exit("Error: -o flag requires <output-file> argument.")
@@ -54,8 +63,8 @@ class Command(
             exit("Error: Output file must be specified with -o <output-file>.")
         }
 
-        if (stopplaceInputPath == null && matrikkelInputPath == null) {
-            exit("Error: No conversion type specified. Use -s for stopplace and/or -m for matrikkel.")
+        if (stopplaceInputPath == null && matrikkelInputPath == null && osmInputPath == null) {
+            exit("Error: No conversion type specified. Use -s for stopplace, -m for matrikkel, and/or -p for OSM PBF.")
         }
 
         val outputFile = File(outputPath)
@@ -80,6 +89,19 @@ class Command(
 
             MatrikkelConverter().convertCsv(inputFile, outputFile, !isFirstConversion)
             println("Matrikkel conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
+            isFirstConversion = false
+        }
+
+        if (osmInputPath != null) {
+            val inputFile = readFile(osmInputPath)
+            if (!isFirstConversion) {
+                println("\nAppending OSM PBF conversion...")
+            } else {
+                println("Starting OSM PBF conversion...")
+            }
+
+            OsmConverter().convert(inputFile, outputFile, !isFirstConversion)
+            println("OSM PBF conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
         }
     }
 
@@ -103,9 +125,10 @@ class Command(
         println("Options:")
         println("  -s <input-xml-file>     : Convert StopPlace XML data.")
         println("  -m <input-csv-file>     : Convert Matrikkel CSV data.")
+        println("  -p <input-pbf-file>     : Convert OSM PBF data.")
         println("  -o <output-file>        : Specify the output file (required).")
-        println("Both -s and -m can be used together, outputting to the same -o file.")
-        println("Example: netex-photon -s stoplace.xml -m matrikkel.csv -o combined_output.ndjson")
+        println("All conversion options can be used together, outputting to the same -o file.")
+        println("Example: netex-photon -s stoplace.xml -m matrikkel.csv -p data.osm.pbf -o combined_output.ndjson")
         println("Example (single): netex-photon -s stoplace.xml -o s_out.ndjson")
     }
 }
