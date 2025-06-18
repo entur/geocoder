@@ -2,30 +2,21 @@ package no.entur.netexphoton.converter
 
 import crosby.binary.osmosis.OsmosisReader
 import no.entur.netexphoton.common.domain.Extra
-import no.entur.netexphoton.converter.NominatimPlace.Address
-import no.entur.netexphoton.converter.NominatimPlace.Name
-import no.entur.netexphoton.converter.NominatimPlace.PlaceContent
+import no.entur.netexphoton.converter.NominatimPlace.*
 import no.entur.netexphoton.converter.Util.titleize
 import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer
-import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData
-import org.openstreetmap.osmosis.core.domain.v0_6.Entity
-import org.openstreetmap.osmosis.core.domain.v0_6.Node
-import org.openstreetmap.osmosis.core.domain.v0_6.Relation
-import org.openstreetmap.osmosis.core.domain.v0_6.Tag
-import org.openstreetmap.osmosis.core.domain.v0_6.Way
+import org.openstreetmap.osmosis.core.domain.v0_6.*
 import org.openstreetmap.osmosis.core.task.v0_6.Sink
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Paths
-import java.util.Date
+import java.util.*
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.math.abs
 
 class OsmConverter {
-    fun convert(
-        input: File,
-        output: File,
-        isAppending: Boolean = false,
-    ) {
+
+    fun convert(input: File, output: File, isAppending: Boolean = false) {
         val entities = parsePbf(input)
         val nominatimEntries = entities.mapNotNull { convertOsmEntityToNominatim(it) }
 
@@ -33,24 +24,49 @@ class OsmConverter {
         JsonWriter().export(nominatimEntries, outputPath, isAppending)
     }
 
-    fun parsePbf(inputFile: File): Sequence<Entity> =
-        sequence {
-            val reader = OsmosisReader(inputFile)
-            val collector = EntityCollector()
-            reader.setSink(collector)
-            reader.run()
+    private fun parsePbf(inputFile: File): Sequence<Entity> = OsmIterator(inputFile).asSequence()
 
-            yieldAll(collector.getEntities())
+    private class OsmIterator(inputFile: File) : AbstractIterator<Entity>() {
+        private val queue = LinkedBlockingQueue<Entity>()
+        private val poisonPill: Entity = Node(CommonEntityData(-1L, 0, Date(0), null, 0L), 0.0, 0.0)
+
+        init {
+            val reader = OsmosisReader(inputFile)
+            reader.setSink(
+                object : Sink {
+                    override fun initialize(metaData: MutableMap<String, Any>?) {}
+
+                    override fun process(entityContainer: EntityContainer?) {
+                        entityContainer?.entity?.let { queue.put(it) }
+                    }
+
+                    override fun complete() {
+                        queue.put(poisonPill)
+                    }
+
+                    override fun close() {}
+                },
+            )
+            Thread { reader.run() }.start()
         }
 
-    fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
-        when (entity) {
-            is Node -> return convertNodeToNominatim(entity)
-            is Way -> return convertWayToNominatim(entity)
-            is Relation -> return convertRelationToNominatim(entity)
-            else -> return null
+        override fun computeNext() {
+            val entity = queue.take()
+            if (entity === poisonPill) {
+                done()
+            } else {
+                setNext(entity)
+            }
         }
     }
+
+    fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? =
+        when (entity) {
+            is Node -> convertNodeToNominatim(entity)
+            is Way -> convertWayToNominatim(entity)
+            is Relation -> convertRelationToNominatim(entity)
+            else -> null
+        }
 
     private fun convertNodeToNominatim(node: Node): NominatimPlace? {
         val tags = node.tags.associate { it.key to it.value }
@@ -335,29 +351,6 @@ class OsmConverter {
         importance += nameKeys * 0.01
 
         return importance.coerceAtMost(1.0)
-    }
-
-    // Class to collect entities during PBF parsing
-    private class EntityCollector : Sink {
-        private val entities = mutableListOf<Entity>()
-
-        override fun process(entityContainer: EntityContainer) {
-            entities.add(entityContainer.entity)
-        }
-
-        override fun initialize(metaData: MutableMap<String, Any>?) {
-            // No initialization needed
-        }
-
-        override fun complete() {
-            // No completion actions needed
-        }
-
-        override fun close() {
-            // No resources to close
-        }
-
-        fun getEntities(): List<Entity> = entities
     }
 
     /**

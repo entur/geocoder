@@ -58,11 +58,11 @@ class OsmConverterTest {
         assertNotNull(osmConverter, "Should create converter instance")
 
         // If you have a test PBF file, you could test the full conversion process:
-         val testInputFile = File("src/test/resources/andorra-latest.osm.pbf")
-         val testOutputFile = File("build/tmp/test_output.json")
-         osmConverter.convert(testInputFile, testOutputFile)
-         assertTrue(testOutputFile.exists(), "Output file should be created")
-         assertTrue(testOutputFile.length() > 0, "Output file should have content")
+        val testInputFile = File("src/test/resources/andorra-latest.osm.pbf")
+        val testOutputFile = File("build/tmp/test_output.json")
+        osmConverter.convert(testInputFile, testOutputFile)
+        assertTrue(testOutputFile.exists(), "Output file should be created")
+        assertTrue(testOutputFile.length() > 0, "Output file should have content")
     }
 
     /**
