@@ -3,7 +3,7 @@ package no.entur.netexphoton.converter
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-object ConverterUtils {
+object Util {
     // Utility function to create a map from pairs, excluding those with null values.
     fun mapOfNotNull(vararg pairs: Pair<String, String?>): Map<String, String> = pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
 

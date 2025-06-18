@@ -1,10 +1,10 @@
 package no.entur.netexphoton.converter
 
 import no.entur.netexphoton.common.domain.Extra
-import no.entur.netexphoton.converter.ConverterUtils.titleize
 import no.entur.netexphoton.converter.NominatimPlace.Address
 import no.entur.netexphoton.converter.NominatimPlace.Name
 import no.entur.netexphoton.converter.NominatimPlace.PlaceContent
+import no.entur.netexphoton.converter.Util.titleize
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -90,7 +90,7 @@ class MatrikkelConverter {
         }
 
     fun convertMatrikkelAdresseToNominatim(adresse: MatrikkelAdresse): NominatimPlace {
-        val (lat, lon) = CoordinateConverter.convertUTM33ToLatLon(adresse.ost, adresse.nord)
+        val (lat, lon) = Geo.convertUTM33ToLatLon(adresse.ost, adresse.nord)
 
         val extratags =
             Extra(
