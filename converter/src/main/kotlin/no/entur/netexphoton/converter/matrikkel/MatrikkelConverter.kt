@@ -1,21 +1,25 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.matrikkel
 
 import no.entur.netexphoton.common.domain.Extra
+import no.entur.netexphoton.converter.Converter
+import no.entur.netexphoton.converter.JsonWriter
+import no.entur.netexphoton.converter.NominatimPlace
 import no.entur.netexphoton.converter.NominatimPlace.Address
 import no.entur.netexphoton.converter.NominatimPlace.Name
 import no.entur.netexphoton.converter.NominatimPlace.PlaceContent
 import no.entur.netexphoton.converter.Util.titleize
+import no.entur.netexphoton.converter.matrikkel.Geo
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
 import kotlin.math.abs
 
-class MatrikkelConverter {
-    fun convertCsv(
+class MatrikkelConverter : Converter {
+    override fun convert(
         input: File,
         output: File,
-        isAppending: Boolean = false,
+        isAppending: Boolean,
     ) {
         val adressEntries = parseCsv(input)
         val nominatimEntries = adressEntries.map { convertMatrikkelAdresseToNominatim(it) }

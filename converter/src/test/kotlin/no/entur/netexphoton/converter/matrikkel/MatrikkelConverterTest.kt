@@ -1,7 +1,8 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.matrikkel
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.entur.netexphoton.converter.NominatimPlace
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.math.BigDecimal
@@ -22,7 +23,7 @@ class MatrikkelConverterTest {
             File(javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv").file)
         val outputFile = tempDir.resolve("output.json").toFile()
 
-        converter.convertCsv(inputFile, outputFile)
+        converter.convert(inputFile, outputFile)
 
         assertTrue(outputFile.exists())
         assertTrue(outputFile.length() > 0)

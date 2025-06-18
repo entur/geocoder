@@ -1,18 +1,23 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.netex
 
 import no.entur.netexphoton.common.domain.Extra
+import no.entur.netexphoton.converter.Converter
+import no.entur.netexphoton.converter.JsonWriter
+import no.entur.netexphoton.converter.NominatimPlace
 import no.entur.netexphoton.converter.NominatimPlace.Address
 import no.entur.netexphoton.converter.NominatimPlace.Name
 import no.entur.netexphoton.converter.NominatimPlace.PlaceContent
+import no.entur.netexphoton.converter.netex.Country
 import java.io.File
 import java.nio.file.Paths
+import kotlin.collections.get
 import kotlin.math.abs
 
-class StopPlaceConverter {
-    fun convert(
+class StopPlaceConverter : Converter {
+    override fun convert(
         input: File,
         output: File,
-        isAppending: Boolean = false,
+        isAppending: Boolean,
     ) {
         val parser = NetexParser()
         val result: NetexParser.ParseResult = parser.parseXml(input)
@@ -69,7 +74,7 @@ class StopPlaceConverter {
                         source = "nsr",
                         source_id = stopPlace.id,
                         accuracy = "point",
-                        country_a = Country.getThreeLetterCode(country),
+                        country_a = Country.Companion.getThreeLetterCode(country),
                         county_gid = "$countyGid",
                         locality = (locality ?: "unknown"),
                         locality_gid = "$localityGid",

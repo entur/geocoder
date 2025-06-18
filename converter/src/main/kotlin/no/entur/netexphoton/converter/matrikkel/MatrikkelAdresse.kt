@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.matrikkel
 
 data class MatrikkelAdresse(
     val lokalid: String?,

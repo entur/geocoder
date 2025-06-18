@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.matrikkel
 
 import java.math.BigDecimal
 import kotlin.test.Test

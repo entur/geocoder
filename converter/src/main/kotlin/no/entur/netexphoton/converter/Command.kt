@@ -1,5 +1,8 @@
 package no.entur.netexphoton.converter
 
+import no.entur.netexphoton.converter.matrikkel.MatrikkelConverter
+import no.entur.netexphoton.converter.netex.StopPlaceConverter
+import no.entur.netexphoton.converter.osm.OsmConverter
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -87,7 +90,7 @@ class Command(
                 println("Starting Matrikkel conversion...")
             }
 
-            MatrikkelConverter().convertCsv(inputFile, outputFile, !isFirstConversion)
+            MatrikkelConverter().convert(inputFile, outputFile, !isFirstConversion)
             println("Matrikkel conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
             isFirstConversion = false
         }
@@ -99,14 +102,22 @@ class Command(
             } else {
                 println("Starting OSM PBF conversion...")
             }
-
             OsmConverter().convert(inputFile, outputFile, !isFirstConversion)
             println("OSM PBF conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
         }
+
+        if (stopplaceInputPath != null) {
+            val inputFile = readFile(stopplaceInputPath)
+            println("Starting StopPlace conversion...")
+
+            StopPlaceConverter().convert(inputFile, outputFile, !isFirstConversion)
+            println("StopPlace conversion completed. Output written to ${outputFile.absolutePath}, size: ${outputFile.length()} bytes.")
+            isFirstConversion = false
+        }
     }
 
-    private fun readFile(stopplaceInputPath: String): File {
-        val inputFile = File(stopplaceInputPath)
+    private fun readFile(path: String): File {
+        val inputFile = File(path)
         if (!inputFile.exists()) {
             println("The StopPlace input file ${inputFile.absolutePath} does not exist.")
             exitProcess(1)

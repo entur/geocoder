@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.netex
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty

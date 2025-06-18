@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.netex
 
 import no.entur.netexphoton.converter.FileUtil.streamToFile
 import java.io.File

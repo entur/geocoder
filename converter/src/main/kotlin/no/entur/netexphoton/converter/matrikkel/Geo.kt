@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.matrikkel
 
 import no.entur.netexphoton.converter.Util.toBigDecimalWithScale
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem

@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.netex
 
 enum class Country(
     val threeLetterCode: String,

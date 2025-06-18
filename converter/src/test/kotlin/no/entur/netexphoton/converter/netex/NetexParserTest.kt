@@ -1,4 +1,4 @@
-package no.entur.netexphoton.converter
+package no.entur.netexphoton.converter.netex
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
