@@ -8,7 +8,7 @@ RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/0.7.
 
 COPY . ./
 RUN gradle --no-daemon :converter:build
-RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -m Basis*/*.csv -o nominatim.ndjson
+RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -m Basis*/*.csv -p converter/src/test/resources/oslo-center.osm.pbf -o nominatim.ndjson
 RUN exec java -jar photon.jar \
     -nominatim-import \
     -import-file nominatim.ndjson \

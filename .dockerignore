@@ -2,3 +2,5 @@
 !gradle**
 !**/src/**
 !**.gradle.kts
+!converter/src/test/resources/oslo-center.osm.pbf
+!.editorconfig
