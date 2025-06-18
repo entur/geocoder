@@ -5,7 +5,7 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
-object File {
+object FileUtil {
     fun streamToFile(inputStream: InputStream): File {
         val tempFile = File.createTempFile("stream", ".tmp")
         Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)

@@ -1,6 +1,6 @@
 package no.entur.netexphoton.converter
 
-import no.entur.netexphoton.converter.File.streamToFile
+import no.entur.netexphoton.converter.FileUtil.streamToFile
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue

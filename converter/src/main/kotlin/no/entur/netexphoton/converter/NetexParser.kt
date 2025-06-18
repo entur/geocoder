@@ -1,7 +1,7 @@
 package no.entur.netexphoton.converter
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import no.entur.netexphoton.converter.File.streamToFile
+import no.entur.netexphoton.converter.FileUtil.streamToFile
 import no.entur.netexphoton.converter.Xml.createReader
 import no.entur.netexphoton.converter.Xml.elementSequence
 import no.entur.netexphoton.converter.Xml.moveToStartElement
