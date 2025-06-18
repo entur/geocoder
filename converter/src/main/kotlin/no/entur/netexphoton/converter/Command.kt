@@ -73,46 +73,32 @@ class Command(
         val outputFile = File(outputPath)
         var isFirstConversion = true
 
-        if (stopplaceInputPath != null) {
-            val inputFile = readFile(stopplaceInputPath)
-            println("Starting StopPlace conversion...")
+        val conversionTasks =
+            listOf(
+                "StopPlace" to (stopplaceInputPath to StopPlaceConverter()),
+                "Matrikkel" to (matrikkelInputPath to MatrikkelConverter()),
+                "OSM PBF" to (osmInputPath to OsmConverter()),
+            )
 
-            StopPlaceConverter().convert(inputFile, outputFile, !isFirstConversion)
-            println("StopPlace conversion completed. Output written to ${outputFile.absolutePath}, size: ${outputFile.length()} bytes.")
-            isFirstConversion = false
-        }
+        for ((name, pair) in conversionTasks) {
+            val (path, converter) = pair
+            if (path != null) {
+                val inputFile = readFile(path)
+                if (!isFirstConversion) {
+                    println("\nAppending $name conversion...")
+                } else {
+                    println("Starting $name conversion...")
+                }
 
-        if (matrikkelInputPath != null) {
-            val inputFile = readFile(matrikkelInputPath)
-            if (!isFirstConversion) {
-                println("\nAppending Matrikkel conversion...")
-            } else {
-                println("Starting Matrikkel conversion...")
+                converter.convert(inputFile, outputFile, !isFirstConversion)
+
+                if (isFirstConversion) {
+                    println("$name conversion completed. Output written to ${outputFile.absolutePath}, size: ${outputFile.length()} bytes.")
+                } else {
+                    println("$name conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
+                }
+                isFirstConversion = false
             }
-
-            MatrikkelConverter().convert(inputFile, outputFile, !isFirstConversion)
-            println("Matrikkel conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
-            isFirstConversion = false
-        }
-
-        if (osmInputPath != null) {
-            val inputFile = readFile(osmInputPath)
-            if (!isFirstConversion) {
-                println("\nAppending OSM PBF conversion...")
-            } else {
-                println("Starting OSM PBF conversion...")
-            }
-            OsmConverter().convert(inputFile, outputFile, !isFirstConversion)
-            println("OSM PBF conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
-        }
-
-        if (stopplaceInputPath != null) {
-            val inputFile = readFile(stopplaceInputPath)
-            println("Starting StopPlace conversion...")
-
-            StopPlaceConverter().convert(inputFile, outputFile, !isFirstConversion)
-            println("StopPlace conversion completed. Output written to ${outputFile.absolutePath}, size: ${outputFile.length()} bytes.")
-            isFirstConversion = false
         }
     }
 
