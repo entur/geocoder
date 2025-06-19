@@ -18,6 +18,9 @@ import java.util.concurrent.LinkedBlockingQueue
 import kotlin.math.abs
 
 class OsmConverter : Converter {
+    private val nodesCoords = mutableMapOf<Long, Pair<Double, Double>>()
+    private val wayCentroids = mutableMapOf<Long, Pair<Double, Double>>()
+
     override fun convert(
         input: File,
         output: File,
@@ -86,6 +89,7 @@ class OsmConverter : Converter {
         val name = tags["name"] ?: return null // Skip unnamed nodes
         val lat = node.latitude.toBigDecimalWithScale()
         val lon = node.longitude.toBigDecimalWithScale()
+        nodesCoords[node.id] = Pair(node.longitude, node.latitude)
 
         val placeType = determineNodeType(tags)
         val importance = calculateImportance(tags, placeType)
@@ -150,9 +154,16 @@ class OsmConverter : Converter {
         val placeType = determineWayType(tags)
         val importance = calculateImportance(tags, placeType)
 
-        // TODO: Dummy values
-        val lat = 0.0.toBigDecimalWithScale()
-        val lon = 0.0.toBigDecimalWithScale()
+        val wayNodeCoords = way.wayNodes.mapNotNull { nodesCoords[it.nodeId] }
+
+        if (wayNodeCoords.isEmpty()) {
+            return null
+        }
+
+        val lon = wayNodeCoords.map { it.first }.average().toBigDecimalWithScale()
+        val lat = wayNodeCoords.map { it.second }.average().toBigDecimalWithScale()
+
+        wayCentroids[way.id] = Pair(lon.toDouble(), lat.toDouble())
 
         val label = name // TODO: maybe something else
 
@@ -207,9 +218,20 @@ class OsmConverter : Converter {
         val placeType = determineRelationType(tags)
         val importance = calculateImportance(tags, placeType)
 
-        // TODO: Dummy values
-        val lat = 0.0.toBigDecimalWithScale()
-        val lon = 0.0.toBigDecimalWithScale()
+        val memberCoords = relation.members.mapNotNull {
+            when (it.memberType) {
+                EntityType.Node -> nodesCoords[it.memberId]
+                EntityType.Way -> wayCentroids[it.memberId]
+                else -> null
+            }
+        }
+
+        if (memberCoords.isEmpty()) {
+            return null
+        }
+
+        val lon = memberCoords.map { it.first }.average().toBigDecimalWithScale()
+        val lat = memberCoords.map { it.second }.average().toBigDecimalWithScale()
 
         val extratags =
             Extra(
@@ -218,7 +240,7 @@ class OsmConverter : Converter {
                 source = "osm",
                 source_id = relation.id.toString(),
                 accuracy = "polygon",
-                country_a = "NOR", // Default to Norway
+                country_a = "NOR",
                 label = name,
             )
 
