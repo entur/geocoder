@@ -1,6 +1,5 @@
 package no.entur.netexphoton.converter.osm
 
-import crosby.binary.osmosis.OsmosisReader
 import no.entur.netexphoton.common.domain.Extra
 import no.entur.netexphoton.converter.Converter
 import no.entur.netexphoton.converter.JsonWriter
@@ -8,18 +7,19 @@ import no.entur.netexphoton.converter.NominatimPlace
 import no.entur.netexphoton.converter.NominatimPlace.*
 import no.entur.netexphoton.converter.Util.titleize
 import no.entur.netexphoton.converter.Util.toBigDecimalWithScale
-import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer
 import org.openstreetmap.osmosis.core.domain.v0_6.*
-import org.openstreetmap.osmosis.core.task.v0_6.Sink
 import java.io.File
+import java.math.BigDecimal
 import java.nio.file.Paths
-import java.util.*
-import java.util.concurrent.LinkedBlockingQueue
 import kotlin.math.abs
 
 class OsmConverter : Converter {
     private val nodesCoords = mutableMapOf<Long, Pair<Double, Double>>()
     private val wayCentroids = mutableMapOf<Long, Pair<Double, Double>>()
+    private val poiKeys = setOf(
+        "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
+        "public_transport", "railway", "station", "aeroway", "natural", "waterway"
+    )
 
     override fun convert(
         input: File,
@@ -35,49 +35,24 @@ class OsmConverter : Converter {
 
     private fun parsePbf(inputFile: File): Sequence<Entity> = OsmIterator(inputFile).asSequence()
 
-    private class OsmIterator(
-        inputFile: File,
-    ) : AbstractIterator<Entity>() {
-        private val queue = LinkedBlockingQueue<Entity>()
-        private val poisonPill: Entity = Node(CommonEntityData(-1L, 0, Date(0), null, 0L), 0.0, 0.0)
+    fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
+        val tags = entity.tags.associate { it.key to it.value }
 
-        init {
-            val reader = OsmosisReader(inputFile)
-            reader.setSink(
-                object : Sink {
-                    override fun initialize(metaData: MutableMap<String, Any>?) {}
+        val isPoi = tags.keys.any { it in poiKeys }
+        val isPlace = tags.containsKey("place")
+        val isBoundary = tags["type"] == "boundary"
 
-                    override fun process(entityContainer: EntityContainer?) {
-                        entityContainer?.entity?.let { queue.put(it) }
-                    }
-
-                    override fun complete() {
-                        queue.put(poisonPill)
-                    }
-
-                    override fun close() {}
-                },
-            )
-            Thread { reader.run() }.start()
+        if (!isPoi && !isPlace && !isBoundary) {
+            return null
         }
 
-        override fun computeNext() {
-            val entity = queue.take()
-            if (entity === poisonPill) {
-                done()
-            } else {
-                setNext(entity)
-            }
-        }
-    }
-
-    fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? =
-        when (entity) {
+        return when (entity) {
             is Node -> convertNodeToNominatim(entity)
             is Way -> convertWayToNominatim(entity)
             is Relation -> convertRelationToNominatim(entity)
             else -> null
         }
+    }
 
     private fun convertNodeToNominatim(node: Node): NominatimPlace? {
         val tags = node.tags.associate { it.key to it.value }
@@ -94,15 +69,9 @@ class OsmConverter : Converter {
         val placeType = determineNodeType(tags)
         val importance = calculateImportance(tags, placeType)
 
-        val city = tags["addr:city"]
-        val street = tags["addr:street"]
-        val housenumber = tags["addr:housenumber"]
-        val postcode = tags["addr:postcode"] ?: "unknown"
         val country = tags["addr:country"] ?: "no" // Default to Norway
 
-        val labelParts = mutableListOf(name)
-        city?.let { labelParts.add(it) }
-        val label = labelParts.joinToString(", ")
+        val label = name
 
         val extratags =
             Extra(
@@ -125,14 +94,9 @@ class OsmConverter : Converter {
                 importance = importance,
                 parent_place_id = 0,
                 name = Name(name),
-                housenumber = housenumber,
-                address =
-                    Address(
-                        street = street,
-                        city = city?.titleize(),
-                        county = tags["addr:county"]?.titleize(),
-                    ),
-                postcode = postcode,
+                housenumber = null,
+                address = Address(),
+                postcode = null,
                 country_code = country.lowercase(),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
@@ -155,13 +119,7 @@ class OsmConverter : Converter {
         val importance = calculateImportance(tags, placeType)
 
         val wayNodeCoords = way.wayNodes.mapNotNull { nodesCoords[it.nodeId] }
-
-        if (wayNodeCoords.isEmpty()) {
-            return null
-        }
-
-        val lon = wayNodeCoords.map { it.first }.average().toBigDecimalWithScale()
-        val lat = wayNodeCoords.map { it.second }.average().toBigDecimalWithScale()
+        val (lon, lat) = calculateCentroid(wayNodeCoords) ?: return null
 
         wayCentroids[way.id] = Pair(lon.toDouble(), lat.toDouble())
 
@@ -178,8 +136,6 @@ class OsmConverter : Converter {
                 label = label,
             )
 
-        val postcode = tags["addr:postcode"] ?: "unknown"
-
         val content =
             PlaceContent(
                 place_id = abs(way.id),
@@ -190,13 +146,8 @@ class OsmConverter : Converter {
                 importance = importance,
                 parent_place_id = 0,
                 name = Name(name),
-                address =
-                    Address(
-                        street = tags["addr:street"],
-                        city = tags["addr:city"]?.titleize(),
-                        county = tags["addr:county"]?.titleize(),
-                    ),
-                postcode = postcode,
+                address = Address(),
+                postcode = null,
                 country_code = (tags["addr:country"] ?: "no").lowercase(),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
@@ -225,13 +176,7 @@ class OsmConverter : Converter {
                 else -> null
             }
         }
-
-        if (memberCoords.isEmpty()) {
-            return null
-        }
-
-        val lon = memberCoords.map { it.first }.average().toBigDecimalWithScale()
-        val lat = memberCoords.map { it.second }.average().toBigDecimalWithScale()
+        val (lon, lat) = calculateCentroid(memberCoords) ?: return null
 
         val extratags =
             Extra(
@@ -243,8 +188,6 @@ class OsmConverter : Converter {
                 country_a = "NOR",
                 label = name,
             )
-
-        val postcode = tags["addr:postcode"] ?: "unknown"
 
         val content =
             PlaceContent(
@@ -260,7 +203,7 @@ class OsmConverter : Converter {
                     Address(
                         county = if (tags["type"] == "boundary" && tags["boundary"] == "administrative") tags["name"]?.titleize() else null,
                     ),
-                postcode = postcode,
+                postcode = null,
                 country_code = (tags["addr:country"] ?: "no").lowercase(),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
@@ -268,6 +211,15 @@ class OsmConverter : Converter {
             )
 
         return NominatimPlace("Place", listOf(content))
+    }
+
+    private fun calculateCentroid(coords: List<Pair<Double, Double>>): Pair<BigDecimal, BigDecimal>? {
+        if (coords.isEmpty()) {
+            return null
+        }
+        val lon = coords.map { it.first }.average().toBigDecimalWithScale()
+        val lat = coords.map { it.second }.average().toBigDecimalWithScale()
+        return Pair(lon, lat)
     }
 
     private fun determineNodeType(tags: Map<String, String>): String =
@@ -302,7 +254,7 @@ class OsmConverter : Converter {
     private fun determineCategories(tags: Map<String, String>): List<String> {
         val categories = mutableListOf<String>()
 
-        listOf("amenity", "shop", "tourism", "leisure", "highway", "building", "natural", "place").forEach { key ->
+        (poiKeys + "place" + "building" + "highway").forEach { key ->
             tags[key]?.let { categories.add("$key:$it") }
         }
 
@@ -331,21 +283,7 @@ class OsmConverter : Converter {
             "amenity" -> importance += 0.01
             "shop" -> importance += 0.005
             "tourism" -> importance += 0.015
-            "building" -> importance += 0.0
-            "road" -> importance += 0.01
             "boundary" -> importance += 0.02
-            "place" -> {
-                importance +=
-                    when (tags["place"]) {
-                        "city" -> 0.05
-                        "town" -> 0.04
-                        "village" -> 0.03
-                        "hamlet" -> 0.02
-                        "suburb" -> 0.03
-                        "neighbourhood" -> 0.02
-                        else -> 0.01
-                    }
-            }
         }
 
         val nameKeys = tags.keys.count { it.startsWith("name:") }
