@@ -39,11 +39,7 @@ class OsmConverter : Converter {
     fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
         val tags = entity.tags.associate { it.key to it.value }
 
-        val isPoi = tags.keys.any { it in poiKeys }
-        val isPlace = tags.containsKey("place")
-        val isBoundary = tags["type"] == "boundary"
-
-        if (!isPoi && !isPlace && !isBoundary) {
+        if (tags.keys.none { it in poiKeys }) {
             return null
         }
 
