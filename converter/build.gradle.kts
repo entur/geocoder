@@ -32,10 +32,6 @@ testing {
     }
 }
 
-tasks.named("assemble") {
-    dependsOn("ktlintFormat")
-}
-
 tasks.withType<Test> {
     testLogging {
         events("failed")

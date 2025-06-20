@@ -16,10 +16,11 @@ import kotlin.math.abs
 class OsmConverter : Converter {
     private val nodesCoords = mutableMapOf<Long, Pair<Double, Double>>()
     private val wayCentroids = mutableMapOf<Long, Pair<Double, Double>>()
-    private val poiKeys = setOf(
-        "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
-        "public_transport", "railway", "station", "aeroway", "natural", "waterway"
-    )
+    private val poiKeys =
+        setOf(
+            "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
+            "public_transport", "railway", "station", "aeroway", "natural", "waterway",
+        )
 
     override fun convert(
         input: File,
@@ -169,13 +170,14 @@ class OsmConverter : Converter {
         val placeType = determineRelationType(tags)
         val importance = calculateImportance(tags, placeType)
 
-        val memberCoords = relation.members.mapNotNull {
-            when (it.memberType) {
-                EntityType.Node -> nodesCoords[it.memberId]
-                EntityType.Way -> wayCentroids[it.memberId]
-                else -> null
+        val memberCoords =
+            relation.members.mapNotNull {
+                when (it.memberType) {
+                    EntityType.Node -> nodesCoords[it.memberId]
+                    EntityType.Way -> wayCentroids[it.memberId]
+                    else -> null
+                }
             }
-        }
         val (lon, lat) = calculateCentroid(memberCoords) ?: return null
 
         val extratags =
