@@ -38,7 +38,7 @@ class OsmConverterTest {
 
         assertNotNull(osmConverter, "Should create converter instance")
 
-        val testInputFile = File("src/test/resources/oslo-center.osm.pbf")
+        val testInputFile = File("src/test/resources/oslo-opera.osm.pbf")
         val testOutputFile = File("build/tmp/test_output.ndjson")
         osmConverter.convert(testInputFile, testOutputFile)
         assertTrue(testOutputFile.exists(), "Output file should be created")
