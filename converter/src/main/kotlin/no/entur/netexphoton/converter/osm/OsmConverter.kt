@@ -14,85 +14,134 @@ import java.nio.file.Paths
 import kotlin.math.abs
 
 class OsmConverter : Converter {
-    private val nodesCoords = mutableMapOf<Long, Pair<Double, Double>>()
-    private val wayCentroids = mutableMapOf<Long, Pair<Double, Double>>()
+    private val nodesCoords = CoordinateStore(500000)
+    private val wayCentroids = CoordinateStore(50000)
+
     private val poiKeys =
         setOf(
             "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
             "public_transport", "railway", "station", "aeroway", "natural", "waterway",
         )
 
-    override fun convert(
-        input: File,
-        output: File,
-        isAppending: Boolean,
-    ) {
-        val entities = parsePbf(input)
-        val nominatimEntries = entities.mapNotNull { convertOsmEntityToNominatim(it) }
+    override fun convert(input: File, output: File, isAppending: Boolean) {
+        // Pass 1: Identify all node IDs required for POIs to minimize memory usage in the next pass.
+        val neededNodeIds = collectNeededNodeIds(input)
 
-        val outputPath = Paths.get(output.absolutePath)
-        JsonWriter().export(nominatimEntries, outputPath, isAppending)
+        // Pass 2: Store coordinates only for the nodes identified in Pass 1.
+        collectNodeCoordinates(input, neededNodeIds)
+
+        // Pass 3: Process all entities, calculate centroids, convert to Nominatim format, and write to JSON.
+        val nominatimEntries = processEntities(input)
+        JsonWriter().export(nominatimEntries, Paths.get(output.absolutePath), isAppending)
+    }
+
+    private fun isPoi(tags: Map<String, String>): Boolean = tags.containsKey("name") && tags.keys.any { it in poiKeys }
+
+    private fun collectNeededNodeIds(inputFile: File): Set<Long> {
+        val neededNodeIds = hashSetOf<Long>()
+        parsePbf(inputFile).forEach { entity ->
+            val tags = entity.tags.associate { it.key to it.value }
+            if (isPoi(tags)) {
+                when (entity) {
+                    is Node -> neededNodeIds.add(entity.id)
+                    is Way -> entity.wayNodes.forEach { neededNodeIds.add(it.nodeId) }
+                    is Relation ->
+                        entity.members
+                            .filter { it.memberType == EntityType.Node }
+                            .forEach { neededNodeIds.add(it.memberId) }
+                }
+            }
+        }
+        return neededNodeIds
+    }
+
+    private fun collectNodeCoordinates(inputFile: File, neededNodeIds: Set<Long>) {
+        parsePbf(inputFile).forEach { entity ->
+            if (entity is Node && entity.id in neededNodeIds) {
+                nodesCoords.put(entity.id, entity.longitude, entity.latitude)
+            }
+        }
+    }
+
+    private fun processEntities(inputFile: File): Sequence<NominatimPlace> =
+        sequence {
+            var count = 0
+            parsePbf(inputFile).forEach { entity ->
+                val tags = entity.tags.associate { it.key to it.value }
+                if (isPoi(tags)) {
+                    if (entity is Way) {
+                        calculateAndStoreWayCentroid(entity)
+                    }
+
+                    convertOsmEntityToNominatim(entity)?.let {
+                        yield(it)
+                        count++
+                    }
+                }
+            }
+            println("Finished processing $count entities")
+        }
+
+    private fun calculateAndStoreWayCentroid(way: Way) {
+        val wayNodeCoords = way.wayNodes.mapNotNull { nodesCoords.get(it.nodeId) }
+        if (wayNodeCoords.isNotEmpty()) {
+            calculateCentroid(wayNodeCoords)?.let { (lon, lat) ->
+                wayCentroids.put(way.id, lon.toDouble(), lat.toDouble())
+            }
+        }
     }
 
     private fun parsePbf(inputFile: File): Sequence<Entity> = OsmIterator(inputFile).asSequence()
 
-    fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
+    internal fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
         val tags = entity.tags.associate { it.key to it.value }
-
-        if (tags.keys.none { it in poiKeys }) {
-            return null
-        }
+        if (!isPoi(tags)) return null
 
         return when (entity) {
-            is Node -> convertNodeToNominatim(entity)
-            is Way -> convertWayToNominatim(entity)
-            is Relation -> convertRelationToNominatim(entity)
+            is Node -> convertNodeToNominatim(entity, tags)
+            is Way -> convertWayToNominatim(entity, tags)
+            is Relation -> convertRelationToNominatim(entity, tags)
             else -> null
         }
     }
 
-    private fun convertNodeToNominatim(node: Node): NominatimPlace? {
-        val tags = node.tags.associate { it.key to it.value }
-
-        if (tags.isEmpty() || (tags.size == 1 && tags.containsKey("created_by"))) {
-            return null
-        }
-
-        val name = tags["name"] ?: return null // Skip unnamed nodes
-        val lat = node.latitude.toBigDecimalWithScale()
-        val lon = node.longitude.toBigDecimalWithScale()
-        nodesCoords[node.id] = Pair(node.longitude, node.latitude)
-
-        val placeType = determineNodeType(tags)
+    private fun createPlaceContent(
+        entity: Entity,
+        tags: Map<String, String>,
+        name: String,
+        placeType: String,
+        objectType: String,
+        accuracy: String,
+        centroid: Pair<BigDecimal, BigDecimal>,
+        address: Address = Address(),
+    ): NominatimPlace {
         val importance = calculateImportance(tags, placeType)
-
-        val country = tags["addr:country"] ?: "no" // Default to Norway
-
-        val label = name
+        val country = (tags["addr:country"] ?: "no")
+        val (lon, lat) = centroid
 
         val extratags =
             Extra(
-                id = node.id.toString(),
+                id = entity.id.toString(),
                 layer = placeType,
                 source = "osm",
-                source_id = node.id.toString(),
-                accuracy = "point",
+                source_id = entity.id.toString(),
+                accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
-                label = label,
+                label = name,
             )
 
         val content =
             PlaceContent(
-                place_id = abs(node.id),
-                object_type = "N",
-                object_id = abs(node.id),
+                place_id = abs(entity.id),
+                object_type = objectType,
+                object_id = abs(entity.id),
                 categories = determineCategories(tags),
                 rank_address = determineRankAddress(placeType),
                 importance = importance,
                 parent_place_id = 0,
                 name = Name(name),
                 housenumber = null,
-                address = Address(),
+                address = address,
                 postcode = null,
                 country_code = country.lowercase(),
                 centroid = listOf(lon, lat),
@@ -103,121 +152,71 @@ class OsmConverter : Converter {
         return NominatimPlace("Place", listOf(content))
     }
 
-    private fun convertWayToNominatim(way: Way): NominatimPlace? {
-        val tags = way.tags.associate { it.key to it.value }
-
-        if (tags.isEmpty()) {
-            return null
-        }
-
-        val name = tags["name"] ?: return null // Skip unnamed ways
-
-        val placeType = determineWayType(tags)
-        val importance = calculateImportance(tags, placeType)
-
-        val wayNodeCoords = way.wayNodes.mapNotNull { nodesCoords[it.nodeId] }
-        val (lon, lat) = calculateCentroid(wayNodeCoords) ?: return null
-
-        wayCentroids[way.id] = Pair(lon.toDouble(), lat.toDouble())
-
-        val label = name // TODO: maybe something else
-
-        val extratags =
-            Extra(
-                id = way.id.toString(),
-                layer = placeType,
-                source = "osm",
-                source_id = way.id.toString(),
-                accuracy = "polygon",
-                country_a = "NOR", // Default to Norway
-                label = label,
-            )
-
-        val content =
-            PlaceContent(
-                place_id = abs(way.id),
-                object_type = "W",
-                object_id = abs(way.id),
-                categories = determineCategories(tags),
-                rank_address = determineRankAddress(placeType),
-                importance = importance,
-                parent_place_id = 0,
-                name = Name(name),
-                address = Address(),
-                postcode = null,
-                country_code = (tags["addr:country"] ?: "no").lowercase(),
-                centroid = listOf(lon, lat),
-                bbox = listOf(lon, lat, lon, lat),
-                extratags = extratags,
-            )
-
-        return NominatimPlace("Place", listOf(content))
+    private fun convertNodeToNominatim(node: Node, tags: Map<String, String>): NominatimPlace? {
+        val name = tags["name"] ?: return null
+        return createPlaceContent(
+            entity = node,
+            tags = tags,
+            name = name,
+            placeType = determineNodeType(tags),
+            objectType = "N",
+            accuracy = "point",
+            centroid = node.longitude.toBigDecimalWithScale() to node.latitude.toBigDecimalWithScale(),
+        )
     }
 
-    private fun convertRelationToNominatim(relation: Relation): NominatimPlace? {
-        val tags = relation.tags.associate { it.key to it.value }
+    private fun convertWayToNominatim(way: Way, tags: Map<String, String>): NominatimPlace? {
+        val name = tags["name"] ?: return null
+        val (lon, lat) = wayCentroids.get(way.id) ?: return null
 
-        if (tags.isEmpty()) {
-            return null
-        }
+        return createPlaceContent(
+            entity = way,
+            tags = tags,
+            name = name,
+            placeType = determineWayType(tags),
+            objectType = "W",
+            accuracy = "polygon",
+            centroid = lon.toBigDecimalWithScale() to lat.toBigDecimalWithScale(),
+        )
+    }
 
-        val name = tags["name"] ?: return null // Skip unnamed relations
-
-        val placeType = determineRelationType(tags)
-        val importance = calculateImportance(tags, placeType)
-
+    private fun convertRelationToNominatim(relation: Relation, tags: Map<String, String>): NominatimPlace? {
+        val name = tags["name"] ?: return null
         val memberCoords =
             relation.members.mapNotNull {
                 when (it.memberType) {
-                    EntityType.Node -> nodesCoords[it.memberId]
-                    EntityType.Way -> wayCentroids[it.memberId]
+                    EntityType.Node -> nodesCoords.get(it.memberId)
+                    EntityType.Way -> wayCentroids.get(it.memberId)
                     else -> null
                 }
             }
-        val (lon, lat) = calculateCentroid(memberCoords) ?: return null
+        if (memberCoords.isEmpty()) return null
 
-        val extratags =
-            Extra(
-                id = relation.id.toString(),
-                layer = placeType,
-                source = "osm",
-                source_id = relation.id.toString(),
-                accuracy = "polygon",
-                country_a = "NOR",
-                label = name,
-            )
+        val centroid = calculateCentroid(memberCoords) ?: return null
+        val address =
+            if (tags["type"] == "boundary" && tags["boundary"] == "administrative") {
+                Address(county = tags["name"]?.titleize())
+            } else {
+                Address()
+            }
 
-        val content =
-            PlaceContent(
-                place_id = abs(relation.id),
-                object_type = "R",
-                object_id = abs(relation.id),
-                categories = determineCategories(tags),
-                rank_address = determineRankAddress(placeType),
-                importance = importance,
-                parent_place_id = 0,
-                name = Name(name),
-                address =
-                    Address(
-                        county = if (tags["type"] == "boundary" && tags["boundary"] == "administrative") tags["name"]?.titleize() else null,
-                    ),
-                postcode = null,
-                country_code = (tags["addr:country"] ?: "no").lowercase(),
-                centroid = listOf(lon, lat),
-                bbox = listOf(lon, lat, lon, lat),
-                extratags = extratags,
-            )
-
-        return NominatimPlace("Place", listOf(content))
+        return createPlaceContent(
+            entity = relation,
+            tags = tags,
+            name = name,
+            placeType = determineRelationType(tags),
+            objectType = "R",
+            accuracy = "polygon",
+            centroid = centroid,
+            address = address,
+        )
     }
 
     private fun calculateCentroid(coords: List<Pair<Double, Double>>): Pair<BigDecimal, BigDecimal>? {
-        if (coords.isEmpty()) {
-            return null
-        }
+        if (coords.isEmpty()) return null
         val lon = coords.map { it.first }.average().toBigDecimalWithScale()
         val lat = coords.map { it.second }.average().toBigDecimalWithScale()
-        return Pair(lon, lat)
+        return lon to lat
     }
 
     private fun determineNodeType(tags: Map<String, String>): String =
@@ -251,30 +250,23 @@ class OsmConverter : Converter {
 
     private fun determineCategories(tags: Map<String, String>): List<String> {
         val categories = mutableListOf<String>()
-
         (poiKeys + "place" + "building" + "highway").forEach { key ->
             tags[key]?.let { categories.add("$key:$it") }
         }
-
         return categories
     }
 
     private fun determineRankAddress(placeType: String): Int =
         when (placeType) {
-            "amenity" -> 30
-            "shop" -> 30
-            "tourism" -> 30
+            "amenity", "shop", "tourism" -> 30
             "building" -> 28
             "road" -> 26
-            "boundary" -> 10
             "place" -> 20
+            "boundary" -> 10
             else -> 30
         }
 
-    private fun calculateImportance(
-        tags: Map<String, String>,
-        placeType: String,
-    ): Double {
+    private fun calculateImportance(tags: Map<String, String>, placeType: String): Double {
         var importance = 0.03
 
         when (placeType) {

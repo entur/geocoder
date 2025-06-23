@@ -4,4 +4,5 @@ root = true
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_argument-list-wrapping = disabled
 ktlint_standard_class-signature = disabled
+ktlint_standard_function-signature = disabled
 max_line_length = 140
