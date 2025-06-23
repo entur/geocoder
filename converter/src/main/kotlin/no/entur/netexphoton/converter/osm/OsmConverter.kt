@@ -24,6 +24,8 @@ class OsmConverter : Converter {
         )
 
     override fun convert(input: File, output: File, isAppending: Boolean) {
+        require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
+
         // Pass 1: Identify all node IDs required for POIs to minimize memory usage in the next pass.
         val neededNodeIds = collectNeededNodeIds(input)
 
