@@ -2,7 +2,6 @@ plugins {
     kotlin("jvm")
     application
     alias(libs.plugins.shadow)
-    alias(libs.plugins.ktlint)
 }
 
 application {
@@ -36,10 +35,6 @@ testing {
             useJUnitJupiter()
         }
     }
-}
-
-tasks.named("assemble") {
-    dependsOn("ktlintFormat")
 }
 
 tasks.withType<Test> {
