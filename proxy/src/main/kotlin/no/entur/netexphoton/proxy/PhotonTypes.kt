@@ -1,31 +1,25 @@
 package no.entur.netexphoton.proxy
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.entur.netexphoton.common.Extra
 import java.math.BigDecimal
 
-@JsonInclude(NON_NULL)
 data class FeatureCollection(
     val type: String = "FeatureCollection",
     val features: List<Feature>,
     val bbox: List<BigDecimal>? = null,
 ) {
-    @JsonInclude(NON_NULL)
     data class Feature(
         val type: String = "Feature",
         val geometry: Geometry,
         val properties: Properties,
     )
 
-    @JsonInclude(NON_NULL)
     data class Geometry(
         val type: String,
         val coordinates: List<BigDecimal>,
     )
 
-    @JsonInclude(NON_NULL)
     data class Properties(
         @JsonProperty("osm_type") val osmType: String? = null,
         @JsonProperty("osm_id") val osmId: Long? = null,
@@ -57,7 +51,6 @@ data class FeatureCollection(
     )
 }
 
-@JsonInclude(NON_NULL)
 data class GeocodingMetadata(
     val version: String = "0.2",
     val attribution: String = "http://pelias.mapzen.com/v1/attribution",
@@ -65,7 +58,6 @@ data class GeocodingMetadata(
     val engine: EngineMetadata? = null,
     val timestamp: Long = System.currentTimeMillis(),
 ) {
-    @JsonInclude(NON_NULL)
     data class QueryMetadata(
         val text: String? = null,
         val parser: String = "addressit",
@@ -78,7 +70,6 @@ data class GeocodingMetadata(
         val querySize: Int = 20,
     )
 
-    @JsonInclude(NON_NULL)
     data class LangMetadata(
         val name: String = "Norwegian Bokmål",
         val iso6391: String = "nb",
@@ -86,7 +77,6 @@ data class GeocodingMetadata(
         val defaulted: Boolean = false,
     )
 
-    @JsonInclude(NON_NULL)
     data class EngineMetadata(
         val name: String = "Pelias",
         val author: String = "Mapzen",

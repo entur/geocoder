@@ -2,7 +2,6 @@ package no.entur.netexphoton.common
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class Extra(
     val gid: String? = null,
     val locality_gid: String? = null,
