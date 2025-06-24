@@ -3,7 +3,7 @@ package no.entur.netexphoton.proxy
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.entur.netexphoton.common.domain.Extra
+import no.entur.netexphoton.common.Extra
 import java.math.BigDecimal
 
 @JsonInclude(NON_NULL)

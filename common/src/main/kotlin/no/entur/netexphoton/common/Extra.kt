@@ -1,4 +1,4 @@
-package no.entur.netexphoton.common.domain
+package no.entur.netexphoton.common
 
 import com.fasterxml.jackson.annotation.JsonInclude
 

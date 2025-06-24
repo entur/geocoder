@@ -1,6 +1,6 @@
 package no.entur.netexphoton.converter
 
-import no.entur.netexphoton.common.domain.Extra
+import no.entur.netexphoton.common.Extra
 import java.math.BigDecimal
 
 data class NominatimPlace(

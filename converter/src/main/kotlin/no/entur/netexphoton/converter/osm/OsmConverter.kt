@@ -1,6 +1,6 @@
 package no.entur.netexphoton.converter.osm
 
-import no.entur.netexphoton.common.domain.Extra
+import no.entur.netexphoton.common.Extra
 import no.entur.netexphoton.converter.Converter
 import no.entur.netexphoton.converter.JsonWriter
 import no.entur.netexphoton.converter.NominatimPlace
