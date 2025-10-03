@@ -1,4 +1,4 @@
-FROM gradle:alpine AS build-image
+FROM gradle:9.1-jdk21-alpine AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
@@ -16,7 +16,7 @@ RUN exec java -jar photon.jar \
     -extra-tags id,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,transport_modes,tariff_zones,borough_gid,borough
 
 
-FROM bellsoft/liberica-runtime-container:jre-23-slim-musl
+FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
 
 WORKDIR /srv
 COPY --from=build-image /srv/photon.jar photon.jar
