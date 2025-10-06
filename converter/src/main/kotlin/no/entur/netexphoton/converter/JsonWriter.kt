@@ -1,5 +1,6 @@
 package no.entur.netexphoton.converter
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.netexphoton.converter.NominatimHeader.Features
 import no.entur.netexphoton.converter.NominatimHeader.HeaderContent
@@ -16,7 +17,9 @@ class JsonWriter {
         outputPath: Path,
         isAppending: Boolean = true,
     ) {
-        val objectMapper = jacksonObjectMapper()
+        val objectMapper = jacksonObjectMapper().apply {
+            setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        }
         Files.createDirectories(outputPath.parent)
 
         if (!isAppending) {
