@@ -132,12 +132,18 @@ class OsmConverter : Converter {
                 label = name,
             )
 
+        val categories = listOf("osm.public_transport.poi")
+            .plus(determineCategories(tags))
+            .plus("source:osm")
+            .plus("layer:$placeType")
+            .plus("country:$country")
+
         val content =
             PlaceContent(
                 place_id = abs(entity.id),
                 object_type = objectType,
                 object_id = abs(entity.id),
-                categories = determineCategories(tags),
+                categories = categories,
                 rank_address = determineRankAddress(placeType),
                 importance = importance,
                 parent_place_id = 0,
@@ -251,7 +257,7 @@ class OsmConverter : Converter {
         }
 
     private fun determineCategories(tags: Map<String, String>): List<String> {
-        val categories = mutableListOf("osm.public_transport.poi")
+        val categories = mutableListOf<String>()
         (poiKeys + "place" + "building" + "highway").forEach { key ->
             tags[key]?.let { categories.add("$key:$it") }
         }

@@ -76,24 +76,24 @@ fun Application.configureRouting(
                             parameter("limit", size.toString())
                             parameter("lang", lang)
 
-                            boundaryCountry?.let { parameter("osm_tag", "extra.country:$it") }
-                            for (id in boundaryCountyIds) {
-                                parameter("osm_tag", "extra.county_gid:$id")
+                            boundaryCountry?.let { parameter("include", "country:$it") }
+                            if (boundaryCountyIds.isNotEmpty()) {
+                                parameter("include", boundaryCountyIds.joinToString(",", "county_gid:"))
                             }
-                            for (id in boundaryLocalityIds) {
-                                parameter("osm_tag", "extra.locality_gid:$id")
+                            if (boundaryLocalityIds.isNotEmpty()) {
+                                parameter("include", boundaryLocalityIds.joinToString(",", "locality_gid:"))
                             }
-                            for (zone in tariffZones) {
-                                parameter("osm_tag", "extra.tariff_zones:*$zone*")
+                            if (tariffZones.isNotEmpty()) {
+                                parameter("include", tariffZones.joinToString(",", "tariff_zone_id:"))
                             }
-                            for (authority in tariffZoneAuthorities) {
-                                parameter("osm_tag", "extra.tariff_zones:*$authority:*")
+                            if (tariffZoneAuthorities.isNotEmpty()) {
+                                parameter("include", tariffZoneAuthorities.joinToString(",", "tariff_zone_authority:"))
                             }
-                            for (source in sources) {
-                                parameter("osm_tag", "extra.source:$source")
+                            if (sources.isNotEmpty()) {
+                                parameter("include", sources.joinToString(",", "source:"))
                             }
-                            for (layer in layers) {
-                                parameter("osm_tag", "extra.layer:$layer")
+                            if (layers.isNotEmpty()) {
+                                parameter("include", layers.joinToString(",", "layer:"))
                             }
                         }.bodyAsText()
 

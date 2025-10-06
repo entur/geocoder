@@ -49,12 +49,20 @@ class StopPlaceConverter : Converter {
             ?.toSet()
             ?: emptySet()
 
+        val categories = listOf("osm.public_transport.stop_place")
+            .plus(tariffZoneCategories)
+            .plus(country?.let { "country:${it}" })
+            .plus(countyGid?.let { "county_gid:${it}" })
+            .plus(localityGid?.let { "locality_gid:${it}" })
+            .plus("layer:stopplace")
+            .plus("source:nsr")
+
         val stopPlaceContent =
             PlaceContent(
                 place_id = abs(stopPlace.id.hashCode().toLong()),
                 object_type = "N",
                 object_id = abs(stopPlace.id.hashCode().toLong()),
-                categories = listOf("osm.public_transport.stop_place").plus(tariffZoneCategories),
+                categories = categories.filterNotNull(),
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
