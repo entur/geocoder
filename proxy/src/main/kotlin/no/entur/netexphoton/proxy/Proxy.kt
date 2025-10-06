@@ -76,24 +76,24 @@ fun Application.configureRouting(
                             parameter("limit", size.toString())
                             parameter("lang", lang)
 
-                            boundaryCountry?.let { parameter("include", "country:$it") }
+                            boundaryCountry?.let { parameter("include", "country.$it") }
                             if (boundaryCountyIds.isNotEmpty()) {
-                                parameter("include", boundaryCountyIds.joinToString(",", "county_gid:"))
+                                parameter("include", boundaryCountyIds.joinToString(",", "county_gid."))
                             }
                             if (boundaryLocalityIds.isNotEmpty()) {
-                                parameter("include", boundaryLocalityIds.joinToString(",", "locality_gid:"))
+                                parameter("include", boundaryLocalityIds.joinToString(",", "locality_gid."))
                             }
                             if (tariffZones.isNotEmpty()) {
-                                parameter("include", tariffZones.joinToString(",", "tariff_zone_id:"))
+                                parameter("include", tariffZones.joinToString(",", "tariff_zone_id."))
                             }
                             if (tariffZoneAuthorities.isNotEmpty()) {
-                                parameter("include", tariffZoneAuthorities.joinToString(",", "tariff_zone_authority:"))
+                                parameter("include", tariffZoneAuthorities.joinToString(",", "tariff_zone_authority."))
                             }
                             if (sources.isNotEmpty()) {
-                                parameter("include", sources.joinToString(",", "source:"))
+                                parameter("include", sources.joinToString(",", "source."))
                             }
                             if (layers.isNotEmpty()) {
-                                parameter("include", layers.joinToString(",", "layer:"))
+                                parameter("include", layers.joinToString(",", "layer."))
                             }
                         }.bodyAsText()
 
