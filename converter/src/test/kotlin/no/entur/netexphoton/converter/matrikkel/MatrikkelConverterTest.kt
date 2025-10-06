@@ -36,8 +36,8 @@ class MatrikkelConverterTest {
         val firstPlaceJson = lines[1]
         val nominatimPlace: NominatimPlace = objectMapper.readValue(firstPlaceJson)
 
-        assertNotNull(nominatimPlace.content.firstOrNull()?.extratags, "Extratags should not be null")
-        val extra = nominatimPlace.content.first().extratags
+        assertNotNull(nominatimPlace.content.firstOrNull()?.extra, "Extratags should not be null")
+        val extra = nominatimPlace.content.first().extra
 
         assertEquals("399524883", extra.id)
         assertEquals("address", extra.layer)

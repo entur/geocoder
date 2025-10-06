@@ -27,7 +27,7 @@ class OsmConverterTest {
         )
         assertEquals(
             "amenity",
-            nominatimPlace.content[0].extratags.layer,
+            nominatimPlace.content[0].extra.layer,
             "Should have the correct layer",
         )
     }

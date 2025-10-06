@@ -121,7 +121,7 @@ class OsmConverter : Converter {
         val country = (tags["addr:country"] ?: "no")
         val (lon, lat) = centroid
 
-        val extratags =
+        val extra =
             Extra(
                 id = entity.id.toString(),
                 layer = placeType,
@@ -148,7 +148,7 @@ class OsmConverter : Converter {
                 country_code = country.lowercase(),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
-                extratags = extratags,
+                extra = extra,
             )
 
         return NominatimPlace("Place", listOf(content))

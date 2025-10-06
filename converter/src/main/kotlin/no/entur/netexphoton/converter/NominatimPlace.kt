@@ -22,7 +22,7 @@ data class NominatimPlace(
         val country_code: String,
         val centroid: List<BigDecimal>,
         val bbox: List<BigDecimal> = emptyList(),
-        val extratags: Extra,
+        val extra: Extra,
     )
 
     data class Address(

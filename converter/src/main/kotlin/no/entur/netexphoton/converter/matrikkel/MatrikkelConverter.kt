@@ -96,7 +96,7 @@ class MatrikkelConverter : Converter {
     fun convertMatrikkelAdresseToNominatim(adresse: MatrikkelAdresse): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(adresse.ost, adresse.nord)
 
-        val extratags =
+        val extra =
             Extra(
                 id = adresse.lokalid,
                 layer = "address",
@@ -133,7 +133,7 @@ class MatrikkelConverter : Converter {
                 country_code = "no",
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
-                extratags = extratags,
+                extra = extra,
             )
         return NominatimPlace("Place", listOf(properties))
     }

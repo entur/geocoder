@@ -67,7 +67,7 @@ class StopPlaceConverter : Converter {
                 country_code = (country ?: "no"),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lat, lon, lat, lon),
-                extratags =
+                extra =
                     Extra(
                         id = stopPlace.id,
                         layer = "stopplace",

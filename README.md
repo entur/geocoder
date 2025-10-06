@@ -196,7 +196,7 @@ java -jar proxy/build/libs/proxy-all.jar
         59.922353,
         10.678831
       ],
-      "extratags": {
+      "extra": {
         "id": "NSR:StopPlace:152",
         "gid": "openstreetmap:venue:NSR:StopPlace:152",
         "layer": "venue",
