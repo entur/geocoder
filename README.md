@@ -18,7 +18,8 @@ If you don't like docker, you can also run the converter and photon manually.
 #### Manually building the converter and converting data
 ```bash
 ./gradlew build
-java -jar converter/build/libs/converter-all.jar input-netex.xml /tmp/output-photon.nbjson
+curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
+java -jar converter/build/libs/converter-all.jar  -s ./tiamat-*.xml /tmp/output-photon.nbjson
 ```
 
 #### Manually importing the converted data to photon
@@ -27,11 +28,11 @@ java -jar converter/build/libs/converter-all.jar input-netex.xml /tmp/output-pho
 cd ..
 git clone https://github.com/komoot/photon.git
 cd photon
-./gradlew app:opensearch:build
-java -jar target/photon-opensearch-0.7.0.jar -nominatim-import -import-file /tmp/output-photon.nbjson -languages no \
+./gradlew build
+java -jar target/photon-0.7.0.jar -nominatim-import -import-file /tmp/output-photon.nbjson -languages no \
      -extra-tags id,gid,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,category,tariff_zones
 ```
-Start the server with `java -jar target/photon-opensearch-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
+Start the server with `java -jar target/photon-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 
 #### Manually running the pelias-impersonating proxy
 ```bash

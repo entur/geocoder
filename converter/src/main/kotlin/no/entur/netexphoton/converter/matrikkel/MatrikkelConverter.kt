@@ -117,7 +117,7 @@ class MatrikkelConverter : Converter {
                 place_id = abs(adresse.adresseId.hashCode().toLong()),
                 object_type = "N",
                 object_id = abs(adresse.adresseId.hashCode().toLong()),
-                categories = emptyList(),
+                categories = listOf("osm.public_transport.address"),
                 rank_address = 26,
                 importance = if (adresse.nummer == null) 0.1 else 0.09,
                 parent_place_id = 0,

@@ -4,13 +4,9 @@ import no.entur.netexphoton.common.Extra
 import no.entur.netexphoton.converter.Converter
 import no.entur.netexphoton.converter.JsonWriter
 import no.entur.netexphoton.converter.NominatimPlace
-import no.entur.netexphoton.converter.NominatimPlace.Address
-import no.entur.netexphoton.converter.NominatimPlace.Name
-import no.entur.netexphoton.converter.NominatimPlace.PlaceContent
-import no.entur.netexphoton.converter.netex.Country
+import no.entur.netexphoton.converter.NominatimPlace.*
 import java.io.File
 import java.nio.file.Paths
-import kotlin.collections.get
 import kotlin.math.abs
 
 class StopPlaceConverter : Converter {
@@ -44,17 +40,21 @@ class StopPlaceConverter : Converter {
         val transportModes =
             categories.getOrDefault(stopPlace.id, emptyList()).plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance =
-            0.2 +
+        val importance = 0.2 +
                 (transportModes.size * 0.1).coerceAtMost(0.4) +
                 (if (transportModes.contains("railStation")) 0.2 else 0.0)
+
+        val tariffZoneCategories = stopPlace.tariffZones?.tariffZoneRef
+            ?.mapNotNull { it.ref?.split(":")?.first()?.let { ref -> "tariff_zone_id.${ref}" } }
+            ?.toSet()
+            ?: emptySet()
 
         val stopPlaceContent =
             PlaceContent(
                 place_id = abs(stopPlace.id.hashCode().toLong()),
                 object_type = "N",
                 object_id = abs(stopPlace.id.hashCode().toLong()),
-                categories = emptyList(),
+                categories = listOf("osm.public_transport.stop_place").plus(tariffZoneCategories),
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
@@ -74,19 +74,19 @@ class StopPlaceConverter : Converter {
                         source = "nsr",
                         source_id = stopPlace.id,
                         accuracy = "point",
-                        country_a = Country.Companion.getThreeLetterCode(country),
+                        country_a = Country.getThreeLetterCode(country),
                         county_gid = "$countyGid",
                         locality = (locality ?: "unknown"),
                         locality_gid = "$localityGid",
                         label = listOfNotNull(stopPlace.name.text, locality).joinToString(","),
                         transport_modes = transportModes.joinToString(","),
                         tariff_zones = (
-                            stopPlace.tariffZones
-                                ?.tariffZoneRef
-                                ?.mapNotNull { it.ref }
-                                ?.joinToString(",")
-                                ?: "unknown"
-                        ),
+                                stopPlace.tariffZones
+                                    ?.tariffZoneRef
+                                    ?.mapNotNull { it.ref }
+                                    ?.joinToString(",")
+                                    ?: "unknown"
+                                ),
                     ),
             )
         entries.add(NominatimPlace("Place", listOf(stopPlaceContent)))

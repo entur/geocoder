@@ -251,7 +251,7 @@ class OsmConverter : Converter {
         }
 
     private fun determineCategories(tags: Map<String, String>): List<String> {
-        val categories = mutableListOf<String>()
+        val categories = mutableListOf("osm.public_transport.poi")
         (poiKeys + "place" + "building" + "highway").forEach { key ->
             tags[key]?.let { categories.add("$key:$it") }
         }

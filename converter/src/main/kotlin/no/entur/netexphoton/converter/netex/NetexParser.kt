@@ -59,7 +59,7 @@ class NetexParser {
             "TopographicPlace",
             "topographicPlaces",
         )) {
-            topoPlaces.put(topoPlace.id, topoPlace)
+            topoPlaces[topoPlace.id] = topoPlace
         }
         return topoPlaces
     }
