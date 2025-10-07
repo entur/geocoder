@@ -1,6 +1,6 @@
 apiVersion: v2
-name: netex-photon-server
-description: Netex Photon Server Helm Chart
+name: geocoder-proxy
+description: Geocoder Proxy Helm Chart
 type: application
 version: 0.0.1
 appVersion: "0.0.1"

@@ -1,11 +1,11 @@
-name: netex-photon
+name: geocoder
 
 services:
   server:
     build:
       context: .
       dockerfile: Dockerfile.photon
-    hostname: netex-photon-server
+    hostname: geocoder-photon
     environment:
       - SERVER_PORT=80 # Accessed from Dockerfile.photon
     ports:
@@ -18,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.proxy
-    hostname: netex-photon-proxy
+    hostname: geocoder-proxy
     environment:
       - SERVER_PORT=80 # Accessed from Proxy.kt
     ports:

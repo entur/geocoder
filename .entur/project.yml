@@ -1,13 +1,13 @@
 apiVersion: orchestrator.entur.io/apps/v1
 kind: GoogleCloudApplication
 metadata:
-  id: photonprxy # Common app id for both netex-photon-server and netex-photon-proxy
-  displayName: Netex Photon
-  name: netex-photon # This is also the namespace in GKE
+  id: geocoder # Common app id for both geocoder-photon and geocoder-proxy
+  displayName: EnTur Geocoder
+  name: geocoder # This is also the namespace in GKE
   owner: team-ror
   domain: journey-planner
   trigger: 1748952665
 spec:
   organization: entur
   environments: [dev]
-  repositories: [netex-photon]
+  repositories: [geocoder]

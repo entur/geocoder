@@ -118,14 +118,14 @@ class Command(
     }
 
     fun printUsage() {
-        println("Usage: netex-photon [options] -o <output-file>")
+        println("Usage: geocoder-convert [options] -o <output-file>")
         println("Options:")
         println("  -s <input-xml-file>     : Convert StopPlace XML data.")
         println("  -m <input-csv-file>     : Convert Matrikkel CSV data.")
         println("  -p <input-pbf-file>     : Convert OSM PBF data.")
         println("  -o <output-file>        : Specify the output file (required).")
         println("All conversion options can be used together, outputting to the same -o file.")
-        println("Example: netex-photon -s stoplace.xml -m matrikkel.csv -p data.osm.pbf -o combined_output.ndjson")
-        println("Example (single): netex-photon -s stoplace.xml -o s_out.ndjson")
+        println("Examples: geocoder-convert -s stoplace.xml -m matrikkel.csv -p data.osm.pbf -o combined_output.ndjson")
+        println("          geocoder-convert -s stoplace.xml -o s_out.ndjson")
     }
 }

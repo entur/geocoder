@@ -1,4 +1,4 @@
-rootProject.name = "netex-photon"
+rootProject.name = "geocoder"
 include("common")
 include("converter")
 include("proxy")

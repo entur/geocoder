@@ -1,6 +1,6 @@
 apiVersion: orchestrator.entur.io/github/v1
 kind: Repository
 metadata:
-  id: netex-photon
+  id: geocoder
 spec:
   environments: [dev]

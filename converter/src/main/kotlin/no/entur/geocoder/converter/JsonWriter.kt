@@ -26,7 +26,7 @@ class JsonWriter {
             val headerContent =
                 HeaderContent(
                     version = "0.1.0",
-                    generator = "netex-photon",
+                    generator = "geocoder",
                     database_version = "0.3.6-1",
                     data_timestamp = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                     features = Features(true, false),

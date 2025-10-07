@@ -24,7 +24,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/build.yml@v1
     with:
       dockerfile: Dockerfile.proxy
-      image_name: netex-photon-proxy
+      image_name: geocoder-proxy
 
   proxy-push:
     if: ${{ github.event_name != 'pull_request' }}
@@ -32,7 +32,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/push.yml@v1
     with:
       dockerfile: Dockerfile.proxy
-      image_name: netex-photon-proxy
+      image_name: geocoder-proxy
 
   proxy-scan:
     needs: [proxy-build]
@@ -47,9 +47,9 @@ jobs:
     with:
       environment: dev
       image: ${{ needs.proxy-push.outputs.image_name }}:${{ needs.proxy-push.outputs.image_tag}}
-      chart: helm/netex-photon-proxy
-      namespace: netex-photon
-      release_name: netex-photon-proxy
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy
     secrets: inherit
 
   #
@@ -67,7 +67,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/build.yml@v1
     with:
       dockerfile: Dockerfile.photon
-      image_name: netex-photon-server
+      image_name: geocoder-photon
 
   photon-push:
     if: ${{ github.event_name != 'pull_request' }}
@@ -75,7 +75,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/push.yml@v1
     with:
       dockerfile: Dockerfile.photon
-      image_name: netex-photon-server
+      image_name: geocoder-photon
 
   photon-scan:
     needs: [photon-build]
@@ -90,8 +90,8 @@ jobs:
     with:
       environment: dev
       image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
-      chart: helm/netex-photon-server
-      namespace: netex-photon
-      release_name: netex-photon-server
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
     secrets: inherit
 

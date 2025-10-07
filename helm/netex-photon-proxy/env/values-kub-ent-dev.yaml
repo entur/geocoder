@@ -1,4 +1,0 @@
-common:
-  env: dev
-  ingress:
-    host: netex-photon-proxy.dev.entur.org

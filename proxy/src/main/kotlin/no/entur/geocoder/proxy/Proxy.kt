@@ -22,7 +22,7 @@ private val transformer = FeatureTransformer()
 private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {
-    val photonBaseUrl = if (Environment.detect() == CONSOLE) "http://localhost:2322" else "http://netex-photon-server"
+    val photonBaseUrl = if (Environment.detect() == CONSOLE) "http://localhost:2322" else "http://geocoder-photon"
     val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
     logger.info("Starting Photon proxy server on port $proxyPort, forwarding to $photonBaseUrl")
 
