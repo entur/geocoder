@@ -18,8 +18,13 @@ If you don't like docker, you can also run the converter and photon manually.
 #### Manually building the converter and converting data
 ```bash
 ./gradlew build
+curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip | jar -xv
 curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
-java -jar converter/build/libs/converter-all.jar  -s ./tiamat-*.xml /tmp/output-photon.nbjson
+java -jar converter/build/libs/converter-all.jar \
+          -s ./tiamat-*.xml \
+          -m Basis*/*.csv \
+          -p converter/src/test/resources/oslo-center.osm.pbf \
+          -o /tmp/output-photon.nbjson
 ```
 
 #### Manually importing the converted data to photon
@@ -38,7 +43,12 @@ Start the server with `java -jar target/photon-0.7.0.jar`, and visit e.g. http:/
 ```bash
 java -jar proxy/build/libs/proxy-all.jar
 ```
+Go to http://localhost:8080/ for an overview of the available endpoints.
 
+Example query:
+```bash
+http://localhost:8080/v1/autocomplete?text=oslo&tariff_zone_ids=INN
+```
 
 ## Some references
 
@@ -54,6 +64,21 @@ java -jar proxy/build/libs/proxy-all.jar
 * [bau - geocoder comparison tool](https://github.com/entur/bau)
 * [Nominatim](https://github.com/osm-search/Nominatim)
 
+
+## Photon debugging
+
+Query photon directly:
+
+```bash
+curl -s 'http://localhost:2322/api?q=Oslo&include=tariff_zone_id.rut' | jq .
+```
+
+Or use the opensearch endpoint to debug queries, e.g.
+
+```bash
+curl -s http://localhost:9201/photon/_mapping | jq .     # Available fields
+curl -s http://localhost:9201/photon/_doc/719158973 | jq # Get document by ID
+```
 
 ## Relevant example data formats
 
