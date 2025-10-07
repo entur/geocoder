@@ -90,13 +90,19 @@ class Command(
                     println("Starting $name conversion...")
                 }
 
+                val startTime = System.currentTimeMillis()
                 converter.convert(inputFile, outputFile, !isFirstConversion)
+                val endTime = System.currentTimeMillis()
+                val durationSeconds = (endTime - startTime) / 1000.0
 
-                if (isFirstConversion) {
-                    println("$name conversion completed. Output written to ${outputFile.absolutePath}, size: ${outputFile.length()} bytes.")
-                } else {
-                    println("$name conversion completed. Appended to ${outputFile.absolutePath}, new size: ${outputFile.length()} bytes.")
-                }
+                val action = if (isFirstConversion) "Output written to" else "Appended to"
+                val fileSizeMB = outputFile.length() / (1024.0 * 1024.0)
+                println(
+                    "$name conversion completed in %.2f seconds. $action ${outputFile.absolutePath}, size: %.2f MB.".format(
+                        durationSeconds,
+                        fileSizeMB
+                    )
+                )
                 isFirstConversion = false
             }
         }
