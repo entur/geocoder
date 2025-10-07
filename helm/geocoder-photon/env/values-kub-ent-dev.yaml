@@ -1,4 +1,4 @@
 common:
   env: dev
   ingress:
-    host: geocoder-photon.dev.entur.org
+    host: geocoder-photon.dev.entur.io
