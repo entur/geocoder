@@ -51,11 +51,11 @@ class StopPlaceConverter : Converter {
 
         val categories = listOf("osm.public_transport.stop_place")
             .plus(tariffZoneCategories)
-            .plus(country?.let { "country:${it}" })
-            .plus(countyGid?.let { "county_gid:${it}" })
-            .plus(localityGid?.let { "locality_gid:${it}" })
-            .plus("layer:stopplace")
-            .plus("source:nsr")
+            .plus(country?.let { "country.${it}" })
+            .plus(countyGid?.let { "county_gid.${it}" })
+            .plus(localityGid?.let { "locality_gid.${it}" })
+            .plus("layer.stopplace")
+            .plus("source.nsr")
 
         val stopPlaceContent =
             PlaceContent(
@@ -71,7 +71,7 @@ class StopPlaceConverter : Converter {
                     Address(
                         county = county,
                     ),
-                postcode = "unknown",
+                postcode = null,
                 country_code = (country ?: "no"),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lat, lon, lat, lon),
@@ -84,8 +84,8 @@ class StopPlaceConverter : Converter {
                         accuracy = "point",
                         country_a = Country.getThreeLetterCode(country),
                         county_gid = "$countyGid",
-                        locality = (locality ?: "unknown"),
-                        locality_gid = "$localityGid",
+                        locality = locality,
+                        locality_gid = localityGid,
                         label = listOfNotNull(stopPlace.name.text, locality).joinToString(","),
                         transport_modes = transportModes.joinToString(","),
                         tariff_zones = (
@@ -93,7 +93,6 @@ class StopPlaceConverter : Converter {
                                     ?.tariffZoneRef
                                     ?.mapNotNull { it.ref }
                                     ?.joinToString(",")
-                                    ?: "unknown"
                                 ),
                     ),
             )

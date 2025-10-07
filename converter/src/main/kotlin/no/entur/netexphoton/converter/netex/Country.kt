@@ -57,7 +57,7 @@ enum class Country(
     ;
 
     companion object {
-        fun getThreeLetterCode(twoLetterCode: String?): String =
-            entries.toTypedArray().firstOrNull { it.name == twoLetterCode?.uppercase() }?.threeLetterCode ?: "unknown"
+        fun getThreeLetterCode(twoLetterCode: String?): String? =
+            entries.toTypedArray().firstOrNull { it.name == twoLetterCode?.uppercase() }?.threeLetterCode
     }
 }
