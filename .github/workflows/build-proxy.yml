@@ -52,46 +52,4 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  #
-  # Photon
-  #
-
-  photon-lint:
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: Dockerfile.photon
-      ignore: "DL3018,DL3059"
-
-  photon-build:
-    needs: photon-lint
-    uses: entur/gha-docker/.github/workflows/build.yml@v1
-    with:
-      dockerfile: Dockerfile.photon
-      image_name: geocoder-photon
-
-  photon-push:
-    if: ${{ github.event_name != 'pull_request' }}
-    needs: photon-build
-    uses: entur/gha-docker/.github/workflows/push.yml@v1
-    with:
-      dockerfile: Dockerfile.photon
-      image_name: geocoder-photon
-
-  photon-scan:
-    needs: [photon-build]
-    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
-    with:
-      image_artifact: ${{ needs.photon-build.outputs.image_artifact }}
-
-  photon-deploy:
-    if: ${{ github.event_name != 'pull_request' }}
-    needs: photon-push
-    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
-    with:
-      environment: dev
-      image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-    secrets: inherit
 
