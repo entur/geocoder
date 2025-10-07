@@ -1,4 +1,4 @@
-name: Build it
+name: Build and deploy Proxy
 
 on:
   push:

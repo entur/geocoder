@@ -1,4 +1,4 @@
-name: Build Photon
+name: Build and deploy Photon
 
 on:
   workflow_dispatch:
