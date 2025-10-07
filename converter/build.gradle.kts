@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = "no.entur.netexphoton.converter.CommandKt"
+    mainClass = "no.entur.geocoder.converter.CommandKt"
 }
 
 dependencies {

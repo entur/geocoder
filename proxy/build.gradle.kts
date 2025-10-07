@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass.set("no.entur.netexphoton.proxy.ProxyKt")
+    mainClass.set("no.entur.geocoder.proxy.ProxyKt")
 }
 
 dependencies {

@@ -1,4 +1,4 @@
-package no.entur.netexphoton.common
+package no.entur.geocoder.common
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
