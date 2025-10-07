@@ -6,6 +6,7 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.cors.routing.*
 import no.entur.geocoder.proxy.Environment.CONSOLE
 import no.entur.geocoder.proxy.Routing.configureRouting
 import org.slf4j.LoggerFactory
@@ -27,6 +28,11 @@ fun main() {
     logger.info("Starting Photon proxy server on port $proxyPort, forwarding to $photonBaseUrl")
 
     embeddedServer(Netty, port = proxyPort) {
+        install(CORS) {
+            anyHost()
+            allowCredentials = true
+            allowNonSimpleContentTypes = true
+        }
         install(ServerContentNegotiation) {
             jackson()
         }
