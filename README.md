@@ -117,37 +117,7 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq # Get document by ID
 }
 ```
 
-### photon
-```json5
-{
-      "type": "Feature", //OK
-      "properties": {
-        "osm_type": "W", //ny (object_type)
-        "osm_id": 800000001, //ny (object_id)
-        "osm_key": "railway", //ny
-        "osm_value": "station", //ny
-        "type": "street", //ny
-        "postcode": "0154", //ny (postcode)
-        "countrycode": "NO", //ny (country_code)
-        "name": "Oslo Central Station", //OK (name.name)
-        "country": "Norway", //ny (rel. country_a) 
-        "city": "Oslo", //ny (address.city)
-        "locality": "Sentrum", //OK (rel. locality_gid)
-        "street": "Jernbanetorget 1", //OK (address.street)
-        "county": "Oslo", //OK (address.county)
-        "extent": [10.748, 59.912, 10.755, 59.909] //ny
-      },
-      "geometry": { //OK
-        "type": "Point",
-        "coordinates": [
-          10.752011,
-          59.910004
-        ]
-      }
-}
-```
-
-### nominatim import (ndjson)
+### nominatim ndjson import example
 ```json5
 {
   "type": "Place",
@@ -190,59 +160,106 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq # Get document by ID
 }
 ```
 
-### Converter output WIP (ndjson)
+### Converter ndjson output (WIP)
 ```json5
 {
   "type": "Place",
   "content": [
     {
-      "place_id": 854487540,
+      "place_id": 719158973,
       "object_type": "N",
-      "object_id": 854487540,
-      "categories": [],
+      "object_id": 719158973,
+      "categories": [
+        "osm.public_transport.stop_place",
+        "tariff_zone_id.RUT",
+        "tariff_zone_id.RUT"
+      ],
       "rank_address": 30,
-      "importance": 0.000010,
+      "importance": 0.30000000000000004,
       "parent_place_id": 0,
       "name": {
-        "name": "Skøyen stasjon"
+        "name": "Berglyveien"
       },
       "address": {
-        "street": "NOT_AN_ADDRESS-NSR:StopPlace:152",
         "county": "Oslo"
       },
       "postcode": "unknown",
       "country_code": "no",
       "centroid": [
-        10.678831,
-        59.922353
+        10.806430,
+        59.828811
       ],
       "bbox": [
-        59.922353,
-        10.678831,
-        59.922353,
-        10.678831
+        59.828811,
+        10.806430,
+        59.828811,
+        10.806430
       ],
       "extra": {
-        "id": "NSR:StopPlace:152",
-        "gid": "openstreetmap:venue:NSR:StopPlace:152",
-        "layer": "venue",
-        "source": "openstreetmap",
-        "source_id": "NSR:StopPlace:152",
-        "accuracy": "point",
+        "locality_gid": "KVE:TopographicPlace:0301",
         "country_a": "NOR",
-        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
         "locality": "Oslo",
-        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
-        "label": "Skøyen stasjon,Oslo",
-        "category": "railStation",
-        "tariff_zones": "BRA:TariffZone:311,RUT:FareZone:4,RUT:TariffZone:1"
+        "accuracy": "point",
+        "source": "nsr",
+        "label": "Berglyveien,Oslo",
+        "tariff_zones": "RUT:TariffZone:1,RUT:FareZone:4",
+        "layer": "stopplace",
+        "id": "NSR:StopPlace:6744",
+        "source_id": "NSR:StopPlace:6744",
+        "county_gid": "KVE:TopographicPlace:03",
+        "transport_modes": "onstreetBus"
       }
     }
   ]
 }
 ```
 
-### Proxy output WIP
+### photon output
+http://localhost:2322/api?q=Berglyveien&include=layer.stopplace
+```json5
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 719158973,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Berglyveien",
+        "county": "Oslo",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Oslo",
+          "accuracy": "point",
+          "source": "nsr",
+          "label": "Berglyveien,Oslo",
+          "tariff_zones": "RUT:TariffZone:1,RUT:FareZone:4",
+          "id": "NSR:StopPlace:6744",
+          "source_id": "NSR:StopPlace:6744",
+          "county_gid": "KVE:TopographicPlace:03",
+          "layer": "stopplace"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.80643,
+          59.828811
+        ]
+      }
+    }
+  ]
+}
+```
+
+### Proxy output (WIP)
+http://localhost:8080/v1/autocomplete?text=berglyveien&layers=stopplace
 ```json5
 {
   "type": "FeatureCollection",
@@ -251,38 +268,39 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq # Get document by ID
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [10.678512, 59.922383]
+        "coordinates": [
+          10.80643,
+          59.828811
+        ]
       },
       "properties": {
-        "name": "Skøyen stasjon",
-        "street": "NOT_AN_ADDRESS-NSR:StopPlace:59651",
-        "county": "Oslo",
-        "id": "NSR:StopPlace:59651",
-        "gid": "openstreetmap:venue:NSR:StopPlace:59651",
-        "layer": "venue",
-        "source": "openstreetmap",
-        "source_id": "NSR:StopPlace:59651",
+        "id": "NSR:StopPlace:6744",
+        "layer": "stopplace",
+        "source": "nsr",
+        "source_id": "NSR:StopPlace:6744",
+        "name": "Berglyveien",
         "accuracy": "point",
         "country_a": "NOR",
-        "county_gid": "whosonfirst:county:KVE:TopographicPlace:03",
+        "county": "Oslo",
+        "county_gid": "KVE:TopographicPlace:03",
         "locality": "Oslo",
-        "locality_gid": "whosonfirst:locality:KVE:TopographicPlace:0301",
-        "label": "Skøyen stasjon, Oslo",
-        "category": [
-          "railStation",
-          "onstreetBus",
-          "onstreetBus",
+        "locality_gid": "KVE:TopographicPlace:0301",
+        "label": "Berglyveien, Oslo",
+        "transport_modes": [
           "onstreetBus"
         ],
         "tariff_zones": [
-          "BRA:TariffZone:311",
-          "RUT:FareZone:4",
-          "RUT:TariffZone:1"
+          "RUT:TariffZone:1",
+          "RUT:FareZone:4"
         ]
       }
-    },
-    ...
+    }
   ],
-  "bbox": [10.677136, 59.921956, 10.6793, 59.922865]
+  "bbox": [
+    10.80643,
+    59.828811,
+    10.80643,
+    59.828811
+  ]
 }
 ```
