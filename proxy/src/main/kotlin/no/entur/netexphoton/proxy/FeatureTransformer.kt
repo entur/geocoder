@@ -1,5 +1,6 @@
 package no.entur.netexphoton.proxy
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -9,7 +10,9 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class FeatureTransformer {
-    private val mapper: ObjectMapper = jacksonObjectMapper()
+    private val mapper: ObjectMapper = jacksonObjectMapper().apply {
+        setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    }
 
     fun parseAndTransform(input: String): String {
         val collection: FeatureCollection = mapper.readValue(input)
