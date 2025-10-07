@@ -1,4 +1,4 @@
 common:
   env: dev
   ingress:
-    host: geocoder-proxy.dev.entur.io
+    host: geocoder-proxy.dev.entur.org
