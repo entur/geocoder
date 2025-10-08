@@ -45,7 +45,7 @@ data class FeatureCollection(
         val locality: String? = null,
         val locality_gid: String? = null,
         val label: String? = null,
-        val transport_modes: List<String>? = null,
+        val category: List<String>? = null,
         val tariff_zones: List<String>? = null,
         val extra: Extra? = null,
     )

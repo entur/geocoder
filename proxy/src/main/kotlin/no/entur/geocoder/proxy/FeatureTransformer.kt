@@ -78,7 +78,7 @@ class FeatureTransformer {
                     borough = extra?.borough,
                     borough_gid = extra?.borough_gid,
                     label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
-                    transport_modes = extra?.transport_modes?.split(',')?.map { it.trim() },
+                    category = extra?.transport_modes?.split(',')?.map { it.trim() },
                     tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() }, // Remove extra from output
                 ),
         )

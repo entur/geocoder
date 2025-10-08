@@ -58,7 +58,7 @@ object Routing {
         val tariffZoneAuthorities = params["tariff_zone_authorities"]?.lowercase()?.split(",") ?: emptyList()
         val sources = params["sources"]?.lowercase()?.split(",") ?: emptyList()
         val layers = params["layers"]?.lowercase()?.split(",") ?: emptyList()
-        val transportModes = params["transport_mode"]?.split(",") ?: emptyList()
+        val categories = params["transport_mode"]?.split(",") ?: emptyList()
 
         val url = "$photonBaseUrl/api"
         logger.info("Proxying /v1/autocomplete to $url with ${params.toMap()}")

@@ -93,7 +93,7 @@ class ProxyTest {
             assertEquals("Oslo", feature.properties.name)
             assertEquals("Oslo", feature.properties.county)
             assertEquals("Oslo, Norway", feature.properties.label)
-            assertEquals(listOf("city", "transport"), feature.properties.transport_modes)
+            assertEquals(listOf("city", "transport"), feature.properties.category)
             assertEquals(listOf("zone1", "zone2"), feature.properties.tariff_zones)
             assertEquals(null, feature.properties.extra)
         }
