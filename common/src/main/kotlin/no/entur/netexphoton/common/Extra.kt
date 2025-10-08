@@ -1,7 +1,5 @@
 package no.entur.geocoder.common
 
-import com.fasterxml.jackson.annotation.JsonInclude
-
 data class Extra(
     val gid: String? = null,
     val locality_gid: String? = null,
@@ -18,4 +16,5 @@ data class Extra(
     val transport_modes: String? = null,
     val borough: String? = null,
     val borough_gid: String? = null,
+    val category: String? = null,
 )

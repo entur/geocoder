@@ -108,6 +108,13 @@ class OsmConverter : Converter {
         val country = (tags["addr:country"] ?: "no")
         val (lon, lat) = centroid
 
+
+        val categories = listOf("osm.public_transport.poi")
+            .plus(determineCategories(tags))
+            .plus("source.osm")
+            .plus("layer.$placeType")
+            .plus("country.$country")
+
         val extra =
             Extra(
                 id = entity.id.toString(),
@@ -117,6 +124,7 @@ class OsmConverter : Converter {
                 accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
                 label = name,
+                category = categories.joinToString(",")
             )
 
         val content =
