@@ -69,6 +69,7 @@ class FeatureTransformer {
                     source_id = transformSourceId(extra),
                     name = props.name,
                     street = props.street,
+                    postalcode = props.postcode,
                     housenumber = props.housenumber,
                     accuracy = extra?.accuracy,
                     country_a = extra?.country_a,
