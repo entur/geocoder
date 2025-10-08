@@ -78,9 +78,7 @@ class StopPlaceConverter : Converter {
                 extra =
                     Extra(
                         id = stopPlace.id,
-                        layer = "stopplace",
                         source = "nsr",
-                        source_id = stopPlace.id,
                         accuracy = "point",
                         country_a = Country.getThreeLetterCode(country),
                         county_gid = "$countyGid",

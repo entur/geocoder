@@ -25,11 +25,6 @@ class OsmConverterTest {
             nominatimPlace.content[0].name?.name,
             "Should have the correct name",
         )
-        assertEquals(
-            "amenity",
-            nominatimPlace.content[0].extra.layer,
-            "Should have the correct layer",
-        )
     }
 
     @Test

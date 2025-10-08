@@ -98,34 +98,30 @@ class OsmConverter : Converter {
         entity: Entity,
         tags: Map<String, String>,
         name: String,
-        placeType: String,
         objectType: String,
         accuracy: String,
         centroid: Pair<BigDecimal, BigDecimal>,
         address: Address = Address(),
     ): NominatimPlace {
-        val importance = calculateImportance(tags, placeType)
+        val importance = calculateImportance(tags)
         val country = (tags["addr:country"] ?: "no")
         val (lon, lat) = centroid
-
-
-        val categories = listOf("osm.public_transport.poi")
-            .plus(determineCategories(tags))
-            .plus("source.osm")
-            .plus("layer.$placeType")
-            .plus("country.$country")
 
         val extra =
             Extra(
                 id = entity.id.toString(),
-                layer = placeType,
-                source = "osm",
-                source_id = entity.id.toString(),
+                source = "openstreetmap",
                 accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
                 label = name,
-                category = categories.joinToString(",")
+                tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
             )
+
+        val categories: List<String> = listOf("osm.public_transport.poi")
+            .plus(tags.map { "${it.key}.${it.value}" })
+            .plus("source.osm")
+            .plus("layer.address")
+            .plus("country.$country")
 
         val content =
             PlaceContent(
@@ -133,7 +129,7 @@ class OsmConverter : Converter {
                 object_type = objectType,
                 object_id = abs(entity.id),
                 categories = categories,
-                rank_address = determineRankAddress(placeType),
+                rank_address = determineRankAddress(tags),
                 importance = importance,
                 parent_place_id = 0,
                 name = Name(name),
@@ -155,7 +151,6 @@ class OsmConverter : Converter {
             entity = node,
             tags = tags,
             name = name,
-            placeType = determineNodeType(tags),
             objectType = "N",
             accuracy = "point",
             centroid = node.longitude.toBigDecimalWithScale() to node.latitude.toBigDecimalWithScale(),
@@ -170,7 +165,6 @@ class OsmConverter : Converter {
             entity = way,
             tags = tags,
             name = name,
-            placeType = determineWayType(tags),
             objectType = "W",
             accuracy = "polygon",
             centroid = lon.toBigDecimalWithScale() to lat.toBigDecimalWithScale(),
@@ -201,7 +195,6 @@ class OsmConverter : Converter {
             entity = relation,
             tags = tags,
             name = name,
-            placeType = determineRelationType(tags),
             objectType = "R",
             accuracy = "polygon",
             centroid = centroid,
@@ -216,65 +209,26 @@ class OsmConverter : Converter {
         return lon to lat
     }
 
-    private fun determineNodeType(tags: Map<String, String>): String =
+    private fun determineRankAddress(tags: Map<String, String>): Int =
         when {
-            tags.containsKey("amenity") -> "amenity"
-            tags.containsKey("shop") -> "shop"
-            tags.containsKey("tourism") -> "tourism"
-            tags.containsKey("leisure") -> "leisure"
-            tags.containsKey("highway") -> "highway"
-            tags.containsKey("place") -> "place"
-            else -> "node"
-        }
-
-    private fun determineWayType(tags: Map<String, String>): String =
-        when {
-            tags.containsKey("building") -> "building"
-            tags.containsKey("highway") -> "road"
-            tags.containsKey("natural") -> "natural"
-            tags.containsKey("waterway") -> "waterway"
-            tags.containsKey("landuse") -> "landuse"
-            else -> "way"
-        }
-
-    private fun determineRelationType(tags: Map<String, String>): String =
-        when {
-            tags["type"] == "boundary" && tags["boundary"] == "administrative" -> "boundary"
-            tags["type"] == "multipolygon" -> "multipolygon"
-            tags["type"] == "route" -> "route"
-            else -> "relation"
-        }
-
-    private fun determineCategories(tags: Map<String, String>): List<String> {
-        val categories = mutableListOf<String>()
-        val poiKeys = setOf(
-            "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
-            "public_transport", "railway", "station", "aeroway", "natural", "waterway",
-        )
-        (poiKeys + "place" + "building" + "highway").forEach { key ->
-            tags[key]?.let { categories.add("$key.$it") }
-        }
-        return categories
-    }
-
-    private fun determineRankAddress(placeType: String): Int =
-        when (placeType) {
-            "amenity", "shop", "tourism" -> 30
-            "building" -> 28
-            "road" -> 26
-            "place" -> 20
-            "boundary" -> 10
+            tags.containsKey("boundary") -> 10
+            tags.containsKey("place") -> 20
+            tags.containsKey("road") -> 26
+            tags.containsKey("building") -> 28
+            tags.containsKey("amenity") -> 30
+            tags.containsKey("shop") -> 30
+            tags.containsKey("tourism") -> 30
             else -> 30
         }
 
-    private fun calculateImportance(tags: Map<String, String>, placeType: String): Double {
+    private fun calculateImportance(tags: Map<String, String>): Double {
         var importance = 0.03
 
-        when (placeType) {
-            "amenity" -> importance += 0.01
-            "shop" -> importance += 0.005
-            "tourism" -> importance += 0.015
-            "boundary" -> importance += 0.02
+        when {
+            tags.containsKey("amenity") -> importance += 0.01
+            tags.containsKey("shop") -> importance += 0.005
+            tags.containsKey("tourism") -> importance += 0.015
+            tags.containsKey("boundary") -> importance += 0.02
         }
 
         val nameKeys = tags.keys.count { it.startsWith("name") }

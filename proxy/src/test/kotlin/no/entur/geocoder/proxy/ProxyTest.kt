@@ -17,10 +17,10 @@ class ProxyTest {
     private val samplePhotonResponse =
         """
         {
-          "type": "FeatureCollection",
+          "type": "PhotonResult",
           "features": [
             {
-              "type": "Feature",
+              "type": "PhotonFeature",
               "geometry": {
                 "type": "Point",
                 "coordinates": [10.752200, 59.913900]
@@ -31,10 +31,7 @@ class ProxyTest {
                 "label": "Oslo,Norway",
                 "extra": {
                   "id": "1",
-                  "gid": "osm:1",
-                  "layer": "city",
-                  "source": "osm",
-                  "source_id": "1",
+                  "source": "openstreetmap",
                   "accuracy": "centre",
                   "country_a": "NOR",
                   "county_gid": "county:1",
@@ -83,7 +80,7 @@ class ProxyTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val collection: FeatureCollection = jacksonObjectMapper().readValue(response.bodyAsText())
+            val collection: PeliasResult = jacksonObjectMapper().readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)
 
             val feature = collection.features[0]
@@ -95,7 +92,6 @@ class ProxyTest {
             assertEquals("Oslo, Norway", feature.properties.label)
             assertEquals(listOf("city", "transport", "poi"), feature.properties.category)
             assertEquals(listOf("zone1", "zone2"), feature.properties.tariff_zones)
-            assertEquals(null, feature.properties.extra)
         }
 
     @Test
@@ -135,7 +131,7 @@ class ProxyTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val collection: FeatureCollection = jacksonObjectMapper().readValue(response.bodyAsText())
+            val collection: PeliasResult = jacksonObjectMapper().readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)
             assertEquals(
                 listOf(BigDecimal("10.752200"), BigDecimal("59.913900")),

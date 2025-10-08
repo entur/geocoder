@@ -40,9 +40,7 @@ class MatrikkelConverterTest {
         val extra = nominatimPlace.content.first().extra
 
         assertEquals("399524883", extra.id)
-        assertEquals("address", extra.layer)
         assertEquals("kartverket", extra.source)
-        assertEquals("399524883", extra.source_id)
         assertEquals("point", extra.accuracy)
         assertEquals("NOR", extra.country_a)
         assertEquals("KVE:TopographicPlace:34", extra.county_gid)

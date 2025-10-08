@@ -8,7 +8,6 @@ import no.entur.geocoder.converter.NominatimPlace.Address
 import no.entur.geocoder.converter.NominatimPlace.Name
 import no.entur.geocoder.converter.NominatimPlace.PlaceContent
 import no.entur.geocoder.converter.Util.titleize
-import no.entur.geocoder.converter.matrikkel.Geo
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -99,9 +98,7 @@ class MatrikkelConverter : Converter {
         val extra =
             Extra(
                 id = adresse.lokalid,
-                layer = "address",
                 source = "kartverket",
-                source_id = adresse.lokalid,
                 accuracy = "point",
                 country_a = "NOR",
                 county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" }, // TODO: just guessing
@@ -127,7 +124,7 @@ class MatrikkelConverter : Converter {
                     Address(
                         street = adresse.adressenavn,
                         city = adresse.poststed.titleize(),
-                        county = "TODO", // Placeholder for county, needs proper mapping
+                        county = "TODO", // TODO: Placeholder for county, needs proper mapping
                     ),
                 postcode = adresse.postnummer,
                 country_code = "no",
