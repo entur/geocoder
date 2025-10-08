@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import no.entur.geocoder.common.Extra
 import java.math.BigDecimal
 
@@ -34,7 +33,8 @@ data class FeatureCollection(
         val name: String? = null,
         val housenumber: String? = null,
         val street: String? = null,
-        val postalcode: String? = null,
+        val postcode: String? = null, // photon
+        val postalcode: String? = null, // pelias
         val accuracy: String? = null,
         val country_a: String? = null,
         val county: String? = null,
