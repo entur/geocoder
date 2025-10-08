@@ -64,9 +64,9 @@ class FeatureTransformer {
             properties =
                 Properties(
                     id = extra?.id,
-                    layer = extra?.layer,
+                    layer = transformLayer(extra),
                     source = transformSource(extra?.source),
-                    source_id = extra?.source_id,
+                    source_id = transformSourceId(extra),
                     name = props.name,
                     street = props.street,
                     housenumber = props.housenumber,
@@ -77,13 +77,20 @@ class FeatureTransformer {
                     locality = extra?.locality,
                     locality_gid = transformLocalityGid(extra?.locality_gid),
                     borough = extra?.borough,
-                    borough_gid = transformBoroguhGid(extra?.borough_gid),
+                    borough_gid = transformBoroughGid(extra?.borough_gid),
                     label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
                     category = transformCategory(extra),
                     tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
                 ),
         )
     }
+
+    fun transformSourceId(extra: Extra?): String? =
+        if (extra?.source_id != null && extra.source == "osm") {
+            "OSM:TopographicPlace:${extra.source_id}"
+        } else {
+            extra?.source_id
+        }
 
     fun transformCategory(extra: Extra?): List<String> {
         val category = mutableSetOf<String>()
@@ -93,18 +100,31 @@ class FeatureTransformer {
         if (extra?.source == "kartverket") {
             category.add("vegadresse")
         }
+        if (extra?.source == "osm") {
+            category.add("poi")
+            extra.layer?.let { category.add(it) }
+        }
         return category.toList()
     }
 
     fun transformSource(source: String?): String? =
         when (source?.lowercase()) {
             "osm" -> "whosonfirst"
-            "nsr" -> "venue"
+            "nsr" -> "openstreetmap"
             "kartverket" -> "openaddresses"
             else -> source
         }
 
-    fun transformBoroguhGid(boroughGid: String?): String? =
+    fun transformLayer(extra: Extra?): String? =
+        if (extra?.layer == "stopplace") {
+            "venue"
+        } else if (extra?.source == "osm") {
+            "address"
+        } else {
+            extra?.layer
+        }
+
+    fun transformBoroughGid(boroughGid: String?): String? =
         boroughGid?.let { "whosonfirst:$it" }
 
     fun transformCountyGid(countyGid: String?): String? =

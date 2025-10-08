@@ -89,11 +89,11 @@ class ProxyTest {
             val feature = collection.features[0]
             assertEquals(listOf(BigDecimal("10.752200"), BigDecimal("59.913900")), feature.geometry.coordinates)
             assertEquals("1", feature.properties.id)
-            assertEquals("city", feature.properties.layer)
+            assertEquals("address", feature.properties.layer)
             assertEquals("Oslo", feature.properties.name)
             assertEquals("Oslo", feature.properties.county)
             assertEquals("Oslo, Norway", feature.properties.label)
-            assertEquals(listOf("city", "transport"), feature.properties.category)
+            assertEquals(listOf("city", "transport", "poi"), feature.properties.category)
             assertEquals(listOf("zone1", "zone2"), feature.properties.tariff_zones)
             assertEquals(null, feature.properties.extra)
         }
