@@ -3,7 +3,7 @@ name: Build and deploy Photon
 on:
   workflow_dispatch:
 
-run-name: "Manual build of ${{ github.event.head_commit.id }}"
+run-name: "Manual build of ${{ github.sha }}"
 
 jobs:
 
