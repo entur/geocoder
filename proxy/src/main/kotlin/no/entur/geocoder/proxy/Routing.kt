@@ -14,7 +14,7 @@ object Routing {
 
     fun Application.configureRouting(
         client: HttpClient,
-        transformer: FeatureTransformer,
+        transformer: ResultTransformer,
         photonBaseUrl: String,
     ) {
         routing {
@@ -44,7 +44,7 @@ object Routing {
     private suspend fun RoutingContext.autocompleteRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        transformer: FeatureTransformer
+        transformer: ResultTransformer
     ) {
         val params = call.request.queryParameters
 
@@ -107,7 +107,7 @@ object Routing {
     private suspend fun RoutingContext.reverseRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        transformer: FeatureTransformer
+        transformer: ResultTransformer
     ) {
         val params = call.request.queryParameters
         val lat = params["point.lat"] ?: ""

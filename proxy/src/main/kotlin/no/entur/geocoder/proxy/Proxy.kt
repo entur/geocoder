@@ -19,7 +19,7 @@ private val httpClient =
             jackson()
         }
     }
-private val transformer = FeatureTransformer()
+private val transformer = ResultTransformer()
 private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {

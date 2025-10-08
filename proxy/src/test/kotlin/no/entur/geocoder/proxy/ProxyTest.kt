@@ -66,7 +66,7 @@ class ProxyTest {
             application {
                 configureRouting(
                     client = HttpClient(mockEngine),
-                    transformer = FeatureTransformer(),
+                    transformer = ResultTransformer(),
                     photonBaseUrl = "http://photon-test",
                 )
             }
@@ -115,7 +115,7 @@ class ProxyTest {
             application {
                 configureRouting(
                     client = HttpClient(mockEngine),
-                    transformer = FeatureTransformer(),
+                    transformer = ResultTransformer(),
                     photonBaseUrl = "http://photon-test",
                 )
             }

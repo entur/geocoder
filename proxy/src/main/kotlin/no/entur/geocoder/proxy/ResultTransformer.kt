@@ -10,7 +10,7 @@ import no.entur.geocoder.proxy.PhotonResult.PhotonFeature
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class FeatureTransformer {
+class ResultTransformer {
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
@@ -107,6 +107,14 @@ class FeatureTransformer {
         }
         if (extra?.source == "openstreetmap") {
             category.add("poi")
+        }
+        if (extra?.tags?.isNotBlank() == true) {
+            extra.tags?.split(",")?.forEach { tag ->
+                val parts = tag.split('.')
+                if (parts.size == 2 && parts[1].isNotBlank()) {
+                    category.add(parts[1])
+                }
+            }
         }
         return category.toList()
     }

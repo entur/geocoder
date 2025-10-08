@@ -5,6 +5,7 @@ import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer
 import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity
 import org.openstreetmap.osmosis.core.domain.v0_6.Node
+import org.openstreetmap.osmosis.core.domain.v0_6.Tag
 import org.openstreetmap.osmosis.core.task.v0_6.Sink
 import java.io.File
 import java.util.*
@@ -14,14 +15,8 @@ class OsmIterator(inputFile: File) : AbstractIterator<Entity>() {
     private val queue = LinkedBlockingQueue<Entity>()
     private val poisonPill: Entity = Node(CommonEntityData(-1L, 0, Date(0), null, 0L), 0.0, 0.0)
 
-    private val poiKeys =
-        setOf(
-            "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
-            "public_transport", "railway", "station", "aeroway", "natural", "waterway",
-        )
-
-    private fun isPoi(tags: Collection<org.openstreetmap.osmosis.core.domain.v0_6.Tag>) =
-        tags.any { it.key == "name" } && tags.any { it.key in poiKeys }
+    private fun hasWantedTag(tags: Collection<Tag>) =
+        tags.any { it.key == "name" } && tags.any { Poi.isWantedKey(it.key) }
 
     init {
         val reader = OsmosisReader(inputFile)
@@ -31,7 +26,7 @@ class OsmIterator(inputFile: File) : AbstractIterator<Entity>() {
 
                 override fun process(entityContainer: EntityContainer?) {
                     entityContainer?.entity?.let { entity ->
-                        if (isPoi(entity.tags)) {
+                        if (hasWantedTag(entity.tags)) {
                             queue.put(entity)
                         }
                     }

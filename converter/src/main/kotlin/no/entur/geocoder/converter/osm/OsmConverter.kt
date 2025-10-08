@@ -84,15 +84,22 @@ class OsmConverter : Converter {
     private fun parsePbf(inputFile: File): Sequence<Entity> = OsmIterator(inputFile).asSequence()
 
     internal fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
-        val tags = entity.tags.associate { it.key to it.value }
+        val tags = filterTags(entity.tags)
+        val name = entity.tags.firstOrNull { it.key == "name" }?.value
+
+        if (name.isNullOrEmpty()) return null
 
         return when (entity) {
-            is Node -> convertNodeToNominatim(entity, tags)
-            is Way -> convertWayToNominatim(entity, tags)
-            is Relation -> convertRelationToNominatim(entity, tags)
+            is Node -> convertNodeToNominatim(entity, tags, name)
+            is Way -> convertWayToNominatim(entity, tags, name)
+            is Relation -> convertRelationToNominatim(entity, tags, name)
             else -> null
         }
     }
+
+    private fun filterTags(tags: Collection<Tag>): Map<String, String> =
+        tags.associate { it.key to it.value }.filter { Poi.isWantedKey(it.key) }
+
 
     private fun createPlaceContent(
         entity: Entity,
@@ -145,8 +152,7 @@ class OsmConverter : Converter {
         return NominatimPlace("Place", listOf(content))
     }
 
-    private fun convertNodeToNominatim(node: Node, tags: Map<String, String>): NominatimPlace? {
-        val name = tags["name"] ?: return null
+    private fun convertNodeToNominatim(node: Node, tags: Map<String, String>, name: String): NominatimPlace? {
         return createPlaceContent(
             entity = node,
             tags = tags,
@@ -157,8 +163,7 @@ class OsmConverter : Converter {
         )
     }
 
-    private fun convertWayToNominatim(way: Way, tags: Map<String, String>): NominatimPlace? {
-        val name = tags["name"] ?: return null
+    private fun convertWayToNominatim(way: Way, tags: Map<String, String>, name: String): NominatimPlace? {
         val (lon, lat) = wayCentroids.get(way.id) ?: return null
 
         return createPlaceContent(
@@ -171,8 +176,7 @@ class OsmConverter : Converter {
         )
     }
 
-    private fun convertRelationToNominatim(relation: Relation, tags: Map<String, String>): NominatimPlace? {
-        val name = tags["name"] ?: return null
+    private fun convertRelationToNominatim(relation: Relation, tags: Map<String, String>, name: String): NominatimPlace? {
         val memberCoords =
             relation.members.mapNotNull {
                 when (it.memberType) {
