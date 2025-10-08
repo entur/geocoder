@@ -17,11 +17,6 @@ class OsmConverter : Converter {
     private val nodesCoords = CoordinateStore(500000)
     private val wayCentroids = CoordinateStore(50000)
 
-    private val poiKeys =
-        setOf(
-            "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
-            "public_transport", "railway", "station", "aeroway", "natural", "waterway",
-        )
 
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
@@ -37,21 +32,17 @@ class OsmConverter : Converter {
         JsonWriter().export(nominatimEntries, Paths.get(output.absolutePath), isAppending)
     }
 
-    private fun isPoi(tags: Map<String, String>): Boolean = tags.containsKey("name") && tags.keys.any { it in poiKeys }
 
     private fun collectNeededNodeIds(inputFile: File): Set<Long> {
         val neededNodeIds = hashSetOf<Long>()
         parsePbf(inputFile).forEach { entity ->
-            val tags = entity.tags.associate { it.key to it.value }
-            if (isPoi(tags)) {
-                when (entity) {
-                    is Node -> neededNodeIds.add(entity.id)
-                    is Way -> entity.wayNodes.forEach { neededNodeIds.add(it.nodeId) }
-                    is Relation ->
-                        entity.members
-                            .filter { it.memberType == EntityType.Node }
-                            .forEach { neededNodeIds.add(it.memberId) }
-                }
+            when (entity) {
+                is Node -> neededNodeIds.add(entity.id)
+                is Way -> entity.wayNodes.forEach { neededNodeIds.add(it.nodeId) }
+                is Relation ->
+                    entity.members
+                        .filter { it.memberType == EntityType.Node }
+                        .forEach { neededNodeIds.add(it.memberId) }
             }
         }
         return neededNodeIds
@@ -69,16 +60,13 @@ class OsmConverter : Converter {
         sequence {
             var count = 0
             parsePbf(inputFile).forEach { entity ->
-                val tags = entity.tags.associate { it.key to it.value }
-                if (isPoi(tags)) {
-                    if (entity is Way) {
-                        calculateAndStoreWayCentroid(entity)
-                    }
+                if (entity is Way) {
+                    calculateAndStoreWayCentroid(entity)
+                }
 
-                    convertOsmEntityToNominatim(entity)?.let {
-                        yield(it)
-                        count++
-                    }
+                convertOsmEntityToNominatim(entity)?.let {
+                    yield(it)
+                    count++
                 }
             }
             println("Finished processing $count entities")
@@ -97,7 +85,6 @@ class OsmConverter : Converter {
 
     internal fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
         val tags = entity.tags.associate { it.key to it.value }
-        if (!isPoi(tags)) return null
 
         return when (entity) {
             is Node -> convertNodeToNominatim(entity, tags)
@@ -131,12 +118,6 @@ class OsmConverter : Converter {
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
                 label = name,
             )
-
-        val categories = listOf("osm.public_transport.poi")
-            .plus(determineCategories(tags))
-            .plus("source.osm")
-            .plus("layer.$placeType")
-            .plus("country.$country")
 
         val content =
             PlaceContent(
@@ -258,6 +239,10 @@ class OsmConverter : Converter {
 
     private fun determineCategories(tags: Map<String, String>): List<String> {
         val categories = mutableListOf<String>()
+        val poiKeys = setOf(
+            "amenity", "shop", "tourism", "leisure", "historic", "office", "craft",
+            "public_transport", "railway", "station", "aeroway", "natural", "waterway",
+        )
         (poiKeys + "place" + "building" + "highway").forEach { key ->
             tags[key]?.let { categories.add("$key.$it") }
         }
