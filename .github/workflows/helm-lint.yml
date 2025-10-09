@@ -43,6 +43,6 @@ jobs:
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
     strategy:
       matrix:
-        environment: [dev, test]
+        environment: [dev,tst]
     with:
       environment: ${{ matrix.environment }}
