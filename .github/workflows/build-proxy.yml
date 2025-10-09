@@ -40,12 +40,24 @@ jobs:
     with:
       image_artifact: ${{ needs.proxy-build.outputs.image_artifact }}
 
-  proxy-deploy:
+  proxy-deploy-dev:
     if: ${{ github.event_name != 'pull_request' }}
     needs: proxy-push
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
+      image: ${{ needs.proxy-push.outputs.image_name }}:${{ needs.proxy-push.outputs.image_tag}}
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy
+    secrets: inherit
+
+  proxy-deploy-tst:
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: [proxy-push,proxy-deploy-dev]
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: tst
       image: ${{ needs.proxy-push.outputs.image_name }}:${{ needs.proxy-push.outputs.image_tag}}
       chart: helm/geocoder-proxy
       namespace: geocoder
