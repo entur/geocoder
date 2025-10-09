@@ -10,6 +10,7 @@ on:
         options:
           - dev
           - tst
+          - both
 
 run-name: "Manual build for ${{ inputs.environment }} (sha: ${{ github.sha }})"
 
@@ -46,7 +47,7 @@ jobs:
 
   photon-deploy-dev:
     needs: photon-push
-    if: inputs.environment == 'dev'
+    if: inputs.environment == 'dev' || inputs.environment == 'both'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
@@ -58,7 +59,7 @@ jobs:
 
   photon-deploy-tst:
     needs: photon-push
-    if: inputs.environment == 'tst'
+    if: inputs.environment == 'tst' || inputs.environment == 'both'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
