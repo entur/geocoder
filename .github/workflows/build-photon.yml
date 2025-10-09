@@ -1,9 +1,9 @@
-name: Build and deploy Photon
+name: Photon - Full import, build and deploy
 
 on:
   workflow_dispatch:
 
-run-name: "Manual build of ${{ github.sha }}"
+run-name: "Manual build (sha: ${{ github.sha }})"
 
 jobs:
 
