@@ -51,13 +51,13 @@ object Routing {
         val query = params["text"] ?: ""
         val size = params["size"]?.toIntOrNull() ?: 10
         val lang = params["lang"] ?: "no"
-        val boundaryCountry = params["boundary.country"]?.lowercase()
-        val boundaryCountyIds = params["boundary.county.ids"]?.lowercase()?.split(",") ?: emptyList()
-        val boundaryLocalityIds = params["boundary.locality.ids"]?.lowercase()?.split(",") ?: emptyList()
-        val tariffZones = params["tariff_zone_ids"]?.lowercase()?.split(",") ?: emptyList()
-        val tariffZoneAuthorities = params["tariff_zone_authorities"]?.lowercase()?.split(",") ?: emptyList()
-        val sources = params["sources"]?.lowercase()?.split(",") ?: emptyList()
-        val layers = params["layers"]?.lowercase()?.split(",") ?: emptyList()
+        val boundaryCountry = params["boundary.country"]
+        val boundaryCountyIds = params["boundary.county.ids"]?.split(",") ?: emptyList()
+        val boundaryLocalityIds = params["boundary.locality.ids"]?.split(",") ?: emptyList()
+        val tariffZones = params["tariff_zone_ids"]?.split(",") ?: emptyList()
+        val tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",") ?: emptyList()
+        val sources = params["sources"]?.split(",") ?: emptyList()
+        val layers = params["layers"]?.split(",") ?: emptyList()
         val categories = params["transport_mode"]?.split(",") ?: emptyList()
 
         val url = "$photonBaseUrl/api"
