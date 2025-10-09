@@ -1,0 +1,4 @@
+common:
+  env: tst
+  ingress:
+    host: geocoder-photon.staging.entur.io
