@@ -8,12 +8,11 @@ on:
     paths-ignore:
       - '.entur/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-
-  #
-  # Proxy
-  #
-
   proxy-lint:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:

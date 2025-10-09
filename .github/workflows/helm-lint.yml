@@ -37,6 +37,10 @@ on:
     paths:
       - 'helm/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   helm-lint:
     name: Helm Lint

@@ -13,8 +13,11 @@ on:
 
 run-name: "Manual build for ${{ inputs.environment }} (sha: ${{ github.sha }})"
 
-jobs:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
   photon-lint:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
