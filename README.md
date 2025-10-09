@@ -50,20 +50,23 @@ Example query:
 http://localhost:8080/v1/autocomplete?text=oslo&tariff_zone_ids=INN
 ```
 
-## Some references
+## Internal references
 
 * [Boost calculation in kakka](https://github.com/entur/kakka/blob/f8dbc8225e0cd84c013f6f4695a60e9f0b82c280/src/main/java/no/entur/kakka/geocoder/routes/pelias/mapper/netex/StopPlaceToPeliasMapper.java#L120)
 * [Boost config in kakka](https://github.com/entur/kakka/blob/master/helm/kakka/env/values-kub-ent-prd.yaml#L38)
+* [geocoder acceptance tests](https://github.com/entur/geocoder-acceptance-tests)
+* [bau - geocoder comparison tool](https://github.com/entur/bau) hosted at https://ent-bau-dev.web.app/
+* [pelias-api @ entur](https://github.com/entur/pelias-api)
+
+## External references
+
 * [photon](https://photon.komoot.de/)
 * [photon pelias adapter](https://github.com/stadtulm/photon-pelias-adapter)
 * [list of photon alt names](https://github.com/komoot/photon/blob/master/app/opensearch/src/main/java/de/komoot/photon/opensearch/PhotonDocSerializer.java#L99)
 * [OSM dumps for photon](https://download1.graphhopper.com/public/experimental/extracts/by-country-code/no/) from graphhopper
 * [Nominatim DB fields](https://nominatim.org/release-docs/latest/develop/Database-Layout/) (database layout)
 * [Photon JSON import PR](https://github.com/komoot/photon/pull/885) (outdated)
-* [pelias-api @ entur](https://github.com/entur/pelias-api)
-* [bau - geocoder comparison tool](https://github.com/entur/bau) hosted at https://ent-bau-dev.web.app/
 * [Nominatim search tool](https://github.com/osm-search/Nominatim)
-
 
 ## Photon debugging
 
