@@ -9,5 +9,5 @@ metadata:
   trigger: 1748952665
 spec:
   organization: entur
-  environments: [dev]
+  environments: [dev,test]
   repositories: [geocoder]
