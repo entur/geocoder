@@ -2,8 +2,16 @@ name: Photon - Full import, build and deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - tst
 
-run-name: "Manual build (sha: ${{ github.sha }})"
+run-name: "Manual build for ${{ inputs.environment }} (sha: ${{ github.sha }})"
 
 jobs:
 
@@ -35,6 +43,7 @@ jobs:
 
   photon-deploy-dev:
     needs: photon-push
+    if: inputs.environment == 'dev'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
@@ -45,7 +54,8 @@ jobs:
     secrets: inherit
 
   photon-deploy-tst:
-    needs: [photon-push,photon-deploy-dev]
+    needs: photon-push
+    if: inputs.environment == 'tst'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
