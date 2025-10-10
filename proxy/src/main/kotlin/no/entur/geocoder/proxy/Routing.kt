@@ -1,16 +1,14 @@
 package no.entur.geocoder.proxy
 
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.*
 import no.entur.geocoder.proxy.PeliasApi.autocompleteRequest
 import no.entur.geocoder.proxy.PeliasApi.reverseRequest
-import org.slf4j.LoggerFactory
+import no.entur.geocoder.proxy.V3Api.autocompleteRequest as v3AutocompleteRequest
+import no.entur.geocoder.proxy.V3Api.reverseRequest as v3ReverseRequest
 
 object Routing {
 
@@ -19,6 +17,8 @@ object Routing {
         transformer: ResultTransformer,
         photonBaseUrl: String,
     ) {
+        val v3Transformer = V3ResultTransformer()
+
         routing {
             get("/v1/autocomplete") {
                 autocompleteRequest(photonBaseUrl, client, transformer)
@@ -26,6 +26,14 @@ object Routing {
 
             get("/v1/reverse") {
                 reverseRequest(photonBaseUrl, client, transformer)
+            }
+
+            get("/v3/autocomplete") {
+                v3AutocompleteRequest(photonBaseUrl, client, v3Transformer)
+            }
+
+            get("/v3/reverse") {
+                v3ReverseRequest(photonBaseUrl, client, v3Transformer)
             }
 
             get("/") {
