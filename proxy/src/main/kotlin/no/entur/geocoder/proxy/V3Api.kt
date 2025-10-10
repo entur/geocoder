@@ -9,8 +9,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
 import org.slf4j.LoggerFactory
-import kotlin.text.split
-import kotlin.text.toIntOrNull
 
 object V3Api {
 
@@ -32,35 +30,18 @@ object V3Api {
             return
         }
 
+        val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
-        logger.info("V3 autocomplete request to $url with query='${params.query}'")
+        logger.info("V3 autocomplete request to $url with query='${photonRequest.query}'")
 
         try {
             val photonResponse = client.get(url) {
-                parameter("q", params.query)
-                parameter("limit", params.limit.toString())
-                parameter("lang", params.language)
+                parameter("q", photonRequest.query)
+                parameter("limit", photonRequest.limit.toString())
+                parameter("lang", photonRequest.language)
 
-                if (params.countries.isNotEmpty()) {
-                    parameter("include", params.countries.joinToString(",", "country."))
-                }
-                if (params.countyIds.isNotEmpty()) {
-                    parameter("include", params.countyIds.joinToString(",", "county_gid."))
-                }
-                if (params.localityIds.isNotEmpty()) {
-                    parameter("include", params.localityIds.joinToString(",", "locality_gid."))
-                }
-                if (params.tariffZones.isNotEmpty()) {
-                    parameter("include", params.tariffZones.joinToString(",", "tariff_zone_id."))
-                }
-                if (params.tariffZoneAuthorities.isNotEmpty()) {
-                    parameter("include", params.tariffZoneAuthorities.joinToString(",", "tariff_zone_authority."))
-                }
-                if (params.sources.isNotEmpty()) {
-                    parameter("include", params.sources.joinToString(",", "source."))
-                }
-                if (params.placeTypes.isNotEmpty()) {
-                    parameter("include", params.placeTypes.joinToString(",", "layer."))
+                if (photonRequest.includes.isNotEmpty()) {
+                    parameter("include", photonRequest.includes.joinToString(","))
                 }
             }.bodyAsText()
 
@@ -109,16 +90,17 @@ object V3Api {
             return
         }
 
+        val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
-        logger.info("V3 reverse geocoding request to $url at (${params.latitude}, ${params.longitude})")
+        logger.info("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
         try {
             val photonResponse = client.get(url) {
-                parameter("lat", params.latitude)
-                parameter("lon", params.longitude)
-                parameter("lang", params.language)
-                params.radius?.let { parameter("radius", it) }
-                parameter("limit", params.limit.toString())
+                parameter("lat", photonRequest.latitude)
+                parameter("lon", photonRequest.longitude)
+                parameter("lang", photonRequest.language)
+                photonRequest.radius?.let { parameter("radius", it) }
+                parameter("limit", photonRequest.limit.toString())
             }.bodyAsText()
 
             val json = transformer.parseAndTransform(

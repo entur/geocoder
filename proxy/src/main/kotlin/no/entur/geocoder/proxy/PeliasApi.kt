@@ -30,35 +30,20 @@ object PeliasApi {
             return
         }
 
+        val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
-        logger.info("Proxying /v1/autocomplete to $url with text='${params.text}'")
+        logger.info("Proxying /v1/autocomplete to $url with text='${photonRequest.query}'")
 
         try {
             val photonResponse =
                 client
                     .get(url) {
-                        parameter("q", params.text)
-                        parameter("limit", params.size.toString())
-                        parameter("lang", params.lang)
+                        parameter("q", photonRequest.query)
+                        parameter("limit", photonRequest.limit.toString())
+                        parameter("lang", photonRequest.language)
 
-                        params.boundaryCountry?.let { parameter("include", "country.$it") }
-                        if (params.boundaryCountyIds.isNotEmpty()) {
-                            parameter("include", params.boundaryCountyIds.joinToString(",", "county_gid."))
-                        }
-                        if (params.boundaryLocalityIds.isNotEmpty()) {
-                            parameter("include", params.boundaryLocalityIds.joinToString(",", "locality_gid."))
-                        }
-                        if (params.tariffZones.isNotEmpty()) {
-                            parameter("include", params.tariffZones.joinToString(",", "tariff_zone_id."))
-                        }
-                        if (params.tariffZoneAuthorities.isNotEmpty()) {
-                            parameter("include", params.tariffZoneAuthorities.joinToString(",", "tariff_zone_authority."))
-                        }
-                        if (params.sources.isNotEmpty()) {
-                            parameter("include", params.sources.joinToString(",", "source."))
-                        }
-                        if (params.layers.isNotEmpty()) {
-                            parameter("include", params.layers.joinToString(",", "layer."))
+                        if (photonRequest.includes.isNotEmpty()) {
+                            parameter("include", photonRequest.includes.joinToString(","))
                         }
                     }.bodyAsText()
 
@@ -93,18 +78,19 @@ object PeliasApi {
             return
         }
 
+        val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
-        logger.info("Proxying /v1/reverse to $url at (${params.lat}, ${params.lon})")
+        logger.info("Proxying /v1/reverse to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
         try {
             val photonResponse =
                 client
                     .get(url) {
-                        parameter("lat", params.lat)
-                        parameter("lon", params.lon)
-                        parameter("lang", params.lang)
-                        params.radius?.let { parameter("radius", it) }
-                        parameter("limit", params.size.toString())
+                        parameter("lat", photonRequest.latitude)
+                        parameter("lon", photonRequest.longitude)
+                        parameter("lang", photonRequest.language)
+                        photonRequest.radius?.let { parameter("radius", it) }
+                        parameter("limit", photonRequest.limit.toString())
                     }.bodyAsText()
 
             val json = transformer.parseAndTransform(photonResponse)
@@ -122,3 +108,4 @@ object PeliasApi {
 
     private val logger = LoggerFactory.getLogger(PeliasApi::class.java)
 }
+
