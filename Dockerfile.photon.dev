@@ -3,9 +3,9 @@ FROM gradle:9.1-jdk21-alpine AS build-image
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 
-RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip | jar -xv
-RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip | jar -xv
-RUN curl -sfLO https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf
+RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
+RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip | jar -xv
+
 RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/953-categories-final/photon-0.7.0.jar
 
 COPY . ./
@@ -13,7 +13,7 @@ RUN gradle --no-daemon :converter:build
 RUN java -jar converter/build/libs/converter-all.jar \
          -s tiamat*.xml \
          -m Basis*/*.csv \
-         -p norway-latest.osm.pbf \
+         -p converter/src/test/resources/oslo-center.osm.pbf \
          -o nominatim.ndjson
 
 RUN exec java -jar photon.jar \

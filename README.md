@@ -15,7 +15,7 @@ Now try some example requests, e.g.
 
 If you don't like docker, you can also run the converter and photon manually.
 
-#### Manually building the converter and converting data
+#### Manually building the converter and converting data (using just Oslo as example)
 ```bash
 ./gradlew build
 curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip | jar -xv

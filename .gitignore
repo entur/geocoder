@@ -1,6 +1,12 @@
 .gradle
-
 build
 /.kotlin/
 /.idea/
 **/charts/*.tgz
+
+/tiamat*xml
+/*.osm.pbf
+/*.osm.json
+/*.ndjson
+/matrikkelenAdresse.csv
+/Basis*/*csv
