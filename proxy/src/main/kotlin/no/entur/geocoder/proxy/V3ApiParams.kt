@@ -42,6 +42,17 @@ data class V3ReverseParams(
     val limit: Int = 10,
     val language: String = "no"
 ) {
+    init {
+        require(latitude.isNotBlank()) { "Parameter 'latitude' is required" }
+        require(longitude.isNotBlank()) { "Parameter 'longitude' is required" }
+        require(latitude.toDoubleOrNull() != null) { "Parameter 'latitude' must be a valid number" }
+        require(longitude.toDoubleOrNull() != null) { "Parameter 'longitude' must be a valid number" }
+        val lat = latitude.toDouble()
+        val lon = longitude.toDouble()
+        require(lat in -90.0..90.0) { "Parameter 'latitude' must be between -90 and 90" }
+        require(lon in -180.0..180.0) { "Parameter 'longitude' must be between -180 and 180" }
+    }
+
     companion object {
         fun fromRequest(request: ApplicationRequest): V3ReverseParams {
             val params = request.queryParameters

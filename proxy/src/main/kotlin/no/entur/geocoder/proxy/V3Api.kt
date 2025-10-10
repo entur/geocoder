@@ -19,7 +19,18 @@ object V3Api {
         client: HttpClient,
         transformer: V3ResultTransformer
     ) {
-        val params = V3AutocompleteParams.fromRequest(call.request)
+        val params = try {
+            V3AutocompleteParams.fromRequest(call.request)
+        } catch (e: Exception) {
+            logger.error("Invalid parameters for V3 autocomplete: ${e.message}")
+            val error = ErrorHandler.handleError(e, "Autocomplete")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode)
+            )
+            return
+        }
 
         val url = "$photonBaseUrl/api"
         logger.info("V3 autocomplete request to $url with query='${params.query}'")
@@ -71,10 +82,11 @@ object V3Api {
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error in V3 autocomplete: ${e.message}", e)
+            val error = ErrorHandler.handleError(e, "Autocomplete")
             call.respondText(
-                """{"error":"Geocoding service unavailable","message":"${e.message}"}""",
+                ErrorHandler.toJson(error),
                 contentType = ContentType.Application.Json,
-                status = HttpStatusCode.ServiceUnavailable,
+                status = HttpStatusCode.fromValue(error.statusCode)
             )
         }
     }
@@ -84,7 +96,18 @@ object V3Api {
         client: HttpClient,
         transformer: V3ResultTransformer
     ) {
-        val params = V3ReverseParams.fromRequest(call.request)
+        val params = try {
+            V3ReverseParams.fromRequest(call.request)
+        } catch (e: Exception) {
+            logger.error("Invalid parameters for V3 reverse: ${e.message}")
+            val error = ErrorHandler.handleError(e, "Reverse geocoding")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode)
+            )
+            return
+        }
 
         val url = "$photonBaseUrl/reverse"
         logger.info("V3 reverse geocoding request to $url at (${params.latitude}, ${params.longitude})")
@@ -109,10 +132,11 @@ object V3Api {
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error in V3 reverse geocoding: ${e.message}", e)
+            val error = ErrorHandler.handleError(e, "Reverse geocoding")
             call.respondText(
-                """{"error":"Reverse geocoding service unavailable","message":"${e.message}"}""",
+                ErrorHandler.toJson(error),
                 contentType = ContentType.Application.Json,
-                status = HttpStatusCode.ServiceUnavailable,
+                status = HttpStatusCode.fromValue(error.statusCode)
             )
         }
     }

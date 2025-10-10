@@ -42,6 +42,17 @@ data class PeliasReverseParams(
     val size: Int = 10,
     val lang: String = "no"
 ) {
+    init {
+        require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
+        require(lon.isNotBlank()) { "Parameter 'point.lon' is required" }
+        require(lat.toDoubleOrNull() != null) { "Parameter 'point.lat' must be a valid number" }
+        require(lon.toDoubleOrNull() != null) { "Parameter 'point.lon' must be a valid number" }
+        val latitude = lat.toDouble()
+        val longitude = lon.toDouble()
+        require(latitude in -90.0..90.0) { "Parameter 'point.lat' must be between -90 and 90" }
+        require(longitude in -180.0..180.0) { "Parameter 'point.lon' must be between -180 and 180" }
+    }
+
     companion object {
         fun fromRequest(request: ApplicationRequest): PeliasReverseParams {
             val params = request.queryParameters

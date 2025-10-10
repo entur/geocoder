@@ -8,10 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
-import io.ktor.util.toMap
 import org.slf4j.LoggerFactory
-import kotlin.text.split
-import kotlin.text.toIntOrNull
 
 object PeliasApi {
 
@@ -20,7 +17,18 @@ object PeliasApi {
         client: HttpClient,
         transformer: ResultTransformer
     ) {
-        val params = PeliasAutocompleteParams.fromRequest(call.request)
+        val params = try {
+            PeliasAutocompleteParams.fromRequest(call.request)
+        } catch (e: Exception) {
+            logger.error("Invalid parameters for Pelias autocomplete: ${e.message}")
+            val error = ErrorHandler.handleError(e, "Autocomplete")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode)
+            )
+            return
+        }
 
         val url = "$photonBaseUrl/api"
         logger.info("Proxying /v1/autocomplete to $url with text='${params.text}'")
@@ -58,10 +66,11 @@ object PeliasApi {
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
+            val error = ErrorHandler.handleError(e, "Autocomplete")
             call.respondText(
-                """{"error":"Failed to connect to Photon backend: $e"}""",
+                ErrorHandler.toJson(error),
                 contentType = ContentType.Application.Json,
-                status = HttpStatusCode.ServiceUnavailable,
+                status = HttpStatusCode.fromValue(error.statusCode)
             )
         }
     }
@@ -71,7 +80,18 @@ object PeliasApi {
         client: HttpClient,
         transformer: ResultTransformer
     ) {
-        val params = PeliasReverseParams.fromRequest(call.request)
+        val params = try {
+            PeliasReverseParams.fromRequest(call.request)
+        } catch (e: Exception) {
+            logger.error("Invalid parameters for Pelias reverse: ${e.message}")
+            val error = ErrorHandler.handleError(e, "Reverse geocoding")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode)
+            )
+            return
+        }
 
         val url = "$photonBaseUrl/reverse"
         logger.info("Proxying /v1/reverse to $url at (${params.lat}, ${params.lon})")
@@ -91,10 +111,11 @@ object PeliasApi {
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
+            val error = ErrorHandler.handleError(e, "Reverse geocoding")
             call.respondText(
-                """{"error":"Failed to connect to Photon backend: $e"}""",
+                ErrorHandler.toJson(error),
                 contentType = ContentType.Application.Json,
-                status = HttpStatusCode.ServiceUnavailable,
+                status = HttpStatusCode.fromValue(error.statusCode)
             )
         }
     }

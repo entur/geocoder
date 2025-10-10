@@ -116,3 +116,20 @@ GET /v3/reverse?latitude=59.91&longitude=10.75&radius=1000
 - **NSR** - Public transport
 - **OpenStreetMap** - POIs
 
+## Error Responses
+
+```json
+{
+  "error": "Invalid parameters",
+  "message": "Parameter 'latitude' is required",
+  "statusCode": 400
+}
+```
+
+**Status Codes:**
+- `400` - Invalid parameters
+- `502` - Backend error
+- `503` - Connection failed
+- `500` - Unexpected error
+
+
