@@ -1,5 +1,8 @@
 package no.entur.geocoder.proxy
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.Extra
 import java.math.BigDecimal
 
@@ -8,6 +11,11 @@ data class PhotonResult(
     val features: List<PhotonFeature>,
     val bbox: List<BigDecimal>? = null,
 ) {
+    companion object {
+        private val mapper: ObjectMapper = jacksonObjectMapper()
+
+        fun parse(json: String): PhotonResult = mapper.readValue(json)
+    }
     data class PhotonFeature(
         val type: String = "PhotonFeature",
         val geometry: PhotonGeometry,

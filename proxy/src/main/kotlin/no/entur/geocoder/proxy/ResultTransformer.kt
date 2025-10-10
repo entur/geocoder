@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.proxy.PeliasResult.*
 import no.entur.geocoder.proxy.PhotonResult.PhotonFeature
@@ -15,9 +14,8 @@ class ResultTransformer {
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 
-    fun parseAndTransform(input: String): String {
-        val collection: PhotonResult = mapper.readValue(input)
-        val transformedFeatures = collection.features.map { transformFeature(it) }
+    fun parseAndTransform(photonResult: PhotonResult): String {
+        val transformedFeatures = photonResult.features.map { transformFeature(it) }
 
         val bbox = calculateBoundingBox(transformedFeatures)
 

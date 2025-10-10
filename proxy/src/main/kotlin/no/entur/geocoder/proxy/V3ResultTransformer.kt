@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.proxy.PhotonResult.PhotonFeature
 import no.entur.geocoder.proxy.V3Result.*
 import java.math.BigDecimal
@@ -15,38 +14,25 @@ class V3ResultTransformer {
     }
 
     fun parseAndTransform(
-        input: String,
-        query: String? = null,
-        latitude: BigDecimal? = null,
-        longitude: BigDecimal? = null,
-        limit: Int = 10,
-        language: String = "no",
-        placeTypes: List<String> = emptyList(),
-        sources: List<String> = emptyList(),
-        countries: List<String> = emptyList(),
-        countyIds: List<String> = emptyList(),
-        localityIds: List<String> = emptyList(),
-        tariffZones: List<String> = emptyList(),
-        tariffZoneAuthorities: List<String> = emptyList(),
-        transportModes: List<String> = emptyList()
+        photonResult: PhotonResult,
+        params: V3AutocompleteParams
     ): String {
-        val photonResult: PhotonResult = mapper.readValue(input)
         val places = photonResult.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
 
-        val filters = if (placeTypes.isNotEmpty() || sources.isNotEmpty() || countries.isNotEmpty() ||
-            countyIds.isNotEmpty() || localityIds.isNotEmpty() || tariffZones.isNotEmpty() ||
-            tariffZoneAuthorities.isNotEmpty() || transportModes.isNotEmpty()) {
+        val filters = if (params.placeTypes.isNotEmpty() || params.sources.isNotEmpty() || params.countries.isNotEmpty() ||
+            params.countyIds.isNotEmpty() || params.localityIds.isNotEmpty() || params.tariffZones.isNotEmpty() ||
+            params.tariffZoneAuthorities.isNotEmpty() || params.transportModes.isNotEmpty()) {
             Filters(
-                placeTypes = placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
-                sources = sources.takeIf { it.isNotEmpty() },
-                countries = countries.takeIf { it.isNotEmpty() },
-                countyIds = countyIds.takeIf { it.isNotEmpty() },
-                localityIds = localityIds.takeIf { it.isNotEmpty() },
-                tariffZones = tariffZones.takeIf { it.isNotEmpty() },
-                tariffZoneAuthorities = tariffZoneAuthorities.takeIf { it.isNotEmpty() },
-                transportModes = transportModes.takeIf { it.isNotEmpty() }
+                placeTypes = params.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
+                sources = params.sources.takeIf { it.isNotEmpty() },
+                countries = params.countries.takeIf { it.isNotEmpty() },
+                countyIds = params.countyIds.takeIf { it.isNotEmpty() },
+                localityIds = params.localityIds.takeIf { it.isNotEmpty() },
+                tariffZones = params.tariffZones.takeIf { it.isNotEmpty() },
+                tariffZoneAuthorities = params.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
+                transportModes = params.transportModes.takeIf { it.isNotEmpty() }
             )
         } else null
 
@@ -54,12 +40,40 @@ class V3ResultTransformer {
             results = places,
             metadata = Metadata(
                 query = QueryInfo(
-                    text = query,
-                    latitude = latitude,
-                    longitude = longitude,
-                    limit = limit,
-                    language = language,
+                    text = params.query,
+                    latitude = null,
+                    longitude = null,
+                    limit = params.limit,
+                    language = params.language,
                     filters = filters
+                ),
+                resultCount = places.size,
+                timestamp = System.currentTimeMillis(),
+                boundingBox = boundingBox
+            )
+        )
+
+        return mapper.writeValueAsString(result)
+    }
+
+    fun parseAndTransform(
+        photonResult: PhotonResult,
+        params: V3ReverseParams
+    ): String {
+        val places = photonResult.features.map { transformFeature(it) }
+
+        val boundingBox = calculateBoundingBox(places)
+
+        val result = V3Result(
+            results = places,
+            metadata = Metadata(
+                query = QueryInfo(
+                    text = null,
+                    latitude = params.latitude.toBigDecimalOrNull(),
+                    longitude = params.longitude.toBigDecimalOrNull(),
+                    limit = params.limit,
+                    language = params.language,
+                    filters = null
                 ),
                 resultCount = places.size,
                 timestamp = System.currentTimeMillis(),

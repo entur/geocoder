@@ -47,7 +47,8 @@ object PeliasApi {
                         }
                     }.bodyAsText()
 
-            val json = transformer.parseAndTransform(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse)
+            val json = transformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
@@ -93,7 +94,8 @@ object PeliasApi {
                         parameter("limit", photonRequest.limit.toString())
                     }.bodyAsText()
 
-            val json = transformer.parseAndTransform(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse)
+            val json = transformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)

@@ -45,20 +45,8 @@ object V3Api {
                 }
             }.bodyAsText()
 
-            val json = transformer.parseAndTransform(
-                photonResponse,
-                query = params.query,
-                limit = params.limit,
-                language = params.language,
-                placeTypes = params.placeTypes,
-                sources = params.sources,
-                countries = params.countries,
-                countyIds = params.countyIds,
-                localityIds = params.localityIds,
-                tariffZones = params.tariffZones,
-                tariffZoneAuthorities = params.tariffZoneAuthorities,
-                transportModes = params.transportModes
-            )
+            val photonResult = PhotonResult.parse(photonResponse)
+            val json = transformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
@@ -103,13 +91,8 @@ object V3Api {
                 parameter("limit", photonRequest.limit.toString())
             }.bodyAsText()
 
-            val json = transformer.parseAndTransform(
-                photonResponse,
-                latitude = params.latitude.toBigDecimalOrNull(),
-                longitude = params.longitude.toBigDecimalOrNull(),
-                limit = params.limit,
-                language = params.language
-            )
+            val photonResult = PhotonResult.parse(photonResponse)
+            val json = transformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
