@@ -20,11 +20,11 @@ object Routing {
         val v3Transformer = V3ResultTransformer()
 
         routing {
-            get("/v1/autocomplete") {
+            get("/v2/autocomplete") {
                 autocompleteRequest(photonBaseUrl, client, transformer)
             }
 
-            get("/v1/reverse") {
+            get("/v2/reverse") {
                 reverseRequest(photonBaseUrl, client, transformer)
             }
 

@@ -7,8 +7,8 @@ docker compose up --build
 ```
 Now try some example requests, e.g.
 
-* http://localhost:8080/v1/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
-* http://localhost:8080/v1/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
+* http://localhost:8080/v2/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
+* http://localhost:8080/v2/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
 
 
 ## Manual usage
@@ -47,7 +47,7 @@ Go to http://localhost:8080/ for an overview of the available endpoints.
 
 Example query:
 ```bash
-http://localhost:8080/v1/autocomplete?text=oslo&tariff_zone_ids=INN
+http://localhost:8080/v2/autocomplete?text=oslo&tariff_zone_ids=INN
 ```
 
 ## Internal references
@@ -262,7 +262,7 @@ http://localhost:2322/api?q=Berglyveien&include=layer.stopplace
 ```
 
 ### Proxy output (WIP)
-http://localhost:8080/v1/autocomplete?text=berglyveien&layers=stopplace
+http://localhost:8080/v2/autocomplete?text=berglyveien&layers=stopplace
 ```json5
 {
   "type": "FeatureCollection",

@@ -72,7 +72,7 @@ class ProxyTest {
             }
 
             val response =
-                client.get("/v1/autocomplete") {
+                client.get("/v2/autocomplete") {
                     parameter("text", "test_query")
                     parameter("size", "5")
                     parameter("lang", "en")
@@ -121,7 +121,7 @@ class ProxyTest {
             }
 
             val response =
-                client.get("/v1/reverse") {
+                client.get("/v2/reverse") {
                     parameter("point.lat", "59.9139")
                     parameter("point.lon", "10.7522")
                     parameter("boundary.circle.radius", "100")

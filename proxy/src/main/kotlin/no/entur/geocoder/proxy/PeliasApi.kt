@@ -32,7 +32,7 @@ object PeliasApi {
 
         val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
-        logger.info("Proxying /v1/autocomplete to $url with text='${photonRequest.query}'")
+        logger.info("Proxying /v2/autocomplete to $url with text='${photonRequest.query}'")
 
         try {
             val photonResponse =
@@ -81,7 +81,7 @@ object PeliasApi {
 
         val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
-        logger.info("Proxying /v1/reverse to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
+        logger.info("Proxying /v2/reverse to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
         try {
             val photonResponse =
