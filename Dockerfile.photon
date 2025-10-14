@@ -3,19 +3,24 @@ FROM gradle:9.1-jdk21-alpine AS build-image
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 
-RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip | jar -xv
-RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip | jar -xv
-#RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip | jar -xv
-RUN curl -sfLO https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf
-RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/953-categories-final/photon-0.7.0.jar
-
 COPY . ./
 RUN gradle --no-daemon :converter:build
-RUN java -jar converter/build/libs/converter-all.jar \
-         -s tiamat*.xml \
-         -m Basis*/*.csv \
-         -p norway-latest.osm.pbf \
-         -o nominatim.ndjson
+
+RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip | jar -xv
+RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -o nominatim.ndjson && \
+    rm tiamat*.xml
+
+RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip | jar -xv
+RUN java -jar converter/build/libs/converter-all.jar -a -m Basis*/*.csv -o nominatim.ndjson && \
+    rm -rf Basis*
+
+#RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip | jar -xv
+
+RUN curl -sfLO https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf
+RUN java -jar converter/build/libs/converter-all.jar -a -p norway-latest.osm.pbf -o nominatim.ndjson && \
+    rm norway-latest.osm.pbf
+
+RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/953-categories-final/photon-0.7.0.jar
 
 RUN exec java -jar photon.jar \
     -nominatim-import \
@@ -23,7 +28,7 @@ RUN exec java -jar photon.jar \
     -languages no,en \
     -extra-tags ALL
 
-RUN rm -rf ./tiamat*.xml ./Basis* ./*.zip ./*.pbf ./nominatim.ndjson
+RUN rm -rf ./nominatim.ndjson
 
 FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
 
