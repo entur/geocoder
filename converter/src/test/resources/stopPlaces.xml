@@ -21,7 +21,7 @@
                     <CountryRef ref="no"></CountryRef>
                 </TopographicPlace>
             </topographicPlaces>
-            <groupOfStopPlaces>
+            <groupsOfStopPlaces>
                 <GroupOfStopPlaces created="2018-04-13T21:45:04.407" changed="2025-07-04T11:50:07.392" modification="new" version="3" id="NSR:GroupOfStopPlaces:72">
                     <keyList>
                         <KeyValue>
@@ -68,7 +68,7 @@
                         </Location>
                     </Centroid>
                 </GroupOfStopPlaces>
-            </groupOfStopPlaces>
+            </groupsOfStopPlaces>
             <stopPlaces>
                 <StopPlace created="2017-06-19T22:10:00.846" changed="2024-04-09T19:15:12.888" modification="new"
                            version="2" id="NSR:StopPlace:56697">

@@ -56,12 +56,12 @@ class NetexParser {
         val seq =
             sequence {
                 try {
-                    moveToStartElement(netexReader, "groupOfStopPlaces")
+                    moveToStartElement(netexReader, "groupsOfStopPlaces")
                     for (groupOfStopPlaces in elementSequence<GroupOfStopPlaces>(
                         netexReader,
                         xmlMapper,
                         "GroupOfStopPlaces",
-                        "groupOfStopPlaces",
+                        "groupsOfStopPlaces",
                     )) {
                         yield(groupOfStopPlaces)
                     }
