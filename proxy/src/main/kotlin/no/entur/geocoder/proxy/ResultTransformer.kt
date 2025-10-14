@@ -67,7 +67,7 @@ class ResultTransformer {
             properties = PeliasProperties(
                 id = extra?.id,
                 layer = transformLayer(extra),
-                source = transformSource(extra?.source),
+                source = transformSource(extra),
                 source_id = transformSourceId(extra),
                 name = props.name,
                 street = props.street,
@@ -106,7 +106,7 @@ class ResultTransformer {
         if (extra?.source == "openstreetmap") {
             category.add("poi")
         }
-        if (extra?.id?.contains("GroupOfStopPlaces") == true) {
+        if (isGosp(extra)) {
             category.add("GroupOfStopPlaces")
         }
         if (extra?.tags?.isNotBlank() == true) {
@@ -120,22 +120,27 @@ class ResultTransformer {
         return category.toList()
     }
 
-    fun transformSource(source: String?): String? =
-        when (source?.lowercase()) {
-            "openstreetmap" -> "whosonfirst"
-            "nsr" -> "openstreetmap"
-            "kartverket" -> "openaddresses"
-            else -> source
+    fun transformSource(extra: Extra?): String? =
+        when  {
+            isGosp(extra) -> "whosonfirst"
+            extra?.source == "openstreetmap" -> "whosonfirst"
+            extra?.source == "nsr" -> "openstreetmap"
+            extra?.source == "kartverket" -> "openaddresses"
+            else -> extra?.source
         }
 
     fun transformLayer(extra: Extra?): String? =
-        if (extra?.source == "nsr") {
+        if (isGosp(extra)) {
+            "address"
+        } else if (extra?.source == "nsr") {
             "venue"
         } else if (extra?.source == "openstreetmap") {
             "address"
         } else {
             extra?.source
         }
+
+    fun isGosp(extra: Extra?): Boolean = extra?.id?.contains("GroupOfStopPlaces") == true
 
     fun transformBoroughGid(boroughGid: String?): String? =
         boroughGid?.let { "whosonfirst:$it" }

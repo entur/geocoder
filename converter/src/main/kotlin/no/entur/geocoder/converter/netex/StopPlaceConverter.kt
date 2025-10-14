@@ -157,9 +157,9 @@ class StopPlaceConverter : Converter {
                 source = "nsr",
                 accuracy = "point",
                 country_a = Country.getThreeLetterCode(country),
-                county_gid = countyGid?.let { "whosonfirst:county:$it" },
+                county_gid = countyGid,
                 locality = locality,
-                locality_gid = localityGid?.let { "whosonfirst:locality:$it" },
+                locality_gid = localityGid,
                 label = groupName,
             ),
         )
