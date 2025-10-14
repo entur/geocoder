@@ -127,7 +127,7 @@ class StopPlaceConverter : Converter {
             }
         }
 
-        val categories = listOf("osm.public_transport.stop_place")
+        val categories = listOf("osm.public_transport.group_of_stop_places")
             .plus("GroupOfStopPlaces")
             .plus(country?.let { "country.${it}" })
             .plus(countyGid?.let { "county_gid.${it}" })
