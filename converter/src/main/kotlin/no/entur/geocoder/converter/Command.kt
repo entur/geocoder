@@ -22,6 +22,8 @@ class Command(
         var matrikkelInputPath: String? = null
         var osmInputPath: String? = null
         var outputPath: String? = null
+        var forceOverwrite = false
+        var appendMode = false
 
         var i = 0
         while (i < args.size) {
@@ -58,6 +60,16 @@ class Command(
                     i += 2
                 }
 
+                "-f" -> {
+                    forceOverwrite = true
+                    i += 1
+                }
+
+                "-a" -> {
+                    appendMode = true
+                    i += 1
+                }
+
                 else -> exit("Error: Unknown option ${args[i]}")
             }
         }
@@ -70,8 +82,26 @@ class Command(
             exit("Error: No conversion type specified. Use -s for stopplace, -m for matrikkel, and/or -p for OSM PBF.")
         }
 
+        if (forceOverwrite && appendMode) {
+            exit("Error: Cannot use both -f (force overwrite) and -a (append) flags together.")
+        }
+
         val outputFile = File(outputPath)
-        var isFirstConversion = true
+
+        if (outputFile.exists()) {
+            if (!forceOverwrite && !appendMode) {
+                exit("Error: Output file '${outputFile.absolutePath}' already exists. Use -f to overwrite or -a to append.")
+            }
+            if (forceOverwrite) {
+                println("Overwriting existing file: ${outputFile.absolutePath}")
+                outputFile.delete()
+            }
+            if (appendMode) {
+                println("Appending to existing file: ${outputFile.absolutePath}")
+            }
+        }
+
+        var isFirstConversion = !appendMode
 
         val conversionTasks =
             listOf(
@@ -130,8 +160,12 @@ class Command(
         println("  -m <input-csv-file>     : Convert Matrikkel CSV data.")
         println("  -p <input-pbf-file>     : Convert OSM PBF data.")
         println("  -o <output-file>        : Specify the output file (required).")
+        println("  -f                      : Force overwrite if output file exists.")
+        println("  -a                      : Append to existing output file (skips header).")
         println("All conversion options can be used together, outputting to the same -o file.")
         println("Examples: geocoder-convert -s stoplace.xml -m matrikkel.csv -p data.osm.pbf -o combined_output.ndjson")
         println("          geocoder-convert -s stoplace.xml -o s_out.ndjson")
+        println("          geocoder-convert -s stoplace.xml -o existing.ndjson -f")
+        println("          geocoder-convert -m matrikkel.csv -o existing.ndjson -a")
     }
 }
