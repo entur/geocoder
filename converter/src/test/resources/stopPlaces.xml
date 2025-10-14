@@ -21,6 +21,54 @@
                     <CountryRef ref="no"></CountryRef>
                 </TopographicPlace>
             </topographicPlaces>
+            <groupOfStopPlaces>
+                <GroupOfStopPlaces created="2018-04-13T21:45:04.407" changed="2025-07-04T11:50:07.392" modification="new" version="3" id="NSR:GroupOfStopPlaces:72">
+                    <keyList>
+                        <KeyValue>
+                            <Key>imported-id</Key>
+                            <Value></Value>
+                        </KeyValue>
+                    </keyList>
+                    <Name lang="nor">Hammerfest</Name>
+                    <Description lang="nor"></Description>
+                    <PurposeOfGroupingRef ref="NSR:PurposeOfGrouping:1"/>
+                    <members>
+                        <StopPlaceRef ref="NSR:StopPlace:56851"/>
+                        <StopPlaceRef ref="NSR:StopPlace:56689"/>
+                        <StopPlaceRef ref="NSR:StopPlace:56676"/>
+                        <StopPlaceRef ref="NSR:StopPlace:59048"/>
+                    </members>
+                    <Centroid>
+                        <Location>
+                            <Longitude>23.682445</Longitude>
+                            <Latitude>70.663500</Latitude>
+                        </Location>
+                    </Centroid>
+                </GroupOfStopPlaces>
+                <GroupOfStopPlaces created="2018-03-08T12:22:54.29" changed="2024-10-25T13:37:21.831" modification="new" version="13" id="NSR:GroupOfStopPlaces:1">
+                    <keyList>
+                        <KeyValue>
+                            <Key>imported-id</Key>
+                            <Value></Value>
+                        </KeyValue>
+                    </keyList>
+                    <Name lang="nor">Oslo</Name>
+                    <Description lang="nor"></Description>
+                    <PurposeOfGroupingRef ref="NSR:PurposeOfGrouping:1"/>
+                    <members>
+                        <StopPlaceRef ref="NSR:StopPlace:58366"/>
+                        <StopPlaceRef ref="NSR:StopPlace:59872"/>
+                        <StopPlaceRef ref="NSR:StopPlace:58293"/>
+                        <StopPlaceRef ref="NSR:StopPlace:58382"/>
+                    </members>
+                    <Centroid>
+                        <Location>
+                            <Longitude>10.748128</Longitude>
+                            <Latitude>59.911076</Latitude>
+                        </Location>
+                    </Centroid>
+                </GroupOfStopPlaces>
+            </groupOfStopPlaces>
             <stopPlaces>
                 <StopPlace created="2017-06-19T22:10:00.846" changed="2024-04-09T19:15:12.888" modification="new"
                            version="2" id="NSR:StopPlace:56697">

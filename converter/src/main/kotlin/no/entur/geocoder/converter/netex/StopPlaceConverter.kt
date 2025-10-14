@@ -99,12 +99,90 @@ class StopPlaceConverter : Converter {
         return entries
     }
 
-    fun convertNetexParseResult(result: NetexParser.ParseResult): Sequence<NominatimPlace> =
-        result.stopPlaces.flatMap {
+    fun convertGroupOfStopPlacesToNominatim(
+        groupOfStopPlaces: GroupOfStopPlaces,
+        topoPlaces: Map<String, TopographicPlace>,
+    ): NominatimPlace {
+        val lat = groupOfStopPlaces.centroid.location.latitude
+        val lon = groupOfStopPlaces.centroid.location.longitude
+
+        val groupName = groupOfStopPlaces.name.text
+
+        var locality: String? = groupName
+        var localityGid: String? = null
+        var county: String? = null
+        var countyGid: String? = null
+        var country: String? = null
+
+        for ((gid, topoPlace) in topoPlaces) {
+            if (topoPlace.descriptor?.name?.text == groupName) {
+                if (topoPlace.topographicPlaceType == "municipality") {
+                    localityGid = gid
+                    locality = topoPlace.descriptor?.name?.text
+                    countyGid = topoPlace.parentTopographicPlaceRef?.ref
+                    county = topoPlaces[countyGid]?.descriptor?.name?.text
+                    country = topoPlace.countryRef?.ref
+                    break
+                }
+            }
+        }
+
+        val categories = listOf("osm.public_transport.stop_place")
+            .plus("GroupOfStopPlaces")
+            .plus(country?.let { "country.${it}" })
+            .plus(countyGid?.let { "county_gid.${it}" })
+            .plus(localityGid?.let { "locality_gid.${it}" })
+            .plus("layer.groupofstopplaces")
+            .plus("source.nsr")
+            .filterNotNull()
+
+        val placeContent = PlaceContent(
+            place_id = abs(groupOfStopPlaces.id.hashCode().toLong()),
+            object_type = "N",
+            object_id = abs(groupOfStopPlaces.id.hashCode().toLong()),
+            categories = categories,
+            rank_address = 30,
+            importance = 0.7,
+            parent_place_id = 0,
+            name = groupName?.let { Name(it) },
+            address = Address(
+                county = county,
+            ),
+            postcode = null,
+            country_code = (country ?: "no"),
+            centroid = listOf(lon, lat),
+            bbox = listOf(lat, lon, lat, lon),
+            extra = Extra(
+                id = groupOfStopPlaces.id,
+                source = "nsr",
+                accuracy = "point",
+                country_a = Country.getThreeLetterCode(country),
+                county_gid = countyGid?.let { "whosonfirst:county:$it" },
+                locality = locality,
+                locality_gid = localityGid?.let { "whosonfirst:locality:$it" },
+                label = groupName,
+            ),
+        )
+
+        return NominatimPlace("Place", listOf(placeContent))
+    }
+
+    fun convertNetexParseResult(result: NetexParser.ParseResult): Sequence<NominatimPlace> {
+        val stopPlaceEntries = result.stopPlaces.flatMap {
             convertStopPlaceToNominatim(
                 it,
                 result.topoPlaces,
                 result.categories,
             ).asSequence()
         }
+
+        val groupOfStopPlacesEntries = result.groupOfStopPlaces.map {
+            convertGroupOfStopPlacesToNominatim(
+                it,
+                result.topoPlaces,
+            )
+        }
+
+        return stopPlaceEntries + groupOfStopPlacesEntries
+    }
 }

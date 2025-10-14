@@ -21,9 +21,11 @@ class NetexParser {
         val categories = extractCategories(netexXml)
         val topoPlaces = extractTopoPlaces(netexXml)
         val stopPlaces = stopPlacesSequence(netexXml)
+        val groupOfStopPlaces = groupOfStopPlacesSequence(netexXml)
 
         return ParseResult(
             stopPlaces = stopPlaces,
+            groupOfStopPlaces = groupOfStopPlaces,
             topoPlaces = topoPlaces,
             categories = categories,
         )
@@ -44,6 +46,30 @@ class NetexParser {
                     yield(stopPlace)
                 }
                 netexReader.close()
+            }
+        return seq
+    }
+
+    private fun groupOfStopPlacesSequence(netexXml: File): Sequence<GroupOfStopPlaces> {
+        val netexReader: XMLStreamReader = createReader(netexXml, xmlInputFactory)
+
+        val seq =
+            sequence {
+                try {
+                    moveToStartElement(netexReader, "groupOfStopPlaces")
+                    for (groupOfStopPlaces in elementSequence<GroupOfStopPlaces>(
+                        netexReader,
+                        xmlMapper,
+                        "GroupOfStopPlaces",
+                        "groupOfStopPlaces",
+                    )) {
+                        yield(groupOfStopPlaces)
+                    }
+                } catch (e: IllegalStateException) {
+                    // Element not found, return empty sequence
+                } finally {
+                    netexReader.close()
+                }
             }
         return seq
     }
@@ -84,6 +110,7 @@ class NetexParser {
 
     data class ParseResult(
         val stopPlaces: Sequence<StopPlace>,
+        val groupOfStopPlaces: Sequence<GroupOfStopPlaces>,
         val topoPlaces: Map<String, TopographicPlace>,
         val categories: Map<String, List<String>>,
     )
