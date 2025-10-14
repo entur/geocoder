@@ -106,6 +106,9 @@ class ResultTransformer {
         if (extra?.source == "openstreetmap") {
             category.add("poi")
         }
+        if (extra?.id?.contains("GroupOfStopPlaces") == true) {
+            category.add("GroupOfStopPlaces")
+        }
         if (extra?.tags?.isNotBlank() == true) {
             extra.tags?.split(",")?.forEach { tag ->
                 val parts = tag.split('.')
