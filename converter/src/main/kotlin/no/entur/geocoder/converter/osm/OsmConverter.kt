@@ -116,7 +116,7 @@ class OsmConverter : Converter {
 
         val extra =
             Extra(
-                id = entity.id.toString(),
+                id = "OSM:TopographicPlace:" + entity.id,
                 source = "openstreetmap",
                 accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
@@ -132,9 +132,9 @@ class OsmConverter : Converter {
 
         val content =
             PlaceContent(
-                place_id = abs(entity.id),
+                place_id = entity.id,
                 object_type = objectType,
-                object_id = abs(entity.id),
+                object_id = entity.id,
                 categories = categories,
                 rank_address = determineRankAddress(tags),
                 importance = importance,
