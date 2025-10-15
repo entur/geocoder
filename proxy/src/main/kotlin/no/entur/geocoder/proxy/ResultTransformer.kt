@@ -68,7 +68,7 @@ class ResultTransformer {
                 id = extra?.id,
                 layer = transformLayer(extra),
                 source = transformSource(extra),
-                source_id = transformSourceId(extra),
+                source_id = extra?.id,
                 name = props.name,
                 street = props.street,
                 postalcode = props.postcode,
@@ -87,13 +87,6 @@ class ResultTransformer {
             ),
         )
     }
-
-    fun transformSourceId(extra: Extra?): String? =
-        if (extra?.id != null && extra.source == "openstreetmap") {
-            "OSM:TopographicPlace:${extra.id}"
-        } else {
-            extra?.id
-        }
 
     fun transformCategory(extra: Extra?): List<String> {
         val category = mutableSetOf<String>()

@@ -157,7 +157,7 @@ class V3ResultTransformer {
 
     private fun buildSourceId(source: String?, id: String?, osmType: String?, osmId: Long?): String? {
         return when {
-            source == "openstreetmap" && id != null -> "OSM:TopographicPlace:$id"
+            source == "openstreetmap" && id != null -> id
             source == "nsr" && id != null -> "NSR:$id"
             source == "kartverket" && id != null -> "Kartverket:$id"
             osmType != null && osmId != null -> "OSM:${osmType}:${osmId}"
