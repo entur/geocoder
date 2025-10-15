@@ -3,6 +3,7 @@ package no.entur.geocoder.converter
 import no.entur.geocoder.converter.matrikkel.MatrikkelConverter
 import no.entur.geocoder.converter.netex.StopPlaceConverter
 import no.entur.geocoder.converter.osm.OsmConverter
+import no.entur.geocoder.converter.stedsnavn.StedsnavnConverter
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -21,6 +22,7 @@ class Command(
         var stopplaceInputPath: String? = null
         var matrikkelInputPath: String? = null
         var osmInputPath: String? = null
+        var stedsnavnInputPath: String? = null
         var outputPath: String? = null
         var forceOverwrite = false
         var appendMode = false
@@ -52,6 +54,14 @@ class Command(
                     i += 2
                 }
 
+                "-g" -> {
+                    if (i + 1 >= args.size) {
+                        exit("Error: -g flag requires <input-gml-file> argument.")
+                    }
+                    stedsnavnInputPath = args[i + 1]
+                    i += 2
+                }
+
                 "-o" -> {
                     if (i + 1 >= args.size) {
                         exit("Error: -o flag requires <output-file> argument.")
@@ -78,8 +88,8 @@ class Command(
             exit("Error: Output file must be specified with -o <output-file>.")
         }
 
-        if (stopplaceInputPath == null && matrikkelInputPath == null && osmInputPath == null) {
-            exit("Error: No conversion type specified. Use -s for stopplace, -m for matrikkel, and/or -p for OSM PBF.")
+        if (stopplaceInputPath == null && matrikkelInputPath == null && osmInputPath == null && stedsnavnInputPath == null) {
+            exit("Error: No conversion type specified. Use -s for stopplace, -m for matrikkel, -p for OSM PBF, and/or -g for Stedsnavn GML.")
         }
 
         if (forceOverwrite && appendMode) {
@@ -108,6 +118,7 @@ class Command(
                 "StopPlace" to (stopplaceInputPath to StopPlaceConverter()),
                 "Matrikkel" to (matrikkelInputPath to MatrikkelConverter()),
                 "OSM PBF" to (osmInputPath to OsmConverter()),
+                "Stedsnavn GML" to (stedsnavnInputPath to StedsnavnConverter()),
             )
 
         for ((name, pair) in conversionTasks) {
@@ -159,6 +170,7 @@ class Command(
         println("  -s <input-xml-file>     : Convert StopPlace XML data.")
         println("  -m <input-csv-file>     : Convert Matrikkel CSV data.")
         println("  -p <input-pbf-file>     : Convert OSM PBF data.")
+        println("  -g <input-gml-file>     : Convert Stedsnavn GML data.")
         println("  -o <output-file>        : Specify the output file (required).")
         println("  -f                      : Force overwrite if output file exists.")
         println("  -a                      : Append to existing output file (skips header).")
@@ -167,5 +179,6 @@ class Command(
         println("          geocoder-convert -s stoplace.xml -o s_out.ndjson")
         println("          geocoder-convert -s stoplace.xml -o existing.ndjson -f")
         println("          geocoder-convert -m matrikkel.csv -o existing.ndjson -a")
+        println("          geocoder-convert -g stedsnavn.gml -o stedsnavn_output.ndjson")
     }
 }
