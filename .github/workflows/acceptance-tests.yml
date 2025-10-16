@@ -1,0 +1,63 @@
+name: Run Acceptance Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+        default: 'dev'
+
+jobs:
+  acceptance-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout acceptance tests repository
+        uses: actions/checkout@v4
+        with:
+          repository: entur/geocoder-acceptance-tests
+          path: acceptance-tests
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: acceptance-tests/package-lock.json
+
+      - name: Install dependencies
+        working-directory: acceptance-tests
+        run: npm ci
+
+      - name: Run acceptance tests
+        id: tests
+        working-directory: acceptance-tests
+        run: |
+          npm run v2${{ github.event.inputs.environment }} 2>&1 | tee test-output.log
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-v2${{ github.event.inputs.environment }}
+          path: acceptance-tests/test-output.log
+          retention-days: 30
+
+      - name: Add test summary to workflow
+        if: always()
+        working-directory: acceptance-tests
+        run: |
+          echo "## Acceptance Test Results - v2${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat test-output.log >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail workflow if tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
