@@ -94,7 +94,7 @@ class ResultTransformer {
             category.addAll(it)
         }
         if (extra?.source == "kartverket") {
-            category.add("vegadresse")
+            if (isStreet(extra))  category.add("street") else category.add("vegadresse")
         }
         if (extra?.source == "openstreetmap") {
             category.add("poi")
@@ -114,24 +114,26 @@ class ResultTransformer {
     }
 
     fun transformSource(extra: Extra?): String? =
-        when  {
+        when {
             isGosp(extra) -> "whosonfirst"
             extra?.source == "openstreetmap" -> "whosonfirst"
             extra?.source == "nsr" -> "openstreetmap"
+            extra?.source == "kartverket" && isStreet(extra) -> "whosonfirst"
             extra?.source == "kartverket" -> "openaddresses"
             else -> extra?.source
         }
 
     fun transformLayer(extra: Extra?): String? =
-        if (isGosp(extra)) {
-            "address"
-        } else if (extra?.source == "nsr") {
-            "venue"
-        } else if (extra?.source == "openstreetmap") {
-            "address"
-        } else {
-            extra?.source
+        when {
+            isGosp(extra) -> "address"
+            extra?.source == "nsr" -> "venue"
+            extra?.source == "openstreetmap" -> "address"
+            extra?.source == "kartverket" -> "address"
+            else -> extra?.source
         }
+
+    fun isStreet(extra: Extra): Boolean =
+        extra.tags?.split(',')?.any { it == "osm.public_transport.street" } == true
 
     fun isGosp(extra: Extra?): Boolean = extra?.id?.contains("GroupOfStopPlaces") == true
 

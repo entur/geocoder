@@ -20,12 +20,123 @@ class MatrikkelConverter : Converter {
         output: File,
         isAppending: Boolean,
     ) {
-        val adressEntries = parseCsv(input)
-        val nominatimEntries = adressEntries.map { convertMatrikkelAdresseToNominatim(it) }
+        val adressEntries = parseCsv(input).toList()
+
+        // Convert addresses
+        val addressNominatim = adressEntries.asSequence().map { convertAddressToNominatim(it) }
+
+        // Group by street and create street entries
+        val streetNominatim = adressEntries
+            .filter { it.adressenavn != null }
+            .groupBy { it.adressenavn!! to it.kommunenummer }
+            .values
+            .asSequence()
+            .map { addressesForStreet ->
+                val avgNord = addressesForStreet.map { it.nord }.average()
+                val avgOst = addressesForStreet.map { it.ost }.average()
+                val representative = addressesForStreet.first()
+                convertStreetToNominatim(representative, avgNord, avgOst)
+            }
+
+        val allEntries = addressNominatim + streetNominatim
 
         val outputPath = Paths.get(output.absolutePath)
-        JsonWriter().export(nominatimEntries, outputPath, isAppending)
+        JsonWriter().export(allEntries, outputPath, isAppending)
     }
+
+    private fun convertAddressToNominatim(adresse: MatrikkelAdresse): NominatimPlace =
+        convertToNominatim(
+            adresse = adresse,
+            nord = adresse.nord,
+            ost = adresse.ost,
+            id = adresse.lokalid,
+            source = "kartverket",
+            categories = listOf("osm.public_transport.address"),
+            importance = 0.09,
+            displayName = adresse.adresseTekst,
+            housenumber = adresse.nummer,
+            postcode = adresse.postnummer,
+            label = "${adresse.adresseTekst}, ${adresse.poststed.titleize()}",
+        )
+
+    private fun convertStreetToNominatim(
+        adresse: MatrikkelAdresse,
+        nord: Double,
+        ost: Double,
+    ): NominatimPlace {
+        val streetName = adresse.adressenavn ?: ""
+        return convertToNominatim(
+            adresse = adresse,
+            nord = nord,
+            ost = ost,
+            id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
+            source = "kartverket",
+            categories = listOf("osm.public_transport.street"),
+            importance = 0.1,
+            displayName = streetName,
+            housenumber = null,
+            postcode = null,
+            label = "$streetName, ${adresse.kommunenavn?.titleize() ?: adresse.poststed.titleize()}",
+        )
+    }
+
+    private fun convertToNominatim(
+        adresse: MatrikkelAdresse,
+        nord: Double,
+        ost: Double,
+        id: String?,
+        source: String,
+        categories: List<String>,
+        importance: Double,
+        displayName: String,
+        housenumber: String?,
+        postcode: String?,
+        label: String,
+    ): NominatimPlace {
+        val (lat, lon) = Geo.convertUTM33ToLatLon(ost, nord)
+
+        val extra =
+            Extra(
+                id = id,
+                source = source,
+                accuracy = "point",
+                country_a = "NOR",
+                county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" },
+                locality = adresse.kommunenavn?.titleize(),
+                locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
+                borough = adresse.grunnkretsnavn?.titleize(),
+                borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
+                label = label,
+                tags = categories.joinToString(","),
+            )
+
+        val properties =
+            PlaceContent(
+                place_id = abs((id ?: adresse.adresseId).hashCode().toLong()),
+                object_type = "N",
+                object_id = abs((id ?: adresse.adresseId).hashCode().toLong()),
+                categories = categories,
+                rank_address = 26,
+                importance = importance,
+                parent_place_id = 0,
+                name = Name(displayName),
+                housenumber = housenumber,
+                address =
+                    Address(
+                        street = adresse.adressenavn,
+                        city = adresse.kommunenavn?.titleize() ?: adresse.poststed.titleize(),
+                        county = "TODO",
+                    ),
+                postcode = postcode,
+                country_code = "no",
+                centroid = listOf(lon, lat),
+                bbox = listOf(lon, lat, lon, lat),
+                extra = extra,
+            )
+
+        return NominatimPlace("Place", listOf(properties))
+    }
+
 
     fun parseCsv(inputFile: File): Sequence<MatrikkelAdresse> =
         sequence {
@@ -91,47 +202,4 @@ class MatrikkelConverter : Converter {
                 }
             }
         }
-
-    fun convertMatrikkelAdresseToNominatim(adresse: MatrikkelAdresse): NominatimPlace {
-        val (lat, lon) = Geo.convertUTM33ToLatLon(adresse.ost, adresse.nord)
-
-        val extra =
-            Extra(
-                id = adresse.lokalid,
-                source = "kartverket",
-                accuracy = "point",
-                country_a = "NOR",
-                county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" }, // TODO: just guessing
-                locality = adresse.kommunenavn?.titleize(),
-                locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
-                borough = adresse.grunnkretsnavn?.titleize(),
-                borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
-                label = (adresse.adresseTekst + ", " + adresse.poststed.titleize()),
-            )
-
-        val properties =
-            PlaceContent(
-                place_id = abs(adresse.adresseId.hashCode().toLong()),
-                object_type = "N",
-                object_id = abs(adresse.adresseId.hashCode().toLong()),
-                categories = listOf("osm.public_transport.address"),
-                rank_address = 26,
-                importance = if (adresse.nummer == null) 0.1 else 0.09,
-                parent_place_id = 0,
-                name = Name(adresse.adresseTekst),
-                housenumber = adresse.nummer,
-                address =
-                    Address(
-                        street = adresse.adressenavn,
-                        city = adresse.poststed.titleize(),
-                        county = "TODO", // TODO: Placeholder for county, needs proper mapping
-                    ),
-                postcode = adresse.postnummer,
-                country_code = "no",
-                centroid = listOf(lon, lat),
-                bbox = listOf(lon, lat, lon, lat),
-                extra = extra,
-            )
-        return NominatimPlace("Place", listOf(properties))
-    }
 }
