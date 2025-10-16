@@ -21,27 +21,41 @@ class MatrikkelConverter : Converter {
         isAppending: Boolean,
     ) {
         val outputPath = Paths.get(output.absolutePath)
-        val adressEntries = parseCsv(input).toList()
 
-        // Convert addresses
-        val addressNominatim = adressEntries.asSequence().map { convertAddressToNominatim(it) }
+        val addressNominatim = parseCsv(input).map { convertAddressToNominatim(it) }
         JsonWriter().export(addressNominatim, outputPath, isAppending)
 
-        // Group by street and create street entries
-        val streetNominatim = adressEntries
-            .filter { it.adressenavn != null }
-            .groupBy { it.adressenavn!! to it.kommunenummer }
-            .values
-            .asSequence()
-            .map { addressesForStreet ->
-                val avgNord = addressesForStreet.map { it.nord }.average()
-                val avgOst = addressesForStreet.map { it.ost }.average()
-                val representative = addressesForStreet.first()
-                convertStreetToNominatim(representative, avgNord, avgOst)
+        val streetData = mutableMapOf<Pair<String, String?>, StreetAggregator>()
+        parseCsv(input).forEach { adresse ->
+            if (adresse.adressenavn != null) {
+                val key = adresse.adressenavn to adresse.kommunenummer
+                val aggregator = streetData.getOrPut(key) {
+                    StreetAggregator(adresse)
+                }
+                aggregator.add(adresse.nord, adresse.ost)
             }
+        }
+
+        val streetNominatim = streetData.values.asSequence().map { agg ->
+            convertStreetToNominatim(agg.representative, agg.getAvgNord(), agg.getAvgOst())
+        }
 
         JsonWriter().export(streetNominatim, outputPath, true)
+    }
 
+    private class StreetAggregator(val representative: MatrikkelAdresse) {
+        private var sumNord = 0.0
+        private var sumOst = 0.0
+        private var count = 0
+
+        fun add(nord: Double, ost: Double) {
+            sumNord += nord
+            sumOst += ost
+            count++
+        }
+
+        fun getAvgNord() = sumNord / count
+        fun getAvgOst() = sumOst / count
     }
 
     private fun convertAddressToNominatim(adresse: MatrikkelAdresse): NominatimPlace =
