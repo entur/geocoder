@@ -14,7 +14,7 @@ object Routing {
 
     fun Application.configureRouting(
         client: HttpClient,
-        transformer: ResultTransformer,
+        transformer: PeliasResultTransformer,
         photonBaseUrl: String,
     ) {
         val v3Transformer = V3ResultTransformer()

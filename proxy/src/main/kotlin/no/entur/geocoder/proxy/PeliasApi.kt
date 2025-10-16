@@ -15,7 +15,7 @@ object PeliasApi {
     suspend fun RoutingContext.autocompleteRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        transformer: ResultTransformer
+        transformer: PeliasResultTransformer
     ) {
         val params = try {
             PeliasAutocompleteParams.fromRequest(call.request)
@@ -64,7 +64,7 @@ object PeliasApi {
     suspend fun RoutingContext.reverseRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        transformer: ResultTransformer
+        transformer: PeliasResultTransformer
     ) {
         val params = try {
             PeliasReverseParams.fromRequest(call.request)

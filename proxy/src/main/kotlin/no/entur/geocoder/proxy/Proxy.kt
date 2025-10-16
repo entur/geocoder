@@ -19,7 +19,7 @@ private val httpClient =
             jackson()
         }
     }
-private val transformer = ResultTransformer()
+private val transformer = PeliasResultTransformer()
 private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {

@@ -66,7 +66,7 @@ class ProxyTest {
             application {
                 configureRouting(
                     client = HttpClient(mockEngine),
-                    transformer = ResultTransformer(),
+                    transformer = PeliasResultTransformer(),
                     photonBaseUrl = "http://photon-test",
                 )
             }
@@ -115,7 +115,7 @@ class ProxyTest {
             application {
                 configureRouting(
                     client = HttpClient(mockEngine),
-                    transformer = ResultTransformer(),
+                    transformer = PeliasResultTransformer(),
                     photonBaseUrl = "http://photon-test",
                 )
             }

@@ -9,7 +9,7 @@ import no.entur.geocoder.proxy.PhotonResult.PhotonFeature
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class ResultTransformer {
+class PeliasResultTransformer {
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
