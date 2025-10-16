@@ -4,9 +4,10 @@ services:
   photon:
     build:
       context: .
-      dockerfile: Dockerfile.photon.dev
+      dockerfile: Dockerfile.photon
       args:
-        - LOCAL_MODE=true
+        # Run build-import-dev-image.sh first
+        - IMPORT_IMAGE=geocoder-import:local
     hostname: geocoder-photon
     environment:
       - SERVER_PORT=80 # Accessed from Dockerfile.photon
