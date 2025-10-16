@@ -26,8 +26,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: acceptance-tests/package-lock.json
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: acceptance-tests/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('acceptance-tests/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install dependencies
         working-directory: acceptance-tests
