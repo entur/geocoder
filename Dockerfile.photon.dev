@@ -10,6 +10,10 @@ RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdres
 RUN java -jar converter/build/libs/converter-all.jar -a -m Basis*/*.csv -o nominatim.ndjson && \
     rm -rf Basis*
 
+RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip | jar -xv
+RUN java -jar converter/build/libs/converter-all.jar -g Basisdata_03_Oslo_25833_Stedsnavn_GML.gml -o nominatim.ndjson && \
+    rm Basisdata_03_Oslo_25833_Stedsnavn_GML.gml
+
 RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
 RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -o nominatim.ndjson && \
     rm tiamat*.xml

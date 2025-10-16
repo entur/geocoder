@@ -39,7 +39,6 @@ class MatrikkelConverter : Converter {
         val streetNominatim = streetData.values.asSequence().map { agg ->
             convertStreetToNominatim(agg.representative, agg.getAvgNord(), agg.getAvgOst())
         }
-
         JsonWriter().export(streetNominatim, outputPath, true)
     }
 
@@ -64,7 +63,7 @@ class MatrikkelConverter : Converter {
             nord = adresse.nord,
             ost = adresse.ost,
             id = adresse.lokalid,
-            source = "kartverket",
+            source = "kartverket-matrikkelenadresse",
             categories = listOf("osm.public_transport.address"),
             importance = 0.09,
             displayName = adresse.adresseTekst,
@@ -84,7 +83,7 @@ class MatrikkelConverter : Converter {
             nord = nord,
             ost = ost,
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            source = "kartverket",
+            source = "kartverket-matrikkelenadresse",
             categories = listOf("osm.public_transport.street"),
             importance = 0.1,
             displayName = streetName,

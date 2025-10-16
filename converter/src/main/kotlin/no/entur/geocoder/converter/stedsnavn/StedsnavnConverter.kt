@@ -4,9 +4,7 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
-import no.entur.geocoder.converter.NominatimPlace.Address
-import no.entur.geocoder.converter.NominatimPlace.Name
-import no.entur.geocoder.converter.NominatimPlace.PlaceContent
+import no.entur.geocoder.converter.NominatimPlace.*
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.matrikkel.Geo
 import java.io.File
@@ -59,6 +57,7 @@ class StedsnavnConverter : Converter {
                 XMLStreamConstants.CHARACTERS, XMLStreamConstants.CDATA -> {
                     sb.append(reader.text)
                 }
+
                 XMLStreamConstants.END_ELEMENT -> {
                     return sb.toString()
                 }
@@ -81,7 +80,6 @@ class StedsnavnConverter : Converter {
         var adressekode: String? = null
         var navneobjekttype: String? = null
         val coordinates = mutableListOf<Pair<Double, Double>>()
-        var hasVegreferanse = false
 
         while (reader.hasNext()) {
             reader.next()
@@ -94,61 +92,18 @@ class StedsnavnConverter : Converter {
 
             if (reader.eventType == XMLStreamConstants.START_ELEMENT) {
                 when (reader.localName) {
-                    "lokalId" -> {
-                        lokalId = readElementText(reader)
-                    }
-                    "navnerom" -> {
-                        navnerom = readElementText(reader)
-                    }
-                    "versjonId" -> {
-                        versjonId = readElementText(reader)
-                    }
-                    "oppdateringsdato" -> {
-                        if (oppdateringsdato == null) {
-                            oppdateringsdato = readElementText(reader)
-                        }
-                    }
-                    "komplettskrivemåte" -> {
-                        if (stedsnavn == null) {
-                            stedsnavn = readElementText(reader)
-                        }
-                    }
-                    "navneobjekttype" -> {
-                        navneobjekttype = readElementText(reader)
-                    }
-                    "vegreferanse" -> {
-                        hasVegreferanse = true
-                    }
-                    "matrikkelId" -> {
-                        if (hasVegreferanse && matrikkelId == null) {
-                            matrikkelId = readElementText(reader)
-                        }
-                    }
-                    "adressekode" -> {
-                        if (hasVegreferanse && adressekode == null) {
-                            adressekode = readElementText(reader)
-                        }
-                    }
-                    "kommunenummer" -> {
-                        if (kommunenummer == null) {
-                            kommunenummer = readElementText(reader)
-                        }
-                    }
-                    "kommunenavn" -> {
-                        if (kommunenavn == null) {
-                            kommunenavn = readElementText(reader)
-                        }
-                    }
-                    "fylkesnummer" -> {
-                        if (fylkesnummer == null) {
-                            fylkesnummer = readElementText(reader)
-                        }
-                    }
-                    "fylkesnavn" -> {
-                        if (fylkesnavn == null) {
-                            fylkesnavn = readElementText(reader)
-                        }
-                    }
+                    "lokalId" -> lokalId = readElementText(reader)
+                    "navnerom" -> navnerom = readElementText(reader)
+                    "versjonId" -> versjonId = readElementText(reader)
+                    "oppdateringsdato" -> oppdateringsdato = readElementText(reader)
+                    "komplettskrivemåte" -> if (stedsnavn == null) stedsnavn = readElementText(reader)
+                    "navneobjekttype" -> navneobjekttype = readElementText(reader)
+                    "matrikkelId" -> matrikkelId = readElementText(reader)
+                    "adressekode" -> adressekode = readElementText(reader)
+                    "kommunenummer" -> kommunenummer = readElementText(reader)
+                    "kommunenavn" -> kommunenavn = readElementText(reader)
+                    "fylkesnummer" -> fylkesnummer = readElementText(reader)
+                    "fylkesnavn" -> fylkesnavn = readElementText(reader)
                     "posList" -> {
                         val text = readElementText(reader).trim()
                         val coords = text.split("\\s+".toRegex())
@@ -162,20 +117,33 @@ class StedsnavnConverter : Converter {
                             }
                         }
                     }
+
+                    "pos" -> {
+                        val text = readElementText(reader).trim()
+                        val coords = text.split("\\s+".toRegex())
+                        if (coords.size >= 2) {
+                            val east = coords[0].toDoubleOrNull()
+                            val north = coords[1].toDoubleOrNull()
+                            if (east != null && north != null) {
+                                coordinates.add(Pair(east, north))
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        return if (hasVegreferanse &&
+        val targetTypes = setOf("tettsteddel", "bydel", "by", "tettsted", "tettbebyggelse")
+
+        return if (navneobjekttype != null &&
+            targetTypes.contains(navneobjekttype.lowercase()) &&
             lokalId != null &&
             navnerom != null &&
             stedsnavn != null &&
             kommunenummer != null &&
             kommunenavn != null &&
             fylkesnummer != null &&
-            fylkesnavn != null &&
-            matrikkelId != null &&
-            adressekode != null
+            fylkesnavn != null
         ) {
             StedsnavnEntry(
                 lokalId = lokalId,
@@ -207,36 +175,45 @@ class StedsnavnConverter : Converter {
                 Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
             }
 
-        val id = "KVE:TopographicPlace:${entry.kommunenummer}-${entry.stedsnavn}"
+
+        val (categories, rankAddress, importance) = when (entry.navneobjekttype?.lowercase()) {
+            "by" -> Triple(listOf("place.by"), 16, 0.6)
+            "bydel" -> Triple(listOf("place.bydel"), 18, 0.4)
+            "tettsted" -> Triple(listOf("place.tettsted"), 16, 0.5)
+            "tettsteddel" -> Triple(listOf("place.tettsteddel"), 20, 0.3)
+            "tettbebyggelse" -> Triple(listOf("place.tettbebyggelse"), 20, 0.2)
+            else -> Triple(listOf("place"), 20, 0.2)
+        }
 
         val extra =
             Extra(
-                id = id,
-                source = "whosonfirst",
+                id = entry.lokalId,
+                source = "kartverket-stedsnavn",
                 accuracy = "point",
                 country_a = "NOR",
-                county_gid = "whosonfirst:county:KVE:TopographicPlace:${entry.fylkesnummer}",
+                county_gid = "KVE:TopographicPlace:${entry.fylkesnummer}",
                 locality = entry.kommunenavn,
-                locality_gid = "whosonfirst:locality:KVE:TopographicPlace:${entry.kommunenummer}",
-                borough = null,
-                borough_gid = null,
+                locality_gid = "KVE:TopographicPlace:${entry.kommunenummer}",
                 label = "${entry.stedsnavn}, ${entry.kommunenavn}",
+                tags = categories.joinToString(",") { it },
             )
 
         val properties =
             PlaceContent(
-                place_id = abs(id.hashCode().toLong()),
+                place_id = abs(entry.lokalId.hashCode().toLong()),
                 object_type = "N",
-                object_id = abs(id.hashCode().toLong()),
-                categories = listOf("street"),
-                rank_address = 26,
-                importance = 0.1,
+                object_id = abs(entry.lokalId.hashCode().toLong()),
+                categories = categories.plus("osm.public_transport.poi")
+                    .plus("layer.address")
+                    .plus("source.kartverket"),
+                rank_address = rankAddress,
+                importance = importance,
                 parent_place_id = 0,
                 name = Name(entry.stedsnavn),
                 housenumber = null,
                 address =
                     Address(
-                        street = entry.stedsnavn,
+                        street = null,
                         city = entry.kommunenavn.titleize(),
                         county = entry.fylkesnavn,
                     ),

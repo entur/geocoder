@@ -57,7 +57,7 @@ class StedsnavnConverterTest {
         assertNotNull(placeContent.extra, "Extra should not be null")
         val extra = placeContent.extra
 
-        assertEquals("whosonfirst", extra.source, "Source should be whosonfirst")
+        assertEquals("kartverket-stedsnavn", extra.source, "Source should be kartverket")
         assertEquals("point", extra.accuracy, "Accuracy should be point")
         assertEquals("NOR", extra.country_a, "Country code should be NOR")
         assertNotNull(extra.locality, "Locality should not be null")
@@ -71,30 +71,32 @@ class StedsnavnConverterTest {
         assertNotNull(placeContent.name, "Name should not be null")
         assertNotNull(placeContent.address, "Address should not be null")
         assertEquals("no", placeContent.country_code, "Country code should be 'no'")
-        assertEquals(listOf("street"), placeContent.categories, "Categories should contain 'street'")
-        assertEquals(26, placeContent.rank_address, "Rank address should be 26")
+        assertTrue(placeContent.categories.any { it.startsWith("place") }, "Categories should contain 'place'")
+        assertTrue(placeContent.rank_address <= 20, "Rank address should be appropriate for settlement")
     }
 
     @Test
-    fun `should parse correct number of entries with vegreferanse`() {
+    fun `should parse correct number of entries with target navneobjekttype`() {
         assertTrue(entries.isNotEmpty(), "Should parse at least one entry")
-        assertTrue(entries.size >= 400, "Should parse at least 400 entries with vegreferanse")
+        // Test file contains: 1 "by" (Elverum) + 2 "tettbebyggelse" (Jmna, Hanstad) = 3 entries
+        assertEquals(3, entries.size, "Should parse exactly 3 entries with target navneobjekttype")
     }
 
     @Test
-    fun `should parse Andreas Grottings veg correctly`() {
-        val andreasGrottingsVeg = entries.find { it.stedsnavn.contains("Andreas") }
+    fun `should parse Jømna tettbebyggelse correctly`() {
+        val jomna = entries.find { it.stedsnavn == "Jømna" }
 
-        assertNotNull(andreasGrottingsVeg, "Should find Andreas Grøttings veg")
-        assertEquals("39418", andreasGrottingsVeg.lokalId)
-        assertEquals("https://data.geonorge.no/sosi/stedsnavn", andreasGrottingsVeg.navnerom)
-        assertEquals("3420", andreasGrottingsVeg.kommunenummer)
-        assertEquals("Elverum", andreasGrottingsVeg.kommunenavn)
-        assertEquals("34", andreasGrottingsVeg.fylkesnummer)
-        assertEquals("Innlandet", andreasGrottingsVeg.fylkesnavn)
-        assertEquals("225593282", andreasGrottingsVeg.matrikkelId)
-        assertEquals("1050", andreasGrottingsVeg.adressekode)
-        assertTrue(andreasGrottingsVeg.coordinates.isNotEmpty(), "Should have coordinates")
+        assertNotNull(jomna, "Should find Jømna tettbebyggelse")
+        assertEquals("22874", jomna!!.lokalId)
+        assertEquals("https://data.geonorge.no/sosi/stedsnavn", jomna.navnerom)
+        assertEquals("3420", jomna.kommunenummer)
+        assertEquals("Elverum", jomna.kommunenavn)
+        assertEquals("34", jomna.fylkesnummer)
+        assertEquals("Innlandet", jomna.fylkesnavn)
+        assertEquals("tettbebyggelse", jomna.navneobjekttype)
+        assertEquals(null, jomna.matrikkelId, "Tettbebyggelse should not have matrikkelId")
+        assertEquals(null, jomna.adressekode, "Tettbebyggelse should not have adressekode")
+        assertTrue(jomna.coordinates.isNotEmpty(), "Should have coordinates")
     }
 
     @Test
@@ -124,14 +126,7 @@ class StedsnavnConverterTest {
 
         assertNotNull(extra.id, "ID should not be null")
         val id = extra.id ?: error("ID should not be null")
-        assertTrue(
-            id.startsWith("KVE:TopographicPlace:"),
-            "ID should start with KVE:TopographicPlace:"
-        )
-        assertTrue(
-            id.contains("-"),
-            "ID should contain hyphen separator"
-        )
+        assertTrue(id.toLong() > 0)
     }
 
     @Test
@@ -144,7 +139,7 @@ class StedsnavnConverterTest {
         val label = extra.label ?: error("Label should not be null")
         assertTrue(
             label.contains(entry.stedsnavn),
-            "Label should contain street name"
+            "Label should contain place name"
         )
         assertTrue(
             label.contains(entry.kommunenavn),
@@ -152,7 +147,7 @@ class StedsnavnConverterTest {
         )
         assertTrue(
             label.contains(", "),
-            "Label should be formatted as 'streetname, municipality'"
+            "Label should be formatted as 'placename, municipality'"
         )
     }
 
@@ -163,22 +158,25 @@ class StedsnavnConverterTest {
         val extra = nominatimPlace.content.first().extra
 
         assertEquals(
-            "whosonfirst:locality:KVE:TopographicPlace:${entry.kommunenummer}",
+            "KVE:TopographicPlace:${entry.kommunenummer}",
             extra.locality_gid,
             "Locality GID should have correct format"
         )
         assertEquals(
-            "whosonfirst:county:KVE:TopographicPlace:${entry.fylkesnummer}",
+            "KVE:TopographicPlace:${entry.fylkesnummer}",
             extra.county_gid,
             "County GID should have correct format"
         )
     }
 
     @Test
-    fun `should only parse entries with vegreferanse`() {
+    fun `should only parse entries with target navneobjekttype`() {
+        val targetTypes = setOf("tettsteddel", "bydel", "by", "tettsted", "tettbebyggelse")
         entries.forEach { entry ->
-            assertNotNull(entry.matrikkelId, "All entries should have matrikkelId from vegreferanse")
-            assertNotNull(entry.adressekode, "All entries should have adressekode from vegreferanse")
+            assertTrue(
+                entry.navneobjekttype != null && targetTypes.contains(entry.navneobjekttype.lowercase()),
+                "All entries should have a target navneobjekttype"
+            )
         }
     }
 
@@ -192,8 +190,7 @@ class StedsnavnConverterTest {
             assertNotNull(entry.kommunenavn, "kommunenavn should not be null")
             assertNotNull(entry.fylkesnummer, "fylkesnummer should not be null")
             assertNotNull(entry.fylkesnavn, "fylkesnavn should not be null")
-            assertNotNull(entry.matrikkelId, "matrikkelId should not be null")
-            assertNotNull(entry.adressekode, "adressekode should not be null")
+            // matrikkelId and adressekode are optional for settlement types
         }
     }
 

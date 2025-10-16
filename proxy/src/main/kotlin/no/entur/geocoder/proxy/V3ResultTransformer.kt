@@ -159,7 +159,7 @@ class V3ResultTransformer {
         return when {
             source == "openstreetmap" && id != null -> id
             source == "nsr" && id != null -> "NSR:$id"
-            source == "kartverket" && id != null -> "Kartverket:$id"
+            source == "kartverket-matrikkelenadresse" && id != null -> "Kartverket:$id"
             osmType != null && osmId != null -> "OSM:${osmType}:${osmId}"
             id != null -> id
             else -> null
@@ -168,7 +168,7 @@ class V3ResultTransformer {
 
     private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): PlaceType {
         return when {
-            source == "kartverket" -> PlaceType.ADDRESS
+            source == "kartverket-matrikkelenadresse" -> PlaceType.ADDRESS
             source == "nsr" && osmValue?.contains("stop") == true -> PlaceType.STOP_PLACE
             source == "nsr" && osmValue?.contains("station") == true -> PlaceType.STATION
             source == "nsr" -> PlaceType.VENUE
@@ -198,7 +198,7 @@ class V3ResultTransformer {
         return when (source?.lowercase()) {
             "openstreetmap" -> "OpenStreetMap"
             "nsr" -> "National Stop Register"
-            "kartverket" -> "Kartverket"
+            "kartverket-matrikkelenadresse" -> "Kartverket"
             else -> source ?: "Unknown"
         }
     }

@@ -93,7 +93,7 @@ class ResultTransformer {
         extra?.transport_modes?.split(',')?.map { it.trim() }?.let {
             category.addAll(it)
         }
-        if (extra?.source == "kartverket") {
+        if (extra?.source == "kartverket-matrikkelenadresse") {
             if (isStreet(extra))  category.add("street") else category.add("vegadresse")
         }
         if (extra?.source == "openstreetmap") {
@@ -118,8 +118,9 @@ class ResultTransformer {
             isGosp(extra) -> "whosonfirst"
             extra?.source == "openstreetmap" -> "whosonfirst"
             extra?.source == "nsr" -> "openstreetmap"
-            extra?.source == "kartverket" && isStreet(extra) -> "whosonfirst"
-            extra?.source == "kartverket" -> "openaddresses"
+            extra?.source == "kartverket-matrikkelenadresse" && isStreet(extra) -> "whosonfirst"
+            extra?.source == "kartverket-matrikkelenadresse" -> "openaddresses"
+            extra?.source == "kartverket-stedsnavn" -> "whosonfirst"
             else -> extra?.source
         }
 
@@ -128,7 +129,8 @@ class ResultTransformer {
             isGosp(extra) -> "address"
             extra?.source == "nsr" -> "venue"
             extra?.source == "openstreetmap" -> "address"
-            extra?.source == "kartverket" -> "address"
+            extra?.source == "kartverket-matrikkelenadresse" -> "address"
+            extra?.source == "kartverket-stedsnavn" -> "address"
             else -> extra?.source
         }
 
