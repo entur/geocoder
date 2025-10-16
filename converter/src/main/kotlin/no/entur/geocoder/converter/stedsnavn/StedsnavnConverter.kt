@@ -175,15 +175,9 @@ class StedsnavnConverter : Converter {
                 Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
             }
 
-
-        val (categories, rankAddress, importance) = when (entry.navneobjekttype?.lowercase()) {
-            "by" -> Triple(listOf("place.by"), 16, 0.6)
-            "bydel" -> Triple(listOf("place.bydel"), 18, 0.4)
-            "tettsted" -> Triple(listOf("place.tettsted"), 16, 0.5)
-            "tettsteddel" -> Triple(listOf("place.tettsteddel"), 20, 0.3)
-            "tettbebyggelse" -> Triple(listOf("place.tettbebyggelse"), 20, 0.2)
-            else -> Triple(listOf("place"), 20, 0.2)
-        }
+        val categories = listOf("osm.public_transport.poi")
+            .plus("place.${entry.navneobjekttype}")
+            .plus("source.kartverket.stedsnavn")
 
         val extra =
             Extra(
@@ -203,11 +197,9 @@ class StedsnavnConverter : Converter {
                 place_id = abs(entry.lokalId.hashCode().toLong()),
                 object_type = "N",
                 object_id = abs(entry.lokalId.hashCode().toLong()),
-                categories = categories.plus("osm.public_transport.poi")
-                    .plus("layer.address")
-                    .plus("source.kartverket"),
-                rank_address = rankAddress,
-                importance = importance,
+                categories = categories,
+                rank_address = 16,
+                importance = 0.5,
                 parent_place_id = 0,
                 name = Name(entry.stedsnavn),
                 housenumber = null,
