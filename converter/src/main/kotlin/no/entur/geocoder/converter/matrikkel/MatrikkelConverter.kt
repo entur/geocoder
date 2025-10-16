@@ -20,10 +20,12 @@ class MatrikkelConverter : Converter {
         output: File,
         isAppending: Boolean,
     ) {
+        val outputPath = Paths.get(output.absolutePath)
         val adressEntries = parseCsv(input).toList()
 
         // Convert addresses
         val addressNominatim = adressEntries.asSequence().map { convertAddressToNominatim(it) }
+        JsonWriter().export(addressNominatim, outputPath, isAppending)
 
         // Group by street and create street entries
         val streetNominatim = adressEntries
@@ -38,10 +40,8 @@ class MatrikkelConverter : Converter {
                 convertStreetToNominatim(representative, avgNord, avgOst)
             }
 
-        val allEntries = addressNominatim + streetNominatim
+        JsonWriter().export(streetNominatim, outputPath, true)
 
-        val outputPath = Paths.get(output.absolutePath)
-        JsonWriter().export(allEntries, outputPath, isAppending)
     }
 
     private fun convertAddressToNominatim(adresse: MatrikkelAdresse): NominatimPlace =
