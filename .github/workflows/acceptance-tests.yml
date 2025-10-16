@@ -31,13 +31,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: acceptance-tests/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('acceptance-tests/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('acceptance-tests/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-npm-
 
       - name: Install dependencies
         working-directory: acceptance-tests
-        run: npm ci
+        run: npm install
 
       - name: Run acceptance tests
         id: tests
