@@ -6,13 +6,13 @@ SHELL ["/bin/ash", "-co", "pipefail"]
 COPY . ./
 RUN gradle --no-daemon :converter:build
 
-RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip | jar -xv
-RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -o nominatim.ndjson && \
-    rm tiamat*.xml
-
 RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip | jar -xv
 RUN java -jar converter/build/libs/converter-all.jar -a -m Basis*/*.csv -o nominatim.ndjson && \
     rm -rf Basis*
+
+RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip | jar -xv
+RUN java -jar converter/build/libs/converter-all.jar -s tiamat*.xml -o nominatim.ndjson && \
+    rm tiamat*.xml
 
 #RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip | jar -xv
 
