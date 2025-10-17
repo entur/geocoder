@@ -1,4 +1,4 @@
-name: Import data and/or deploy Photon
+name: Photon - Import data and/or deploy
 
 on:
   workflow_dispatch:
@@ -8,13 +8,8 @@ on:
         required: true
         type: boolean
         default: false
-      build_photon:
-        description: 'Build photon image?'
-        required: true
-        type: boolean
-        default: false
-      deploy_environment:
-        description: 'Environment to deploy to (none = no deployment)'
+      deploy_env:
+        description: 'Deploy Photon to (none = no deployment)'
         required: true
         type: choice
         options:
@@ -29,7 +24,7 @@ on:
         default: 'latest'
         type: string
 
-run-name: "Build: import=${{ inputs.build_import }}, photon=${{ inputs.build_photon }}, deploy=${{ inputs.deploy_environment }} (sha: ${{ github.sha }})"
+run-name: "Build: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }} (sha: ${{ github.sha }})"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -69,7 +64,7 @@ jobs:
 
   # Photon image jobs
   photon-lint:
-    if: inputs.build_photon == true
+    if: inputs.deploy_env != 'none'
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: Dockerfile.photon
@@ -79,7 +74,7 @@ jobs:
     if: |
       always() &&
       !cancelled() &&
-      inputs.build_photon == true &&
+      inputs.deploy_env != 'none' &&
       (inputs.build_import == false || needs.import-push.result == 'success')
     needs: [photon-lint, import-push]
     # If we're building import, wait for it to finish and use that tag
@@ -92,7 +87,7 @@ jobs:
         IMPORT_IMAGE=geocoder-import:${{ inputs.build_import == true && needs.import-push.outputs.image_tag || inputs.import_image_tag }}
 
   photon-push:
-    if: inputs.build_photon == true
+    if: inputs.deploy_env != 'none'
     needs: photon-build
     uses: entur/gha-docker/.github/workflows/push.yml@v1
     with:
@@ -100,7 +95,7 @@ jobs:
       image_name: geocoder-photon
 
   photon-scan:
-    if: inputs.build_photon == true
+    if: inputs.deploy_env != 'none'
     needs: [photon-build]
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
@@ -111,7 +106,7 @@ jobs:
     if: |
       always() && 
       !cancelled() &&
-      (inputs.deploy_environment == 'dev' || inputs.deploy_environment == 'both')
+      (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
     needs: [photon-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -126,7 +121,7 @@ jobs:
     if: |
       always() && 
       !cancelled() &&
-      (inputs.deploy_environment == 'tst' || inputs.deploy_environment == 'both')
+      (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
     needs: [photon-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
