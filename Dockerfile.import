@@ -22,7 +22,7 @@ RUN curl -sfLO --retry 2 https://storage.googleapis.com/ror-osmdata-prd/osm-data
 RUN java -jar converter/build/libs/converter-all.jar -a -p norway-latest.osm.pbf -o nominatim.ndjson && \
     rm norway-latest.osm.pbf
 
-RUN curl -sfLo --retry 2 photon.jar https://github.com/entur/photon/releases/download/953-categories-final/photon-0.7.0.jar
+RUN curl -sfLo photon.jar --retry 2 https://github.com/entur/photon/releases/download/953-categories-final/photon-0.7.0.jar
 
 RUN exec java -jar photon.jar \
     -nominatim-import \
