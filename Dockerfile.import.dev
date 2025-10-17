@@ -29,4 +29,8 @@ RUN exec java -jar photon.jar \
     -languages no,en \
     -extra-tags ALL
 
-RUN rm ./nominatim.ndjson
+FROM scratch
+
+WORKDIR /
+COPY --from=build-image /srv/photon.jar photon.jar
+COPY --from=build-image /srv/photon_data photon_data
