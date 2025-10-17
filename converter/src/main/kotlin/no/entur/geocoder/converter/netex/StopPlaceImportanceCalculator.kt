@@ -9,7 +9,8 @@ import no.entur.geocoder.converter.importance.ImportanceCalculator
  * {"defaultValue":30, "stopTypeFactors":{"busStation":{"*":2},"metroStation":{"*":2},"railStation":{"*":2}}}
  * See: /Users/testower/Developer/github/entur/kakka/helm/kakka/env/values-kub-ent-*.yaml
  *
- * Formula: popularity = defaultValue * stopTypeFactor * interchangeFactor
+ * Formula: popularity = defaultValue * (SUM of stopTypeFactors) * interchangeFactor
+ * For multimodal parents: factors from all child stop types are summed.
  * Then: importance = log10-normalized popularity
  */
 object StopPlaceImportanceCalculator {
@@ -28,13 +29,26 @@ object StopPlaceImportanceCalculator {
     )
 
     /**
-     * Calculate importance for a stop place based on type and weighting.
+     * Calculate importance for a regular stop place based on type and weighting.
      *
      * @param stopPlace The stop place to calculate importance for
      * @return Importance value between 0.1 and 1.0
      */
     fun calculateImportance(stopPlace: StopPlace): Double {
-        val popularity = calculatePopularity(stopPlace)
+        val popularity = calculatePopularity(stopPlace, emptyList())
+        return ImportanceCalculator.calculateImportance(popularity)
+    }
+
+    /**
+     * Calculate importance for a stop place with child types (multimodal parent).
+     * Parent stops never have their own stopPlaceType - importance is derived from children.
+     *
+     * @param stopPlace The stop place to calculate importance for
+     * @param childTypes List of stop types from child stops (for multimodal parents)
+     * @return Importance value between 0.1 and 1.0
+     */
+    fun calculateImportance(stopPlace: StopPlace, childTypes: List<String>): Double {
+        val popularity = calculatePopularity(stopPlace, childTypes)
         return ImportanceCalculator.calculateImportance(popularity)
     }
 
@@ -42,14 +56,21 @@ object StopPlaceImportanceCalculator {
      * Calculate raw popularity value (boost) for a stop place.
      *
      * This mirrors the logic in kakka's StopPlaceBoostConfiguration.
+     * The formula aggregates all stop types (parent's own type + children) and sums their factors.
      */
-    private fun calculatePopularity(stopPlace: StopPlace): Long {
+    private fun calculatePopularity(stopPlace: StopPlace, childTypes: List<String>): Long {
         var popularity = DEFAULT_VALUE.toLong()
 
-        // Apply stop type factor
-        val stopTypeFactor = getStopTypeFactor(stopPlace.stopPlaceType)
-        if (stopTypeFactor > 0) {
-            popularity *= stopTypeFactor.toLong()
+        // Collect all stop types: parent's own type (if any) plus children's types
+        val allStopTypes = mutableListOf<String>()
+        stopPlace.stopPlaceType?.let { allStopTypes.add(it) }
+        allStopTypes.addAll(childTypes)
+
+        // Sum all stop type factors (kakka uses sum, not multiplication)
+        val sumOfFactors = allStopTypes.sumOf { getStopTypeFactor(it) }
+
+        if (sumOfFactors > 0) {
+            popularity = (popularity * sumOfFactors).toLong()
         }
 
         // Apply interchange weighting factor

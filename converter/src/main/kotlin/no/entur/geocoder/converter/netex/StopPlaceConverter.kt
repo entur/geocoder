@@ -37,10 +37,10 @@ class StopPlaceConverter : Converter {
         val countyGid = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.parentTopographicPlaceRef?.ref
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
         val country = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.countryRef?.ref
-        val transportModes =
-            categories.getOrDefault(stopPlace.id, emptyList()).plus(stopPlace.stopPlaceType).filterNotNull()
+        val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
+        val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance = StopPlaceImportanceCalculator.calculateImportance(stopPlace)
+        val importance = StopPlaceImportanceCalculator.calculateImportance(stopPlace, childStopTypes)
 
         val tariffZoneCategories = stopPlace.tariffZones?.tariffZoneRef
             ?.mapNotNull { it.ref?.split(":")?.first()?.let { ref -> "tariff_zone_id.${ref}" } }

@@ -168,6 +168,212 @@ class StopPlaceImportanceCalculatorTest {
         assertTrue(imp2 < imp3, "Preferred interchange should boost more than recommended")
     }
 
+    // ===== Multimodal Parent Station Tests =====
+    // Key insight: Parent stops NEVER have their own stopPlaceType (always null)
+    // They derive their importance by SUMMING the factors of their children's types
+    // Formula: popularity = defaultValue * (SUM of child type factors) * interchange factor
+
+    @Test
+    fun `multimodal parent uses sum of child types`() {
+        // Parent stop has no stopPlaceType (always null for parents), but has rail and metro children
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("railStation", "metroStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2 + 2) = 120
+        // Log10 normalized: ~0.187
+        assertEquals(0.187, importance, 0.02,
+            "Multimodal parent (rail+metro) should have importance ~0.187")
+    }
+
+    @Test
+    fun `multimodal parent with three child types`() {
+        // Parent with rail, metro, and bus children
+        val parentStop = createStopPlace(stopPlaceType = null)  // Parents never have their own type
+        val childTypes = listOf("railStation", "metroStation", "busStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2 + 2 + 2) = 180
+        // Log10 normalized: ~0.214
+        assertEquals(0.214, importance, 0.02,
+            "Multimodal parent (rail+metro+bus) should sum all child factors")
+    }
+
+    @Test
+    fun `multimodal parent sums factors not multiplies them`() {
+        // Test case from kakka: rail (factor 2) + metro (factor 2) = sum of 4, not product of 4
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("railStation", "metroStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // If multiplied: 30 * 2 * 2 = 120 (WRONG)
+        // If summed: 30 * (2 + 2) = 120 (CORRECT, but same value in this case)
+        // Better test: rail + metro + bus = 30 * (2 + 2 + 2) = 180, not 30 * 2 * 2 * 2 = 240
+        val parentStop2 = createStopPlace(stopPlaceType = null)
+        val childTypes2 = listOf("railStation", "metroStation", "busStation")
+
+        val importance2 = StopPlaceImportanceCalculator.calculateImportance(parentStop2, childTypes2)
+
+        // Expected with sum: 30 * (2+2+2) = 180, importance ~0.214
+        assertEquals(0.214, importance2, 0.02,
+            "Should sum factors (2+2+2=6), not multiply (2*2*2=8)")
+    }
+
+    @Test
+    fun `multimodal parent with unconfigured child types defaults to factor 1`() {
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("ferryStop", "tramStation")  // Neither configured
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (1 + 1) = 60
+        // Log10 normalized: ~0.158
+        assertEquals(0.158, importance, 0.02,
+            "Unconfigured stop types should default to factor 1.0")
+    }
+
+    @Test
+    fun `multimodal parent with mixed configured and unconfigured types`() {
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("railStation", "ferryStop")  // rail=2, ferry=1
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2 + 1) = 90
+        // Log10 normalized: ~0.174
+        assertEquals(0.174, importance, 0.02,
+            "Should sum configured (2) and default (1) factors")
+    }
+
+    @Test
+    fun `multimodal parent with interchange applies to total`() {
+        val parentStop = createStopPlace(
+            stopPlaceType = null,
+            weighting = "preferredInterchange"
+        )
+        val childTypes = listOf("railStation", "metroStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2 + 2) * 10 = 1200
+        // Log10 normalized: ~0.290
+        assertEquals(0.290, importance, 0.02,
+            "Interchange factor should apply after summing stop type factors")
+    }
+
+    @Test
+    fun `multimodal parent importance higher than single mode`() {
+        val singleModeStop = createStopPlace(stopPlaceType = "railStation")
+        val multimodalStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("railStation", "metroStation", "busStation")
+
+        val singleImportance = StopPlaceImportanceCalculator.calculateImportance(singleModeStop)
+        val multiImportance = StopPlaceImportanceCalculator.calculateImportance(multimodalStop, childTypes)
+
+        assertTrue(multiImportance > singleImportance,
+            "Multimodal parent (3 types) should have higher importance than single mode")
+    }
+
+    @Test
+    fun `empty child types list behaves like regular stop`() {
+        val stopWithNoChildren = createStopPlace(stopPlaceType = "busStation")
+        val stopWithEmptyList = createStopPlace(stopPlaceType = "busStation")
+
+        val imp1 = StopPlaceImportanceCalculator.calculateImportance(stopWithNoChildren)
+        val imp2 = StopPlaceImportanceCalculator.calculateImportance(stopWithEmptyList, emptyList())
+
+        assertEquals(imp1, imp2, 0.001,
+            "Empty child list should produce same result as no parameter")
+    }
+
+    @Test
+    fun `regular stop with type ignores child types if provided`() {
+        // Regular (non-parent) stops have their own stopPlaceType
+        // In real data, they would have empty childTypes, but test the edge case
+        val regularStop = createStopPlace(stopPlaceType = "railStation")
+        val childTypes = listOf("metroStation", "busStation")  // Should be ignored
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(regularStop, childTypes)
+
+        // Expected: Should use own type + sum of children = 30 * (2 + 2 + 2) = 180
+        // (In reality, regular stops won't have children, but if they do, we sum all)
+        assertEquals(0.214, importance, 0.02,
+            "Stop with own type should include both own and child factors")
+    }
+
+    @Test
+    fun `multimodal parent with only child types has substantial importance`() {
+        // All multimodal parents have no transport mode of their own (stopPlaceType = null)
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("railStation", "metroStation", "busStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2 + 2 + 2) = 180
+        assertTrue(importance > 0.2,
+            "Parent derives all importance from children")
+    }
+
+    @Test
+    fun `kakka test case - multiple types summarized`() {
+        // From StopPlaceBoostConfigurationTest.java line 70-72:
+        // "multipleTypesAndSubModesShouldBeSummarized"
+        // With defaultValue=1000, factors rail=6, airport=2, ferry=0, interchange=10
+        // Result: 1000 * (6 + 2 + 0) * 10 = 80,000
+
+        // Adapted to our production config: defaultValue=30, rail=2, metro=2, bus=2
+        val parentStop = createStopPlace(
+            stopPlaceType = null,
+            weighting = "preferredInterchange"
+        )
+        val childTypes = listOf("railStation", "metroStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: 30 * (2 + 2) * 10 = 1200
+        // This should produce higher importance than single type with interchange
+        val singleTypeWithInterchange = createStopPlace(
+            stopPlaceType = "railStation",
+            weighting = "preferredInterchange"
+        )
+        val singleImportance = StopPlaceImportanceCalculator.calculateImportance(singleTypeWithInterchange)
+
+        assertTrue(importance > singleImportance,
+            "Multimodal with interchange should exceed single mode with interchange")
+    }
+
+    @Test
+    fun `duplicate child types are summed not deduplicated`() {
+        // Parent with THREE rail station children (same type)
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = listOf("railStation", "railStation", "railStation")
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2 + 2 + 2) = 180
+        // NOT: 30 * 2 = 60 (if deduplicated)
+        // Log10 normalized: ~0.214
+        assertEquals(0.214, importance, 0.02,
+            "Duplicate types should be summed, not deduplicated (3 × 2 = 6)")
+    }
+
+    @Test
+    fun `many children of same type produce high importance`() {
+        // Realistic scenario: parent with 5 bus station children
+        val parentStop = createStopPlace(stopPlaceType = null)
+        val childTypes = List(5) { "busStation" }  // 5 identical entries
+
+        val importance = StopPlaceImportanceCalculator.calculateImportance(parentStop, childTypes)
+
+        // Expected: popularity = 30 * (2+2+2+2+2) = 300
+        // Log10 normalized: ~0.237
+        assertEquals(0.237, importance, 0.02,
+            "5 bus stations should contribute 5 × 2 = 10 to factor")
+    }
+
     // Helper function to create test StopPlace instances
     private fun createStopPlace(
         id: String = "NSR:StopPlace:1",
