@@ -42,7 +42,7 @@ jobs:
   import-build-push:
     if: inputs.build_import == true
     needs: import-lint
-    uses: ./.github/workflows/_build-push.yml
+    uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-import
       dockerfile: Dockerfile.import
@@ -69,7 +69,7 @@ jobs:
       inputs.deploy_env != 'none' &&
       (inputs.build_import == false || needs.import-build-push.result == 'success')
     needs: [photon-lint, import-build-push]
-    uses: ./.github/workflows/_build-push.yml
+    uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-photon
       dockerfile: Dockerfile.photon
