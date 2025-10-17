@@ -42,7 +42,7 @@ jobs:
   import-build-push:
     if: inputs.build_import == true
     needs: import-lint
-    uses: ./.github/workflows/simple-build-push.yml
+    uses: ./.github/workflows/_build-push.yml
     with:
       image_name: geocoder-import
       dockerfile: Dockerfile.import
@@ -69,12 +69,12 @@ jobs:
       inputs.deploy_env != 'none' &&
       (inputs.build_import == false || needs.import-build-push.result == 'success')
     needs: [photon-lint, import-build-push]
-    uses: ./.github/workflows/simple-build-push.yml
+    uses: ./.github/workflows/_build-push.yml
     with:
       image_name: geocoder-photon
       dockerfile: Dockerfile.photon
       build_args: |
-        IMPORT_IMAGE=geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
+        IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
 
   photon-scan:
     if: inputs.deploy_env != 'none'

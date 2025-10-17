@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: [Internal] Build and Push Docker Image
 
 on:
   workflow_call:
@@ -29,13 +29,14 @@ on:
 
 env:
   REGISTRY: eu.gcr.io/entur-system-1287
-  IMAGE_NAME: ${{ inputs.image_name || github.event.repository.name }}
+  IMAGE_NAME: ${{ inputs.image_name }}
   DOCKERFILE: ${{ inputs.dockerfile }}
 
 jobs:
   build-push:
     name: Build and Push
-    runs-on: ubuntu-24.04
+    runs-on:
+      group: grp-ubuntu-24.04-2core-x64
     timeout-minutes: 40
     permissions:
       contents: read
