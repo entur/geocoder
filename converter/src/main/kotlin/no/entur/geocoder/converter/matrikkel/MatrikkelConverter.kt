@@ -66,7 +66,7 @@ class MatrikkelConverter : Converter {
             source = "kartverket-matrikkelenadresse",
             categories = listOf("osm.public_transport.address", "source.kartverket.matrikkelenadresse"),
             importance = 0.09,
-            displayName = adresse.adresseTekst,
+            displayName = null,
             housenumber = adresse.nummer,
             postcode = adresse.postnummer,
             label = "${adresse.adresseTekst}, ${adresse.poststed.titleize()}",
@@ -101,7 +101,7 @@ class MatrikkelConverter : Converter {
         source: String,
         categories: List<String>,
         importance: Double,
-        displayName: String,
+        displayName: String?,
         housenumber: String?,
         postcode: String?,
         label: String,
@@ -132,7 +132,7 @@ class MatrikkelConverter : Converter {
                 rank_address = 26,
                 importance = importance,
                 parent_place_id = 0,
-                name = Name(displayName),
+                name = displayName?.let { Name(it) },
                 housenumber = housenumber,
                 address =
                     Address(

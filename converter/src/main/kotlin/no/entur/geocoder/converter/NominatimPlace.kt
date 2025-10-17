@@ -15,7 +15,7 @@ data class NominatimPlace(
         val rank_address: Int,
         val importance: Double,
         val parent_place_id: Long? = null,
-        val name: Name?,
+        val name: Name? = null,
         val address: Address,
         val housenumber: String? = null,
         val postcode: String?,
