@@ -5,6 +5,7 @@ import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
+import no.entur.geocoder.converter.importance.ImportanceCalculator
 import java.io.File
 import java.nio.file.Paths
 import kotlin.math.abs
@@ -27,6 +28,7 @@ class StopPlaceConverter : Converter {
         stopPlace: StopPlace,
         topoPlaces: Map<String, TopographicPlace>,
         categories: Map<String, List<String>>,
+        popularity: Long,
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
         val lat = stopPlace.centroid.location.latitude
@@ -40,7 +42,7 @@ class StopPlaceConverter : Converter {
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
         val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance = StopPlaceImportanceCalculator.calculateImportance(stopPlace, childStopTypes)
+        val importance = ImportanceCalculator.calculateImportance(popularity)
 
         val tariffZoneCategories = stopPlace.tariffZones?.tariffZoneRef
             ?.mapNotNull { it.ref?.split(":")?.first()?.let { ref -> "tariff_zone_id.${ref}" } }
@@ -100,6 +102,7 @@ class StopPlaceConverter : Converter {
     fun convertGroupOfStopPlacesToNominatim(
         groupOfStopPlaces: GroupOfStopPlaces,
         topoPlaces: Map<String, TopographicPlace>,
+        stopPlacePopularities: Map<String, Long>,
     ): NominatimPlace {
         val lat = groupOfStopPlaces.centroid.location.latitude
         val lon = groupOfStopPlaces.centroid.location.longitude
@@ -125,6 +128,15 @@ class StopPlaceConverter : Converter {
             }
         }
 
+        // Calculate importance based on member stop place popularities
+        val memberPopularities = groupOfStopPlaces.members?.stopPlaceRef
+            ?.mapNotNull { it.ref }
+            ?.mapNotNull { stopPlacePopularities[it] }
+            ?: emptyList()
+
+        val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
+        val importance = ImportanceCalculator.calculateImportance(popularity.toLong())
+
         val categories = listOf("osm.public_transport.group_of_stop_places")
             .plus("GroupOfStopPlaces")
             .plus(country?.let { "country.${it}" })
@@ -140,7 +152,7 @@ class StopPlaceConverter : Converter {
             object_id = abs(groupOfStopPlaces.id.hashCode().toLong()),
             categories = categories,
             rank_address = 30,
-            importance = 0.7,
+            importance = importance,
             parent_place_id = 0,
             name = groupName?.let { Name(it) },
             address = Address(
@@ -166,11 +178,21 @@ class StopPlaceConverter : Converter {
     }
 
     fun convertNetexParseResult(result: NetexParser.ParseResult): Sequence<NominatimPlace> {
-        val stopPlaceEntries = result.stopPlaces.flatMap {
+        val stopPlacesList = result.stopPlaces.toList()
+
+        val stopPlacePopularities = stopPlacesList.associate { stopPlace ->
+            val childStopTypes = result.categories.getOrDefault(stopPlace.id, emptyList())
+            val popularity = StopPlacePopularityCalculator.calculatePopularity(stopPlace, childStopTypes)
+            stopPlace.id to popularity
+        }
+
+        val stopPlaceEntries = stopPlacesList.asSequence().flatMap { stopPlace ->
+            val popularity = stopPlacePopularities[stopPlace.id] ?: 0L
             convertStopPlaceToNominatim(
-                it,
+                stopPlace,
                 result.topoPlaces,
                 result.categories,
+                popularity,
             ).asSequence()
         }
 
@@ -178,6 +200,7 @@ class StopPlaceConverter : Converter {
             convertGroupOfStopPlacesToNominatim(
                 it,
                 result.topoPlaces,
+                stopPlacePopularities,
             )
         }
 
