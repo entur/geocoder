@@ -42,7 +42,7 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      image_name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      image_name: ${{ env.IMAGE_NAME }}
       image_tag: ${{ github.sha }}
 
     steps:
@@ -70,7 +70,7 @@ jobs:
           file: ${{ env.DOCKERFILE }}
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           build-args: ${{ inputs.build_args }}
           provenance: false
