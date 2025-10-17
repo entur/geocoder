@@ -39,28 +39,20 @@ jobs:
       dockerfile: Dockerfile.import
       ignore: "DL3018,DL3059"
 
-  import-build:
+  import-build-push:
     if: inputs.build_import == true
     needs: import-lint
-    uses: entur/gha-docker/.github/workflows/build.yml@v1
+    uses: ./.github/workflows/simple-build-push.yml
     with:
-      dockerfile: Dockerfile.import
       image_name: geocoder-import
-
-  import-push:
-    if: inputs.build_import == true
-    needs: import-build
-    uses: entur/gha-docker/.github/workflows/push.yml@v1
-    with:
       dockerfile: Dockerfile.import
-      image_name: geocoder-import
 
   import-scan:
     if: inputs.build_import == true
-    needs: [import-build]
+    needs: [import-build-push]
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
-      image_artifact: ${{ needs.import-build.outputs.image_artifact }}
+      image_artifact: ${{ needs.import-build-push.outputs.image_name }}:${{ needs.import-build-push.outputs.image_tag }}
 
   # Photon image jobs
   photon-lint:
@@ -70,36 +62,26 @@ jobs:
       dockerfile: Dockerfile.photon
       ignore: "DL3018,DL3059"
 
-  photon-build:
+  photon-build-push:
     if: |
       always() &&
       !cancelled() &&
       inputs.deploy_env != 'none' &&
-      (inputs.build_import == false || needs.import-push.result == 'success')
-    needs: [photon-lint, import-push]
-    # If we're building import, wait for it to finish and use that tag
-    # Otherwise, use the specified import_image_tag
-    uses: entur/gha-docker/.github/workflows/build.yml@v1
+      (inputs.build_import == false || needs.import-build-push.result == 'success')
+    needs: [photon-lint, import-build-push]
+    uses: ./.github/workflows/simple-build-push.yml
     with:
-      dockerfile: Dockerfile.photon
       image_name: geocoder-photon
+      dockerfile: Dockerfile.photon
       build_args: |
-        IMPORT_IMAGE=geocoder-import:${{ inputs.build_import == true && needs.import-push.outputs.image_tag || inputs.import_image_tag }}
-
-  photon-push:
-    if: inputs.deploy_env != 'none'
-    needs: photon-build
-    uses: entur/gha-docker/.github/workflows/push.yml@v1
-    with:
-      dockerfile: Dockerfile.photon
-      image_name: geocoder-photon
+        IMPORT_IMAGE=geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
 
   photon-scan:
     if: inputs.deploy_env != 'none'
-    needs: [photon-build]
+    needs: [photon-build-push]
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
-      image_artifact: ${{ needs.photon-build.outputs.image_artifact }}
+      image_artifact: ${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}
 
   # Deploy jobs
   dev-deploy:
@@ -107,11 +89,11 @@ jobs:
       always() && 
       !cancelled() &&
       (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
-    needs: [photon-push]
+    needs: [photon-build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
+      image: ${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -122,13 +104,12 @@ jobs:
       always() && 
       !cancelled() &&
       (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
-    needs: [photon-push]
+    needs: [photon-build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: ${{ needs.photon-push.outputs.image_name }}:${{ needs.photon-push.outputs.image_tag}}
+      image: ${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
     secrets: inherit
-
