@@ -40,9 +40,7 @@ class StopPlaceConverter : Converter {
         val transportModes =
             categories.getOrDefault(stopPlace.id, emptyList()).plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance = 0.2 +
-                (transportModes.size * 0.1).coerceAtMost(0.4) +
-                (if (transportModes.contains("railStation")) 0.2 else 0.0)
+        val importance = StopPlaceImportanceCalculator.calculateImportance(stopPlace)
 
         val tariffZoneCategories = stopPlace.tariffZones?.tariffZoneRef
             ?.mapNotNull { it.ref?.split(":")?.first()?.let { ref -> "tariff_zone_id.${ref}" } }
