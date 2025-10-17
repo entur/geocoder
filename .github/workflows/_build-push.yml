@@ -1,4 +1,4 @@
-name: [Internal] Build and Push Docker Image
+name: "[Internal] Build and Push Docker Image"
 
 on:
   workflow_call:
