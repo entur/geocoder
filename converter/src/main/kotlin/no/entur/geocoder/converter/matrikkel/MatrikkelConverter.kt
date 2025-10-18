@@ -8,6 +8,7 @@ import no.entur.geocoder.converter.NominatimPlace.Address
 import no.entur.geocoder.converter.NominatimPlace.Name
 import no.entur.geocoder.converter.NominatimPlace.PlaceContent
 import no.entur.geocoder.converter.Util.titleize
+import no.entur.geocoder.converter.importance.ImportanceCalculator
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -65,7 +66,7 @@ class MatrikkelConverter : Converter {
             id = adresse.lokalid,
             source = "kartverket-matrikkelenadresse",
             categories = listOf("osm.public_transport.address", "source.kartverket.matrikkelenadresse"),
-            importance = 0.09,
+            popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null,
             housenumber = adresse.nummer,
             postcode = adresse.postnummer,
@@ -85,7 +86,7 @@ class MatrikkelConverter : Converter {
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             source = "kartverket-matrikkelenadresse",
             categories = listOf("osm.public_transport.street", "source.kartverket.matrikkelenadresse"),
-            importance = 0.1,
+            popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,
             postcode = null,
@@ -100,7 +101,7 @@ class MatrikkelConverter : Converter {
         id: String?,
         source: String,
         categories: List<String>,
-        importance: Double,
+        popularity: Double,
         displayName: String?,
         housenumber: String?,
         postcode: String?,
@@ -130,7 +131,7 @@ class MatrikkelConverter : Converter {
                 object_id = abs((id ?: adresse.adresseId).hashCode().toLong()),
                 categories = categories,
                 rank_address = 26,
-                importance = importance,
+                importance = ImportanceCalculator.calculateImportance(popularity),
                 parent_place_id = 0,
                 name = displayName?.let { Name(it) },
                 housenumber = housenumber,
