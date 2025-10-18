@@ -5,7 +5,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object ImportanceCalculator {
-    private const val MIN_POPULARITY = 20.0
+    private const val MIN_POPULARITY = 1.0
     private const val MAX_POPULARITY = 1_000_000_000.0
     private const val IMPORTANCE_FLOOR = 0.1
 

@@ -16,7 +16,8 @@ class OsmIterator(inputFile: File) : AbstractIterator<Entity>() {
     private val poisonPill: Entity = Node(CommonEntityData(-1L, 0, Date(0), null, 0L), 0.0, 0.0)
 
     private fun hasWantedTag(tags: Collection<Tag>) =
-        tags.any { it.key == "name" } && tags.any { Poi.isWantedKey(it.key) }
+        tags.any { it.key == "name" } &&
+        tags.any { tag -> Poi.isWantedTag(tag.key, tag.value) }
 
     init {
         val reader = OsmosisReader(inputFile)

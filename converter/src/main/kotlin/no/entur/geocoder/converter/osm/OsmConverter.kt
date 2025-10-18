@@ -7,6 +7,7 @@ import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.Util.toBigDecimalWithScale
+import no.entur.geocoder.converter.importance.ImportanceCalculator
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.io.File
 import java.math.BigDecimal
@@ -98,7 +99,8 @@ class OsmConverter : Converter {
     }
 
     private fun filterTags(tags: Collection<Tag>): Map<String, String> =
-        tags.associate { it.key to it.value }.filter { Poi.isWantedKey(it.key) }
+        tags.associate { it.key to it.value }
+            .filter { (key, value) -> Poi.isWantedTag(key, value) }
 
 
     private fun createPlaceContent(
@@ -226,18 +228,7 @@ class OsmConverter : Converter {
         }
 
     private fun calculateImportance(tags: Map<String, String>): Double {
-        var importance = 0.03
-
-        when {
-            tags.containsKey("amenity") -> importance += 0.01
-            tags.containsKey("shop") -> importance += 0.005
-            tags.containsKey("tourism") -> importance += 0.015
-            tags.containsKey("boundary") -> importance += 0.02
-        }
-
-        val nameKeys = tags.keys.count { it.startsWith("name") }
-        importance += nameKeys * 0.001
-
-        return importance.coerceAtMost(0.2)
+        val popularity = OSMPopularityCalculator.calculatePopularity(tags)
+        return ImportanceCalculator.calculateImportance(popularity)
     }
 }
