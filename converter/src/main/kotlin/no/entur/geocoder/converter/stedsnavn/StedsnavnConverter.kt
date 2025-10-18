@@ -7,6 +7,7 @@ import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.matrikkel.Geo
+import no.entur.geocoder.converter.importance.ImportanceCalculator
 import java.io.File
 import java.nio.file.Paths
 import javax.xml.stream.XMLInputFactory
@@ -199,7 +200,9 @@ class StedsnavnConverter : Converter {
                 object_id = abs(entry.lokalId.hashCode().toLong()),
                 categories = categories,
                 rank_address = 16,
-                importance = 0.5,
+                importance = ImportanceCalculator.calculateImportance(
+                    StedsnavnPopularityCalculator.calculatePopularity()
+                ),
                 parent_place_id = 0,
                 name = Name(entry.stedsnavn),
                 housenumber = null,
