@@ -2,58 +2,87 @@ package no.entur.geocoder.converter.importance
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ImportanceCalculatorTest {
 
     @Test
-    fun `test minimum value returns floor`() {
-        // With MIN_POPULARITY = 1.0, value of 1 should give exactly the floor
+    fun `output is always within valid range`() {
+        val testValues = listOf(1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, 100_000_000, 1_000_000_000)
+        testValues.forEach { value ->
+            val importance = ImportanceCalculator.calculateImportance(value)
+            assertTrue(importance >= 0.1, "Importance $importance below floor for value $value")
+            assertTrue(importance <= 1.0, "Importance $importance above 1.0 for value $value")
+        }
+    }
+
+    @Test
+    fun `higher popularity always gives higher importance`() {
+        val values = listOf(1, 50, 500, 5_000, 50_000, 500_000, 5_000_000, 50_000_000)
+        val importances = values.map { ImportanceCalculator.calculateImportance(it) }
+
+        // Verify monotonically increasing
+        importances.zipWithNext().forEach { (current, next) ->
+            assertTrue(next > current, "Monotonicity violated: $current >= $next")
+        }
+    }
+
+    @Test
+    fun `minimum value gives floor`() {
         val result = ImportanceCalculator.calculateImportance(1)
         assertEquals(0.1, result, 0.001)
     }
 
     @Test
-    fun `test maximum value returns 1_0`() {
+    fun `maximum value gives 1_0`() {
         val result = ImportanceCalculator.calculateImportance(1_000_000_000)
         assertEquals(1.0, result, 0.001)
     }
 
     @Test
-    fun `test typical stop values`() {
-        // With MIN_POPULARITY = 1.0: scaled = 0.1 + (log10(pop) / 9) * 0.9
-        // 30: log10(30) = 1.477, normalized = 1.477/9 = 0.164, scaled = 0.1 + 0.164*0.9 = 0.248
-        assertEquals(0.248, ImportanceCalculator.calculateImportance(30), 0.01)
-        // 60: log10(60) = 1.778, normalized = 1.778/9 = 0.198, scaled = 0.1 + 0.198*0.9 = 0.278
-        assertEquals(0.278, ImportanceCalculator.calculateImportance(60), 0.01)
-        // 600: log10(600) = 2.778, normalized = 2.778/9 = 0.309, scaled = 0.1 + 0.309*0.9 = 0.378
-        assertEquals(0.378, ImportanceCalculator.calculateImportance(600), 0.01)
+    fun `equal logarithmic steps produce equal importance steps`() {
+        // Powers of 10 should have equal spacing in importance
+        val step1 = ImportanceCalculator.calculateImportance(100)
+        val step2 = ImportanceCalculator.calculateImportance(1_000)
+        val step3 = ImportanceCalculator.calculateImportance(10_000)
+        val step4 = ImportanceCalculator.calculateImportance(100_000)
+
+        val delta1 = step2 - step1
+        val delta2 = step3 - step2
+        val delta3 = step4 - step3
+
+        // All deltas should be approximately equal (logarithmic scale)
+        assertEquals(delta1, delta2, 0.01)
+        assertEquals(delta2, delta3, 0.01)
     }
 
     @Test
-    fun `test popular stops in middle range`() {
-        // 10,000: log10(10000) = 4, normalized = 4/9 = 0.444, scaled = 0.1 + 0.444*0.9 = 0.500
-        assertEquals(0.500, ImportanceCalculator.calculateImportance(10_000), 0.01)
-        // 1,000,000: log10(1000000) = 6, normalized = 6/9 = 0.667, scaled = 0.1 + 0.667*0.9 = 0.700
-        assertEquals(0.700, ImportanceCalculator.calculateImportance(1_000_000), 0.01)
+    fun `preserves ordering of any input sequence`() {
+        val randomValues = listOf(42, 157, 1_234, 5_678, 123_456, 9_876_543)
+        val importances = randomValues.map { ImportanceCalculator.calculateImportance(it) }
+
+        assertEquals(importances, importances.sorted())
     }
 
     @Test
-    fun `test mega groups near maximum`() {
-        // 100,000,000: log10(100000000) = 8, normalized = 8/9 = 0.889, scaled = 0.1 + 0.889*0.9 = 0.900
-        assertEquals(0.900, ImportanceCalculator.calculateImportance(100_000_000), 0.01)
+    fun `custom range respects boundaries`() {
+        val minPop = 10.0
+        val maxPop = 10_000.0
+        val floor = 0.2
+
+        // Minimum should give floor
+        val minResult = ImportanceCalculator.calculateImportance(10, minPop, maxPop, floor)
+        assertEquals(floor, minResult, 0.001)
+
+        // Maximum should give 1.0
+        val maxResult = ImportanceCalculator.calculateImportance(10_000, minPop, maxPop, floor)
+        assertEquals(1.0, maxResult, 0.001)
     }
 
     @Test
-    fun `test distribution preserves order`() {
-        // Updated to start from 1 (new MIN_POPULARITY)
-        val values = listOf(1, 60, 600, 10_000, 1_000_000, 100_000_000, 1_000_000_000)
-        val importances = values.map { ImportanceCalculator.calculateImportance(it) }
-
-        // Verify strictly increasing
-        for (i in 0 until importances.size - 1) {
-            assert(importances[i] < importances[i + 1]) {
-                "Importance not increasing: ${importances[i]} >= ${importances[i + 1]}"
-            }
-        }
+    fun `custom floor is respected`() {
+        val customFloor = 0.3
+        val result = ImportanceCalculator.calculateImportance(1, floor = customFloor)
+        assertEquals(customFloor, result, 0.001)
     }
 }
