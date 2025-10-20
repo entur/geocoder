@@ -5,8 +5,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.entur.geocoder.proxy.pelias.PeliasApi.autocompleteRequest
-import no.entur.geocoder.proxy.pelias.PeliasApi.reverseRequest
+import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
 import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
 import no.entur.geocoder.proxy.v3.V3ResultTransformer
 import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteRequest
@@ -23,11 +23,11 @@ object Routing {
 
         routing {
             get("/v2/autocomplete") {
-                autocompleteRequest(photonBaseUrl, client, transformer)
+                peliasAutocompleteRequest(photonBaseUrl, client, transformer)
             }
 
             get("/v2/reverse") {
-                reverseRequest(photonBaseUrl, client, transformer)
+                peliasReverseRequest(photonBaseUrl, client, transformer)
             }
 
             get("/v3/autocomplete") {

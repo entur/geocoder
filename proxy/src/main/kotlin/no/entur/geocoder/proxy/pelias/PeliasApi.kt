@@ -1,13 +1,11 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.RoutingContext
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.entur.geocoder.proxy.ErrorHandler
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -16,7 +14,7 @@ import org.slf4j.LoggerFactory
 
 object PeliasApi {
 
-    suspend fun RoutingContext.autocompleteRequest(
+    suspend fun RoutingContext.peliasAutocompleteRequest(
         photonBaseUrl: String,
         client: HttpClient,
         transformer: PeliasResultTransformer
@@ -34,7 +32,7 @@ object PeliasApi {
             return
         }
 
-        val photonRequest = PhotonAutocompleteRequest.Companion.from(params)
+        val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
         logger.info("Proxying /v2/autocomplete to $url with text='${photonRequest.query}'")
 
@@ -51,7 +49,7 @@ object PeliasApi {
                         }
                     }.bodyAsText()
 
-            val photonResult = PhotonResult.Companion.parse(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse)
             val json = transformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
@@ -65,7 +63,7 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.reverseRequest(
+    suspend fun RoutingContext.peliasReverseRequest(
         photonBaseUrl: String,
         client: HttpClient,
         transformer: PeliasResultTransformer
@@ -83,7 +81,7 @@ object PeliasApi {
             return
         }
 
-        val photonRequest = PhotonReverseRequest.Companion.from(params)
+        val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
         logger.info("Proxying /v2/reverse to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
@@ -98,7 +96,7 @@ object PeliasApi {
                         parameter("limit", photonRequest.limit.toString())
                     }.bodyAsText()
 
-            val photonResult = PhotonResult.Companion.parse(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse)
             val json = transformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
