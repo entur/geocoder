@@ -5,18 +5,20 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.entur.geocoder.proxy.PeliasApi.autocompleteRequest
-import no.entur.geocoder.proxy.PeliasApi.reverseRequest
-import no.entur.geocoder.proxy.V3Api.autocompleteRequest as v3AutocompleteRequest
-import no.entur.geocoder.proxy.V3Api.reverseRequest as v3ReverseRequest
+import no.entur.geocoder.proxy.pelias.PeliasApi.autocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasApi.reverseRequest
+import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
+import no.entur.geocoder.proxy.v3.V3ResultTransformer
+import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteRequest
+import no.entur.geocoder.proxy.v3.V3Api.reverseRequest as v3ReverseRequest
 
 object Routing {
 
     fun Application.configureRouting(
         client: HttpClient,
-        transformer: PeliasResultTransformer,
         photonBaseUrl: String,
     ) {
+        val transformer = PeliasResultTransformer()
         val v3Transformer = V3ResultTransformer()
 
         routing {

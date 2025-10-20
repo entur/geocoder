@@ -1,4 +1,4 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.v3
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.math.BigDecimal

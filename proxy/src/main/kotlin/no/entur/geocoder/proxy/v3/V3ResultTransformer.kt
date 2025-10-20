@@ -1,10 +1,12 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.v3
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.entur.geocoder.proxy.PhotonResult.PhotonFeature
-import no.entur.geocoder.proxy.V3Result.*
+import no.entur.geocoder.common.Extra
+import no.entur.geocoder.proxy.photon.PhotonResult
+import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
+import no.entur.geocoder.proxy.v3.V3Result.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -24,7 +26,7 @@ class V3ResultTransformer {
         val filters = if (params.placeTypes.isNotEmpty() || params.sources.isNotEmpty() || params.countries.isNotEmpty() ||
             params.countyIds.isNotEmpty() || params.localityIds.isNotEmpty() || params.tariffZones.isNotEmpty() ||
             params.tariffZoneAuthorities.isNotEmpty() || params.transportModes.isNotEmpty()) {
-            Filters(
+            V3Result.Filters(
                 placeTypes = params.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
                 sources = params.sources.takeIf { it.isNotEmpty() },
                 countries = params.countries.takeIf { it.isNotEmpty() },
@@ -84,7 +86,7 @@ class V3ResultTransformer {
         return mapper.writeValueAsString(result)
     }
 
-    private fun transformFeature(feature: PhotonFeature): Place {
+    private fun transformFeature(feature: PhotonFeature): V3Result.Place {
         val props = feature.properties
         val extra = props.extra
         val coords = feature.geometry.coordinates
@@ -92,12 +94,13 @@ class V3ResultTransformer {
         val placeType = determinePlaceType(extra?.source, props.osm_key, props.osm_value)
         val accuracy = parseAccuracy(extra?.accuracy)
 
-        return Place(
-            id = extra?.id ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
+        return V3Result.Place(
+            id = extra?.id
+                ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
             name = props.name ?: props.street ?: props.locality ?: "Unnamed",
             displayName = extra?.label ?: props.label ?: buildDisplayName(props),
             placeType = placeType,
-            location = Location(
+            location = V3Result.Location(
                 latitude = coords.getOrElse(1) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
                 longitude = coords.getOrElse(0) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP)
             ),
@@ -105,7 +108,7 @@ class V3ResultTransformer {
             categories = extra?.tags?.split(",")?.map { it.substringAfter('.') }?.filter { it.isNotBlank() },
             transportModes = extra?.transport_modes?.split(',')?.map { it.trim() }?.filter { it.isNotBlank() },
             tariffZones = extra?.tariff_zones?.split(',')?.map { it.trim() }?.filter { it.isNotBlank() },
-            source = DataSource(
+            source = V3Result.DataSource(
                 provider = mapProviderName(extra?.source),
                 sourceId = buildSourceId(extra?.source, extra?.id, props.osm_type, props.osm_id),
                 accuracy = accuracy
@@ -113,13 +116,13 @@ class V3ResultTransformer {
         )
     }
 
-    private fun buildAddress(props: PhotonResult.PhotonProperties, extra: no.entur.geocoder.common.Extra?): Address? {
+    private fun buildAddress(props: PhotonResult.PhotonProperties, extra: Extra?): V3Result.Address? {
         if (props.street == null && props.housenumber == null && props.postcode == null &&
             props.locality == null && props.county == null) {
             return null
         }
 
-        return Address(
+        return V3Result.Address(
             streetName = props.street,
             houseNumber = props.housenumber,
             postalCode = props.postcode,
@@ -166,30 +169,30 @@ class V3ResultTransformer {
         }
     }
 
-    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): PlaceType {
+    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): V3Result.PlaceType {
         return when {
-            source == "kartverket-matrikkelenadresse" -> PlaceType.ADDRESS
-            source == "nsr" && osmValue?.contains("stop") == true -> PlaceType.STOP_PLACE
-            source == "nsr" && osmValue?.contains("station") == true -> PlaceType.STATION
-            source == "nsr" -> PlaceType.VENUE
-            osmKey == "highway" -> PlaceType.STREET
-            osmKey == "place" && osmValue == "city" -> PlaceType.LOCALITY
-            osmKey == "place" && osmValue == "town" -> PlaceType.LOCALITY
-            osmKey == "place" && osmValue == "village" -> PlaceType.LOCALITY
-            osmKey == "place" && osmValue == "suburb" -> PlaceType.BOROUGH
-            osmKey == "boundary" && osmValue == "administrative" -> PlaceType.COUNTY
-            osmKey == "amenity" -> PlaceType.POI
-            osmKey == "shop" -> PlaceType.POI
-            osmKey == "tourism" -> PlaceType.POI
-            else -> PlaceType.UNKNOWN
+            source == "kartverket-matrikkelenadresse" -> V3Result.PlaceType.ADDRESS
+            source == "nsr" && osmValue?.contains("stop") == true -> V3Result.PlaceType.STOP_PLACE
+            source == "nsr" && osmValue?.contains("station") == true -> V3Result.PlaceType.STATION
+            source == "nsr" -> V3Result.PlaceType.VENUE
+            osmKey == "highway" -> V3Result.PlaceType.STREET
+            osmKey == "place" && osmValue == "city" -> V3Result.PlaceType.LOCALITY
+            osmKey == "place" && osmValue == "town" -> V3Result.PlaceType.LOCALITY
+            osmKey == "place" && osmValue == "village" -> V3Result.PlaceType.LOCALITY
+            osmKey == "place" && osmValue == "suburb" -> V3Result.PlaceType.BOROUGH
+            osmKey == "boundary" && osmValue == "administrative" -> V3Result.PlaceType.COUNTY
+            osmKey == "amenity" -> V3Result.PlaceType.POI
+            osmKey == "shop" -> V3Result.PlaceType.POI
+            osmKey == "tourism" -> V3Result.PlaceType.POI
+            else -> V3Result.PlaceType.UNKNOWN
         }
     }
 
-    private fun parseAccuracy(accuracy: String?): Accuracy? {
+    private fun parseAccuracy(accuracy: String?): V3Result.Accuracy? {
         return when (accuracy?.lowercase()) {
-            "point" -> Accuracy.EXACT
-            "centroid" -> Accuracy.APPROXIMATE
-            "interpolated" -> Accuracy.INTERPOLATED
+            "point" -> V3Result.Accuracy.EXACT
+            "centroid" -> V3Result.Accuracy.APPROXIMATE
+            "interpolated" -> V3Result.Accuracy.INTERPOLATED
             else -> null
         }
     }
@@ -203,15 +206,15 @@ class V3ResultTransformer {
         }
     }
 
-    private fun mapToPlaceType(type: String): PlaceType? {
+    private fun mapToPlaceType(type: String): V3Result.PlaceType? {
         return try {
-            PlaceType.valueOf(type.uppercase())
+            V3Result.PlaceType.valueOf(type.uppercase())
         } catch (_: IllegalArgumentException) {
             null
         }
     }
 
-    private fun calculateBoundingBox(places: List<Place>): BoundingBox? {
+    private fun calculateBoundingBox(places: List<V3Result.Place>): V3Result.BoundingBox? {
         if (places.isEmpty()) return null
 
         var minLon = BigDecimal(Double.MAX_VALUE)
@@ -230,9 +233,9 @@ class V3ResultTransformer {
         }
 
         return if (minLon != BigDecimal(Double.MAX_VALUE)) {
-            BoundingBox(
-                southwest = Location(latitude = minLat, longitude = minLon),
-                northeast = Location(latitude = maxLat, longitude = maxLon)
+            V3Result.BoundingBox(
+                southwest = V3Result.Location(latitude = minLat, longitude = minLon),
+                northeast = V3Result.Location(latitude = maxLat, longitude = maxLon)
             )
         } else {
             null

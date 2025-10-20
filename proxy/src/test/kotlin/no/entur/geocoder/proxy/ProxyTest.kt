@@ -9,6 +9,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import no.entur.geocoder.proxy.Routing.configureRouting
+import no.entur.geocoder.proxy.pelias.PeliasResult
+import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals
@@ -66,7 +68,6 @@ class ProxyTest {
             application {
                 configureRouting(
                     client = HttpClient(mockEngine),
-                    transformer = PeliasResultTransformer(),
                     photonBaseUrl = "http://photon-test",
                 )
             }
@@ -115,7 +116,6 @@ class ProxyTest {
             application {
                 configureRouting(
                     client = HttpClient(mockEngine),
-                    transformer = PeliasResultTransformer(),
                     photonBaseUrl = "http://photon-test",
                 )
             }

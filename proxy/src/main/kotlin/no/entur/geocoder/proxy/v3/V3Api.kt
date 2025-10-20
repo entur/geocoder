@@ -1,4 +1,4 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.v3
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -8,6 +8,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
+import no.entur.geocoder.proxy.ErrorHandler
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
+import no.entur.geocoder.proxy.photon.PhotonResult
+import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object V3Api {
@@ -30,7 +34,7 @@ object V3Api {
             return
         }
 
-        val photonRequest = PhotonAutocompleteRequest.from(params)
+        val photonRequest = PhotonAutocompleteRequest.Companion.from(params)
         val url = "$photonBaseUrl/api"
         logger.info("V3 autocomplete request to $url with query='${photonRequest.query}'")
 
@@ -45,7 +49,7 @@ object V3Api {
                 }
             }.bodyAsText()
 
-            val photonResult = PhotonResult.parse(photonResponse)
+            val photonResult = PhotonResult.Companion.parse(photonResponse)
             val json = transformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)
@@ -78,7 +82,7 @@ object V3Api {
             return
         }
 
-        val photonRequest = PhotonReverseRequest.from(params)
+        val photonRequest = PhotonReverseRequest.Companion.from(params)
         val url = "$photonBaseUrl/reverse"
         logger.info("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
@@ -91,7 +95,7 @@ object V3Api {
                 parameter("limit", photonRequest.limit.toString())
             }.bodyAsText()
 
-            val photonResult = PhotonResult.parse(photonResponse)
+            val photonResult = PhotonResult.Companion.parse(photonResponse)
             val json = transformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)

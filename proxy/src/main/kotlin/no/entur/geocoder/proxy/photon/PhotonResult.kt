@@ -1,4 +1,4 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.photon
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

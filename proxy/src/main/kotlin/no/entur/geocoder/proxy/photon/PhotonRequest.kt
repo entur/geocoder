@@ -1,4 +1,9 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.photon
+
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
+import no.entur.geocoder.proxy.pelias.PeliasReverseParams
+import no.entur.geocoder.proxy.v3.V3AutocompleteParams
+import no.entur.geocoder.proxy.v3.V3ReverseParams
 
 data class PhotonAutocompleteRequest(
     val query: String,

@@ -9,6 +9,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.cors.routing.*
 import no.entur.geocoder.proxy.Environment.CONSOLE
 import no.entur.geocoder.proxy.Routing.configureRouting
+import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
 import org.slf4j.LoggerFactory
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
@@ -19,7 +20,6 @@ private val httpClient =
             jackson()
         }
     }
-private val transformer = PeliasResultTransformer()
 private val logger = LoggerFactory.getLogger("Proxy")
 
 fun main() {
@@ -36,7 +36,7 @@ fun main() {
         install(ServerContentNegotiation) {
             jackson()
         }
-        configureRouting(httpClient, transformer, photonBaseUrl)
+        configureRouting(httpClient, photonBaseUrl)
     }.start(wait = true)
 }
 

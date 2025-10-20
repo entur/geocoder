@@ -1,11 +1,11 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.pelias
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Extra
-import no.entur.geocoder.proxy.PeliasResult.*
-import no.entur.geocoder.proxy.PhotonResult.PhotonFeature
+import no.entur.geocoder.proxy.photon.PhotonResult
+import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -26,7 +26,7 @@ class PeliasResultTransformer {
         return mapper.writeValueAsString(peliasCollection)
     }
 
-    private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {
+    private fun calculateBoundingBox(features: List<PeliasResult.PeliasFeature>): List<BigDecimal>? {
         if (features.isEmpty()) return null
 
         var minLon = BigDecimal(Double.MAX_VALUE)
@@ -54,17 +54,17 @@ class PeliasResultTransformer {
         }
     }
 
-    fun transformFeature(feature: PhotonFeature): PeliasFeature {
+    fun transformFeature(feature: PhotonFeature): PeliasResult.PeliasFeature {
         val props = feature.properties
         val extra = props.extra
 
-        return PeliasFeature(
+        return PeliasResult.PeliasFeature(
             type = feature.type,
-            geometry = PeliasGeometry(
+            geometry = PeliasResult.PeliasGeometry(
                 type = feature.geometry.type,
                 coordinates = feature.geometry.coordinates,
             ),
-            properties = PeliasProperties(
+            properties = PeliasResult.PeliasProperties(
                 id = extra?.id,
                 gid = "whosonfirst:address:" + extra?.id,
                 layer = transformLayer(extra),

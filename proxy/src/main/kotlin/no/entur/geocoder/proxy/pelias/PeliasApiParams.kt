@@ -1,4 +1,4 @@
-package no.entur.geocoder.proxy
+package no.entur.geocoder.proxy.pelias
 
 import io.ktor.server.request.ApplicationRequest
 
