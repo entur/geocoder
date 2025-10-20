@@ -93,7 +93,7 @@ jobs:
       id-token: write
     secrets: inherit
     with:
-      image_artifact: ${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}
+      image_artifact: "eu.gcr.io/entur-system-1287/${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}"
 
   # Deploy jobs
   dev-deploy:
