@@ -61,7 +61,7 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
       - name: Configure Docker for GCR
-        run: gcloud auth configure-docker eu.gcr.io
+        run: gcloud auth configure-docker eu.gcr.io --quiet
 
       - name: Build and push
         uses: docker/build-push-action@v6.18.0
