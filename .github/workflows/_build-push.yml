@@ -36,7 +36,7 @@ jobs:
   build-push:
     name: Build and Push
     runs-on:
-      group: grp-ubuntu-24.04-2core-x64
+      group: grp-ubuntu-24.04-4core-x64
     timeout-minutes: 40
     permissions:
       contents: read
