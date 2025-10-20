@@ -83,7 +83,8 @@ data class PhotonReverseRequest(
     val longitude: String,
     val language: String,
     val limit: Int,
-    val radius: String? = null
+    val radius: String? = null,
+    val exclude: String = "osm.public_transport.address" // Exclude addresses with house numbers in reverse requests
 ) {
     companion object {
         fun from(params: V3ReverseParams): PhotonReverseRequest {
