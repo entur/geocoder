@@ -96,8 +96,8 @@ jobs:
   # Deploy jobs
   dev-deploy:
     if: |
-      always() && 
       !cancelled() &&
+      needs.photon-build-push.result == 'success' &&
       (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
     needs: [photon-build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
@@ -111,8 +111,8 @@ jobs:
 
   tst-deploy:
     if: |
-      always() && 
       !cancelled() &&
+      needs.photon-build-push.result == 'success' &&
       (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
     needs: [photon-build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
