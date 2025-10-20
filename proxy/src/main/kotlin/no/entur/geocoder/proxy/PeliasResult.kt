@@ -23,6 +23,7 @@ data class PeliasResult(
         val type: String? = null,
         val countrycode: String? = null,
         val id: String? = null,
+        val gid: String? = null,
         val layer: String? = null,
         val source: String? = null,
         val source_id: String? = null,

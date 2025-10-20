@@ -66,11 +66,12 @@ class PeliasResultTransformer {
             ),
             properties = PeliasProperties(
                 id = extra?.id,
+                gid = "whosonfirst:address:" + extra?.id,
                 layer = transformLayer(extra),
                 source = transformSource(extra),
                 source_id = extra?.id,
                 name = props.name,
-                street = props.street,
+                street = props.street ?: ("NOT_AN_ADDRESS-" + extra?.id),
                 postalcode = props.postcode,
                 housenumber = props.housenumber,
                 accuracy = extra?.accuracy,
