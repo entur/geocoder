@@ -70,7 +70,7 @@ class PeliasResultTransformer {
                 layer = transformLayer(extra),
                 source = transformSource(extra),
                 source_id = extra?.id,
-                name = props.name,
+                name = transformName(props),
                 street = props.street ?: ("NOT_AN_ADDRESS-" + extra?.id),
                 postalcode = props.postcode,
                 housenumber = props.housenumber,
@@ -89,13 +89,20 @@ class PeliasResultTransformer {
         )
     }
 
+    private fun transformName(props: PhotonResult.PhotonProperties): String? =
+        when {
+            props.name != null -> props.name
+            props.street != null && props.housenumber != null -> "${props.street} ${props.housenumber}"
+            else -> props.street
+        }
+
     fun transformCategory(extra: Extra?): List<String> {
         val category = mutableSetOf<String>()
         extra?.transport_modes?.split(',')?.map { it.trim() }?.let {
             category.addAll(it)
         }
         if (extra?.source == "kartverket-matrikkelenadresse") {
-            if (isStreet(extra))  category.add("street") else category.add("vegadresse")
+            if (isStreet(extra)) category.add("street") else category.add("vegadresse")
         }
         if (extra?.source == "openstreetmap") {
             category.add("poi")

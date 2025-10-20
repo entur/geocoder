@@ -49,7 +49,7 @@ object V3Api {
                 }
             }.bodyAsText()
 
-            val photonResult = PhotonResult.Companion.parse(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse)
             val json = transformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)
@@ -82,7 +82,7 @@ object V3Api {
             return
         }
 
-        val photonRequest = PhotonReverseRequest.Companion.from(params)
+        val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
         logger.info("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
