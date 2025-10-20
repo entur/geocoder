@@ -26,9 +26,6 @@ on:
 
 run-name: "Build: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }} (sha: ${{ github.sha }})"
 
-env:
-  REGISTRY: eu.gcr.io/entur-system-1287
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -78,7 +75,7 @@ jobs:
       image_name: geocoder-photon
       dockerfile: Dockerfile.photon
       build_args: |
-        IMPORT_IMAGE=${{ env.REGISTRY }}:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
+        IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
 
   photon-scan:
     # TODO: Temporary disable scanning since docker-scan doesn't log into GCR
