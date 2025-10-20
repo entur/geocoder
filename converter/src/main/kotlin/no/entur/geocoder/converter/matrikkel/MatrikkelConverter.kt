@@ -1,12 +1,11 @@
 package no.entur.geocoder.converter.matrikkel
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
-import no.entur.geocoder.converter.NominatimPlace.Address
-import no.entur.geocoder.converter.NominatimPlace.Name
-import no.entur.geocoder.converter.NominatimPlace.PlaceContent
+import no.entur.geocoder.converter.NominatimPlace.*
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.importance.ImportanceCalculator
 import java.io.BufferedReader
@@ -65,7 +64,7 @@ class MatrikkelConverter : Converter {
             ost = adresse.ost,
             id = adresse.lokalid,
             source = "kartverket-matrikkelenadresse",
-            categories = listOf("osm.public_transport.address", "source.kartverket.matrikkelenadresse"),
+            categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_MATRIKKELEN),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null,
             housenumber = adresse.nummer,
@@ -85,7 +84,7 @@ class MatrikkelConverter : Converter {
             ost = ost,
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             source = "kartverket-matrikkelenadresse",
-            categories = listOf("osm.public_transport.street", "source.kartverket.matrikkelenadresse"),
+            categories = listOf(Category.OSM_STREET, Category.SOURCE_MATRIKKELEN),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,

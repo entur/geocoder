@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.stedsnavn
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
@@ -176,9 +177,9 @@ class StedsnavnConverter : Converter {
                 Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
             }
 
-        val categories = listOf("osm.public_transport.poi")
+        val categories = listOf(Category.OSM_POI)
             .plus("place.${entry.navneobjekttype}")
-            .plus("source.kartverket.stedsnavn")
+            .plus(Category.SOURCE_KARTVERKET_STEDSNAVN)
 
         val extra =
             Extra(

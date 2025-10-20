@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.netex
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
@@ -49,13 +50,13 @@ class StopPlaceConverter : Converter {
             ?.toSet()
             ?: emptySet()
 
-        val categories = listOf("osm.public_transport.stop_place")
+        val categories = listOf(Category.OSM_STOP_PLACE)
             .plus(tariffZoneCategories)
             .plus(country?.let { "country.${it}" })
             .plus(countyGid?.let { "county_gid.${it}" })
             .plus(localityGid?.let { "locality_gid.${it}" })
             .plus("layer.stopplace")
-            .plus("source.nsr")
+            .plus(Category.SOURCE_NSR)
 
         val stopPlaceContent =
             PlaceContent(
@@ -137,13 +138,13 @@ class StopPlaceConverter : Converter {
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
         val importance = ImportanceCalculator.calculateImportance(popularity.toLong())
 
-        val categories = listOf("osm.public_transport.group_of_stop_places")
+        val categories = listOf(Category.OSM_GROUP_OF_STOP_PLACES)
             .plus("GroupOfStopPlaces")
             .plus(country?.let { "country.${it}" })
             .plus(countyGid?.let { "county_gid.${it}" })
             .plus(localityGid?.let { "locality_gid.${it}" })
             .plus("layer.groupofstopplaces")
-            .plus("source.nsr")
+            .plus(Category.SOURCE_NSR)
             .filterNotNull()
 
         val placeContent = PlaceContent(

@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.pelias
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
@@ -143,7 +144,7 @@ class PeliasResultTransformer {
         }
 
     fun isStreet(extra: Extra): Boolean =
-        extra.tags?.split(',')?.any { it == "osm.public_transport.street" } == true
+        extra.tags?.split(',')?.any { it == Category.OSM_STREET } == true
 
     fun isGosp(extra: Extra?): Boolean = extra?.id?.contains("GroupOfStopPlaces") == true
 

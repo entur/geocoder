@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasReverseParams
 import no.entur.geocoder.proxy.v3.V3AutocompleteParams
@@ -84,7 +85,7 @@ data class PhotonReverseRequest(
     val language: String,
     val limit: Int,
     val radius: String? = null,
-    val exclude: String = "osm.public_transport.address" // Exclude addresses with house numbers in reverse requests
+    val exclude: String = Category.OSM_ADDRESS // Exclude addresses with house numbers in reverse requests
 ) {
     companion object {
         fun from(params: V3ReverseParams): PhotonReverseRequest {

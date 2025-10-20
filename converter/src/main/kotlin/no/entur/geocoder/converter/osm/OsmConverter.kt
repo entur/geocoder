@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.osm
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
@@ -126,7 +127,7 @@ class OsmConverter : Converter {
                 tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
             )
 
-        val categories: List<String> = listOf("osm.public_transport.poi")
+        val categories: List<String> = listOf(Category.OSM_POI)
             .plus(tags.map { "${it.key}.${it.value}" })
             .plus("source.osm")
             .plus("layer.address")
