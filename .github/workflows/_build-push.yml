@@ -63,7 +63,7 @@ jobs:
       - name: Configure Docker for GCR
         run: gcloud auth configure-docker eu.gcr.io --quiet
 
-      - name: Build and push
+      - name: Build and push to GCR
         uses: docker/build-push-action@v6.18.0
         with:
           context: ${{ inputs.context }}
