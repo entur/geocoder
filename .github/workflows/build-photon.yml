@@ -83,7 +83,11 @@ jobs:
     needs: [photon-build-push]
     uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     permissions:
-      contents: read
+      actions: read
+      contents: write
+      issues: write
+      pull-requests: write
+      security-events: write
       id-token: write
     secrets: inherit
     with:
