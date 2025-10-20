@@ -95,6 +95,7 @@ jobs:
   dev-deploy:
     if: |
       !cancelled() &&
+      github.ref == 'refs/heads/main' &&
       needs.photon-build-push.result == 'success' &&
       (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
     needs: [photon-build-push]
@@ -110,6 +111,7 @@ jobs:
   tst-deploy:
     if: |
       !cancelled() &&
+      github.ref == 'refs/heads/main' &&
       needs.photon-build-push.result == 'success' &&
       (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
     needs: [photon-build-push]

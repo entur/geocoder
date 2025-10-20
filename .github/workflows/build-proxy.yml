@@ -39,7 +39,8 @@ jobs:
   deploy-dev:
     if: |
       !cancelled() &&
-      github.event_name != 'pull_request' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
     needs: build-push
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
@@ -54,7 +55,8 @@ jobs:
   deploy-tst:
     if: |
       !cancelled() &&
-      github.event_name != 'pull_request' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
     needs: [build-push, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
