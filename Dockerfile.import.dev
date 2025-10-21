@@ -21,7 +21,7 @@ RUN java -jar converter/build/libs/converter-all.jar -a -s tiamat*.xml -o nomina
 RUN java -jar converter/build/libs/converter-all.jar -a -p converter/src/test/resources/oslo-center.osm.pbf -o nominatim.ndjson && \
     rm converter/src/test/resources/oslo-center.osm.pbf
 
-RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/953-categories-final/photon-0.7.0.jar
+RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/latest-with-prs-2025-10-21/photon-0.7.0.jar
 
 RUN exec java -jar photon.jar \
     -nominatim-import \
