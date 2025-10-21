@@ -82,7 +82,7 @@ class MatrikkelConverter : Converter {
             adresse = adresse,
             northing = northing,
             easting = easting,
-            placeId = adresse.lokalid.toLong() * 1000,
+            placeId = adresse.lokalid.toLong() * 1000, // Avoid ID collision with addresses
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             categories = listOf(Category.OSM_STREET, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
