@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
 import no.entur.geocoder.proxy.v3.V3Result.*
@@ -160,9 +161,9 @@ class V3ResultTransformer {
 
     private fun buildSourceId(source: String?, id: String?, osmType: String?, osmId: Long?): String? {
         return when {
-            source == "openstreetmap" && id != null -> id
-            source == "nsr" && id != null -> "NSR:$id"
-            source == "kartverket-matrikkelenadresse" && id != null -> "Kartverket:$id"
+            source == Source.OSM && id != null -> id
+            source == Source.NSR && id != null -> "NSR:$id"
+            source == Source.KARTVERKET_ADRESSE && id != null -> "Kartverket:$id"
             osmType != null && osmId != null -> "OSM:${osmType}:${osmId}"
             id != null -> id
             else -> null
@@ -171,10 +172,10 @@ class V3ResultTransformer {
 
     private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): V3Result.PlaceType {
         return when {
-            source == "kartverket-matrikkelenadresse" -> V3Result.PlaceType.ADDRESS
-            source == "nsr" && osmValue?.contains("stop") == true -> V3Result.PlaceType.STOP_PLACE
-            source == "nsr" && osmValue?.contains("station") == true -> V3Result.PlaceType.STATION
-            source == "nsr" -> V3Result.PlaceType.VENUE
+            source == Source.KARTVERKET_ADRESSE -> V3Result.PlaceType.ADDRESS
+            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.PlaceType.STOP_PLACE
+            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.PlaceType.STATION
+            source == Source.NSR -> V3Result.PlaceType.VENUE
             osmKey == "highway" -> V3Result.PlaceType.STREET
             osmKey == "place" && osmValue == "city" -> V3Result.PlaceType.LOCALITY
             osmKey == "place" && osmValue == "town" -> V3Result.PlaceType.LOCALITY
@@ -199,9 +200,10 @@ class V3ResultTransformer {
 
     private fun mapProviderName(source: String?): String {
         return when (source?.lowercase()) {
-            "openstreetmap" -> "OpenStreetMap"
-            "nsr" -> "National Stop Register"
-            "kartverket-matrikkelenadresse" -> "Kartverket"
+            Source.OSM -> "OpenStreetMap"
+            Source.NSR -> "National Stop Register"
+            Source.KARTVERKET_ADRESSE -> "Kartverket MatrikkelenAdresse"
+            Source.KARTVERKET_STEDSNAVN -> "Kartverket Stedsnavn"
             else -> source ?: "Unknown"
         }
     }

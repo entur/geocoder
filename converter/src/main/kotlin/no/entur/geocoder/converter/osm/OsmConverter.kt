@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.osm
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
@@ -120,7 +121,7 @@ class OsmConverter : Converter {
         val extra =
             Extra(
                 id = "OSM:TopographicPlace:" + entity.id,
-                source = "openstreetmap",
+                source = Source.OSM,
                 accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
                 label = name,

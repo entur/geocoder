@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.netex
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
@@ -79,7 +80,7 @@ class StopPlaceConverter : Converter {
                 extra =
                     Extra(
                         id = stopPlace.id,
-                        source = "nsr",
+                        source = Source.NSR,
                         accuracy = "point",
                         country_a = Country.getThreeLetterCode(country),
                         county_gid = "$countyGid",
@@ -165,7 +166,7 @@ class StopPlaceConverter : Converter {
             bbox = listOf(lat, lon, lat, lon),
             extra = Extra(
                 id = groupOfStopPlaces.id,
-                source = "nsr",
+                source = Source.NSR,
                 accuracy = "point",
                 country_a = Country.getThreeLetterCode(country),
                 county_gid = countyGid,

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
@@ -95,7 +96,7 @@ class PeliasResultTransformer {
     private fun transformString(props: PhotonProperties): String? =
         when {
             props.street != null -> props.street
-            props.extra?.source != "kartverket-stedsnavn" -> "NOT_AN_ADDRESS-" + props.extra?.id
+            props.extra?.source != Source.KARTVERKET_STEDSNAVN -> "NOT_AN_ADDRESS-" + props.extra?.id
             else -> null
         }
 
@@ -111,10 +112,10 @@ class PeliasResultTransformer {
         extra?.transport_modes?.split(',')?.map { it.trim() }?.let {
             category.addAll(it)
         }
-        if (extra?.source == "kartverket-matrikkelenadresse") {
+        if (extra?.source == Source.KARTVERKET_ADRESSE) {
             if (isStreet(extra)) category.add("street") else category.add("vegadresse")
         }
-        if (extra?.source == "openstreetmap") {
+        if (extra?.source == Source.OSM) {
             category.add("poi")
         }
         if (isGosp(extra)) {
@@ -134,21 +135,21 @@ class PeliasResultTransformer {
     fun transformSource(extra: Extra?): String? =
         when {
             isGosp(extra) -> "whosonfirst"
-            extra?.source == "openstreetmap" -> "whosonfirst"
-            extra?.source == "nsr" -> "openstreetmap"
-            extra?.source == "kartverket-matrikkelenadresse" && isStreet(extra) -> "whosonfirst"
-            extra?.source == "kartverket-matrikkelenadresse" -> "openaddresses"
-            extra?.source == "kartverket-stedsnavn" -> "whosonfirst"
+            extra?.source == Source.OSM -> "whosonfirst"
+            extra?.source == Source.NSR -> "openstreetmap"
+            extra?.source == Source.KARTVERKET_ADRESSE && isStreet(extra) -> "whosonfirst"
+            extra?.source == Source.KARTVERKET_ADRESSE -> "openaddresses"
+            extra?.source == Source.KARTVERKET_STEDSNAVN -> "whosonfirst"
             else -> extra?.source
         }
 
     fun transformLayer(extra: Extra?): String? =
         when {
             isGosp(extra) -> "address"
-            extra?.source == "nsr" -> "venue"
-            extra?.source == "openstreetmap" -> "address"
-            extra?.source == "kartverket-matrikkelenadresse" -> "address"
-            extra?.source == "kartverket-stedsnavn" -> "address"
+            extra?.source == Source.NSR -> "venue"
+            extra?.source == Source.OSM -> "address"
+            extra?.source == Source.KARTVERKET_ADRESSE -> "address"
+            extra?.source == Source.KARTVERKET_STEDSNAVN -> "address"
             else -> extra?.source
         }
 

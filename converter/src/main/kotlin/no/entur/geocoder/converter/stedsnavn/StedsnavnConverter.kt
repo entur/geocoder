@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.stedsnavn
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
@@ -184,7 +185,7 @@ class StedsnavnConverter : Converter {
         val extra =
             Extra(
                 id = entry.lokalId,
-                source = "kartverket-stedsnavn",
+                source = Source.KARTVERKET_STEDSNAVN,
                 accuracy = "point",
                 country_a = "NOR",
                 county_gid = "KVE:TopographicPlace:${entry.fylkesnummer}",

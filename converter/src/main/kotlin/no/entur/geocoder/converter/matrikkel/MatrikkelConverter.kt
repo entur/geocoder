@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.matrikkel
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
@@ -63,7 +64,7 @@ class MatrikkelConverter : Converter {
             nord = adresse.nord,
             ost = adresse.ost,
             id = adresse.lokalid,
-            source = "kartverket-matrikkelenadresse",
+            source = Source.KARTVERKET_ADRESSE,
             categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_MATRIKKELEN),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null,
@@ -83,7 +84,7 @@ class MatrikkelConverter : Converter {
             nord = nord,
             ost = ost,
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            source = "kartverket-matrikkelenadresse",
+            source = Source.KARTVERKET_ADRESSE,
             categories = listOf(Category.OSM_STREET, Category.SOURCE_MATRIKKELEN),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
