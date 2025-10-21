@@ -57,6 +57,8 @@ class ProxyTest {
                     assertEquals("test_query", request.url.parameters["q"])
                     assertEquals("5", request.url.parameters["limit"])
                     assertEquals("en", request.url.parameters["lang"])
+                    assertEquals("59", request.url.parameters["lat"])
+                    assertEquals("10", request.url.parameters["lon"])
 
                     respond(
                         content = samplePhotonResponse,
@@ -77,6 +79,8 @@ class ProxyTest {
                     parameter("text", "test_query")
                     parameter("size", "5")
                     parameter("lang", "en")
+                    parameter("focus.point.lat", "59")
+                    parameter("focus.point.lon", "10")
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
