@@ -47,8 +47,8 @@ data class PeliasAutocompleteParams(
                 sources = params["sources"]?.split(",") ?: emptyList(),
                 layers = params["layers"]?.split(",") ?: emptyList(),
                 categories = params["transport_mode"]?.split(",") ?: emptyList(),
-                focus = params["focus.lat"]?.let { lat ->
-                    params["focus.lon"]?.let { lon ->
+                focus = params["focus.point.lat"]?.let { lat ->
+                    params["focus.point.lon"]?.let { lon ->
                         FocusParams(lat, lon)
                     }
                 }
