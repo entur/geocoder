@@ -47,6 +47,13 @@ object PeliasApi {
                         if (photonRequest.includes.isNotEmpty()) {
                             parameter("include", photonRequest.includes.joinToString(","))
                         }
+
+                        when {
+                            photonRequest.lat != null && photonRequest.lon != null -> {
+                                parameter("lat", photonRequest.lat)
+                                parameter("lon", photonRequest.lon)
+                            }
+                        }
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
