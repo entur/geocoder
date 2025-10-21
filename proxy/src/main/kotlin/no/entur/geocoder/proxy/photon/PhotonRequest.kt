@@ -44,7 +44,9 @@ data class PhotonAutocompleteRequest(
                 query = params.query,
                 limit = params.limit,
                 language = params.language,
-                includes = includes
+                includes = includes,
+                lat = null,
+                lon = null
             )
         }
 
@@ -76,8 +78,8 @@ data class PhotonAutocompleteRequest(
                 limit = params.size,
                 language = params.lang,
                 includes = includes,
-                lat = params.focus.lat ?: null,
-                lon = params.focus.lon ?: null
+                lat = params.focus?.lat,
+                lon = params.focus?.lon
             )
         }
     }

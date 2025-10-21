@@ -3,7 +3,7 @@ package no.entur.geocoder.proxy.pelias
 import io.ktor.server.request.ApplicationRequest
 
 data class FocusParams(
-    val lat: String
+    val lat: String,
     val lon: String
 ) {
     init {
@@ -46,7 +46,7 @@ data class PeliasAutocompleteParams(
                 tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",") ?: emptyList(),
                 sources = params["sources"]?.split(",") ?: emptyList(),
                 layers = params["layers"]?.split(",") ?: emptyList(),
-                categories = params["transport_mode"]?.split(",") ?: emptyList()
+                categories = params["transport_mode"]?.split(",") ?: emptyList(),
                 focus = params["focus.lat"]?.let { lat ->
                     params["focus.lon"]?.let { lon ->
                         FocusParams(lat, lon)
