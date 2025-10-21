@@ -4,6 +4,7 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
@@ -59,11 +60,12 @@ class StopPlaceConverter : Converter {
             .plus("layer.stopplace")
             .plus(Category.SOURCE_NSR)
 
+        val placeId = PlaceId.stopplace.create(stopPlace.id)
         val stopPlaceContent =
             PlaceContent(
-                place_id = abs(stopPlace.id.hashCode().toLong()),
+                place_id = placeId,
                 object_type = "N",
-                object_id = abs(stopPlace.id.hashCode().toLong()),
+                object_id = placeId,
                 categories = categories.filterNotNull(),
                 rank_address = 30,
                 importance = importance,

@@ -4,6 +4,7 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
@@ -62,7 +63,7 @@ class MatrikkelConverter : Converter {
             adresse = adresse,
             northing = adresse.nord,
             easting = adresse.ost,
-            placeId = adresse.lokalid.toLong(),
+            placeId = PlaceId.address.create(adresse.lokalid),
             id = adresse.lokalid,
             categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
@@ -82,7 +83,7 @@ class MatrikkelConverter : Converter {
             adresse = adresse,
             northing = northing,
             easting = easting,
-            placeId = adresse.lokalid.toLong() * 1000, // Avoid ID collision with addresses
+            placeId = PlaceId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             categories = listOf(Category.OSM_STREET, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),

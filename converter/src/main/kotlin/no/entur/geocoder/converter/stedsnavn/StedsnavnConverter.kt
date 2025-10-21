@@ -4,6 +4,7 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
@@ -15,7 +16,6 @@ import java.nio.file.Paths
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamReader
-import kotlin.math.abs
 
 class StedsnavnConverter : Converter {
     override fun convert(
@@ -195,11 +195,12 @@ class StedsnavnConverter : Converter {
                 tags = categories.joinToString(",") { it },
             )
 
+        val placeId = PlaceId.stedsnavn.create(entry.lokalId)
         val properties =
             PlaceContent(
-                place_id = abs(entry.lokalId.hashCode().toLong()),
+                place_id = placeId,
                 object_type = "N",
-                object_id = abs(entry.lokalId.hashCode().toLong()),
+                object_id = placeId,
                 categories = categories,
                 rank_address = 16,
                 importance = ImportanceCalculator.calculateImportance(

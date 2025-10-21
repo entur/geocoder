@@ -4,6 +4,7 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
@@ -14,7 +15,6 @@ import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Paths
-import kotlin.math.abs
 
 class OsmConverter : Converter {
     private val nodesCoords = CoordinateStore(500000)
@@ -134,11 +134,12 @@ class OsmConverter : Converter {
             .plus("layer.address")
             .plus("country.$country")
 
+        val placeId = PlaceId.osm.create(entity.id)
         val content =
             PlaceContent(
-                place_id = entity.id,
+                place_id = placeId,
                 object_type = objectType,
-                object_id = entity.id,
+                object_id = placeId,
                 categories = categories,
                 rank_address = determineRankAddress(tags),
                 importance = importance,
