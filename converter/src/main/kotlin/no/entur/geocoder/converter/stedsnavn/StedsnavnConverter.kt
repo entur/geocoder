@@ -180,7 +180,7 @@ class StedsnavnConverter : Converter {
 
         val categories = listOf(Category.OSM_POI)
             .plus("place.${entry.navneobjekttype}")
-            .plus(Category.SOURCE_KARTVERKET_STEDSNAVN)
+            .plus(Category.SOURCE_STEDSNAVN)
 
         val extra =
             Extra(
