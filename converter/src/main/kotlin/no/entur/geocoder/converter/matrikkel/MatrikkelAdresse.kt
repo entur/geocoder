@@ -1,7 +1,7 @@
 package no.entur.geocoder.converter.matrikkel
 
 data class MatrikkelAdresse(
-    val lokalid: String?,
+    val lokalid: String,
     val kommunenummer: String?,
     val kommunenavn: String?,
     val adressetype: String?,

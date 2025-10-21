@@ -13,7 +13,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
-import kotlin.math.abs
 
 class MatrikkelConverter : Converter {
     override fun convert(
@@ -61,10 +60,10 @@ class MatrikkelConverter : Converter {
     private fun convertAddressToNominatim(adresse: MatrikkelAdresse): NominatimPlace =
         convertToNominatim(
             adresse = adresse,
-            nord = adresse.nord,
-            ost = adresse.ost,
+            northing = adresse.nord,
+            easting = adresse.ost,
+            placeId = adresse.lokalid.toLong(),
             id = adresse.lokalid,
-            source = Source.KARTVERKET_ADRESSE,
             categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null,
@@ -75,16 +74,16 @@ class MatrikkelConverter : Converter {
 
     private fun convertStreetToNominatim(
         adresse: MatrikkelAdresse,
-        nord: Double,
-        ost: Double,
+        northing: Double,
+        easting: Double,
     ): NominatimPlace {
         val streetName = adresse.adressenavn ?: ""
         return convertToNominatim(
             adresse = adresse,
-            nord = nord,
-            ost = ost,
+            northing = northing,
+            easting = easting,
+            placeId = adresse.lokalid.toLong() * 1000,
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            source = Source.KARTVERKET_ADRESSE,
             categories = listOf(Category.OSM_STREET, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
@@ -96,10 +95,10 @@ class MatrikkelConverter : Converter {
 
     private fun convertToNominatim(
         adresse: MatrikkelAdresse,
-        nord: Double,
-        ost: Double,
-        id: String?,
-        source: String,
+        northing: Double,
+        easting: Double,
+        placeId: Long,
+        id: String,
         categories: List<String>,
         popularity: Double,
         displayName: String?,
@@ -107,12 +106,12 @@ class MatrikkelConverter : Converter {
         postcode: String?,
         label: String,
     ): NominatimPlace {
-        val (lat, lon) = Geo.convertUTM33ToLatLon(ost, nord)
+        val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
 
         val extra =
             Extra(
                 id = id,
-                source = source,
+                source = Source.KARTVERKET_ADRESSE,
                 accuracy = "point",
                 country_a = "NOR",
                 county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" },
@@ -126,9 +125,9 @@ class MatrikkelConverter : Converter {
 
         val properties =
             PlaceContent(
-                place_id = abs((id ?: adresse.adresseId).hashCode().toLong()),
+                place_id = placeId,
                 object_type = "N",
-                object_id = abs((id ?: adresse.adresseId).hashCode().toLong()),
+                object_id = placeId,
                 categories = categories,
                 rank_address = 26,
                 importance = ImportanceCalculator.calculateImportance(popularity),
@@ -163,7 +162,7 @@ class MatrikkelConverter : Converter {
                     if (tokens.size >= 46 && tokens[3] == "vegadresse") {
                         val adresse =
                             MatrikkelAdresse(
-                                lokalid = tokens[0].ifEmpty { null },
+                                lokalid = tokens[0].ifEmpty { "-1" },
                                 kommunenummer = tokens[1].ifEmpty { null },
                                 kommunenavn = tokens[2].ifEmpty { null },
                                 adressetype = tokens[3].ifEmpty { null },
