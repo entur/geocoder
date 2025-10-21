@@ -10,7 +10,9 @@ data class PhotonAutocompleteRequest(
     val query: String,
     val limit: Int,
     val language: String,
-    val includes: List<String> = emptyList()
+    val includes: List<String> = emptyList(),
+    val lat: String?,
+    val lon: String?
 ) {
     companion object {
         fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
@@ -73,7 +75,9 @@ data class PhotonAutocompleteRequest(
                 query = params.text,
                 limit = params.size,
                 language = params.lang,
-                includes = includes
+                includes = includes,
+                lat = params.focus.lat ?: null,
+                lon = params.focus.lon ?: null
             )
         }
     }
