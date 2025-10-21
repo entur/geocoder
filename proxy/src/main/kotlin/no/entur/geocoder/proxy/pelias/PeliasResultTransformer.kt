@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
+import no.entur.geocoder.proxy.photon.PhotonResult.PhotonProperties
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -65,14 +67,14 @@ class PeliasResultTransformer {
                 type = feature.geometry.type,
                 coordinates = feature.geometry.coordinates,
             ),
-            properties = PeliasResult.PeliasProperties(
+            properties = PeliasProperties(
                 id = extra?.id,
                 gid = "whosonfirst:address:" + extra?.id,
                 layer = transformLayer(extra),
                 source = transformSource(extra),
                 source_id = extra?.id,
                 name = transformName(props),
-                street = props.street ?: ("NOT_AN_ADDRESS-" + extra?.id),
+                street = transformString(props),
                 postalcode = props.postcode,
                 housenumber = props.housenumber,
                 accuracy = extra?.accuracy,
@@ -90,7 +92,14 @@ class PeliasResultTransformer {
         )
     }
 
-    private fun transformName(props: PhotonResult.PhotonProperties): String? =
+    private fun transformString(props: PhotonProperties): String? =
+        when {
+            props.street != null -> props.street
+            props.extra?.source != "kartverket-stedsnavn" -> "NOT_AN_ADDRESS-" + props.extra?.id
+            else -> null
+        }
+
+    private fun transformName(props: PhotonProperties): String? =
         when {
             props.name != null -> props.name
             props.street != null && props.housenumber != null -> "${props.street} ${props.housenumber}"
