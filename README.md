@@ -35,8 +35,8 @@ cd ..
 git clone https://github.com/komoot/photon.git
 cd photon
 ./gradlew build
-java -jar target/photon-0.7.0.jar -nominatim-import -import-file /tmp/output-photon.nbjson -languages no \
-     -extra-tags id,gid,layer,source,source_id,accuracy,country_a,county_gid,locality,locality_gid,label,category,tariff_zones
+java -jar target/photon-0.7.0.jar -nominatim-import -import-file /tmp/output-photon.nbjson \
+     -languages no -extra-tags ALL
 ```
 Start the server with `java -jar target/photon-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 
