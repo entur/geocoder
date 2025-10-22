@@ -30,7 +30,8 @@ data class PeliasAutocompleteParams(
     val sources: List<String> = emptyList(),
     val layers: List<String> = emptyList(),
     val categories: List<String> = emptyList(),
-    val focus: FocusParams? = null
+    val focus: FocusParams? = null,
+    val multiModal: String
 ) {
     companion object {
         fun fromRequest(request: ApplicationRequest): PeliasAutocompleteParams {
@@ -51,6 +52,12 @@ data class PeliasAutocompleteParams(
                     params["focus.point.lon"]?.let { lon ->
                         FocusParams(lat, lon)
                     }
+                },
+                multiModal = when (params["multiModal"]) {
+                    "child" -> "child"
+                    "parent" -> "parent"
+                    "both" -> "both"
+                    else -> "parent"
                 }
             )
         }

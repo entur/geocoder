@@ -52,13 +52,21 @@ class StopPlaceConverter : Converter {
             ?.toSet()
             ?: emptySet()
 
+        val multimodalityCategory = when {
+            childStopTypes.isNotEmpty() -> "multimodal.parent"
+            stopPlace.parentSiteRef?.ref != null -> "multimodal.child"
+            else -> null
+        }
+
         val categories = listOf(Category.OSM_STOP_PLACE)
             .plus(tariffZoneCategories)
             .plus(country?.let { "country.${it}" })
             .plus(countyGid?.let { "county_gid.${it}" })
             .plus(localityGid?.let { "locality_gid.${it}" })
+            .plus(multimodalityCategory)
             .plus("layer.stopplace")
             .plus(Category.SOURCE_NSR)
+            .filterNotNull()
 
         val placeId = PlaceId.stopplace.create(stopPlace.id)
         val stopPlaceContent =
@@ -66,7 +74,7 @@ class StopPlaceConverter : Converter {
                 place_id = placeId,
                 object_type = "N",
                 object_id = placeId,
-                categories = categories.filterNotNull(),
+                categories = categories,
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
@@ -85,7 +93,7 @@ class StopPlaceConverter : Converter {
                         source = Source.NSR,
                         accuracy = "point",
                         country_a = Country.getThreeLetterCode(country),
-                        county_gid = "$countyGid",
+                        county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,
                         label = listOfNotNull(stopPlace.name.text, locality).joinToString(","),

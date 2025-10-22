@@ -11,6 +11,7 @@ data class PhotonAutocompleteRequest(
     val limit: Int,
     val language: String,
     val includes: List<String> = emptyList(),
+    val excludes: List<String> = emptyList(),
     val lat: String?,
     val lon: String?
 ) {
@@ -72,12 +73,22 @@ data class PhotonAutocompleteRequest(
                     addAll(params.layers.map { "layer.$it" })
                 }
             }
+            val excludes = buildList {
+                when (params.multiModal) {
+                    "child" -> add("multimodal.parent")
+                    "parent" -> add("multimodal.child")
+                    "both" -> {
+                        // No exclusion
+                    }
+                }
+            }
 
             return PhotonAutocompleteRequest(
                 query = params.text,
                 limit = params.size,
                 language = params.lang,
                 includes = includes,
+                excludes = excludes,
                 lat = params.focus?.lat,
                 lon = params.focus?.lon
             )
