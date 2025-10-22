@@ -33,33 +33,39 @@ class MatrikkelConverterTest {
         assertTrue(lines.isNotEmpty())
 
         assertTrue(lines.size > 1, "Output file should have at least two lines (header and data)")
-        val firstPlaceJson = lines[1]
-        val nominatimPlace: NominatimPlace = objectMapper.readValue(firstPlaceJson)
+
+        // Find the address with lokalid 225678815
+        val targetPlaceJson = lines.find { line ->
+            line.contains("\"225678815\"")
+        }
+        assertNotNull(targetPlaceJson, "Could not find address with lokalid 225678815")
+
+        val nominatimPlace: NominatimPlace = objectMapper.readValue(targetPlaceJson)
 
         assertNotNull(nominatimPlace.content.firstOrNull()?.extra, "Extratags should not be null")
         val extra = nominatimPlace.content.first().extra
 
-        assertEquals("399524883", extra.id)
+        assertEquals("225678815", extra.id)
         assertEquals("kartverket-matrikkelenadresse", extra.source)
         assertEquals("point", extra.accuracy)
         assertEquals("NOR", extra.country_a)
         assertEquals("KVE:TopographicPlace:34", extra.county_gid)
         assertEquals("Elverum", extra.locality)
         assertEquals("KVE:TopographicPlace:3420", extra.locality_gid)
-        assertEquals("Svanåsen", extra.borough)
-        assertEquals("borough:34200104", extra.borough_gid)
-        assertEquals("Gobakkvegen 438, Hernes", extra.label)
+        assertEquals("Grindalsmoen", extra.borough)
+        assertEquals("borough:34200205", extra.borough_gid)
+        assertEquals("Ildervegen 1A, Elverum", extra.label)
 
         val placeContent = nominatimPlace.content.first()
         assertNotNull(placeContent.centroid, "Centroid should not be null")
         assertEquals(2, placeContent.centroid.size, "Centroid should have 2 coordinates")
-        assertEquals("438", placeContent.housenumber)
-        assertEquals("Gobakkvegen", placeContent.address?.street)
+        assertEquals("1A", placeContent.housenumber)
+        assertEquals("Ildervegen", placeContent.address?.street)
         assertEquals("TODO", placeContent.address?.county)
-        assertEquals("2410", placeContent.postcode)
+        assertEquals("2406", placeContent.postcode)
         assertEquals(null, placeContent.name, "Name should be null for addresses")
 
-        assertEquals(BigDecimal("11.483291"), placeContent.centroid[0])
-        assertEquals(BigDecimal("61.025715"), placeContent.centroid[1])
+        assertEquals(BigDecimal("11.527525"), placeContent.centroid[0])
+        assertEquals(BigDecimal("60.892175"), placeContent.centroid[1])
     }
 }

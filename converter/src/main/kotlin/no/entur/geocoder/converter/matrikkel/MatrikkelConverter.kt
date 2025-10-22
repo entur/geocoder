@@ -68,7 +68,7 @@ class MatrikkelConverter : Converter {
             categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null,
-            housenumber = adresse.nummer,
+            housenumber = adresse.nummer + (adresse.bokstav ?: ""),
             postcode = adresse.postnummer,
             label = "${adresse.adresseTekst}, ${adresse.poststed.titleize()}",
         )
