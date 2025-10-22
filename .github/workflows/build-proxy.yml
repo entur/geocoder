@@ -34,7 +34,7 @@ jobs:
     needs: [build-push]
     uses: "./.github/workflows/_docker-scan.yml"
     with:
-      image_name: "eu.gcr.io/entur-system-1287/${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}"
+      image_name: "${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}"
 
   deploy-dev:
     if: |

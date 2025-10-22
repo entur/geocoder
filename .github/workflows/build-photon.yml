@@ -57,7 +57,7 @@ jobs:
     needs: [import-build-push]
     uses: "./.github/workflows/_docker-scan.yml"
     with:
-      image_name: "eu.gcr.io/entur-system-1287/${{ needs.import-build-push.outputs.image_name }}:${{ needs.import-build-push.outputs.image_tag }}"
+      image_name: "${{ needs.import-build-push.outputs.image_name }}:${{ needs.import-build-push.outputs.image_tag }}"
 
   # Photon image jobs
   photon-lint:
@@ -90,7 +90,7 @@ jobs:
     needs: [photon-build-push]
     uses: "./.github/workflows/_docker-scan.yml"
     with:
-      image_name: "eu.gcr.io/entur-system-1287/${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}"
+      image_name: "${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}"
 
   # Deploy jobs
   dev-deploy:

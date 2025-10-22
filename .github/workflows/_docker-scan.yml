@@ -4,9 +4,12 @@ on:
   workflow_call:
     inputs:
       image_name:
-        description: "Full image name with tag (e.g., eu.gcr.io/repo/image:tag)"
+        description: "Image name with tag (e.g. image:tag)"
         type: string
         required: true
+
+env:
+  REGISTRY: eu.gcr.io/entur-system-1287
 
 jobs:
   docker-scan:
@@ -31,13 +34,13 @@ jobs:
         run: gcloud auth configure-docker eu.gcr.io --quiet
 
       - name: Pull image from GCR
-        run: docker pull ${{ inputs.image_name }}
+        run: docker pull ${{ env.REGISTRY }}/${{ inputs.image_name }}
 
       - name: Scan for vulnerabilities
         uses: anchore/scan-action@v7
         id: scan
         with:
-          image: ${{ inputs.image_name }}
+          image: ${{ env.REGISTRY }}/${{ inputs.image_name }}
           by-cve: true
           fail-build: false
           severity-cutoff: critical
