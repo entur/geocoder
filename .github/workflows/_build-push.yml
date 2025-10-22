@@ -23,6 +23,11 @@ on:
         description: "Push image to registry"
         type: boolean
         default: true
+      run-group:
+        description: "The run group to use for the job"
+        type: string
+        required: false
+        default: grp-ubuntu-24.04-2core-x64
     outputs:
       image_name:
         description: "Image name"
@@ -40,7 +45,7 @@ jobs:
   build-push:
     name: Build and Push
     runs-on:
-      group: grp-ubuntu-24.04-4core-x64
+      group: ${{ inputs.run-group }}
     timeout-minutes: 40
     permissions:
       contents: read

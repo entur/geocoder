@@ -47,6 +47,7 @@ jobs:
       image_name: geocoder-import
       dockerfile: Dockerfile.import
       push: true
+      run-group: 'grp-ubuntu-24.04-8core-x64'
 
   import-scan:
     if: |
