@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 JAR=converter/build/libs/converter-all.jar
-if [[ ! -f $JAR ]]; then
+if [ ! -f "$JAR" ]; then
   echo "Could not find $JAR. Run './gradlew assemble' to create it."
   exit 1
 fi
