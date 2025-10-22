@@ -7,6 +7,7 @@ package no.entur.geocoder.converter.osm
  * @property name The name of the administrative area
  * @property adminLevel The administrative level (4 for counties, 7 for municipalities in Norway)
  * @property refCode The reference code (e.g., "46" for Vestland county, "4626" for Øygarden municipality)
+ * @property countryCode The ISO 3166-1 alpha-2 country code (e.g., "NO" for Norway)
  * @property centroid The geographic center point as (latitude, longitude)
  * @property bbox The bounding box containing the entire administrative area
  * @property boundaryNodes The polygon vertices as (latitude, longitude) pairs for ray-casting containment tests
@@ -16,6 +17,7 @@ data class AdministrativeBoundary(
     val name: String,
     val adminLevel: Int,
     val refCode: String?,
+    val countryCode: String,
     val centroid: Pair<Double, Double>, // lat, lon
     val bbox: BoundingBox?,
     val boundaryNodes: List<Pair<Double, Double>> = emptyList()

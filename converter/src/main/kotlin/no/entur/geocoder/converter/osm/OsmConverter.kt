@@ -51,7 +51,7 @@ class OsmConverter : Converter {
         val adminNodeIds = hashSetOf<Long>()
         val adminWayIds = hashSetOf<Long>()
 
-        // First, collect all admin boundary relations and their way IDs (using filter to skip non-relations)
+        // First, collect all admin boundary relations and their way IDs
         parsePbf(inputFile, OsmIterator.ADMIN_BOUNDARY_FILTER).forEach { entity ->
             if (entity is Relation) {
                 val tags = entity.tags.associate { it.key to it.value }
@@ -64,10 +64,10 @@ class OsmConverter : Converter {
                     val adminLevel = adminLevelStr?.toIntOrNull()
                     val name = tags["name"]
                     val ref = tags["ref"]
+                    val countryCode = extractCountryCode(tags)
 
-                    // Only process Norwegian boundaries: they have numeric ref codes
-                    // Swedish boundaries have letter codes (e.g., "BD"), so we filter those out
-                    if (adminLevel != null && name != null && ref != null && ref.all { it.isDigit() }) {
+                    // Only process Norwegian boundaries
+                    if (adminLevel != null && name != null && ref != null && countryCode == "NO") {
                         val wayIds = mutableListOf<Long>()
                         entity.members.forEach { member ->
                             when (member.memberType) {
@@ -79,13 +79,13 @@ class OsmConverter : Converter {
                                 else -> {}
                             }
                         }
-                        adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds))
+                        adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds, countryCode))
                     }
                 }
             }
         }
 
-        // Second, collect node IDs from admin ways (using WAY_FILTER to skip nodes and relations)
+        // Second, collect node IDs from admin ways
         val wayNodeIds = hashSetOf<Long>()
         parsePbf(inputFile, OsmIterator.WAY_FILTER).forEach { entity ->
             if (entity is Way && entity.id in adminWayIds) {
@@ -94,11 +94,28 @@ class OsmConverter : Converter {
         }
 
         // Combine all needed node IDs
-        val allNodeIds = hashSetOf<Long>()
-        allNodeIds.addAll(adminNodeIds)
-        allNodeIds.addAll(wayNodeIds)
+        return adminRelations to (adminNodeIds + wayNodeIds)
+    }
 
-        return adminRelations to allNodeIds
+    /**
+     * Extracts the country code from OSM administrative boundary tags.
+     *
+     * Uses a priority chain:
+     * 1. ISO3166-2 tags (most reliable)
+     * 2. Other country code tags
+     * 3. Numeric ref as fallback for backward compatibility
+     */
+    private fun extractCountryCode(tags: Map<String, String>): String? {
+        val ref = tags["ref"]
+        val iso3166 = tags["ISO3166-2"] ?: tags["ISO3166-2-lvl4"] ?: tags["ISO3166-2:lvl4"]
+
+        return when {
+            iso3166?.startsWith("NO-") == true -> "NO"
+            tags["is_in:country_code"] == "NO" -> "NO"
+            tags["country_code"] == "NO" -> "NO"
+            ref?.all { it.isDigit() } == true -> "NO" // Fallback for backward compatibility
+            else -> null
+        }
     }
 
     private fun collectNodeCoordinates(inputFile: File, neededNodeIds: Set<Long>) {
@@ -156,6 +173,7 @@ class OsmConverter : Converter {
                     name = relation.name,
                     adminLevel = relation.adminLevel,
                     refCode = relation.ref,
+                    countryCode = relation.countryCode,
                     centroid = centroidLat to centroidLon,
                     bbox = bbox,
                     boundaryNodes = boundaryNodes
@@ -171,7 +189,8 @@ class OsmConverter : Converter {
         val name: String,
         val adminLevel: Int,
         val ref: String,
-        val wayIds: List<Long>
+        val wayIds: List<Long>,
+        val countryCode: String
     )
 
     private fun processEntities(inputFile: File): Sequence<NominatimPlace> =
@@ -230,59 +249,96 @@ class OsmConverter : Converter {
         centroid: Pair<BigDecimal, BigDecimal>,
         address: Address = Address(),
     ): NominatimPlace {
-        val importance = calculateImportance(tags)
-        val country = (tags["addr:country"] ?: "no")
         val (lon, lat) = centroid
 
-        // Look up administrative boundaries for this location (both county and municipality in one call)
+        // Look up administrative boundaries for this location
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
 
-        val extra =
-            Extra(
-                id = "OSM:TopographicPlace:" + entity.id,
-                source = Source.OSM,
-                accuracy = accuracy,
-                country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
-                county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
-                locality = municipality?.name?.titleize(),
-                locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-                label = name,
-                tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
-            )
-
-        val categories: List<String> = listOf(Category.OSM_POI)
-            .plus(tags.map { "${it.key}.${it.value}" })
-            .plus("source.osm")
-            .plus("layer.address")
-            .plus("country.$country")
-            .plus(county?.refCode?.let { listOf("county_gid.KVE:TopographicPlace:$it") } ?: emptyList())
-            .plus(municipality?.refCode?.let { listOf("locality_gid.KVE:TopographicPlace:$it") } ?: emptyList())
-
-        val placeId = PlaceId.osm.create(entity.id)
-
-        // Update address to include county if available
+        val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
-        val content =
-            PlaceContent(
-                place_id = placeId,
-                object_type = objectType,
-                object_id = placeId,
-                categories = categories,
-                rank_address = determineRankAddress(tags),
-                importance = importance,
-                parent_place_id = 0,
-                name = Name(name),
-                housenumber = null,
-                address = updatedAddress,
-                postcode = null,
-                country_code = country.lowercase(),
-                centroid = listOf(lon, lat),
-                bbox = listOf(lon, lat, lon, lat),
-                extra = extra,
-            )
+        val extra = buildExtra(entity, tags, name, accuracy, country, county, municipality)
+        val categories = buildCategories(tags, country, county, municipality)
+
+        val placeId = PlaceId.osm.create(entity.id)
+        val content = PlaceContent(
+            place_id = placeId,
+            object_type = objectType,
+            object_id = placeId,
+            categories = categories,
+            rank_address = determineRankAddress(tags),
+            importance = calculateImportance(tags),
+            parent_place_id = 0,
+            name = Name(name),
+            housenumber = null,
+            address = updatedAddress,
+            postcode = null,
+            country_code = country.lowercase(),
+            centroid = listOf(lon, lat),
+            bbox = listOf(lon, lat, lon, lat),
+            extra = extra,
+        )
 
         return NominatimPlace("Place", listOf(content))
+    }
+
+    /**
+     * Determines the country code for a POI using a priority chain:
+     * 1. County's country code (from ISO3166-2)
+     * 2. Municipality's country code (from ISO3166-2)
+     * 3. POI's addr:country tag
+     * 4. Default to "no"
+     */
+    private fun determineCountry(
+        county: AdministrativeBoundary?,
+        municipality: AdministrativeBoundary?,
+        tags: Map<String, String>
+    ): String = when {
+        county?.countryCode != null -> county.countryCode.lowercase()
+        municipality?.countryCode != null -> municipality.countryCode.lowercase()
+        tags["addr:country"] != null -> tags["addr:country"]!!
+        else -> "no"
+    }
+
+    /**
+     * Builds the Extra object containing additional metadata about the POI.
+     */
+    private fun buildExtra(
+        entity: Entity,
+        tags: Map<String, String>,
+        name: String,
+        accuracy: String,
+        country: String,
+        county: AdministrativeBoundary?,
+        municipality: AdministrativeBoundary?
+    ): Extra = Extra(
+        id = "OSM:TopographicPlace:" + entity.id,
+        source = Source.OSM,
+        accuracy = accuracy,
+        country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
+        county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
+        locality = municipality?.name?.titleize(),
+        locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
+        label = name,
+        tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
+    )
+
+    /**
+     * Builds the list of category tags for the POI.
+     */
+    private fun buildCategories(
+        tags: Map<String, String>,
+        country: String,
+        county: AdministrativeBoundary?,
+        municipality: AdministrativeBoundary?
+    ): List<String> = buildList {
+        add(Category.OSM_POI)
+        addAll(tags.map { "${it.key}.${it.value}" })
+        add("source.osm")
+        add("layer.address")
+        add("country.$country")
+        county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
+        municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
     }
 
     private fun convertNodeToNominatim(node: Node, tags: Map<String, String>, name: String): NominatimPlace? {
