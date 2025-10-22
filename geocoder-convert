@@ -6,5 +6,5 @@ if [ ! -f "$JAR" ]; then
   exit 1
 fi
 
-java -jar $JAR $@
+java -Xmx6g -jar $JAR $@
 

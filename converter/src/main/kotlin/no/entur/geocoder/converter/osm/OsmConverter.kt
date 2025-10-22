@@ -19,50 +19,165 @@ import java.nio.file.Paths
 class OsmConverter : Converter {
     private val nodesCoords = CoordinateStore(500000)
     private val wayCentroids = CoordinateStore(50000)
+    private val adminBoundaryIndex = AdministrativeBoundaryIndex()
 
 
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
 
-        // Pass 1: Identify all node IDs required for POIs to minimize memory usage in the next pass.
-        val neededNodeIds = collectNeededNodeIds(input)
+        // Pass 1: Collect admin boundary relations and all node IDs we need
+        println("Pass 1: Collecting admin boundaries and node IDs...")
+        val (adminRelations, allNeededNodeIds) = collectAdminRelationsAndNodeIds(input)
+        println("  Found ${adminRelations.size} admin boundary relations")
+        println("  Need coordinates for ${allNeededNodeIds.size} nodes")
 
-        // Pass 2: Store coordinates only for the nodes identified in Pass 1.
-        collectNodeCoordinates(input, neededNodeIds)
+        // Pass 2: Collect all needed node coordinates in one pass
+        println("Pass 2: Collecting node coordinates...")
+        collectNodeCoordinates(input, allNeededNodeIds)
 
-        // Pass 3: Process all entities, calculate centroids, convert to Nominatim format, and write to JSON.
+        // Pass 3: Calculate way centroids and build admin boundary index
+        println("Pass 3: Building administrative boundary index...")
+        buildAdminBoundaryIndex(input, adminRelations)
+        println(adminBoundaryIndex.getStatistics())
+
+        // Pass 4: Process POI entities, convert to Nominatim format, and write to JSON
+        println("Pass 4: Processing POI entities and writing output...")
         val nominatimEntries = processEntities(input)
         JsonWriter().export(nominatimEntries, Paths.get(output.absolutePath), isAppending)
     }
 
+    private fun collectAdminRelationsAndNodeIds(inputFile: File): Pair<List<AdminRelationData>, Set<Long>> {
+        val adminRelations = mutableListOf<AdminRelationData>()
+        val adminNodeIds = hashSetOf<Long>()
+        val adminWayIds = hashSetOf<Long>()
 
-    private fun collectNeededNodeIds(inputFile: File): Set<Long> {
-        val neededNodeIds = hashSetOf<Long>()
-        parsePbf(inputFile).forEach { entity ->
-            when (entity) {
-                is Node -> neededNodeIds.add(entity.id)
-                is Way -> entity.wayNodes.forEach { neededNodeIds.add(it.nodeId) }
-                is Relation ->
-                    entity.members
-                        .filter { it.memberType == EntityType.Node }
-                        .forEach { neededNodeIds.add(it.memberId) }
+        // First, collect all admin boundary relations and their way IDs (using filter to skip non-relations)
+        parsePbf(inputFile, OsmIterator.ADMIN_BOUNDARY_FILTER).forEach { entity ->
+            if (entity is Relation) {
+                val tags = entity.tags.associate { it.key to it.value }
+                val adminLevelStr = tags["admin_level"]
+                if (tags["boundary"] == "administrative" &&
+                    adminLevelStr in listOf(
+                        AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
+                        AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString()
+                    )) {
+                    val adminLevel = adminLevelStr?.toIntOrNull()
+                    val name = tags["name"]
+                    val ref = tags["ref"]
+
+                    // Only process Norwegian boundaries: they have numeric ref codes
+                    // Swedish boundaries have letter codes (e.g., "BD"), so we filter those out
+                    if (adminLevel != null && name != null && ref != null && ref.all { it.isDigit() }) {
+                        val wayIds = mutableListOf<Long>()
+                        entity.members.forEach { member ->
+                            when (member.memberType) {
+                                EntityType.Way -> {
+                                    wayIds.add(member.memberId)
+                                    adminWayIds.add(member.memberId)
+                                }
+                                EntityType.Node -> adminNodeIds.add(member.memberId)
+                                else -> {}
+                            }
+                        }
+                        adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds))
+                    }
+                }
             }
         }
-        return neededNodeIds
+
+        // Second, collect node IDs from admin ways (using WAY_FILTER to skip nodes and relations)
+        val wayNodeIds = hashSetOf<Long>()
+        parsePbf(inputFile, OsmIterator.WAY_FILTER).forEach { entity ->
+            if (entity is Way && entity.id in adminWayIds) {
+                entity.wayNodes.forEach { wayNodeIds.add(it.nodeId) }
+            }
+        }
+
+        // Combine all needed node IDs
+        val allNodeIds = hashSetOf<Long>()
+        allNodeIds.addAll(adminNodeIds)
+        allNodeIds.addAll(wayNodeIds)
+
+        return adminRelations to allNodeIds
     }
 
     private fun collectNodeCoordinates(inputFile: File, neededNodeIds: Set<Long>) {
-        parsePbf(inputFile).forEach { entity ->
+        parsePbf(inputFile, OsmIterator.NODE_FILTER).forEach { entity ->
             if (entity is Node && entity.id in neededNodeIds) {
                 nodesCoords.put(entity.id, entity.longitude, entity.latitude)
             }
         }
     }
 
+    private fun buildAdminBoundaryIndex(inputFile: File, adminRelations: List<AdminRelationData>) {
+        val wayIdToRelations = mutableMapOf<Long, MutableList<AdminRelationData>>()
+        adminRelations.forEach { relation ->
+            relation.wayIds.forEach { wayId ->
+                wayIdToRelations.getOrPut(wayId) { mutableListOf() }.add(relation)
+            }
+        }
+
+        // Collect all node coordinates for each way (for better centroid calculation)
+        val wayIdToNodeCoords = mutableMapOf<Long, List<Pair<Double, Double>>>()
+        parsePbf(inputFile, OsmIterator.WAY_FILTER).forEach { entity ->
+            if (entity is Way && entity.id in wayIdToRelations) {
+                val wayNodeCoords = entity.wayNodes.mapNotNull { nodesCoords.get(it.nodeId) }
+                if (wayNodeCoords.isNotEmpty()) {
+                    wayIdToNodeCoords[entity.id] = wayNodeCoords
+                    // Still calculate way centroids for backward compatibility
+                    calculateCentroid(wayNodeCoords)?.let { (lon, lat) ->
+                        wayCentroids.put(entity.id, lon.toDouble(), lat.toDouble())
+                    }
+                }
+            }
+        }
+
+        // Build admin boundaries from the collected data
+        adminRelations.forEach { relation ->
+            // Collect ALL node coordinates from all ways in the boundary (not just way centroids)
+            val allNodeCoords = relation.wayIds.flatMap { wayId ->
+                wayIdToNodeCoords[wayId] ?: emptyList()
+            }
+
+            if (allNodeCoords.isNotEmpty()) {
+                // Calculate centroid from all actual nodes for better accuracy
+                val centroidLon = allNodeCoords.map { it.first }.average()
+                val centroidLat = allNodeCoords.map { it.second }.average()
+
+                val bbox = BoundingBox.fromCoordinates(
+                    allNodeCoords.map { (lon, lat) -> lat to lon }
+                )
+
+                // Convert node coords to (lat, lon) pairs for ray-casting
+                val boundaryNodes = allNodeCoords.map { (lon, lat) -> lat to lon }
+
+                val boundary = AdministrativeBoundary(
+                    id = relation.id,
+                    name = relation.name,
+                    adminLevel = relation.adminLevel,
+                    refCode = relation.ref,
+                    centroid = centroidLat to centroidLon,
+                    bbox = bbox,
+                    boundaryNodes = boundaryNodes
+                )
+
+                adminBoundaryIndex.addBoundary(boundary)
+            }
+        }
+    }
+
+    private data class AdminRelationData(
+        val id: Long,
+        val name: String,
+        val adminLevel: Int,
+        val ref: String,
+        val wayIds: List<Long>
+    )
+
     private fun processEntities(inputFile: File): Sequence<NominatimPlace> =
         sequence {
             var count = 0
-            parsePbf(inputFile).forEach { entity ->
+            parsePbf(inputFile, OsmIterator.POI_FILTER).forEach { entity ->
                 if (entity is Way) {
                     calculateAndStoreWayCentroid(entity)
                 }
@@ -84,7 +199,8 @@ class OsmConverter : Converter {
         }
     }
 
-    private fun parsePbf(inputFile: File): Sequence<Entity> = OsmIterator(inputFile).asSequence()
+    private fun parsePbf(inputFile: File, filter: ((Entity) -> Boolean)?): Sequence<Entity> =
+        OsmIterator(inputFile, filter).asSequence()
 
     internal fun convertOsmEntityToNominatim(entity: Entity): NominatimPlace? {
         val tags = filterTags(entity.tags)
@@ -118,12 +234,18 @@ class OsmConverter : Converter {
         val country = (tags["addr:country"] ?: "no")
         val (lon, lat) = centroid
 
+        // Look up administrative boundaries for this location (both county and municipality in one call)
+        val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
+
         val extra =
             Extra(
                 id = "OSM:TopographicPlace:" + entity.id,
                 source = Source.OSM,
                 accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
+                county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
+                locality = municipality?.name?.titleize(),
+                locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
                 label = name,
                 tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
             )
@@ -133,8 +255,14 @@ class OsmConverter : Converter {
             .plus("source.osm")
             .plus("layer.address")
             .plus("country.$country")
+            .plus(county?.refCode?.let { listOf("county_gid.KVE:TopographicPlace:$it") } ?: emptyList())
+            .plus(municipality?.refCode?.let { listOf("locality_gid.KVE:TopographicPlace:$it") } ?: emptyList())
 
         val placeId = PlaceId.osm.create(entity.id)
+
+        // Update address to include county if available
+        val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
+
         val content =
             PlaceContent(
                 place_id = placeId,
@@ -146,7 +274,7 @@ class OsmConverter : Converter {
                 parent_place_id = 0,
                 name = Name(name),
                 housenumber = null,
-                address = address,
+                address = updatedAddress,
                 postcode = null,
                 country_code = country.lowercase(),
                 centroid = listOf(lon, lat),

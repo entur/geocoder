@@ -13,6 +13,7 @@ class CoordinateStore(initialCapacity: Int = 500_000) {
     private var deltaLats = IntArray(initialCapacity)
     private var size = 0
 
+
     fun put(id: Long, lon: Double, lat: Double) {
         if (size >= ids.size * loadFactor) {
             resize()
