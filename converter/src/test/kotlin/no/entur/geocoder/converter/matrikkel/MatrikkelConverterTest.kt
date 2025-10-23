@@ -54,7 +54,6 @@ class MatrikkelConverterTest {
         assertEquals("KVE:TopographicPlace:3420", extra.locality_gid)
         assertEquals("Grindalsmoen", extra.borough)
         assertEquals("borough:34200205", extra.borough_gid)
-        assertEquals("Ildervegen 1A, Elverum", extra.label)
 
         val placeContent = nominatimPlace.content.first()
         assertNotNull(placeContent.centroid, "Centroid should not be null")

@@ -70,7 +70,6 @@ class MatrikkelConverter : Converter {
             displayName = null,
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
             postcode = adresse.postnummer,
-            label = "${adresse.adresseTekst}, ${adresse.poststed.titleize()}",
         )
 
     private fun convertStreetToNominatim(
@@ -90,7 +89,6 @@ class MatrikkelConverter : Converter {
             displayName = streetName,
             housenumber = null,
             postcode = null,
-            label = "$streetName, ${adresse.kommunenavn?.titleize() ?: adresse.poststed.titleize()}",
         )
     }
 
@@ -105,7 +103,6 @@ class MatrikkelConverter : Converter {
         displayName: String?,
         housenumber: String?,
         postcode: String?,
-        label: String,
     ): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
 
@@ -120,7 +117,6 @@ class MatrikkelConverter : Converter {
                 locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
-                label = label,
                 tags = categories.joinToString(","),
             )
 
@@ -138,7 +134,7 @@ class MatrikkelConverter : Converter {
                 address =
                     Address(
                         street = adresse.adressenavn,
-                        city = adresse.kommunenavn?.titleize() ?: adresse.poststed.titleize(),
+                        city = adresse.poststed.titleize() ?: adresse.kommunenavn?.titleize(),
                         county = "TODO",
                     ),
                 postcode = postcode,

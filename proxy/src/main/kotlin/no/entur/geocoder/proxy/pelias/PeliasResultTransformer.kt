@@ -75,7 +75,7 @@ class PeliasResultTransformer {
                 source = transformSource(extra),
                 source_id = extra?.id,
                 name = transformName(props),
-                street = transformString(props),
+                street = transformStreet(props),
                 postalcode = props.postcode,
                 housenumber = props.housenumber,
                 accuracy = extra?.accuracy,
@@ -86,14 +86,23 @@ class PeliasResultTransformer {
                 locality_gid = transformLocalityGid(extra?.locality_gid),
                 borough = extra?.borough,
                 borough_gid = transformBoroughGid(extra?.borough_gid),
-                label = extra?.label?.replace(", *".toRegex(), ", ") ?: props.label,
+                label = createLabel(props),
                 category = transformCategory(extra),
                 tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
             ),
         )
     }
 
-    private fun transformString(props: PhotonProperties): String? =
+    private fun createLabel(props: PhotonProperties): String? =
+        if (props.name.isNullOrBlank()) {
+            props.extra?.locality
+        } else if (!props.extra?.locality.isNullOrEmpty() && props.name != props.extra.locality) {
+            "${props.name}, ${props.extra.locality}"
+        } else {
+            props.name
+        }
+
+    private fun transformStreet(props: PhotonProperties): String? =
         when {
             props.street != null -> props.street
             props.extra?.source != Source.KARTVERKET_STEDSNAVN -> "NOT_AN_ADDRESS-" + props.extra?.id

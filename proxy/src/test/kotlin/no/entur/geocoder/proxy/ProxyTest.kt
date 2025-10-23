@@ -30,7 +30,6 @@ class ProxyTest {
               "properties": {
                 "name": "Oslo",
                 "county": "Oslo",
-                "label": "Oslo,Norway",
                 "extra": {
                   "id": "1",
                   "source": "openstreetmap",
@@ -39,7 +38,6 @@ class ProxyTest {
                   "county_gid": "county:1",
                   "locality": "Oslo",
                   "locality_gid": "locality:1",
-                  "label": "Oslo, Norway",
                   "transport_modes": "city,transport",
                   "tariff_zones": "zone1,zone2"
                 }
@@ -94,7 +92,7 @@ class ProxyTest {
             assertEquals("address", feature.properties.layer)
             assertEquals("Oslo", feature.properties.name)
             assertEquals("Oslo", feature.properties.county)
-            assertEquals("Oslo, Norway", feature.properties.label)
+            assertEquals("Oslo", feature.properties.label)
             assertEquals(listOf("city", "transport", "poi"), feature.properties.category)
             assertEquals(listOf("zone1", "zone2"), feature.properties.tariff_zones)
         }

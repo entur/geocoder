@@ -96,7 +96,6 @@ class StopPlaceConverter : Converter {
                         county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,
-                        label = listOfNotNull(stopPlace.name.text, locality).joinToString(","),
                         transport_modes = transportModes.joinToString(","),
                         tariff_zones = (
                                 stopPlace.tariffZones
@@ -182,7 +181,6 @@ class StopPlaceConverter : Converter {
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                label = groupName,
             ),
         )
 

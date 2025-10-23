@@ -319,7 +319,6 @@ class OsmConverter : Converter {
         county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
         locality = municipality?.name?.titleize(),
         locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-        label = name,
         tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
     )
 

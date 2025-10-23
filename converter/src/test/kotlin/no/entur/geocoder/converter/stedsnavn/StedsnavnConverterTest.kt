@@ -63,7 +63,6 @@ class StedsnavnConverterTest {
         assertNotNull(extra.locality, "Locality should not be null")
         assertNotNull(extra.locality_gid, "Locality GID should not be null")
         assertNotNull(extra.county_gid, "County GID should not be null")
-        assertNotNull(extra.label, "Label should not be null")
 
         assertNotNull(placeContent.centroid, "Centroid should not be null")
         assertEquals(2, placeContent.centroid.size, "Centroid should have 2 coordinates")
@@ -127,28 +126,6 @@ class StedsnavnConverterTest {
         assertNotNull(extra.id, "ID should not be null")
         val id = extra.id ?: error("ID should not be null")
         assertTrue(id.toLong() > 0)
-    }
-
-    @Test
-    fun `should generate correct label format`() {
-        val entry = entries.first()
-        val nominatimPlace = converter.convertToNominatim(entry)
-        val extra = nominatimPlace.content.first().extra
-
-        assertNotNull(extra.label, "Label should not be null")
-        val label = extra.label ?: error("Label should not be null")
-        assertTrue(
-            label.contains(entry.stedsnavn),
-            "Label should contain place name"
-        )
-        assertTrue(
-            label.contains(entry.kommunenavn),
-            "Label should contain municipality name"
-        )
-        assertTrue(
-            label.contains(", "),
-            "Label should be formatted as 'placename, municipality'"
-        )
     }
 
     @Test

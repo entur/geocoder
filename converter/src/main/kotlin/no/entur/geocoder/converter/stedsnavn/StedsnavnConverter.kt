@@ -191,7 +191,6 @@ class StedsnavnConverter : Converter {
                 county_gid = "KVE:TopographicPlace:${entry.fylkesnummer}",
                 locality = entry.kommunenavn,
                 locality_gid = "KVE:TopographicPlace:${entry.kommunenummer}",
-                label = "${entry.stedsnavn}, ${entry.kommunenavn}",
                 tags = categories.joinToString(",") { it },
             )
 

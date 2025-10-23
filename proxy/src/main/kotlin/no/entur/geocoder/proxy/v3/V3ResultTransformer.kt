@@ -95,11 +95,12 @@ class V3ResultTransformer {
         val placeType = determinePlaceType(extra?.source, props.osm_key, props.osm_value)
         val accuracy = parseAccuracy(extra?.accuracy)
 
+        val label = props.name + extra?.locality?.let { ", $it" }.orEmpty()
         return V3Result.Place(
             id = extra?.id
                 ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
-            name = props.name ?: props.street ?: props.locality ?: "Unnamed",
-            displayName = extra?.label ?: props.label ?: buildDisplayName(props),
+            name = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed",
+            displayName = label,
             placeType = placeType,
             location = V3Result.Location(
                 latitude = coords.getOrElse(1) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
@@ -119,7 +120,7 @@ class V3ResultTransformer {
 
     private fun buildAddress(props: PhotonResult.PhotonProperties, extra: Extra?): V3Result.Address? {
         if (props.street == null && props.housenumber == null && props.postcode == null &&
-            props.locality == null && props.county == null) {
+            props.extra?.locality == null && props?.county == null) {
             return null
         }
 
@@ -136,27 +137,6 @@ class V3ResultTransformer {
             country = null, // Not provided in Photon response
             countryCode = extra?.country_a
         )
-    }
-
-    private fun buildDisplayName(props: PhotonResult.PhotonProperties): String {
-        val parts = mutableListOf<String>()
-
-        if (props.name != null) parts.add(props.name)
-        if (props.street != null) {
-            val streetPart = if (props.housenumber != null) {
-                "${props.street} ${props.housenumber}"
-            } else {
-                props.street
-            }
-            parts.add(streetPart)
-        }
-        if (props.postcode != null && props.city != null) {
-            parts.add("${props.postcode} ${props.city}")
-        } else if (props.city != null) {
-            parts.add(props.city)
-        }
-
-        return parts.joinToString(", ").ifBlank { "Unknown location" }
     }
 
     private fun buildSourceId(source: String?, id: String?, osmType: String?, osmId: Long?): String? {
