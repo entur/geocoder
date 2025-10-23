@@ -31,8 +31,11 @@ data class NominatimPlace(
         val county: String? = null, // Fylke
     )
 
+    // https://github.com/komoot/photon/blob/master/src/main/java/de/komoot/photon/nominatim/model/NameMap.java#L16
     data class Name(
         val name: String,
+        val alt_name: String? = null,
+        val loc_name: String? = null
     )
 }
 

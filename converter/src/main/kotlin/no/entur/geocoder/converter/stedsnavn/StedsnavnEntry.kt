@@ -14,5 +14,6 @@ data class StedsnavnEntry(
     val adressekode: String?,
     val navneobjekttype: String?,
     val coordinates: List<Pair<Double, Double>>, // UTM33 coordinates (east, north)
+    val annenSkrivemåte: List<String> = emptyList(), // Alternative spellings
 )
 

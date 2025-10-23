@@ -28,6 +28,7 @@ data class PeliasResult(
         val source: String? = null,
         val source_id: String? = null,
         val name: String? = null,
+        val popular_name: String? = null,
         val housenumber: String? = null,
         val street: String? = null,
         val postalcode: String? = null,

@@ -69,6 +69,7 @@ class StedsnavnConverter : Converter {
         return sb.toString()
     }
 
+
     private fun parseFeatureMember(reader: XMLStreamReader): StedsnavnEntry? {
         var lokalId: String? = null
         var navnerom: String? = null
@@ -83,6 +84,8 @@ class StedsnavnConverter : Converter {
         var adressekode: String? = null
         var navneobjekttype: String? = null
         val coordinates = mutableListOf<Pair<Double, Double>>()
+        val annenSkrivemåte = mutableListOf<String>()
+        var insideAnnenSkrivemåte = false
 
         while (reader.hasNext()) {
             reader.next()
@@ -99,7 +102,14 @@ class StedsnavnConverter : Converter {
                     "navnerom" -> navnerom = readElementText(reader)
                     "versjonId" -> versjonId = readElementText(reader)
                     "oppdateringsdato" -> oppdateringsdato = readElementText(reader)
-                    "komplettskrivemåte" -> if (stedsnavn == null) stedsnavn = readElementText(reader)
+                    "komplettskrivemåte" -> {
+                        val text = readElementText(reader)
+                        if (insideAnnenSkrivemåte) {
+                            annenSkrivemåte.add(text)
+                        } else if (stedsnavn == null) {
+                            stedsnavn = text
+                        }
+                    }
                     "navneobjekttype" -> navneobjekttype = readElementText(reader)
                     "matrikkelId" -> matrikkelId = readElementText(reader)
                     "adressekode" -> adressekode = readElementText(reader)
@@ -107,6 +117,7 @@ class StedsnavnConverter : Converter {
                     "kommunenavn" -> kommunenavn = readElementText(reader)
                     "fylkesnummer" -> fylkesnummer = readElementText(reader)
                     "fylkesnavn" -> fylkesnavn = readElementText(reader)
+                    "annenSkrivemåte" -> insideAnnenSkrivemåte = true
                     "posList" -> {
                         val text = readElementText(reader).trim()
                         val coords = text.split("\\s+".toRegex())
@@ -132,6 +143,10 @@ class StedsnavnConverter : Converter {
                             }
                         }
                     }
+                }
+            } else if (reader.eventType == XMLStreamConstants.END_ELEMENT) {
+                if (reader.localName == "annenSkrivemåte") {
+                    insideAnnenSkrivemåte = false
                 }
             }
         }
@@ -162,6 +177,7 @@ class StedsnavnConverter : Converter {
                 adressekode = adressekode,
                 navneobjekttype = navneobjekttype,
                 coordinates = coordinates,
+                annenSkrivemåte = annenSkrivemåte,
             )
         } else {
             null
@@ -206,7 +222,11 @@ class StedsnavnConverter : Converter {
                     StedsnavnPopularityCalculator.calculatePopularity()
                 ),
                 parent_place_id = 0,
-                name = Name(entry.stedsnavn),
+                name = Name(
+                    name = entry.stedsnavn,
+                    alt_name = entry.annenSkrivemåte.getOrNull(0),
+                    loc_name = entry.annenSkrivemåte.getOrNull(1)
+                ),
                 housenumber = null,
                 address =
                     Address(

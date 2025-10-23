@@ -330,14 +330,23 @@ class OsmConverter : Converter {
         val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
-        val extra = buildExtra(
-            entity = entity,
-            tags = tags,
+        // Extract alternative names from OSM tags
+        val altName = tags["alt_name"] ?: tags["old_name"]
+        val locName = tags["loc_name"] ?: tags["short_name"]
+
+        val extra = Extra(
+            id = "OSM:TopographicPlace:" + entity.id,
+            source = Source.OSM,
             accuracy = accuracy,
-            country = country,
-            county = county,
-            municipality = municipality
+            country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
+            county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
+            locality = municipality?.name?.titleize(),
+            locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
+            tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
+            alt_name = altName,
+            loc_name = locName,
         )
+
         val categories = buildCategories(tags, country, county, municipality)
 
         val placeId = PlaceId.osm.create(entity.id)
@@ -349,7 +358,7 @@ class OsmConverter : Converter {
             rank_address = determineRankAddress(tags),
             importance = calculateImportance(tags),
             parent_place_id = 0,
-            name = Name(name),
+            name = Name(name = name, alt_name = altName, loc_name = locName),
             housenumber = null,
             address = updatedAddress,
             postcode = null,
@@ -380,28 +389,6 @@ class OsmConverter : Converter {
             tags["addr:country"] != null -> tags["addr:country"]!!
             else -> "no"
         }
-
-    /**
-     * Builds the Extra object containing additional metadata about the POI.
-     */
-    private fun buildExtra(
-        entity: Entity,
-        tags: Map<String, String>,
-        accuracy: String,
-        country: String,
-        county: AdministrativeBoundary?,
-        municipality: AdministrativeBoundary?
-    ): Extra =
-        Extra(
-            id = "OSM:TopographicPlace:" + entity.id,
-            source = Source.OSM,
-            accuracy = accuracy,
-            country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
-            county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
-            locality = municipality?.name?.titleize(),
-            locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-            tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
-        )
 
     /**
      * Builds the list of category tags for the POI.

@@ -75,6 +75,7 @@ class PeliasResultTransformer {
                 source = transformSource(extra),
                 source_id = extra?.id,
                 name = transformName(props),
+                popular_name = props.name,
                 street = transformStreet(props),
                 postalcode = props.postcode,
                 housenumber = props.housenumber,
