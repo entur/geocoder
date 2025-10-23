@@ -146,6 +146,7 @@ class OsmConverter : Converter {
                         entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
                     }
                 }
+
                 is Relation -> {
                     // Collect direct node members from admin boundaries
                     if (entity.tags.any { it.key == "boundary" && it.value == "administrative" }) {
@@ -167,7 +168,7 @@ class OsmConverter : Converter {
     private fun isPotentialPoi(entity: Entity): Boolean {
         val tags = entity.tags.associate { it.key to it.value }
         return tags.containsKey("name") &&
-               tags.any { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
+                tags.any { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
     }
 
     /**
@@ -331,8 +332,7 @@ class OsmConverter : Converter {
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
         // Extract alternative names from OSM tags
-        val altName = tags["alt_name"] ?: tags["old_name"]
-        val locName = tags["loc_name"] ?: tags["short_name"]
+        val altName = listOfNotNull(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"]).joinToString(";")
 
         val extra = Extra(
             id = "OSM:TopographicPlace:" + entity.id,
@@ -344,7 +344,6 @@ class OsmConverter : Converter {
             locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
             tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
             alt_name = altName,
-            loc_name = locName,
         )
 
         val categories = buildCategories(tags, country, county, municipality)
@@ -358,7 +357,7 @@ class OsmConverter : Converter {
             rank_address = determineRankAddress(tags),
             importance = calculateImportance(tags),
             parent_place_id = 0,
-            name = Name(name = name, alt_name = altName, loc_name = locName),
+            name = Name(name = name, alt_name = altName),
             housenumber = null,
             address = updatedAddress,
             postcode = null,

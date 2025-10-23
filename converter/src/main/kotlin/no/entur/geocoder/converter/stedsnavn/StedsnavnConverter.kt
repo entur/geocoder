@@ -224,8 +224,7 @@ class StedsnavnConverter : Converter {
                 parent_place_id = 0,
                 name = Name(
                     name = entry.stedsnavn,
-                    alt_name = entry.annenSkrivemåte.getOrNull(0),
-                    loc_name = entry.annenSkrivemåte.getOrNull(1)
+                    alt_name = entry.annenSkrivemåte.joinToString(";")
                 ),
                 housenumber = null,
                 address =

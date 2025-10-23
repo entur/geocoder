@@ -13,6 +13,5 @@ data class Extra(
     val borough: String? = null,
     val borough_gid: String? = null,
     val alt_name: String? = null,
-    val loc_name: String? = null,
     val tags: String? = null,
 )

@@ -70,8 +70,7 @@ class StopPlaceConverter : Converter {
 
         // Extract alternative names from NeTEx AlternativeNames
         val alternativeNames = stopPlace.alternativeNames?.alternativeName
-        val altName = alternativeNames?.firstOrNull { it.nameType == "label" }?.name?.text
-        val locName = alternativeNames?.firstOrNull { it.nameType == "translation" }?.name?.text
+        val altName = alternativeNames?.map { it.name?.text }?.filterNotNull()?.joinToString(";")
 
         val placeId = PlaceId.stopplace.create(stopPlace.id)
         val stopPlaceContent =
@@ -83,7 +82,7 @@ class StopPlaceConverter : Converter {
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
-                name = stopPlace.name.text?.let { Name(name = it, alt_name = altName, loc_name = locName) },
+                name = stopPlace.name.text?.let { Name(name = it, alt_name = altName) },
                 address =
                     Address(
                         county = county,
@@ -109,7 +108,6 @@ class StopPlaceConverter : Converter {
                                     ?.joinToString(",")
                                 ),
                         alt_name = altName,
-                        loc_name = locName,
                     ),
             )
         entries.add(NominatimPlace("Place", listOf(stopPlaceContent)))

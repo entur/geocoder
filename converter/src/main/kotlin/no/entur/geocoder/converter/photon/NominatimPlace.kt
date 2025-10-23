@@ -35,7 +35,6 @@ data class NominatimPlace(
     data class Name(
         val name: String,
         val alt_name: String? = null,
-        val loc_name: String? = null
     )
 }
 
