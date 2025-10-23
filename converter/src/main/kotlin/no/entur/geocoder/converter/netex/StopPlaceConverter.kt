@@ -70,7 +70,7 @@ class StopPlaceConverter : Converter {
 
         // Extract alternative names from NeTEx AlternativeNames
         val alternativeNames = stopPlace.alternativeNames?.alternativeName
-        val altName = alternativeNames?.firstOrNull { it.nameType == "alias" }?.name?.text
+        val altName = alternativeNames?.firstOrNull { it.nameType == "label" }?.name?.text
         val locName = alternativeNames?.firstOrNull { it.nameType == "translation" }?.name?.text
 
         val placeId = PlaceId.stopplace.create(stopPlace.id)
