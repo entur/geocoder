@@ -5,6 +5,7 @@ import org.openstreetmap.osmosis.core.container.v0_6.EntityContainer
 import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity
 import org.openstreetmap.osmosis.core.domain.v0_6.Node
+import org.openstreetmap.osmosis.core.domain.v0_6.Relation
 import org.openstreetmap.osmosis.core.task.v0_6.Sink
 import java.io.File
 import java.util.*
@@ -58,15 +59,15 @@ class OsmIterator(inputFile: File, private val filter: ((Entity) -> Boolean)? = 
         /** Filter for POI entities (entities with name and wanted tags) */
         val POI_FILTER: (Entity) -> Boolean = { entity ->
             entity.tags.any { it.key == "name" } &&
-            entity.tags.any { tag -> Poi.isWantedTag(tag.key, tag.value) }
+                    entity.tags.any { tag -> OSMPopularityCalculator.hasFilter(tag.key, tag.value) }
         }
 
         /** Filter for administrative boundary relations only */
         val ADMIN_BOUNDARY_FILTER: (Entity) -> Boolean = { entity ->
-            if (entity is org.openstreetmap.osmosis.core.domain.v0_6.Relation) {
+            if (entity is Relation) {
                 val tags = entity.tags.associate { it.key to it.value }
                 tags["boundary"] == "administrative" &&
-                tags["admin_level"] in listOf(
+                        tags["admin_level"] in listOf(
                     AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
                     AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString()
                 )

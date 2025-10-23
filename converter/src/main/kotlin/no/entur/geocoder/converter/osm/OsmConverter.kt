@@ -4,10 +4,10 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
-import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.NominatimPlace
 import no.entur.geocoder.converter.NominatimPlace.*
+import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.importance.ImportanceCalculator
@@ -60,7 +60,8 @@ class OsmConverter : Converter {
                     adminLevelStr in listOf(
                         AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
                         AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString()
-                    )) {
+                    )
+                ) {
                     val adminLevel = adminLevelStr?.toIntOrNull()
                     val name = tags["name"]
                     val ref = tags["ref"]
@@ -75,6 +76,7 @@ class OsmConverter : Converter {
                                     wayIds.add(member.memberId)
                                     adminWayIds.add(member.memberId)
                                 }
+
                                 EntityType.Node -> adminNodeIds.add(member.memberId)
                                 else -> {}
                             }
@@ -237,7 +239,7 @@ class OsmConverter : Converter {
 
     private fun filterTags(tags: Collection<Tag>): Map<String, String> =
         tags.associate { it.key to it.value }
-            .filter { (key, value) -> Poi.isWantedTag(key, value) }
+            .filter { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
 
 
     private fun createPlaceContent(
@@ -257,7 +259,14 @@ class OsmConverter : Converter {
         val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
-        val extra = buildExtra(entity, tags, name, accuracy, country, county, municipality)
+        val extra = buildExtra(
+            entity = entity,
+            tags = tags,
+            accuracy = accuracy,
+            country = country,
+            county = county,
+            municipality = municipality
+        )
         val categories = buildCategories(tags, country, county, municipality)
 
         val placeId = PlaceId.osm.create(entity.id)
@@ -293,12 +302,13 @@ class OsmConverter : Converter {
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
         tags: Map<String, String>
-    ): String = when {
-        county?.countryCode != null -> county.countryCode.lowercase()
-        municipality?.countryCode != null -> municipality.countryCode.lowercase()
-        tags["addr:country"] != null -> tags["addr:country"]!!
-        else -> "no"
-    }
+    ): String =
+        when {
+            county?.countryCode != null -> county.countryCode.lowercase()
+            municipality?.countryCode != null -> municipality.countryCode.lowercase()
+            tags["addr:country"] != null -> tags["addr:country"]!!
+            else -> "no"
+        }
 
     /**
      * Builds the Extra object containing additional metadata about the POI.
@@ -306,21 +316,21 @@ class OsmConverter : Converter {
     private fun buildExtra(
         entity: Entity,
         tags: Map<String, String>,
-        name: String,
         accuracy: String,
         country: String,
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?
-    ): Extra = Extra(
-        id = "OSM:TopographicPlace:" + entity.id,
-        source = Source.OSM,
-        accuracy = accuracy,
-        country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
-        county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
-        locality = municipality?.name?.titleize(),
-        locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-        tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
-    )
+    ): Extra =
+        Extra(
+            id = "OSM:TopographicPlace:" + entity.id,
+            source = Source.OSM,
+            accuracy = accuracy,
+            country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
+            county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
+            locality = municipality?.name?.titleize(),
+            locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
+            tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
+        )
 
     /**
      * Builds the list of category tags for the POI.
@@ -330,18 +340,19 @@ class OsmConverter : Converter {
         country: String,
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?
-    ): List<String> = buildList {
-        add(Category.OSM_POI)
-        addAll(tags.map { "${it.key}.${it.value}" })
-        add("source.osm")
-        add("layer.address")
-        add("country.$country")
-        county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
-        municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
-    }
+    ): List<String> =
+        buildList {
+            add(Category.OSM_POI)
+            addAll(tags.map { "${it.key}.${it.value}" })
+            add("source.osm")
+            add("layer.address")
+            add("country.$country")
+            county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
+            municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
+        }
 
-    private fun convertNodeToNominatim(node: Node, tags: Map<String, String>, name: String): NominatimPlace? {
-        return createPlaceContent(
+    private fun convertNodeToNominatim(node: Node, tags: Map<String, String>, name: String): NominatimPlace =
+        createPlaceContent(
             entity = node,
             tags = tags,
             name = name,
@@ -349,7 +360,6 @@ class OsmConverter : Converter {
             accuracy = "point",
             centroid = node.longitude.toBigDecimalWithScale() to node.latitude.toBigDecimalWithScale(),
         )
-    }
 
     private fun convertWayToNominatim(way: Way, tags: Map<String, String>, name: String): NominatimPlace? {
         val (lon, lat) = wayCentroids.get(way.id) ?: return null
