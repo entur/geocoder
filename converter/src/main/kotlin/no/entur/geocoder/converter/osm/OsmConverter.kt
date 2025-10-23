@@ -16,6 +16,46 @@ import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Paths
 
+/**
+ * Converts OSM PBF files to Nominatim-compatible JSON format.
+ *
+ * This converter processes POIs (Points of Interest) from OpenStreetMap data,
+ * enriching them with administrative boundary information and calculating
+ * importance scores based on configured filters.
+ *
+ * ## Conversion Process (5 passes):
+ *
+ * **Pass 1**: Collect admin boundary relations
+ * - Finds all Norwegian county and municipality boundaries
+ * - Extracts relation metadata (name, admin_level, ref code)
+ *
+ * **Pass 2**: Collect all required node IDs
+ * - Collects node IDs from admin boundary ways
+ * - Collects node IDs from POI ways (e.g., cinema buildings, parks)
+ * - This ensures way centroids can be calculated for all POIs
+ *
+ * **Pass 3**: Collect node coordinates
+ * - Fetches lat/lon coordinates for all collected node IDs
+ * - Stores in memory-efficient CoordinateStore
+ *
+ * **Pass 4**: Build administrative boundary index
+ * - Calculates centroids and bounding boxes for admin boundaries
+ * - Creates spatial index for fast POI-to-boundary lookups
+ *
+ * **Pass 5**: Process POIs and write output
+ * - Converts nodes, ways, and relations to Nominatim format
+ * - Enriches with county/municipality information
+ * - Calculates importance scores
+ * - Writes as newline-delimited JSON
+ *
+ * ## Supported POI Types:
+ * - Nodes: Point POIs (shops, restaurants, single buildings)
+ * - Ways: Polygon POIs (larger buildings, parks, areas)
+ * - Relations: Complex POIs (multipolygons, building complexes)
+ *
+ * @see OSMPopularityCalculator for POI filtering configuration
+ * @see AdministrativeBoundaryIndex for spatial boundary lookups
+ */
 class OsmConverter : Converter {
     private val nodesCoords = CoordinateStore(500000)
     private val wayCentroids = CoordinateStore(50000)
@@ -25,33 +65,37 @@ class OsmConverter : Converter {
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
 
-        // Pass 1: Collect admin boundary relations and all node IDs we need
-        println("Pass 1: Collecting admin boundaries and node IDs...")
-        val (adminRelations, allNeededNodeIds) = collectAdminRelationsAndNodeIds(input)
+        // Pass 1: Collect admin boundary relations
+        println("Pass 1: Collecting admin boundaries...")
+        val adminRelations = collectAdminRelations(input)
         println("  Found ${adminRelations.size} admin boundary relations")
-        println("  Need coordinates for ${allNeededNodeIds.size} nodes")
 
-        // Pass 2: Collect all needed node coordinates in one pass
-        println("Pass 2: Collecting node coordinates...")
+        // Pass 2: Collect all needed node IDs (admin boundaries + POI ways)
+        println("Pass 2: Collecting required node IDs...")
+        val allNeededNodeIds = collectAllRequiredNodeIds(input, adminRelations)
+        println("  Total unique node coordinates needed: ${allNeededNodeIds.size}")
+
+        // Pass 3: Collect all needed node coordinates
+        println("Pass 3: Collecting node coordinates...")
         collectNodeCoordinates(input, allNeededNodeIds)
 
-        // Pass 3: Calculate way centroids and build admin boundary index
-        println("Pass 3: Building administrative boundary index...")
+        // Pass 4: Build admin boundary index
+        println("Pass 4: Building administrative boundary index...")
         buildAdminBoundaryIndex(input, adminRelations)
         println(adminBoundaryIndex.getStatistics())
 
-        // Pass 4: Process POI entities, convert to Nominatim format, and write to JSON
-        println("Pass 4: Processing POI entities and writing output...")
+        // Pass 5: Process POI entities, convert to Nominatim format, and write to JSON
+        println("Pass 5: Processing POI entities and writing output...")
         val nominatimEntries = processEntities(input)
         JsonWriter().export(nominatimEntries, Paths.get(output.absolutePath), isAppending)
     }
 
-    private fun collectAdminRelationsAndNodeIds(inputFile: File): Pair<List<AdminRelationData>, Set<Long>> {
+    /**
+     * Collects admin boundary relations for Norwegian counties and municipalities.
+     */
+    private fun collectAdminRelations(inputFile: File): List<AdminRelationData> {
         val adminRelations = mutableListOf<AdminRelationData>()
-        val adminNodeIds = hashSetOf<Long>()
-        val adminWayIds = hashSetOf<Long>()
 
-        // First, collect all admin boundary relations and their way IDs
         parsePbf(inputFile, OsmIterator.ADMIN_BOUNDARY_FILTER).forEach { entity ->
             if (entity is Relation) {
                 val tags = entity.tags.associate { it.key to it.value }
@@ -69,34 +113,61 @@ class OsmConverter : Converter {
 
                     // Only process Norwegian boundaries
                     if (adminLevel != null && name != null && ref != null && countryCode == "NO") {
-                        val wayIds = mutableListOf<Long>()
-                        entity.members.forEach { member ->
-                            when (member.memberType) {
-                                EntityType.Way -> {
-                                    wayIds.add(member.memberId)
-                                    adminWayIds.add(member.memberId)
-                                }
+                        val wayIds = entity.members
+                            .filter { it.memberType == EntityType.Way }
+                            .map { it.memberId }
 
-                                EntityType.Node -> adminNodeIds.add(member.memberId)
-                                else -> {}
-                            }
-                        }
                         adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds, countryCode))
                     }
                 }
             }
         }
 
-        // Second, collect node IDs from admin ways
-        val wayNodeIds = hashSetOf<Long>()
-        parsePbf(inputFile, OsmIterator.WAY_FILTER).forEach { entity ->
-            if (entity is Way && entity.id in adminWayIds) {
-                entity.wayNodes.forEach { wayNodeIds.add(it.nodeId) }
+        return adminRelations
+    }
+
+    /**
+     * Collects all node IDs needed for both admin boundaries and POI ways in a single pass.
+     * This is more efficient than multiple passes over the PBF file.
+     */
+    private fun collectAllRequiredNodeIds(inputFile: File, adminRelations: List<AdminRelationData>): Set<Long> {
+        val adminWayIds = adminRelations.flatMap { it.wayIds }.toSet()
+        val nodeIds = hashSetOf<Long>()
+
+        parsePbf(inputFile, null).forEach { entity ->
+            when (entity) {
+                is Way -> {
+                    // Collect nodes from admin boundary ways
+                    if (entity.id in adminWayIds) {
+                        entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
+                    }
+                    // Collect nodes from POI ways
+                    else if (isPotentialPoi(entity)) {
+                        entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
+                    }
+                }
+                is Relation -> {
+                    // Collect direct node members from admin boundaries
+                    if (entity.tags.any { it.key == "boundary" && it.value == "administrative" }) {
+                        entity.members
+                            .filter { it.memberType == EntityType.Node }
+                            .forEach { nodeIds.add(it.memberId) }
+                    }
+                }
             }
         }
 
-        // Combine all needed node IDs
-        return adminRelations to (adminNodeIds + wayNodeIds)
+        return nodeIds
+    }
+
+    /**
+     * Quick check if an entity might be a POI (has name + wanted tag).
+     * Used during node collection to avoid storing unnecessary coordinates.
+     */
+    private fun isPotentialPoi(entity: Entity): Boolean {
+        val tags = entity.tags.associate { it.key to it.value }
+        return tags.containsKey("name") &&
+               tags.any { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
     }
 
     /**
