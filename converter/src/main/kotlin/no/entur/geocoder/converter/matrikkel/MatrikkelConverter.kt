@@ -84,7 +84,6 @@ class MatrikkelConverter(
             displayName = null, // Addresses proper are considered to be "nameless"
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
             postcode = adresse.postnummer,
-            altName = adresse.adressetilleggsnavn,
         )
 
     private fun convertStreetToNominatim(
@@ -104,7 +103,6 @@ class MatrikkelConverter(
             displayName = streetName,
             housenumber = null,
             postcode = null,
-            altName = adresse.adressetilleggsnavn,
         )
     }
 
@@ -119,7 +117,6 @@ class MatrikkelConverter(
         displayName: String?,
         housenumber: String?,
         postcode: String?,
-        altName: String?,
     ): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
 
@@ -137,7 +134,7 @@ class MatrikkelConverter(
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
                 tags = categories.joinToString(","),
-                alt_name = altName,
+                alt_name = adresse.adressetilleggsnavn,
             )
 
         val fylkesnavn = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnavn }
@@ -151,7 +148,7 @@ class MatrikkelConverter(
                 rank_address = 26,
                 importance = ImportanceCalculator.calculateImportance(popularity),
                 parent_place_id = 0,
-                name = displayName?.let { Name(name = it, alt_name = altName) },
+                name = displayName?.let { Name(name = it, alt_name = adresse.adressetilleggsnavn) },
                 housenumber = housenumber,
                 address =
                     Address(

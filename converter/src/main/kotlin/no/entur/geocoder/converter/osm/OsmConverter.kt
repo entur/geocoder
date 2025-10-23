@@ -5,12 +5,12 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.photon.NominatimPlace
-import no.entur.geocoder.converter.photon.NominatimPlace.*
 import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.importance.ImportanceCalculator
+import no.entur.geocoder.converter.photon.NominatimPlace
+import no.entur.geocoder.converter.photon.NominatimPlace.*
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.io.File
 import java.math.BigDecimal
@@ -331,8 +331,9 @@ class OsmConverter : Converter {
         val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
-        // Extract alternative names from OSM tags
-        val altName = listOfNotNull(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"]).joinToString(";")
+        val altName = listOfNotNull(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
+            .joinToString(";")
+            .ifBlank { null }
 
         val extra = Extra(
             id = "OSM:TopographicPlace:" + entity.id,
