@@ -67,7 +67,7 @@ class MatrikkelConverter : Converter {
             id = adresse.lokalid,
             categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
-            displayName = null,
+            displayName = null, // Addresses proper are considered to be "nameless"
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
             postcode = adresse.postnummer,
         )
