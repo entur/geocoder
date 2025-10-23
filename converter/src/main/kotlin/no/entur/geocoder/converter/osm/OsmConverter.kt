@@ -5,8 +5,8 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.NominatimPlace
-import no.entur.geocoder.converter.NominatimPlace.*
+import no.entur.geocoder.converter.photon.NominatimPlace
+import no.entur.geocoder.converter.photon.NominatimPlace.*
 import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.Util.toBigDecimalWithScale

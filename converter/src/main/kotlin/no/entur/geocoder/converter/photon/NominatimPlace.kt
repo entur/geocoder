@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter
+package no.entur.geocoder.converter.photon
 
 import no.entur.geocoder.common.Extra
 import java.math.BigDecimal

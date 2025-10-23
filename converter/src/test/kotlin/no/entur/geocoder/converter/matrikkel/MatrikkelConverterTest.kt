@@ -2,7 +2,7 @@ package no.entur.geocoder.converter.matrikkel
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.entur.geocoder.converter.NominatimPlace
+import no.entur.geocoder.converter.photon.NominatimPlace
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.math.BigDecimal
