@@ -7,12 +7,9 @@ COPY . ./
 RUN gradle --no-daemon :converter:build
 
 RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip | jar -xv
-RUN ./geocoder-convert -m Basis*/*.csv -o nominatim.ndjson && \
-    rm -rf Basis*
-
 RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip | jar -xv
-RUN ./geocoder-convert -a -g Basisdata_03_Oslo_25833_Stedsnavn_GML.gml -o nominatim.ndjson && \
-    rm Basisdata_03_Oslo_25833_Stedsnavn_GML.gml
+RUN ./geocoder-convert -m Basis*/*.csv -g Basisdata_03_Oslo_25833_Stedsnavn_GML.gml -o nominatim.ndjson && \
+    rm -rf Basis*
 
 RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
 RUN ./geocoder-convert -a -s tiamat*.xml -o nominatim.ndjson && \

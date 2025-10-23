@@ -15,7 +15,21 @@ import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
 
-class MatrikkelConverter : Converter {
+class MatrikkelConverter(
+    private val stedsnavnGmlFile: File? = null
+) : Converter {
+
+    private val kommuneFylkeMapping: Map<String, KommuneFylkeMapping.KommuneInfo> by lazy {
+        if (stedsnavnGmlFile != null && stedsnavnGmlFile.exists()) {
+            println("Building kommune-fylke mapping from ${stedsnavnGmlFile.absolutePath}...")
+            KommuneFylkeMapping.buildMapping(stedsnavnGmlFile).also {
+                println("Loaded ${it.size} kommune-fylke mappings")
+            }
+        } else {
+            emptyMap()
+        }
+    }
+
     override fun convert(
         input: File,
         output: File,
@@ -120,6 +134,8 @@ class MatrikkelConverter : Converter {
                 tags = categories.joinToString(","),
             )
 
+        val fylkesnavn = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnavn }
+
         val properties =
             PlaceContent(
                 place_id = placeId,
@@ -134,8 +150,8 @@ class MatrikkelConverter : Converter {
                 address =
                     Address(
                         street = adresse.adressenavn,
-                        city = adresse.poststed.titleize() ?: adresse.kommunenavn?.titleize(),
-                        county = "TODO",
+                        city = adresse.poststed.titleize(),
+                        county = fylkesnavn?.titleize(),
                     ),
                 postcode = postcode,
                 country_code = "no",

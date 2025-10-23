@@ -18,7 +18,7 @@ class MatrikkelConverterTest {
 
     @Test
     fun `should convert matrikkel adresse CSV to nominatim json`() {
-        val converter = MatrikkelConverter() // Changed from Converter to MatrikkelConverter
+        val converter = MatrikkelConverter(stedsnavnGmlFile = null)
         val inputFile =
             File(javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv").file)
         val outputFile = tempDir.resolve("output.json").toFile()
@@ -60,11 +60,49 @@ class MatrikkelConverterTest {
         assertEquals(2, placeContent.centroid.size, "Centroid should have 2 coordinates")
         assertEquals("1A", placeContent.housenumber)
         assertEquals("Ildervegen", placeContent.address?.street)
-        assertEquals("TODO", placeContent.address?.county)
+        assertEquals(null, placeContent.address?.county)
         assertEquals("2406", placeContent.postcode)
         assertEquals(null, placeContent.name, "Name should be null for addresses")
 
         assertEquals(BigDecimal("11.527525"), placeContent.centroid[0])
         assertEquals(BigDecimal("60.892175"), placeContent.centroid[1])
+    }
+
+    @Test
+    fun `should populate county when stedsnavn GML file is provided`() {
+        val stedsnavnFile = File(javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml").file)
+        val converter = MatrikkelConverter(stedsnavnGmlFile = stedsnavnFile)
+        val inputFile =
+            File(javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv").file)
+        val outputFile = tempDir.resolve("output_with_county.json").toFile()
+
+        converter.convert(inputFile, outputFile)
+
+        assertTrue(outputFile.exists())
+        assertTrue(outputFile.length() > 0)
+
+        val objectMapper = jacksonObjectMapper()
+        val lines = outputFile.readLines()
+        assertTrue(lines.isNotEmpty())
+
+        // Find the address with lokalid 225678815 (same as previous test)
+        val targetPlaceJson = lines.find { line ->
+            line.contains("\"225678815\"")
+        }
+        assertNotNull(targetPlaceJson, "Could not find address with lokalid 225678815")
+
+        val nominatimPlace: NominatimPlace = objectMapper.readValue(targetPlaceJson)
+        val placeContent = nominatimPlace.content.first()
+
+        // Verify that county is populated from the Stedsnavn GML file
+        // Elverum (kommune 3420) should be in Innlandet fylke
+        assertNotNull(placeContent.address?.county, "County should be populated when Stedsnavn GML file is provided")
+        assertEquals("Innlandet", placeContent.address?.county, "County should be Innlandet for Elverum kommune")
+
+        // Verify other fields still work correctly
+        assertEquals("1A", placeContent.housenumber)
+        assertEquals("Ildervegen", placeContent.address?.street)
+        assertEquals("2406", placeContent.postcode)
+        assertEquals("Elverum", placeContent.extra.locality)
     }
 }

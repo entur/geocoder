@@ -26,6 +26,8 @@ class Command(
         var outputPath: String? = null
         var forceOverwrite = false
         var appendMode = false
+        var noCounty = false
+        var noStedsnavn = false
 
         var i = 0
         while (i < args.size) {
@@ -80,6 +82,16 @@ class Command(
                     i += 1
                 }
 
+                "--no-county" -> {
+                    noCounty = true
+                    i += 1
+                }
+                "--no-stedsnavn" -> {
+                    noStedsnavn = true
+                    i += 1
+                }
+
+
                 else -> exit("Error: Unknown option ${args[i]}")
             }
         }
@@ -90,6 +102,10 @@ class Command(
 
         if (stopplaceInputPath == null && matrikkelInputPath == null && osmInputPath == null && stedsnavnInputPath == null) {
             exit("Error: No conversion type specified. Use -s for stopplace, -m for matrikkel, -p for OSM PBF, and/or -g for Stedsnavn GML.")
+        }
+
+        if (matrikkelInputPath != null && stedsnavnInputPath == null && !noCounty) {
+            exit("Error: Matrikkel conversion requires either -g <stedsnavn-gml-file> to populate county data, or --no-county to skip county population.")
         }
 
         if (forceOverwrite && appendMode) {
@@ -113,12 +129,17 @@ class Command(
 
         var isFirstConversion = !appendMode
 
+        val stedsnavnFile = stedsnavnInputPath?.let { File(it) }
+
+        // If --no-stedsnavn is specified, use the Stedsnavn file for mapping only, not for conversion
+        val stedsnavnConversionPath = if (noStedsnavn) null else stedsnavnInputPath
+
         val conversionTasks =
             listOf(
                 "StopPlace" to (stopplaceInputPath to StopPlaceConverter()),
-                "Matrikkel" to (matrikkelInputPath to MatrikkelConverter()),
+                "Matrikkel" to (matrikkelInputPath to MatrikkelConverter(stedsnavnFile)),
                 "OSM PBF" to (osmInputPath to OsmConverter()),
-                "Stedsnavn GML" to (stedsnavnInputPath to StedsnavnConverter()),
+                "Stedsnavn GML" to (stedsnavnConversionPath to StedsnavnConverter()),
             )
 
         for ((name, pair) in conversionTasks) {
@@ -159,13 +180,14 @@ class Command(
     }
 
     private fun exit(msg: String): Nothing {
-        println(msg)
+        println(msg + "\n")
         printUsage()
         exitProcess(1)
     }
 
     fun printUsage() {
         println("Usage: geocoder-convert [options] -o <output-file>")
+        println("  --no-stedsnavn          : Skip Stedsnavn import (use -g only for county mapping in Matrikkel).")
         println("Options:")
         println("  -s <input-xml-file>     : Convert StopPlace XML data.")
         println("  -m <input-csv-file>     : Convert Matrikkel CSV data.")
@@ -173,12 +195,17 @@ class Command(
         println("  -g <input-gml-file>     : Convert Stedsnavn GML data.")
         println("  -o <output-file>        : Specify the output file (required).")
         println("  -f                      : Force overwrite if output file exists.")
+        println("          geocoder-convert -m matrikkel.csv -g stedsnavn.gml --no-stedsnavn -o output.ndjson")
         println("  -a                      : Append to existing output file (skips header).")
+        println("  --no-county             : Skip county population for Matrikkel data (only if -g not provided).")
         println("All conversion options can be used together, outputting to the same -o file.")
+        println("Note: When using -m (Matrikkel), you must also provide -g (Stedsnavn GML) to populate county data,")
+        println("      or use --no-county to skip county population.")
         println("Examples: geocoder-convert -s stoplace.xml -m matrikkel.csv -p data.osm.pbf -o combined_output.ndjson")
         println("          geocoder-convert -s stoplace.xml -o s_out.ndjson")
         println("          geocoder-convert -s stoplace.xml -o existing.ndjson -f")
-        println("          geocoder-convert -m matrikkel.csv -o existing.ndjson -a")
+        println("          geocoder-convert -m matrikkel.csv -g stedsnavn.gml -o output.ndjson")
+        println("          geocoder-convert -m matrikkel.csv --no-county -o output.ndjson")
         println("          geocoder-convert -g stedsnavn.gml -o stedsnavn_output.ndjson")
     }
 }
