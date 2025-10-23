@@ -186,26 +186,19 @@ class Command(
     }
 
     fun printUsage() {
-        println("Usage: geocoder-convert [options] -o <output-file>")
-        println("  --no-stedsnavn          : Skip Stedsnavn import (use -g only for county mapping in Matrikkel).")
-        println("Options:")
-        println("  -s <input-xml-file>     : Convert StopPlace XML data.")
-        println("  -m <input-csv-file>     : Convert Matrikkel CSV data.")
-        println("  -p <input-pbf-file>     : Convert OSM PBF data.")
-        println("  -g <input-gml-file>     : Convert Stedsnavn GML data.")
-        println("  -o <output-file>        : Specify the output file (required).")
-        println("  -f                      : Force overwrite if output file exists.")
-        println("          geocoder-convert -m matrikkel.csv -g stedsnavn.gml --no-stedsnavn -o output.ndjson")
-        println("  -a                      : Append to existing output file (skips header).")
-        println("  --no-county             : Skip county population for Matrikkel data (only if -g not provided).")
-        println("All conversion options can be used together, outputting to the same -o file.")
-        println("Note: When using -m (Matrikkel), you must also provide -g (Stedsnavn GML) to populate county data,")
-        println("      or use --no-county to skip county population.")
-        println("Examples: geocoder-convert -s stoplace.xml -m matrikkel.csv -p data.osm.pbf -o combined_output.ndjson")
-        println("          geocoder-convert -s stoplace.xml -o s_out.ndjson")
-        println("          geocoder-convert -s stoplace.xml -o existing.ndjson -f")
-        println("          geocoder-convert -m matrikkel.csv -g stedsnavn.gml -o output.ndjson")
-        println("          geocoder-convert -m matrikkel.csv --no-county -o output.ndjson")
-        println("          geocoder-convert -g stedsnavn.gml -o stedsnavn_output.ndjson")
+        println("""
+            Usage: ./geocoder-convert [options] -o <output-file>
+            
+            Options:
+              -s <input-xml-file>     Convert StopPlace XML data
+              -m <input-csv-file>     Convert Matrikkel CSV data
+              -p <input-pbf-file>     Convert OSM PBF data
+              -g <input-gml-file>     Convert Stedsnavn GML data
+              -o <output-file>        Specify the output file (required)
+              -f                      Force overwrite if output file exists
+              -a                      Append to existing output file
+              --no-county             Skip county population for Matrikkel data (when -m is provided and -g is not)
+              --no-stedsnavn          Skip Stedsnavn output when converting Matrikkel (when both -m and -g is provided)
+        """.trimIndent())
     }
 }
