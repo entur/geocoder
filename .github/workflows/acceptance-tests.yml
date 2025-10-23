@@ -12,6 +12,8 @@ on:
           - staging
         default: 'dev'
 
+run-name: "Acceptance tests: ${{ inputs.environment }} (sha: ${{ github.sha }})"
+
 jobs:
   acceptance-tests:
     runs-on: ubuntu-latest

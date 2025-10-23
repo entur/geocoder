@@ -24,7 +24,7 @@ on:
         default: 'latest'
         type: string
 
-run-name: "Build: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }} (sha: ${{ github.sha }})"
+run-name: "Photon: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }} (sha: ${{ github.sha }})"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
