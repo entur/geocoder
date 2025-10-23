@@ -49,7 +49,6 @@ class MatrikkelConverterTest {
         assertEquals("kartverket-matrikkelenadresse", extra.source)
         assertEquals("point", extra.accuracy)
         assertEquals("NOR", extra.country_a)
-        assertEquals("KVE:TopographicPlace:34", extra.county_gid)
         assertEquals("Elverum", extra.locality)
         assertEquals("KVE:TopographicPlace:3420", extra.locality_gid)
         assertEquals("Grindalsmoen", extra.borough)

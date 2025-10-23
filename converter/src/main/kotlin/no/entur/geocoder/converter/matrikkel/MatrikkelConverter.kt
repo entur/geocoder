@@ -120,13 +120,15 @@ class MatrikkelConverter(
     ): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
 
+        val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }
+
         val extra =
             Extra(
                 id = id,
                 source = Source.KARTVERKET_ADRESSE,
                 accuracy = "point",
                 country_a = "NOR",
-                county_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:${it.take(2)}" },
+                county_gid = fylkesnummer?.let { "KVE:TopographicPlace:${it}" },
                 locality = adresse.kommunenavn?.titleize(),
                 locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
                 borough = adresse.grunnkretsnavn?.titleize(),
