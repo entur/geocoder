@@ -83,6 +83,7 @@ class StedsnavnConverter : Converter {
         var matrikkelId: String? = null
         var adressekode: String? = null
         var navneobjekttype: String? = null
+        var skrivemåtestatus: String? = null
         val coordinates = mutableListOf<Pair<Double, Double>>()
         val annenSkrivemåte = mutableListOf<String>()
         var insideAnnenSkrivemåte = false
@@ -111,6 +112,7 @@ class StedsnavnConverter : Converter {
                         }
                     }
                     "navneobjekttype" -> navneobjekttype = readElementText(reader)
+                    "skrivemåtestatus" -> skrivemåtestatus = readElementText(reader)
                     "matrikkelId" -> matrikkelId = readElementText(reader)
                     "adressekode" -> adressekode = readElementText(reader)
                     "kommunenummer" -> kommunenummer = readElementText(reader)
@@ -151,31 +153,36 @@ class StedsnavnConverter : Converter {
             }
         }
 
-        val targetTypes = setOf("tettsteddel", "bydel", "by", "tettsted", "tettbebyggelse")
+        // Filter 1: Place type must be in target types (matching kakka's geocoderPlaceTypeWhitelist)
+        val isTargetType = StedsnavnPlaceType.isTarget(navneobjekttype)
 
-        return if (navneobjekttype != null &&
-            targetTypes.contains(navneobjekttype.lowercase()) &&
-            lokalId != null &&
+        // Filter 2: Spelling status must be accepted (matching kakka's spelling status validation)
+        val hasAcceptedStatus = StedsnavnSpellingStatus.isAccepted(skrivemåtestatus)
+
+        // Filter 3: All required fields must be present
+        val hasRequiredFields = lokalId != null &&
             navnerom != null &&
             stedsnavn != null &&
             kommunenummer != null &&
             kommunenavn != null &&
             fylkesnummer != null &&
             fylkesnavn != null
-        ) {
+
+        return if (isTargetType && hasAcceptedStatus && hasRequiredFields) {
             StedsnavnEntry(
-                lokalId = lokalId,
-                navnerom = navnerom,
+                lokalId = lokalId!!,
+                navnerom = navnerom!!,
                 versjonId = versjonId,
                 oppdateringsdato = oppdateringsdato,
-                stedsnavn = stedsnavn,
-                kommunenummer = kommunenummer,
-                kommunenavn = kommunenavn,
-                fylkesnummer = fylkesnummer,
-                fylkesnavn = fylkesnavn,
+                stedsnavn = stedsnavn!!,
+                kommunenummer = kommunenummer!!,
+                kommunenavn = kommunenavn!!,
+                fylkesnummer = fylkesnummer!!,
+                fylkesnavn = fylkesnavn!!,
                 matrikkelId = matrikkelId,
                 adressekode = adressekode,
                 navneobjekttype = navneobjekttype,
+                skrivemåtestatus = skrivemåtestatus,
                 coordinates = coordinates,
                 annenSkrivemåte = annenSkrivemåte,
             )
@@ -219,7 +226,7 @@ class StedsnavnConverter : Converter {
                 categories = categories,
                 rank_address = 16,
                 importance = ImportanceCalculator.calculateImportance(
-                    StedsnavnPopularityCalculator.calculatePopularity()
+                    StedsnavnPopularityCalculator.calculatePopularity(entry.navneobjekttype)
                 ),
                 parent_place_id = 0,
                 name = Name(

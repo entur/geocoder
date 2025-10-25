@@ -10,6 +10,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -158,6 +159,23 @@ class StedsnavnConverterTest {
     }
 
     @Test
+    fun `should filter out administrative types like kommune`() {
+        // The test file contains navneobjekttype="kommune" (administrative division)
+        // This should be filtered out since it's not in the target types
+        val kommuneEntry = entries.find { it.navneobjekttype == "kommune" }
+        assertEquals(null, kommuneEntry, "Administrative type 'kommune' should be filtered out")
+
+        // Verify no administrative types are parsed
+        val administrativeTypes = setOf("kommune", "fylke", "grunnkrets")
+        entries.forEach { entry ->
+            assertFalse(
+                administrativeTypes.contains(entry.navneobjekttype?.lowercase()),
+                "Administrative types should be filtered out, found: ${entry.navneobjekttype}"
+            )
+        }
+    }
+
+    @Test
     fun `should parse all required fields`() {
         entries.forEach { entry ->
             assertNotNull(entry.lokalId, "lokalId should not be null")
@@ -183,6 +201,66 @@ class StedsnavnConverterTest {
         val city = address.city ?: error("City should not be null")
         val firstChar = city.first()
         assertTrue(firstChar.isUpperCase(), "First character of city name should be uppercase")
+    }
+
+    @Test
+    fun `should parse and store skrivemåtestatus field`() {
+        // All entries in test file should have spelling status since they passed filtering
+        val jomna = entries.find { it.stedsnavn == "Jømna" }
+        assertNotNull(jomna, "Should find Jømna entry")
+        assertNotNull(jomna!!.skrivemåtestatus, "Should have skrivemåtestatus field")
+        assertTrue(
+            StedsnavnSpellingStatus.isAccepted(jomna.skrivemåtestatus),
+            "Parsed entry should have accepted spelling status"
+        )
+    }
+
+    @Test
+    fun `should filter out entries with rejected spelling status`() {
+        // All parsed entries should have accepted spelling status
+        entries.forEach { entry ->
+            assertTrue(
+                StedsnavnSpellingStatus.isAccepted(entry.skrivemåtestatus),
+                "Entry ${entry.stedsnavn} should have accepted spelling status, got: ${entry.skrivemåtestatus}"
+            )
+        }
+    }
+
+    @Test
+    fun `should use flat popularity for all place types matching kakka`() {
+        val byEntry = entries.find { it.navneobjekttype == "by" }
+        val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
+
+        assertNotNull(byEntry, "Should have at least one 'by' entry")
+        assertNotNull(tettbebyggelseEntry, "Should have at least one 'tettbebyggelse' entry")
+
+        val byPlace = converter.convertToNominatim(byEntry!!)
+        val tettbebyggelsePlace = converter.convertToNominatim(tettbebyggelseEntry!!)
+
+        val byImportance = byPlace.content.first().importance
+        val tettbebyggelseImportance = tettbebyggelsePlace.content.first().importance
+
+        // Both should have the same importance since popularity is flat (40 for all)
+        assertEquals(
+            byImportance,
+            tettbebyggelseImportance,
+            "All place types should have same importance (matching kakka's flat placeBoost)"
+        )
+    }
+
+    @Test
+    fun `should use correct popularity values from calculator`() {
+        val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
+        assertNotNull(tettbebyggelseEntry, "Should have tettbebyggelse entry")
+
+        val popularity = StedsnavnPopularityCalculator.calculatePopularity(tettbebyggelseEntry!!.navneobjekttype)
+        assertEquals(40.0, popularity, "tettbebyggelse should have popularity of 40 (matching kakka)")
+
+        val byEntry = entries.find { it.navneobjekttype == "by" }
+        if (byEntry != null) {
+            val byPopularity = StedsnavnPopularityCalculator.calculatePopularity(byEntry.navneobjekttype)
+            assertEquals(40.0, byPopularity, "by should also have popularity of 40 (flat value matching kakka)")
+        }
     }
 }
 
