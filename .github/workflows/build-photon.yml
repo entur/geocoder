@@ -87,7 +87,8 @@ jobs:
       always() &&
       !cancelled() &&
       inputs.deploy_env != 'none' &&
-      (inputs.build_import == false || needs.import.result == 'success')
+      (inputs.build_import == false || needs.import.result == 'success') &&
+      (inputs.build_import == true || import_image_tag != 'latest')
 
     steps:
       - name: Checkout code
@@ -95,7 +96,6 @@ jobs:
 
       - name: Build and push Docker image
         id: build_push
-        if: inputs.deploy_env != 'none'
         uses: ./.github/actions/build-push
         with:
           image_name: geocoder-photon
@@ -110,9 +110,9 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.photon.result == 'success' &&
+      (needs.photon.result == 'success' || inputs.build_import == false) &&
       (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
-    needs: [photon]
+    needs: photon
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
@@ -126,9 +126,9 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.photon.result == 'success' &&
+      (needs.photon.result == 'success' || inputs.build_import == false) &&
       (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
-    needs: [photon]
+    needs: photon
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
