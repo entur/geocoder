@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-runtime-container:jre-21-slim-musl AS build-image
+FROM bellsoft/liberica-runtime-container:jre-21-musl AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
