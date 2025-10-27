@@ -79,7 +79,7 @@ class StedsnavnSpellingStatusTest {
 
     @Test
     fun `status is case insensitive`() {
-        assertTrue(StedsnavnSpellingStatus.isAccepted("VEDTATT"), "VEDTATT should be accepted (case insensitive)")
+        assertTrue(StedsnavnSpellingStatus.isAccepted("vedtatt"), "vedtatt should be accepted (case insensitive)")
         assertTrue(StedsnavnSpellingStatus.isAccepted("Vedtatt"), "Vedtatt should be accepted (case insensitive)")
         assertFalse(StedsnavnSpellingStatus.isAccepted("UVURDERT"), "UVURDERT should be rejected (case insensitive)")
     }

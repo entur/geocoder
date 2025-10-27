@@ -23,35 +23,35 @@ class StedsnavnPlaceTypeTest {
     fun `by type is recognized`() {
         val type = StedsnavnPlaceType.fromString("by")
         assertNotNull(type, "by should be recognized")
-        assertEquals(StedsnavnPlaceType.BY, type)
+        assertEquals(StedsnavnPlaceType.by, type)
     }
 
     @Test
     fun `bydel type is recognized`() {
         val type = StedsnavnPlaceType.fromString("bydel")
         assertNotNull(type, "bydel should be recognized")
-        assertEquals(StedsnavnPlaceType.BYDEL, type)
+        assertEquals(StedsnavnPlaceType.bydel, type)
     }
 
     @Test
     fun `tettsted type is recognized`() {
         val type = StedsnavnPlaceType.fromString("tettsted")
         assertNotNull(type, "tettsted should be recognized")
-        assertEquals(StedsnavnPlaceType.TETTSTED, type)
+        assertEquals(StedsnavnPlaceType.tettsted, type)
     }
 
     @Test
     fun `tettsteddel type is recognized`() {
         val type = StedsnavnPlaceType.fromString("tettsteddel")
         assertNotNull(type, "tettsteddel should be recognized")
-        assertEquals(StedsnavnPlaceType.TETTSTEDDEL, type)
+        assertEquals(StedsnavnPlaceType.tettsteddel, type)
     }
 
     @Test
     fun `tettbebyggelse type is recognized`() {
         val type = StedsnavnPlaceType.fromString("tettbebyggelse")
         assertNotNull(type, "tettbebyggelse should be recognized")
-        assertEquals(StedsnavnPlaceType.TETTBEBYGGELSE, type)
+        assertEquals(StedsnavnPlaceType.tettbebyggelse, type)
     }
 
     @Test
@@ -117,10 +117,10 @@ class StedsnavnPlaceTypeTest {
     @Test
     fun `each type has correct typeName`() {
         // Verify each type has the correct typeName for matching GML data
-        assertEquals("by", StedsnavnPlaceType.BY.typeName)
-        assertEquals("bydel", StedsnavnPlaceType.BYDEL.typeName)
-        assertEquals("tettsted", StedsnavnPlaceType.TETTSTED.typeName)
-        assertEquals("tettsteddel", StedsnavnPlaceType.TETTSTEDDEL.typeName)
-        assertEquals("tettbebyggelse", StedsnavnPlaceType.TETTBEBYGGELSE.typeName)
+        assertEquals("by", StedsnavnPlaceType.by.name)
+        assertEquals("bydel", StedsnavnPlaceType.bydel.name)
+        assertEquals("tettsted", StedsnavnPlaceType.tettsted.name)
+        assertEquals("tettsteddel", StedsnavnPlaceType.tettsteddel.name)
+        assertEquals("tettbebyggelse", StedsnavnPlaceType.tettbebyggelse.name)
     }
 }

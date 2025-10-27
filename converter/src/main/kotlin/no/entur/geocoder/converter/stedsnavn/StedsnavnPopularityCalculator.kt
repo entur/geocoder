@@ -31,7 +31,5 @@ object StedsnavnPopularityCalculator {
      * @param navneobjekttype The place type from GML (e.g., "by", "tettsted") - currently unused
      * @return Popularity score (40.0 for all types, matching kakka)
      */
-    fun calculatePopularity(navneobjekttype: String? = null): Double {
-        return DEFAULT_VALUE
-    }
+    fun calculatePopularity(navneobjekttype: String? = null): Double = DEFAULT_VALUE
 }

@@ -10,26 +10,26 @@ package no.entur.geocoder.converter.stedsnavn
  *
  * Reference: kakka/src/main/java/no/entur/kakka/geocoder/geojson/KartverketFeatureSpellingStatusCode.java
  */
-enum class StedsnavnSpellingStatus(val code: String, val description: String) {
+enum class StedsnavnSpellingStatus {
     /**
      * Vedtatt (Approved) - Officially approved place name
      */
-    VEDTATT("vedtatt", "Approved"),
+    vedtatt,
 
     /**
      * Godkjent (Approved) - Approved place name
      */
-    GODKJENT("godkjent", "Approved"),
+    godkjent,
 
     /**
      * Privat (Private) - Private place name (accepted)
      */
-    PRIVAT("privat", "Private"),
+    privat,
 
     /**
      * Samlevedtak (Collective decision) - Approved by collective decision
      */
-    SAMLEVEDTAK("samlevedtak", "Collective decision");
+    samlevedtak;
 
     companion object {
         /**
@@ -48,14 +48,8 @@ enum class StedsnavnSpellingStatus(val code: String, val description: String) {
          * @param status The spelling status code from GML (case-insensitive)
          * @return true if the status is accepted, false otherwise
          */
-        fun isAccepted(status: String?): Boolean {
-            if (status.isNullOrEmpty()) {
-                return false
-            }
+        fun isAccepted(status: String?): Boolean = entries.any { it.name == status?.lowercase() }
 
-            val normalizedStatus = status.trim().lowercase()
-            return entries.any { it.code == normalizedStatus }
-        }
 
         /**
          * Get the enum value for a spelling status code.
@@ -63,13 +57,6 @@ enum class StedsnavnSpellingStatus(val code: String, val description: String) {
          * @param status The spelling status code from GML (case-insensitive)
          * @return The enum value, or null if not accepted
          */
-        fun fromString(status: String?): StedsnavnSpellingStatus? {
-            if (status.isNullOrEmpty()) {
-                return null
-            }
-
-            val normalizedStatus = status.trim().lowercase()
-            return entries.find { it.code == normalizedStatus }
-        }
+        fun fromString(status: String?): StedsnavnSpellingStatus? = entries.find { it.name == status?.lowercase() }
     }
 }

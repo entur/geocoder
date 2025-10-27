@@ -16,31 +16,31 @@ package no.entur.geocoder.converter.stedsnavn
  *
  * Reference: kakka helm/kakka/env/values-kub-ent-*.yaml (pelias.geocoderPlaceTypeWhitelist)
  */
-enum class StedsnavnPlaceType(val typeName: String) {
+enum class StedsnavnPlaceType {
     /**
      * By (City/Town) - Largest settlement type
      */
-    BY("by"),
+    by,
 
     /**
      * Bydel (City district) - District within a city
      */
-    BYDEL("bydel"),
+    bydel,
 
     /**
      * Tettsted (Urban settlement) - Concentrated built-up area
      */
-    TETTSTED("tettsted"),
+    tettsted,
 
     /**
      * Tettsteddel (Small town part) - Part of a small town/settlement
      */
-    TETTSTEDDEL("tettsteddel"),
+    tettsteddel,
 
     /**
      * Tettbebyggelse (Built-up area) - Generic built-up area
      */
-    TETTBEBYGGELSE("tettbebyggelse");
+    tettbebyggelse;
 
     companion object {
         /**
@@ -49,14 +49,7 @@ enum class StedsnavnPlaceType(val typeName: String) {
          * @param type The place type from GML (case-insensitive)
          * @return true if the type is a target type, false otherwise
          */
-        fun isTarget(type: String?): Boolean {
-            if (type.isNullOrEmpty()) {
-                return false
-            }
-
-            val normalizedType = type.trim().lowercase()
-            return entries.any { it.typeName == normalizedType }
-        }
+        fun isTarget(type: String?): Boolean = entries.any { it.name == type?.lowercase() }
 
         /**
          * Get the enum value for a place type.
@@ -64,22 +57,13 @@ enum class StedsnavnPlaceType(val typeName: String) {
          * @param type The place type from GML (case-insensitive)
          * @return The enum value, or null if not a target type
          */
-        fun fromString(type: String?): StedsnavnPlaceType? {
-            if (type.isNullOrEmpty()) {
-                return null
-            }
-
-            val normalizedType = type.trim().lowercase()
-            return entries.find { it.typeName == normalizedType }
-        }
+        fun fromString(type: String?): StedsnavnPlaceType? = entries.find { it.name == type?.lowercase() }
 
         /**
          * Get all target type names as a set (for filtering).
          *
          * @return Set of target type names (lowercase)
          */
-        fun targetTypes(): Set<String> {
-            return entries.map { it.typeName }.toSet()
-        }
+        fun targetTypes(): Set<String> = entries.map { it.name }.toSet()
     }
 }
