@@ -55,7 +55,7 @@ jobs:
         run: ./gradlew --no-daemon :converter:build
 
       - name: Build and push Docker image
-        id: build-push
+        id: build_push
         if: inputs.build_import == true
         uses: ./.github/actions/build-push
         with:
@@ -67,8 +67,8 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
     outputs:
-      name_with_tag: ${{ steps.build-push.outputs.name_with_tag }}
-      image_tag: ${{ steps.build-push.outputs.image_tag }}
+      name_with_tag: ${{ steps.build_push.outputs.name_with_tag }}
+      image_tag: ${{ steps.build_push.outputs.image_tag }}
 
   photon:
     runs-on: ubuntu-latest
@@ -82,11 +82,11 @@ jobs:
       always() &&
       !cancelled() &&
       inputs.deploy_env != 'none' &&
-      (inputs.build_import == false || needs.import-build-push.result == 'success')
+      (inputs.build_import == false || needs.import.result == 'success')
 
     steps:
       - name: Build and push Docker image
-        id: build-push
+        id: build_push
         if: inputs.deploy_env != 'none'
         uses: ./.github/actions/build-push
         with:
@@ -99,7 +99,7 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
     outputs:
-      name_with_tag: ${{ steps.build-push.outputs.name_with_tag }}
+      name_with_tag: ${{ steps.build_push.outputs.name_with_tag }}
 
   dev-deploy:
     if: |
