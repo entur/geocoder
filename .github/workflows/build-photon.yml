@@ -37,6 +37,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      security-events: write
 
     steps:
       - name: Checkout code
@@ -66,6 +67,11 @@ jobs:
 
   photon:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+
     if: |
       always() &&
       !cancelled() &&
