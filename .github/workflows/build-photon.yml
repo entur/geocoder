@@ -31,15 +31,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
   import:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Lint
-        uses: entur/gha-docker/.github/workflows/lint.yml@v1
+      - name: Docker Lint
+        uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile.import
-          ignore: "DL3018,DL3059"
 
       - name: Checkout code
         uses: actions/checkout@v5
@@ -63,7 +63,7 @@ jobs:
           push: true
           run-group: 'grp-ubuntu-24.04-8core-x64'
 
-      - name: import-scan
+      - name: Docker Scan
         if: github.event_name != 'pull_request'
         uses: ./.github/actions/docker-scan
         with:
@@ -78,11 +78,10 @@ jobs:
       (inputs.build_import == false || needs.import-build-push.result == 'success')
 
     steps:
-      - name: Lint
-        uses: entur/gha-docker/.github/workflows/lint.yml@v1
+      - name: Docker Lint
+        uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile.photon
-          ignore: "DL3018,DL3059"
 
       - name: Build and push Docker image
         id: build-push
@@ -95,7 +94,7 @@ jobs:
           build_args: |
             IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import.outputs.image_tag || inputs.import_image_tag }}
 
-      - name: Scan
+      - name: Docker Scan
         uses: ./.github/actions/docker-scan
         with:
           image_name: "${{ steps.build-push.outputs.image_name }}:${{ steps.build-push.outputs.image_tag }}"

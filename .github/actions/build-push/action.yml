@@ -23,10 +23,10 @@ inputs:
 outputs:
   image_name:
     description: "Image name"
-    value: ${{ jobs.build-push.outputs.image_name }}
+    value: ${{ steps.build-push.outputs.image_name }}
   image_tag:
     description: "Image tag (git SHA)"
-    value: ${{ jobs.build-push.outputs.image_tag }}
+    value: ${{ steps.build-push.outputs.image_tag }}
 
 runs:
   using: 'composite'
@@ -53,6 +53,7 @@ runs:
       run: gcloud auth configure-docker eu.gcr.io --quiet
 
     - name: Build and push to GCR
+      id: build-push
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.context }}

@@ -13,16 +13,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: Dockerfile.proxy
 
-  build-push:
-    needs: lint
+  proxy:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Docker Lint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile.proxy
+
       - name: Checkout code
         uses: actions/checkout@v5
 
@@ -55,7 +55,7 @@ jobs:
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
-    needs: build-push
+    needs: proxy
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
@@ -71,7 +71,7 @@ jobs:
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
-    needs: [build-push, deploy-dev]
+    needs: [proxy, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
