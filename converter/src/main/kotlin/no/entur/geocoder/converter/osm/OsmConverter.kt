@@ -382,13 +382,15 @@ class OsmConverter : Converter {
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
         tags: Map<String, String>
-    ): String =
-        when {
+    ): String {
+        val addrCountry = tags["addr:country"]
+        return when {
             county?.countryCode != null -> county.countryCode.lowercase()
             municipality?.countryCode != null -> municipality.countryCode.lowercase()
-            tags["addr:country"] != null -> tags["addr:country"]!!
+            addrCountry != null -> addrCountry
             else -> "no"
         }
+    }
 
     /**
      * Builds the list of category tags for the POI.

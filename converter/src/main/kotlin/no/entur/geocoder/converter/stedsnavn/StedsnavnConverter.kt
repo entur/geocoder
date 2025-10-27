@@ -170,15 +170,15 @@ class StedsnavnConverter : Converter {
 
         return if (isTargetType && hasAcceptedStatus && hasRequiredFields) {
             StedsnavnEntry(
-                lokalId = lokalId!!,
-                navnerom = navnerom!!,
+                lokalId = lokalId,
+                navnerom = navnerom,
                 versjonId = versjonId,
                 oppdateringsdato = oppdateringsdato,
-                stedsnavn = stedsnavn!!,
-                kommunenummer = kommunenummer!!,
-                kommunenavn = kommunenavn!!,
-                fylkesnummer = fylkesnummer!!,
-                fylkesnavn = fylkesnavn!!,
+                stedsnavn = stedsnavn,
+                kommunenummer = kommunenummer,
+                kommunenavn = kommunenavn,
+                fylkesnummer = fylkesnummer,
+                fylkesnavn = fylkesnavn,
                 matrikkelId = matrikkelId,
                 adressekode = adressekode,
                 navneobjekttype = navneobjekttype,

@@ -87,7 +87,7 @@ class StedsnavnConverterTest {
         val jomna = entries.find { it.stedsnavn == "Jømna" }
 
         assertNotNull(jomna, "Should find Jømna tettbebyggelse")
-        assertEquals("22874", jomna!!.lokalId)
+        assertEquals("22874", jomna.lokalId)
         assertEquals("https://data.geonorge.no/sosi/stedsnavn", jomna.navnerom)
         assertEquals("3420", jomna.kommunenummer)
         assertEquals("Elverum", jomna.kommunenavn)
@@ -198,7 +198,7 @@ class StedsnavnConverterTest {
         assertNotNull(address, "Address should not be null")
         assertNotNull(address.city, "City should not be null")
 
-        val city = address.city ?: error("City should not be null")
+        val city = address.city
         val firstChar = city.first()
         assertTrue(firstChar.isUpperCase(), "First character of city name should be uppercase")
     }
@@ -208,7 +208,7 @@ class StedsnavnConverterTest {
         // All entries in test file should have spelling status since they passed filtering
         val jomna = entries.find { it.stedsnavn == "Jømna" }
         assertNotNull(jomna, "Should find Jømna entry")
-        assertNotNull(jomna!!.skrivemåtestatus, "Should have skrivemåtestatus field")
+        assertNotNull(jomna.skrivemåtestatus, "Should have skrivemåtestatus field")
         assertTrue(
             StedsnavnSpellingStatus.isAccepted(jomna.skrivemåtestatus),
             "Parsed entry should have accepted spelling status"
@@ -234,8 +234,8 @@ class StedsnavnConverterTest {
         assertNotNull(byEntry, "Should have at least one 'by' entry")
         assertNotNull(tettbebyggelseEntry, "Should have at least one 'tettbebyggelse' entry")
 
-        val byPlace = converter.convertToNominatim(byEntry!!)
-        val tettbebyggelsePlace = converter.convertToNominatim(tettbebyggelseEntry!!)
+        val byPlace = converter.convertToNominatim(byEntry)
+        val tettbebyggelsePlace = converter.convertToNominatim(tettbebyggelseEntry)
 
         val byImportance = byPlace.content.first().importance
         val tettbebyggelseImportance = tettbebyggelsePlace.content.first().importance
@@ -253,7 +253,7 @@ class StedsnavnConverterTest {
         val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
         assertNotNull(tettbebyggelseEntry, "Should have tettbebyggelse entry")
 
-        val popularity = StedsnavnPopularityCalculator.calculatePopularity(tettbebyggelseEntry!!.navneobjekttype)
+        val popularity = StedsnavnPopularityCalculator.calculatePopularity(tettbebyggelseEntry.navneobjekttype)
         assertEquals(40.0, popularity, "tettbebyggelse should have popularity of 40 (matching kakka)")
 
         val byEntry = entries.find { it.navneobjekttype == "by" }
