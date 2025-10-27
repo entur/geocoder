@@ -1,30 +1,37 @@
-FROM gradle:9.1-jdk21-alpine AS build-image
+FROM bellsoft/liberica-runtime-container:jre-21-musl AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 
-COPY . ./
-RUN gradle --no-daemon :converter:build
+COPY ./converter/build/libs/converter-all.jar convert.jar
+COPY ./converter/src/test/resources/oslo-center.osm.pbf oslo-center.osm.pbf
 
-RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip | jar -xv
-RUN curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip | jar -xv
-RUN ./geocoder-convert -m Basis*/*.csv -g Basisdata_03_Oslo_25833_Stedsnavn_GML.gml -o nominatim.ndjson && \
-    rm -rf Basis*
+RUN apk add curl
 
-RUN curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
-RUN ./geocoder-convert -a -s tiamat*.xml -o nominatim.ndjson && \
-    rm tiamat*.xml
+ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip \
+    STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip \
+    TIAMAT_URL=https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip \
+    PHOTON_URL=https://github.com/entur/photon/releases/download/latest-with-prs-2025-10-21/photon-0.7.0.jar
 
-RUN ./geocoder-convert -a -p converter/src/test/resources/oslo-center.osm.pbf -o nominatim.ndjson && \
-    rm converter/src/test/resources/oslo-center.osm.pbf
+RUN curl -sfL $ADRESSE_URL | unzip -p - > adresse.csv && \
+    curl -sfL $STEDSNAVN_URL | unzip -p - > stedsnavn.gml && \
+    java -jar convert.jar -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson && \
+    rm adresse.csv stedsnavn.gml
 
-RUN curl -sfLo photon.jar https://github.com/entur/photon/releases/download/latest-with-prs-2025-10-21/photon-0.7.0.jar
+RUN curl -sfL $TIAMAT_URL -o tiamat.zip && \
+    unzip -p tiamat.zip > tiamat.xml && \
+    java -jar convert.jar -a -s tiamat.xml -o nominatim.ndjson && \
+    rm tiamat.*
 
-RUN exec java -jar photon.jar \
-    -nominatim-import \
-    -import-file nominatim.ndjson \
-    -languages no,en \
-    -extra-tags ALL
+RUN java -jar convert.jar -a -p oslo-center.osm.pbf -o nominatim.ndjson && \
+    rm oslo-center.osm.pbf
+
+RUN curl -sfL $PHOTON_URL -o photon.jar && \
+    java -jar photon.jar \
+        -nominatim-import \
+        -import-file nominatim.ndjson \
+        -languages no,en \
+        -extra-tags ALL
 
 FROM scratch
 
