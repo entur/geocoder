@@ -8,11 +8,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Path
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class StedsnavnConverterTest {
     @TempDir
@@ -25,18 +21,36 @@ class StedsnavnConverterTest {
     @BeforeEach
     fun setup() {
         converter = StedsnavnConverter()
-        inputFile = getTestFile()
+    }
+
+    fun parseDefault() {
+        inputFile = getTestFile("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml")
         entries = converter.parseGml(inputFile).toList()
     }
 
-    private fun getTestFile(): File {
-        val resource = javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml")
-            ?: error("Test file not found")
+    private fun getTestFile(file: String): File {
+        val resource = javaClass.classLoader.getResource(file) ?: error("Test file not found")
         return File(resource.file)
     }
 
     @Test
+    fun `Should find Stedsnavn even though one skrivemåtestatus is historisk`() {
+        inputFile = getTestFile("bydel.gml")
+        entries = converter.parseGml(inputFile).toList()
+
+        assertEquals(2, entries.size)
+
+        val outputFile = tempDir.resolve("output.json").toFile()
+        converter.convert(inputFile, outputFile, isAppending = false)
+
+        assertTrue(outputFile.readText().contains("Grünerløkka"))
+        assertEquals(outputFile.readLines().size, 3)
+
+    }
+
+    @Test
     fun `should convert stedsnavn GML to nominatim json`() {
+        parseDefault()
         val outputFile = tempDir.resolve("output.json").toFile()
 
         converter.convert(inputFile, outputFile, isAppending = false)
@@ -77,6 +91,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should parse correct number of entries with target navneobjekttype`() {
+        parseDefault()
         assertTrue(entries.isNotEmpty(), "Should parse at least one entry")
         // Test file contains: 1 "by" (Elverum) + 2 "tettbebyggelse" (Jmna, Hanstad) = 3 entries
         assertEquals(3, entries.size, "Should parse exactly 3 entries with target navneobjekttype")
@@ -84,6 +99,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should parse Jømna tettbebyggelse correctly`() {
+        parseDefault()
         val jomna = entries.find { it.stedsnavn == "Jømna" }
 
         assertNotNull(jomna, "Should find Jømna tettbebyggelse")
@@ -101,6 +117,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should convert coordinates from UTM33 to WGS84`() {
+        parseDefault()
         val firstEntry = entries.first()
         val nominatimPlace = converter.convertToNominatim(firstEntry)
         val placeContent = nominatimPlace.content.first()
@@ -120,6 +137,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should generate correct ID format`() {
+        parseDefault()
         val entry = entries.first()
         val nominatimPlace = converter.convertToNominatim(entry)
         val extra = nominatimPlace.content.first().extra
@@ -131,6 +149,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should have correct locality and county GID format`() {
+        parseDefault()
         val entry = entries.first()
         val nominatimPlace = converter.convertToNominatim(entry)
         val extra = nominatimPlace.content.first().extra
@@ -149,6 +168,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should only parse entries with target navneobjekttype`() {
+        parseDefault()
         val targetTypes = setOf("tettsteddel", "bydel", "by", "tettsted", "tettbebyggelse")
         entries.forEach { entry ->
             assertTrue(
@@ -160,6 +180,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should filter out administrative types like kommune`() {
+        parseDefault()
         // The test file contains navneobjekttype="kommune" (administrative division)
         // This should be filtered out since it's not in the target types
         val kommuneEntry = entries.find { it.navneobjekttype == "kommune" }
@@ -177,6 +198,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should parse all required fields`() {
+        parseDefault()
         entries.forEach { entry ->
             assertNotNull(entry.lokalId, "lokalId should not be null")
             assertNotNull(entry.navnerom, "navnerom should not be null")
@@ -191,6 +213,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should titleize municipality name in address`() {
+        parseDefault()
         val entry = entries.first()
         val nominatimPlace = converter.convertToNominatim(entry)
         val address = nominatimPlace.content.first().address
@@ -205,6 +228,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should parse and store skrivemåtestatus field`() {
+        parseDefault()
         // All entries in test file should have spelling status since they passed filtering
         val jomna = entries.find { it.stedsnavn == "Jømna" }
         assertNotNull(jomna, "Should find Jømna entry")
@@ -217,6 +241,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should filter out entries with rejected spelling status`() {
+        parseDefault()
         // All parsed entries should have accepted spelling status
         entries.forEach { entry ->
             assertTrue(
@@ -228,6 +253,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should use flat popularity for all place types matching kakka`() {
+        parseDefault()
         val byEntry = entries.find { it.navneobjekttype == "by" }
         val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
 
@@ -250,6 +276,7 @@ class StedsnavnConverterTest {
 
     @Test
     fun `should use correct popularity values from calculator`() {
+        parseDefault()
         val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
         assertNotNull(tettbebyggelseEntry, "Should have tettbebyggelse entry")
 

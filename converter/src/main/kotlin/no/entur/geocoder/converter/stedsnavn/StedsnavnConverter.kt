@@ -112,7 +112,12 @@ class StedsnavnConverter : Converter {
                         }
                     }
                     "navneobjekttype" -> navneobjekttype = readElementText(reader)
-                    "skrivemåtestatus" -> skrivemåtestatus = readElementText(reader)
+                    "skrivemåtestatus" -> {
+                        val text = readElementText(reader)
+                        if (!insideAnnenSkrivemåte && skrivemåtestatus == null) {
+                            skrivemåtestatus = text
+                        }
+                    }
                     "matrikkelId" -> matrikkelId = readElementText(reader)
                     "adressekode" -> adressekode = readElementText(reader)
                     "kommunenummer" -> kommunenummer = readElementText(reader)
