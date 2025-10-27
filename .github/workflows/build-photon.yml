@@ -57,9 +57,6 @@ jobs:
       - name: Build converter JAR
         run: ./gradlew --no-daemon :converter:build
 
-      - name: List all files
-        run: find . -type f
-
       - name: Build and push Docker image
         id: build-push
         if: inputs.build_import == true

@@ -61,7 +61,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.push }}
         tags: |
-          eu.gcr.io/entur-system-1287${{ inputs.image_name }}:${{ github.sha }}
+          eu.gcr.io/entur-system-1287/${{ inputs.image_name }}:${{ github.sha }}
           eu.gcr.io/entur-system-1287/${{ inputs.image_name }}:latest
         build-args: ${{ inputs.build_args }}
         provenance: false
