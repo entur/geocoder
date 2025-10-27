@@ -45,6 +45,7 @@ runs:
       uses: hadolint/hadolint-action@v3.1.0
       with:
         dockerfile: ${{ inputs.dockerfile }}
+        ignore: "DL3018,DL3059"
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3

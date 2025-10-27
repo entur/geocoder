@@ -5,7 +5,7 @@ SHELL ["/bin/ash", "-co", "pipefail"]
 
 COPY ./converter/build/libs/converter-all.jar convert.jar
 
-RUN apk add curl
+RUN apk add --no-cache curl
 
 ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip \
     STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip \
