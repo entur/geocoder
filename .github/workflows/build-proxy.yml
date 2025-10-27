@@ -46,6 +46,10 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
+    outputs:
+      name_with_tag: ${{ steps.build-push.outputs.name_with_tag }}
+
+
   deploy-dev:
     if: |
       !cancelled() &&

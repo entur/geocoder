@@ -66,6 +66,10 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
+    outputs:
+      name_with_tag: ${{ steps.build-push.outputs.name_with_tag }}
+      image_tag: ${{ steps.build-push.outputs.image_tag }}
+
   photon:
     runs-on: ubuntu-latest
     permissions:
@@ -93,6 +97,9 @@ jobs:
             IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import.outputs.image_tag || inputs.import_image_tag }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+
+    outputs:
+      name_with_tag: ${{ steps.build-push.outputs.name_with_tag }}
 
   dev-deploy:
     if: |
