@@ -31,19 +31,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Import image jobs
-  import-lint:
-    if: inputs.build_import == true
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: Dockerfile.import
-      ignore: "DL3018,DL3059"
-
-  import-build-push:
-    needs: import-lint
+  import:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Lint
+        uses: entur/gha-docker/.github/workflows/lint.yml@v1
+        with:
+          dockerfile: Dockerfile.import
+          ignore: "DL3018,DL3059"
+
       - name: Checkout code
         uses: actions/checkout@v5
 
@@ -54,68 +51,62 @@ jobs:
           java-version: '21'
 
       - name: Build converter JAR
-        run: ./gradlew :converter:build
+        run: ./gradlew --no-daemon :converter:build
 
       - name: Build and push Docker image
+        id: build-push
         if: inputs.build_import == true
-        uses: "./.github/workflows/_build-push.yml"
+        uses: ./.github/actions/build-push
         with:
           image_name: geocoder-import
           dockerfile: Dockerfile.import
           push: true
           run-group: 'grp-ubuntu-24.04-8core-x64'
 
-  import-scan:
-    if: |
-      !cancelled() &&
-      inputs.build_import == true &&
-      needs.import-build-push.result == 'success'
-    needs: [import-build-push]
-    uses: "./.github/workflows/_docker-scan.yml"
-    with:
-      image_name: "${{ needs.import-build-push.outputs.image_name }}:${{ needs.import-build-push.outputs.image_tag }}"
+      - name: import-scan
+        if: github.event_name != 'pull_request'
+        uses: ./.github/actions/docker-scan
+        with:
+          image_name: "${{ steps.build-push.outputs.image_name }}:${{ steps.build-push.outputs.image_tag }}"
 
-  # Photon image jobs
-  photon-lint:
-    if: inputs.deploy_env != 'none'
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: Dockerfile.photon
-      ignore: "DL3018,DL3059"
-
-  photon-build-push:
+  photon:
+    runs-on: ubuntu-latest
     if: |
       always() &&
       !cancelled() &&
       inputs.deploy_env != 'none' &&
       (inputs.build_import == false || needs.import-build-push.result == 'success')
-    needs: [photon-lint, import-build-push]
-    uses: "./.github/workflows/_build-push.yml"
-    with:
-      image_name: geocoder-photon
-      dockerfile: Dockerfile.photon
-      push: ${{ inputs.deploy_env != 'none' }}
-      build_args: |
-        IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
 
-  photon-scan:
-    if: |
-      !cancelled() &&
-      needs.photon-build-push.result == 'success' &&
-      inputs.deploy_env != 'none'
-    needs: [photon-build-push]
-    uses: "./.github/workflows/_docker-scan.yml"
-    with:
-      image_name: "${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}"
+    steps:
+      - name: Lint
+        uses: entur/gha-docker/.github/workflows/lint.yml@v1
+        with:
+          dockerfile: Dockerfile.photon
+          ignore: "DL3018,DL3059"
 
-  # Deploy jobs
+      - name: Build and push Docker image
+        id: build-push
+        if: inputs.deploy_env != 'none'
+        uses: ./.github/actions/build-push
+        with:
+          image_name: geocoder-photon
+          dockerfile: Dockerfile.photon
+          push: ${{ inputs.deploy_env != 'none' }}
+          build_args: |
+            IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import.outputs.image_tag || inputs.import_image_tag }}
+
+      - name: Scan
+        uses: ./.github/actions/docker-scan
+        with:
+          image_name: "${{ steps.build-push.outputs.image_name }}:${{ steps.build-push.outputs.image_tag }}"
+
   dev-deploy:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.photon-build-push.result == 'success' &&
       (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
-    needs: [photon-build-push]
+    needs: [photon]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
@@ -131,7 +122,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       needs.photon-build-push.result == 'success' &&
       (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
-    needs: [photon-build-push]
+    needs: [photon]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst

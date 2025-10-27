@@ -33,24 +33,21 @@ jobs:
           java-version: '21'
 
       - name: Build everything
-        run: ./gradlew build
+        run: ./gradlew --no-daemon build
 
       - name: Build and push Docker image
-        uses: "./.github/workflows/_build-push.yml"
+        id: build-push
+        uses: ./.github/actions/build-push
         with:
           image_name: geocoder-proxy
           dockerfile: Dockerfile.proxy
           push: ${{ github.event_name != 'pull_request' }}
 
-  scan:
-    if: |
-      !cancelled() &&
-      github.event_name != 'pull_request' &&
-      needs.build-push.result == 'success'
-    needs: [build-push]
-    uses: "./.github/workflows/_docker-scan.yml"
-    with:
-      image_name: "${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}"
+      - name: Scan
+        if: github.event_name != 'pull_request'
+        uses: ./.github/actions/docker-scan
+        with:
+          image_name: "${{ steps.build-push.outputs.image_name }}:${{ steps.build-push.outputs.image_tag }}"
 
   deploy-dev:
     if: |
