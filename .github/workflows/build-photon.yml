@@ -90,6 +90,9 @@ jobs:
       (inputs.build_import == false || needs.import.result == 'success')
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
       - name: Build and push Docker image
         id: build_push
         if: inputs.deploy_env != 'none'
