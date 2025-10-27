@@ -38,6 +38,7 @@ jobs:
       contents: read
       id-token: write
       security-events: write
+      actions: read
 
     steps:
       - name: Checkout code
@@ -71,6 +72,7 @@ jobs:
       contents: read
       id-token: write
       security-events: write
+      actions: read
 
     if: |
       always() &&
