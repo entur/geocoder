@@ -20,6 +20,12 @@ inputs:
     description: "The run group to use for the job"
     required: false
     default: grp-ubuntu-24.04-2core-x64
+  workload_identity_provider:
+    description: "GCP Workload Identity Provider"
+    required: true
+  service_account:
+    description: "GCP Service Account"
+    required: true
 outputs:
   image_name:
     description: "Image name"
@@ -44,8 +50,8 @@ runs:
       if: ${{ inputs.push == 'true' }}
       uses: google-github-actions/auth@v2
       with:
-        workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-        service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
 
     - name: Configure Docker for GCR
       if: ${{ inputs.push == 'true' }}

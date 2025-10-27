@@ -49,6 +49,7 @@ jobs:
         with:
           distribution: 'liberica'
           java-version: '21'
+          cache: 'gradle'
 
       - name: Build converter JAR
         run: ./gradlew --no-daemon :converter:build
@@ -62,6 +63,8 @@ jobs:
           dockerfile: Dockerfile.import
           push: true
           run-group: 'grp-ubuntu-24.04-8core-x64'
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
       - name: Docker Scan
         if: github.event_name != 'pull_request'
@@ -93,6 +96,8 @@ jobs:
           push: ${{ inputs.deploy_env != 'none' }}
           build_args: |
             IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import.outputs.image_tag || inputs.import_image_tag }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
       - name: Docker Scan
         uses: ./.github/actions/docker-scan
