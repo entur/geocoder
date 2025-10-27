@@ -33,11 +33,19 @@ outputs:
   image_tag:
     description: "Image tag (git SHA)"
     value: ${{ steps.build-push.outputs.image_tag }}
+  name_with_tag:
+    description: "Image name with tag"
+    value: ${{ steps.build-push.outputs.image_name }}:${{ steps.build-push.outputs.image_tag }}
 
 runs:
   using: 'composite'
 
   steps:
+    - name: Docker Lint
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: ${{ inputs.dockerfile }}
+
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -65,3 +73,19 @@ runs:
           eu.gcr.io/entur-system-1287/${{ inputs.image_name }}:latest
         build-args: ${{ inputs.build_args }}
         provenance: false
+
+    - name: Scan for vulnerabilities
+      uses: anchore/scan-action@v7
+      id: scan
+      with:
+        image: eu.gcr.io/entur-system-1287/${{ inputs.image_name }}
+        by-cve: true
+        fail-build: false
+        severity-cutoff: critical
+
+    - name: Upload vulnerability report to GitHub Security
+      uses: github/codeql-action/upload-sarif@v4
+      if: always()
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif }}
+        category: 'grype-scan'
