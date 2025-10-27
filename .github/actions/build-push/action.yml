@@ -31,7 +31,7 @@ outputs:
     description: "Image name"
     value: ${{ steps.set_outputs.outputs.image_name }}
   image_tag:
-    description: "Image tag (short SHA)"
+    description: "Image tag"
     value: ${{ steps.set_outputs.outputs.image_tag }}
   name_with_tag:
     description: "Image name with tag"
@@ -78,10 +78,10 @@ runs:
       id: set_outputs
       shell: bash
       run: |
-        short_sha="${GITHUB_SHA::7}"
+        sha="${GITHUB_SHA}"
         echo "image_name=${{ inputs.image_name }}" >> $GITHUB_OUTPUT
-        echo "image_tag=$short_sha" >> $GITHUB_OUTPUT
-        echo "name_with_tag=${{ inputs.image_name }}:$short_sha" >> $GITHUB_OUTPUT
+        echo "image_tag=$sha" >> $GITHUB_OUTPUT
+        echo "name_with_tag=${{ inputs.image_name }}:$sha" >> $GITHUB_OUTPUT
 
     - name: Scan for vulnerabilities
       uses: anchore/scan-action@v7
