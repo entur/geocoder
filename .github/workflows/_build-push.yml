@@ -27,7 +27,7 @@ on:
     outputs:
       image_tag:
         description: "Image tag (git SHA)"
-        value: ${{ jobs.build-push.outputs.image_tag }}
+        value: ${{ env.image_tag }}
 
 env:
   REGISTRY: eu.gcr.io/entur-system-1287
