@@ -13,18 +13,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: Dockerfile.proxy
 
-  proxy:
+  build-push:
+    needs: lint
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      id-token: write
-      security-events: write
-      actions: read
-
-    outputs:
-      name_with_tag: ${{ steps.build_push.outputs.name_with_tag }}
 
     steps:
       - name: Checkout code
@@ -35,34 +31,38 @@ jobs:
         with:
           distribution: 'liberica'
           java-version: '21'
-          cache: 'gradle'
 
       - name: Build everything
-        run: ./gradlew --no-daemon build
+        run: ./gradlew build
 
       - name: Build and push Docker image
-        id: build_push
-        uses: ./.github/actions/build-push
+        uses: "./.github/workflows/_build-push.yml"
         with:
           image_name: geocoder-proxy
           dockerfile: Dockerfile.proxy
           push: ${{ github.event_name != 'pull_request' }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
-
+  scan:
+    if: |
+      !cancelled() &&
+      github.event_name != 'pull_request' &&
+      needs.build-push.result == 'success'
+    needs: [build-push]
+    uses: "./.github/workflows/_docker-scan.yml"
+    with:
+      image_name: "${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}"
 
   deploy-dev:
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      needs.proxy.result == 'success'
-    needs: proxy
+      needs.build-push.result == 'success'
+    needs: build-push
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: ${{ needs.proxy.outputs.name_with_tag }}
+      image: ${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -73,12 +73,12 @@ jobs:
       !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      needs.proxy.result == 'success'
-    needs: [proxy, deploy-dev]
+      needs.build-push.result == 'success'
+    needs: [build-push, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: ${{ needs.proxy.outputs.name_with_tag }}
+      image: ${{ needs.build-push.outputs.image_name }}:${{ needs.build-push.outputs.image_tag }}
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy

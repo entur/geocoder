@@ -6,7 +6,7 @@ SHELL ["/bin/ash", "-co", "pipefail"]
 COPY ./converter/build/libs/converter-all.jar convert.jar
 COPY ./converter/src/test/resources/oslo-center.osm.pbf oslo-center.osm.pbf
 
-RUN apk add --no-cache curl
+RUN apk add curl
 
 ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip \
     STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip \

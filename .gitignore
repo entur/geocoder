@@ -3,7 +3,7 @@ build
 /.kotlin/
 /.idea/
 **/charts/*.tgz
-
+.DS_Store
 /tiamat*xml
 /*.osm.pbf
 /*.osm.json
