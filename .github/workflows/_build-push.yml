@@ -53,7 +53,7 @@ jobs:
         shell: bash
         run: |
           branch=$(git branch --show-current | sed 's/[^a-zA-Z0-9_-]+/_/g')
-          echo "image_tag=${branch}.$(date +'%Y%m%d').${GITHUB_SHA:0:7}" > $GITHUB_ENV
+          echo "image_tag=${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}" > $GITHUB_ENV
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
