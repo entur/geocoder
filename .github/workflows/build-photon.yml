@@ -57,7 +57,7 @@ jobs:
     needs: [import-build-push]
     uses: "./.github/workflows/_docker-scan.yml"
     with:
-      image_name: "${{ needs.import-build-push.outputs.image_name }}:${{ needs.import-build-push.outputs.image_tag }}"
+      image: "geocoder-import:${{ needs.import-build-push.outputs.image_tag }}"
 
   # Photon image jobs
   photon-lint:
@@ -90,7 +90,7 @@ jobs:
     needs: [photon-build-push]
     uses: "./.github/workflows/_docker-scan.yml"
     with:
-      image_name: "${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.photon-build-push.outputs.image_tag }}"
 
   # Deploy jobs
   dev-deploy:
@@ -103,7 +103,7 @@ jobs:
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: ${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}
+      image: "geocoder-photon:${{ needs.photon-build-push.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -119,7 +119,7 @@ jobs:
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: ${{ needs.photon-build-push.outputs.image_name }}:${{ needs.photon-build-push.outputs.image_tag }}
+      image: "geocoder-photon:${{ needs.photon-build-push.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon

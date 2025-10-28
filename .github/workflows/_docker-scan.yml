@@ -3,7 +3,7 @@ name: "[Internal] Docker Security Scan"
 on:
   workflow_call:
     inputs:
-      image_name:
+      image:
         description: "Image name with tag (e.g. image:tag)"
         type: string
         required: true
@@ -34,13 +34,13 @@ jobs:
         run: gcloud auth configure-docker eu.gcr.io --quiet
 
       - name: Pull image from GCR
-        run: docker pull ${{ env.REGISTRY }}/${{ inputs.image_name }}
+        run: docker pull ${{ env.REGISTRY }}/${{ inputs.image }}
 
       - name: Scan for vulnerabilities
         uses: anchore/scan-action@v7
         id: scan
         with:
-          image: ${{ env.REGISTRY }}/${{ inputs.image_name }}
+          image: ${{ env.REGISTRY }}/${{ inputs.image }}
           by-cve: true
           fail-build: false
           severity-cutoff: critical

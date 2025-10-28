@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       image_name:
-        description: "Docker image name (defaults to repository name)"
+        description: "Docker image name"
         type: string
-        required: false
+        required: true
       dockerfile:
         description: "Path to Dockerfile"
         type: string
@@ -15,31 +15,22 @@ on:
         description: "Build arguments (KEY=VALUE, one per line)"
         type: string
         required: false
-      context:
-        description: "Build context"
-        type: string
-        default: "."
       push:
         description: "Push image to registry"
         type: boolean
-        default: true
+        default: false
       run-group:
         description: "The run group to use for the job"
         type: string
         required: false
         default: grp-ubuntu-24.04-2core-x64
     outputs:
-      image_name:
-        description: "Image name"
-        value: ${{ jobs.build-push.outputs.image_name }}
       image_tag:
         description: "Image tag (git SHA)"
         value: ${{ jobs.build-push.outputs.image_tag }}
 
 env:
   REGISTRY: eu.gcr.io/entur-system-1287
-  IMAGE_NAME: ${{ inputs.image_name }}
-  DOCKERFILE: ${{ inputs.dockerfile }}
 
 jobs:
   build-push:
@@ -51,14 +42,11 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      image_name: ${{ env.IMAGE_NAME }}
       image_tag: ${{ github.sha }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-        with:
-          submodules: recursive
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -77,11 +65,11 @@ jobs:
       - name: Build and push to GCR
         uses: docker/build-push-action@v6
         with:
-          context: ${{ inputs.context }}
-          file: ${{ env.DOCKERFILE }}
+          context: .
+          file: ${{ inputs.image_name }}
           push: ${{ inputs.push }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ inputs.image_name }}:latest
           build-args: ${{ inputs.build_args }}
           provenance: false
