@@ -110,6 +110,15 @@ jobs:
       release_name: geocoder-photon
     secrets: inherit
 
+  acceptance-tests-dev:
+    if: |
+      !cancelled() &&
+      needs.dev-deploy.result == 'success'
+    needs: dev-deploy
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: dev
+
   tst-deploy:
     if: |
       !cancelled() &&
@@ -125,3 +134,12 @@ jobs:
       namespace: geocoder
       release_name: geocoder-photon
     secrets: inherit
+
+  acceptance-tests-staging:
+    if: |
+      !cancelled() &&
+      needs.tst-deploy.result == 'success'
+    needs: tst-deploy
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: staging
