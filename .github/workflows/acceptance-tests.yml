@@ -39,8 +39,11 @@ jobs:
         id: tests
         working-directory: acceptance-tests
         run: |
+          set +e
           npm run v2${{ github.event.inputs.environment }} 2>&1 | tee test-output.log
-        continue-on-error: true
+          TEST_EXIT_CODE=$?
+          echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
+          exit 0
 
       - name: Upload test results
         if: always()
@@ -61,5 +64,7 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail workflow if tests failed
-        if: steps.tests.outcome == 'failure'
-        run: exit 1
+        if: always() && steps.tests.outputs.exit_code != '0'
+        run: |
+          echo "Tests failed with exit code ${{ steps.tests.outputs.exit_code }}"
+          exit 1
