@@ -48,6 +48,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Set image tag variable
+        id: set-image-tag
+        shell: bash
+        run: |
+          branch=$(git branch --show-current | sed 's/[^a-zA-Z0-9_-]+/_/g')
+          echo "image_tag=${branch}.$(date +'%Y%m%d').${GITHUB_SHA:0:7}" > $GITHUB_ENV
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -69,7 +76,7 @@ jobs:
           file: ${{ inputs.image_name }}
           push: ${{ inputs.push }}
           tags: |
-            ${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ env.image_tag }}
             ${{ env.REGISTRY }}/${{ inputs.image_name }}:latest
           build-args: ${{ inputs.build_args }}
           provenance: false
