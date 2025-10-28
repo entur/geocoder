@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ${{ inputs.image_name }}
+          file: ${{ inputs.dockerfile }}
           push: ${{ inputs.push }}
           tags: |
             ${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ env.image_tag }}
