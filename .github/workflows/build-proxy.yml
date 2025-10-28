@@ -32,8 +32,8 @@ jobs:
           distribution: 'liberica'
           java-version: '21'
 
-      - name: Build everything
-        run: ./gradlew build
+      - name: Build converter JAR
+        run: ./gradlew :converter:build
 
       - name: Build and push Docker image
         uses: "./.github/workflows/_build-push.yml"
