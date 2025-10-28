@@ -53,6 +53,17 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
+  acceptance-tests-dev:
+    if: |
+      !cancelled() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.deploy-dev.result == 'success'
+    needs: deploy-dev
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: dev
+
   deploy-tst:
     if: |
       !cancelled() &&
@@ -68,5 +79,16 @@ jobs:
       namespace: geocoder
       release_name: geocoder-proxy
     secrets: inherit
+
+  acceptance-tests-staging:
+    if: |
+      !cancelled() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.deploy-tst.result == 'success'
+    needs: deploy-tst
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: staging
 
 
