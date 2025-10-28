@@ -54,7 +54,7 @@ jobs:
           java-version: '21'
 
       - name: Build converter JAR
-        run: ./gradlew :converter:build
+        run: ./gradlew --no-daemon :converter:build
 
       - name: Build and push Docker image
         if: inputs.build_import == true
