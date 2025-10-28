@@ -1,7 +1,13 @@
-FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
+FROM gradle:9.1-jdk21-alpine AS build-image
 
 WORKDIR /srv
-COPY ./proxy/build/libs/proxy-all.jar proxy.jar
+COPY . ./
+RUN gradle --no-daemon :proxy:build
+
+
+FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
+WORKDIR /srv
+COPY --from=build-image /srv/proxy/build/libs/proxy-all.jar proxy.jar
 RUN chown -R 1000:1000 /srv
 USER 1000:1000
 

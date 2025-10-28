@@ -1,12 +1,10 @@
-FROM bellsoft/liberica-runtime-container:jre-21-musl AS build-image
+FROM gradle:9.1-jdk21-alpine AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 
-COPY ./converter/build/libs/converter-all.jar convert.jar
-COPY ./converter/src/test/resources/oslo-center.osm.pbf oslo-center.osm.pbf
-
-RUN apk add --no-cache curl
+COPY . ./
+RUN gradle --no-daemon :converter:build
 
 ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip \
     STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip \

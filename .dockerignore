@@ -1,3 +1,8 @@
 *
+!gradle**
+!**/src/**
+!**.gradle.kts
+!.editorconfig
 !converter/src/test/resources/oslo-center.osm.pbf
 !*/build/libs/*-all.jar
+!geocoder-convert
