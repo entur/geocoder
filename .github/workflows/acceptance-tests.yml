@@ -46,7 +46,7 @@ jobs:
         working-directory: acceptance-tests
         run: |
           set +e
-          npm run v2${{ github.event.inputs.environment }} 2>&1 | tee test-output.log
+          npm run v2${{ inputs.environment }} 2>&1 | tee test-output.log
           TEST_EXIT_CODE=$?
           echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
           exit 0
@@ -55,7 +55,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: test-results-v2${{ github.event.inputs.environment }}
+          name: test-results-v2${{ inputs.environment }}
           path: acceptance-tests/test-output.log
           retention-days: 30
 
@@ -63,7 +63,7 @@ jobs:
         if: always()
         working-directory: acceptance-tests
         run: |
-          echo "## Acceptance Test Results - v2${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "## Acceptance Test Results - v2${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           cat test-output.log >> $GITHUB_STEP_SUMMARY
