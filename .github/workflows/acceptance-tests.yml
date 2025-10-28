@@ -29,6 +29,7 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: acceptance-tests/package-lock.json
 
       - name: Install dependencies
         working-directory: acceptance-tests
