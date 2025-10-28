@@ -34,8 +34,7 @@ jobs:
 
   import:
     runs-on: ubuntu-latest
-    if: inputs.build_import == true
-
+    # Always runs so 'photon' can safely depend on it
     permissions:
       contents: read
       id-token: write
@@ -43,14 +42,21 @@ jobs:
       actions: read
 
     outputs:
-      name_with_tag: ${{ steps.build_push.outputs.name_with_tag }}
-      image_tag: ${{ steps.build_push.outputs.image_tag }}
+      image_tag: ${{ steps.set_output.outputs.image_tag }}
 
     steps:
+      - name: Checkout and build import (if needed)
+        if: ${{ inputs.build_import == true }}
+        run: |
+          echo "Building import image..."
+          # We'll do real steps below
+
       - name: Checkout code
+        if: ${{ inputs.build_import == true }}
         uses: actions/checkout@v5
 
       - name: Set up JDK 21
+        if: ${{ inputs.build_import == true }}
         uses: actions/setup-java@v5
         with:
           distribution: 'liberica'
@@ -58,10 +64,12 @@ jobs:
           cache: 'gradle'
 
       - name: Build converter JAR
+        if: ${{ inputs.build_import == true }}
         run: ./gradlew --no-daemon :converter:build
 
-      - name: Build and push Docker image
+      - name: Build and push import image
         id: build_push
+        if: ${{ inputs.build_import == true }}
         uses: ./.github/actions/build-push
         with:
           image_name: geocoder-import
@@ -71,9 +79,24 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
+      - name: Output import tag (when built)
+        id: set_output
+        if: ${{ inputs.build_import == true }}
+        shell: bash
+        run: |
+          echo "image_tag=${{ steps.build_push.outputs.image_tag }}" >> "$GITHUB_OUTPUT"
+
+      - name: Output placeholder (when not built)
+        if: ${{ inputs.build_import == false }}
+        shell: bash
+        run: |
+          # Output is unused, but job must produce the output key
+          echo "image_tag=" >> "$GITHUB_OUTPUT"
+
   photon:
     runs-on: ubuntu-latest
     needs: import
+    if: ${{ inputs.deploy_env != 'none' }}
 
     permissions:
       contents: read
@@ -84,36 +107,31 @@ jobs:
     outputs:
       name_with_tag: ${{ steps.build_push.outputs.name_with_tag }}
 
-    # Only run photon if we're going to deploy
-    if: |
-      inputs.deploy_env != 'none' &&
-      (
-        (inputs.build_import == true && needs.import.result == 'success') ||
-        (inputs.build_import == false && inputs.import_image_tag != '')
-      )
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Determine import image tag
-        id: import_tag
+      - name: Resolve import image tag
+        id: resolve_tag
+        shell: bash
         run: |
           if [[ "${{ inputs.build_import }}" == "true" ]]; then
-            echo "tag=${{ needs.import.outputs.image_tag }}" >> "$GITHUB_OUTPUT"
+            tag="${{ needs.import.outputs.image_tag }}"
           else
-            echo "tag=${{ inputs.import_image_tag }}" >> "$GITHUB_OUTPUT"
+            tag="${{ inputs.import_image_tag }}"
           fi
+          echo "Using import image tag: $tag"
+          echo "IMPORT_TAG=$tag" >> "$GITHUB_ENV"
 
-      - name: Build and push Docker image
+      - name: Build and push photon image
         id: build_push
         uses: ./.github/actions/build-push
         with:
           image_name: geocoder-photon
           dockerfile: Dockerfile.photon
-          push: true  # safe because we only run when deploy_env != 'none'
+          push: true
           build_args: |
-            IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ steps.import_tag.outputs.tag }}
+            IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ env.IMPORT_TAG }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
