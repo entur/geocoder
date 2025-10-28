@@ -19,7 +19,7 @@ on:
           - both
         default: 'none'
       import_image_tag:
-        description: 'Import image tag to use for photon build (if not building import)'
+        description: 'Import image tag or digest (avoid "latest")'
         required: false
         default: 'latest'
         type: string
@@ -32,96 +32,105 @@ concurrency:
 
 jobs:
 
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.compute.outputs.tag }}
+    steps:
+      - name: Compute custom tag
+        id: compute
+        shell: bash
+        run: |
+          ref="${{ github.ref }}"
+          if [[ "$ref" == refs/heads/* ]]; then
+            branch="${ref#refs/heads/}"
+          else
+            branch="unknown"
+          fi
+          date=$(date -u +%Y%m%d)
+          short_sha="${GITHUB_SHA:0:8}"
+          tag="${branch}.${date}-SHA${short_sha}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   import:
     runs-on: ubuntu-latest
-    # Always runs so 'photon' can safely depend on it
+    needs: tag
+    if: ${{ inputs.build_import == true }}
     permissions:
       contents: read
       id-token: write
       security-events: write
       actions: read
-
     outputs:
-      image_tag: ${{ steps.set_output.outputs.image_tag }}
-
+      image_tag: ${{ steps.build_push.outputs.image_tag }}
     steps:
-      - name: Checkout and build import (if needed)
-        if: ${{ inputs.build_import == true }}
-        run: |
-          echo "Building import image..."
-          # We'll do real steps below
-
       - name: Checkout code
-        if: ${{ inputs.build_import == true }}
         uses: actions/checkout@v5
-
       - name: Set up JDK 21
-        if: ${{ inputs.build_import == true }}
         uses: actions/setup-java@v5
         with:
           distribution: 'liberica'
           java-version: '21'
           cache: 'gradle'
-
       - name: Build converter JAR
-        if: ${{ inputs.build_import == true }}
         run: ./gradlew --no-daemon :converter:build
-
       - name: Build and push import image
         id: build_push
-        if: ${{ inputs.build_import == true }}
         uses: ./.github/actions/build-push
         with:
           image_name: geocoder-import
           dockerfile: Dockerfile.import
           push: true
+          image_tag: ${{ needs.tag.outputs.tag }}
           run-group: 'grp-ubuntu-24.04-8core-x64'
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
-      - name: Output import tag (when built)
-        id: set_output
-        if: ${{ inputs.build_import == true }}
-        shell: bash
-        run: |
-          echo "image_tag=${{ steps.build_push.outputs.image_tag }}" >> "$GITHUB_OUTPUT"
-
-      - name: Output placeholder (when not built)
-        if: ${{ inputs.build_import == false }}
-        shell: bash
-        run: |
-          # Output is unused, but job must produce the output key
-          echo "image_tag=" >> "$GITHUB_OUTPUT"
-
   photon:
     runs-on: ubuntu-latest
-    needs: import
+    needs: [tag, import]
     if: ${{ inputs.deploy_env != 'none' }}
-
     permissions:
       contents: read
       id-token: write
       security-events: write
       actions: read
-
     outputs:
       name_with_tag: ${{ steps.build_push.outputs.name_with_tag }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Resolve import image tag
-        id: resolve_tag
+      - name: Authenticate with GCP (for image resolution)
+        if: ${{ inputs.build_import == false }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+      - name: Resolve import image reference
+        id: resolve_import
         shell: bash
         run: |
           if [[ "${{ inputs.build_import }}" == "true" ]]; then
-            tag="${{ needs.import.outputs.image_tag }}"
+            # Use the custom tag
+            ref="${{ needs.import.outputs.image_tag }}"
           else
-            tag="${{ inputs.import_image_tag }}"
+            user_tag="${{ inputs.import_image_tag }}"
+            if [[ "$user_tag" == sha256:* ]]; then
+              ref="$user_tag"
+            else
+              # Resolve tag to digest to ensure immutability
+              full_image="eu.gcr.io/entur-system-1287/geocoder-import:$user_tag"
+              digest=$(gcloud container images describe --format='value(image_summary.digest)' "$full_image")
+              if [[ -z "$digest" ]]; then
+                echo "ERROR: Could not resolve $full_image" >&2
+                exit 1
+              fi
+              ref="$digest"
+            fi
           fi
-          echo "Using import image tag: $tag"
-          echo "IMPORT_TAG=$tag" >> "$GITHUB_ENV"
+          echo "import_ref=$ref" >> "$GITHUB_OUTPUT"
 
       - name: Build and push photon image
         id: build_push
@@ -130,8 +139,9 @@ jobs:
           image_name: geocoder-photon
           dockerfile: Dockerfile.photon
           push: true
+          image_tag: ${{ needs.tag.outputs.tag }}
           build_args: |
-            IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ env.IMPORT_TAG }}
+            IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import@${{ steps.resolve_import.outputs.import_ref }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
 
@@ -144,7 +154,7 @@ jobs:
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: ${{ needs.photon.outputs.name_with_tag }}
+      image: ${{ needs.photon.outputs.name_with_tag }}  # e.g., geocoder-photon:main.20251028-SHAbe4d8ca
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
