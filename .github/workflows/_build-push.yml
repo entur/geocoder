@@ -28,7 +28,7 @@ on:
         default: false
     outputs:
       image_tag:
-        description: "Image tag (git SHA)"
+        description: "Image tag"
         value: ${{ jobs.build-push.outputs.image_tag }}
 
 env:
@@ -62,13 +62,6 @@ jobs:
         if: ${{ inputs.do-gradle-build }}
         run: ./gradlew --no-daemon build
 
-      - name: Set image tag variable
-        id: set-image-tag
-        shell: bash
-        run: |
-          branch=$(git branch --show-current | sed 's/[^a-zA-Z0-9_-]+/_/g')
-          echo "image_tag=${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}" > $GITHUB_ENV
-
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -83,6 +76,13 @@ jobs:
         if: ${{ inputs.push }}
         run: gcloud auth configure-docker eu.gcr.io --quiet
 
+      - name: Set image tag variable
+        id: set-image-tag
+        shell: bash
+        run: |
+          branch=$(git branch --show-current | sed 's/[^a-zA-Z0-9_-]+/_/g')
+          echo "image_tag=${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}" > $GITHUB_ENV
+
       - name: Build and push to GCR
         uses: docker/build-push-action@v6
         with:
@@ -94,3 +94,13 @@ jobs:
             ${{ env.REGISTRY }}/${{ inputs.image_name }}:latest
           build-args: ${{ inputs.build_args }}
           provenance: false
+
+      - name: Write build and push summary
+        if: always()
+        run: |
+          echo "## Docker Build & Push Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ env.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Full reference:** \`${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ env.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Push requested:** ${{ inputs.push }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Job status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
