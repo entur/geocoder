@@ -14,7 +14,6 @@ on:
       build_args:
         description: "Build arguments (KEY=VALUE, one per line)"
         type: string
-        required: false
       push:
         description: "Push image to registry"
         type: boolean
@@ -22,8 +21,11 @@ on:
       run-group:
         description: "The run group to use for the job"
         type: string
-        required: false
         default: grp-ubuntu-24.04-2core-x64
+      do-gradle-build:
+        description: "Run Gradle build before building the Docker image"
+        type: boolean
+        default: false
     outputs:
       image_tag:
         description: "Image tag (git SHA)"
@@ -47,6 +49,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        if: ${{ inputs.do-gradle-build }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: liberica
+          java-version: 21
+          cache: gradle
+
+      - name: Build with Gradle
+        if: ${{ inputs.do-gradle-build }}
+        run: ./gradlew --no-daemon build
 
       - name: Set image tag variable
         id: set-image-tag

@@ -48,6 +48,7 @@ jobs:
       dockerfile: Dockerfile.import
       push: true
       run-group: 'grp-ubuntu-24.04-8core-x64'
+      do-gradle-build: true
 
   import-scan:
     if: |

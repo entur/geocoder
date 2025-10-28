@@ -25,6 +25,7 @@ jobs:
       image_name: geocoder-proxy
       dockerfile: Dockerfile.proxy
       push: ${{ github.event_name != 'pull_request' }}
+      do-gradle-build: true
 
   scan:
     if: |

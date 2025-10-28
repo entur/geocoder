@@ -1,10 +1,10 @@
-FROM gradle:9.1-jdk21-alpine AS build-image
+FROM bellsoft/liberica-runtime-container:jre-21-musl AS build-image
 
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 
-COPY . ./
-RUN gradle --no-daemon :converter:build
+COPY ./converter/build/libs/converter-all.jar convert.jar
+RUN apk add --no-cache curl
 
 ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip \
     STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip \
@@ -14,16 +14,16 @@ ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdr
 
 RUN curl -sfL --retry 2 $ADRESSE_URL | unzip -p - > adresse.csv && \
     curl -sfL --retry 2 $STEDSNAVN_URL | unzip -p - > stedsnavn.gml && \
-    ./geocoder-convert -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson && \
+    java -jar convert.jar -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson && \
     rm adresse.csv stedsnavn.gml
 
 RUN curl -sfL --retry 2 $TIAMAT_URL -o tiamat.zip && \
     unzip -p tiamat.zip > tiamat.xml && \
-    ./geocoder-convert -a -s tiamat.xml -o nominatim.ndjson && \
+    java -jar convert.jar -a -s tiamat.xml -o nominatim.ndjson && \
     rm tiamat.*
 
 RUN curl -sfLO --retry 2 $OSM_URL && \
-    ./geocoder-convert -a -p norway-latest.osm.pbf -o nominatim.ndjson && \
+    java -jar convert.jar -a -p norway-latest.osm.pbf -o nominatim.ndjson && \
     rm norway-latest.osm.pbf
 
 RUN curl -sfL --retry 2 $PHOTON_URL -o photon.jar && \
