@@ -13,15 +13,15 @@ ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdr
 
 RUN curl -sfL $ADRESSE_URL | unzip -p - > adresse.csv && \
     curl -sfL $STEDSNAVN_URL | unzip -p - > stedsnavn.gml && \
-    java -jar convert.jar -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson && \
+    ./geocoder-convert -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson && \
     rm adresse.csv stedsnavn.gml
 
 RUN curl -sfL $TIAMAT_URL -o tiamat.zip && \
     unzip -p tiamat.zip > tiamat.xml && \
-    java -jar convert.jar -a -s tiamat.xml -o nominatim.ndjson && \
+    ./geocoder-convert -a -s tiamat.xml -o nominatim.ndjson && \
     rm tiamat.*
 
-RUN java -jar convert.jar -a -p oslo-center.osm.pbf -o nominatim.ndjson && \
+RUN ./geocoder-convert -a -p oslo-center.osm.pbf -o nominatim.ndjson && \
     rm oslo-center.osm.pbf
 
 RUN curl -sfL $PHOTON_URL -o photon.jar && \
