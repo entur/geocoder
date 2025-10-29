@@ -9,7 +9,9 @@ common:
     internalPort: 2322  # What TCP port the application listens on the pod, must match the port in the Dockerfile
   deployment:
     prometheus:
-      enabled: false  # Set this to true only after you have setup a metrics endpoint
+      enabled: true
+      path: /metrics
+      port: 9404
   container:
     image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
     cpu: 0.3 # Adjust this to your application needs

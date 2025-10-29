@@ -47,6 +47,8 @@ jobs:
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
     strategy:
       matrix:
+        chart: [geocoder-proxy, geocoder-photon]
         environment: [dev,tst]
     with:
       environment: ${{ matrix.environment }}
+      chart: helm/${{ matrix.chart }}
