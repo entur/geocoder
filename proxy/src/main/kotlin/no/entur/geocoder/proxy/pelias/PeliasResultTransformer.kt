@@ -11,8 +11,7 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasFeature
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
-import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
-import no.entur.geocoder.proxy.photon.PhotonResult.PhotonProperties
+import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -25,7 +24,7 @@ class PeliasResultTransformer {
     fun parseAndTransform(photonResult: PhotonResult, focus: FocusParams? = null): String {
         val transformedFeatures =
             photonResult.features.map { feature ->
-                val distance = if (focus != null) calculateDistance(feature, focus) else null
+                val distance = if (focus != null) calculateDistance(feature.geometry, focus) else null
                 transformFeature(feature, distance)
             }
 
@@ -37,25 +36,6 @@ class PeliasResultTransformer {
                 bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
             )
         return mapper.writeValueAsString(peliasCollection)
-    }
-
-    // Distance in km
-    private fun calculateDistance(
-        feature: PhotonFeature,
-        focus: FocusParams?,
-    ): BigDecimal? {
-        if (focus == null) return null
-
-        val featureCoords = feature.geometry.coordinates
-        if (featureCoords.size < 2) return null
-
-        val lon1 = featureCoords[0].toDouble()
-        val lat1 = featureCoords[1].toDouble()
-        val lat2 = focus.lat.toDouble()
-        val lon2 = focus.lon.toDouble()
-        val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
-
-        return (distance / 1000).toBigDecimalWithScale(3)
     }
 
     private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {
@@ -212,4 +192,27 @@ class PeliasResultTransformer {
 
     fun transformLocalityGid(localityGid: String?): String? =
         localityGid?.let { "whosonfirst:locality:$it" }
+
+    companion object {
+        const val PELIAS_DISTANCE_FUDGE_FACTOR = 1.001119
+
+        // Distance in km
+        internal fun calculateDistance(
+            geometry: PhotonGeometry,
+            focus: FocusParams?,
+        ): BigDecimal? {
+            if (focus == null) return null
+
+            val featureCoords = geometry.coordinates
+            if (featureCoords.size < 2) return null
+
+            val lon1 = featureCoords[0].toDouble()
+            val lat1 = featureCoords[1].toDouble()
+            val lat2 = focus.lat.toDouble()
+            val lon2 = focus.lon.toDouble()
+            val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
+
+            return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)
+        }
+    }
 }
