@@ -20,7 +20,7 @@ class JsonWriter {
         isAppending: Boolean = true,
     ) {
         val objectMapper = jacksonObjectMapper().apply {
-            setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
         }
         Files.createDirectories(outputPath.parent)
 

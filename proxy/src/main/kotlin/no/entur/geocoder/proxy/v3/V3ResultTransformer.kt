@@ -7,13 +7,14 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
-import no.entur.geocoder.proxy.v3.V3Result.*
+import no.entur.geocoder.proxy.v3.V3Result.Metadata
+import no.entur.geocoder.proxy.v3.V3Result.QueryInfo
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 class V3ResultTransformer {
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
-        setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
     }
 
     fun parseAndTransform(
@@ -26,7 +27,8 @@ class V3ResultTransformer {
 
         val filters = if (params.placeTypes.isNotEmpty() || params.sources.isNotEmpty() || params.countries.isNotEmpty() ||
             params.countyIds.isNotEmpty() || params.localityIds.isNotEmpty() || params.tariffZones.isNotEmpty() ||
-            params.tariffZoneAuthorities.isNotEmpty() || params.transportModes.isNotEmpty()) {
+            params.tariffZoneAuthorities.isNotEmpty() || params.transportModes.isNotEmpty()
+        ) {
             V3Result.Filters(
                 placeTypes = params.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
                 sources = params.sources.takeIf { it.isNotEmpty() },
@@ -120,7 +122,8 @@ class V3ResultTransformer {
 
     private fun buildAddress(props: PhotonResult.PhotonProperties, extra: Extra?): V3Result.Address? {
         if (props.street == null && props.housenumber == null && props.postcode == null &&
-            props.extra?.locality == null && props?.county == null) {
+            props.extra?.locality == null && props?.county == null
+        ) {
             return null
         }
 

@@ -15,7 +15,7 @@ import java.math.RoundingMode
 
 class PeliasResultTransformer {
     private val mapper: ObjectMapper = jacksonObjectMapper().apply {
-        setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
     }
 
     fun parseAndTransform(photonResult: PhotonResult): String {
@@ -23,7 +23,7 @@ class PeliasResultTransformer {
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
-        val peliasCollection: PeliasResult = PeliasResult(
+        val peliasCollection = PeliasResult(
             features = transformedFeatures,
             bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )
