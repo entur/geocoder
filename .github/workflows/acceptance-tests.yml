@@ -1,11 +1,6 @@
-name: Acceptance Tests
+name: Run Acceptance Tests
 
 on:
-  workflow_run:
-    workflows: [Photon, Proxy]
-    types:
-      - completed
-
   workflow_dispatch:
     inputs:
       environment:
@@ -16,7 +11,6 @@ on:
           - dev
           - staging
         default: 'dev'
-
   workflow_call:
     inputs:
       environment:
@@ -24,22 +18,12 @@ on:
         required: true
         type: string
 
+run-name: "Acceptance tests: ${{ inputs.environment }} (sha: ${{ github.sha }})"
+
 jobs:
   acceptance-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: workflow-params
-
-      - name: Set environment from artifact if triggered by workflow_run
-        run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_run" ]; then
-            echo "ENVIRONMENT=$(cat params.txt | cut -d= -f2)" >> $GITHUB_ENV
-          else
-            echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
-          fi
-
       - name: Checkout acceptance tests repository
         uses: actions/checkout@v5
         with:
@@ -63,7 +47,7 @@ jobs:
         run: |
           set +e
           set -o pipefail
-          npm run v2${{ env.ENVIRONMENT }} 2>&1 | tee test-output.log
+          npm run v2${{ inputs.environment }} 2>&1 | tee test-output.log
           TEST_EXIT_CODE=${PIPESTATUS[0]}
           echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
           exit 0
@@ -72,7 +56,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: test-results-v2${{ env.ENVIRONMENT }}
+          name: test-results-v2${{ inputs.environment }}
           path: acceptance-tests/test-output.log
           retention-days: 30
 
@@ -80,7 +64,7 @@ jobs:
         if: always()
         working-directory: acceptance-tests
         run: |
-          echo "## Acceptance Test Results - v2${{ env.ENVIRONMENT }}" >> $GITHUB_STEP_SUMMARY
+          echo "## Acceptance Test Results - v2${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           cat test-output.log >> $GITHUB_STEP_SUMMARY

@@ -1,4 +1,4 @@
-name: Proxy
+name: Proxy - Build and deploy
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
     with:
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
 
-  dev-deploy:
+  deploy-dev:
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -53,24 +53,24 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  # Environment parameter preparation for acceptance tests, triggered by workflow_run
   acceptance-tests-dev:
-    runs-on: ubuntu-latest
-    needs: dev-deploy
-    steps:
-      - run: echo "environment=dev" > params.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: workflow-params
-          path: params.txt
+    if: |
+      !cancelled() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.deploy-dev.result == 'success'
+    needs: deploy-dev
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: dev
 
-  staging-deploy:
+  deploy-staging:
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
-    needs: [build-push, dev-deploy]
+    needs: [build-push, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
@@ -80,13 +80,15 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  # Environment parameter preparation for acceptance tests, triggered by workflow_run
   acceptance-tests-staging:
-    runs-on: ubuntu-latest
-    needs: staging-deploy
-    steps:
-      - run: echo "environment=staging" > params.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: workflow-params
-          path: params.txt
+    if: |
+      !cancelled() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.deploy-staging.result == 'success'
+    needs: deploy-staging
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: staging
+
+
