@@ -18,7 +18,7 @@ object PeliasApi {
         client: HttpClient,
         transformer: PeliasResultTransformer,
     ) {
-        val params =
+        val peliasParams =
             try {
                 PeliasAutocompleteParams.fromRequest(call.request)
             } catch (e: Exception) {
@@ -32,7 +32,7 @@ object PeliasApi {
                 return
             }
 
-        val photonRequest = PhotonAutocompleteRequest.from(params)
+        val photonRequest = PhotonAutocompleteRequest.from(peliasParams)
         val url = "$photonBaseUrl/api"
         logger.info("Proxying /v2/autocomplete to $url with text='${photonRequest.query}'")
 
@@ -61,7 +61,7 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = transformer.parseAndTransform(photonResult)
+            val json = transformer.parseAndTransform(photonResult, peliasParams.focus)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
@@ -79,7 +79,7 @@ object PeliasApi {
         client: HttpClient,
         transformer: PeliasResultTransformer,
     ) {
-        val params =
+        val peliasParams =
             try {
                 PeliasReverseParams.fromRequest(call.request)
             } catch (e: Exception) {
@@ -93,7 +93,7 @@ object PeliasApi {
                 return
             }
 
-        val photonRequest = PhotonReverseRequest.from(params)
+        val photonRequest = PhotonReverseRequest.from(peliasParams)
         val url = "$photonBaseUrl/reverse"
         logger.info("Proxying /v2/reverse to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 

@@ -12,9 +12,6 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.xml)
-    implementation(libs.geotools.referencing)
-    implementation(libs.geotools.main)
-    implementation(libs.geotools.epsg.wkt)
 
     implementation("org.openstreetmap.osmosis:osmosis-core:0.49.2")
     implementation("org.openstreetmap.osmosis:osmosis-pbf:0.49.2")

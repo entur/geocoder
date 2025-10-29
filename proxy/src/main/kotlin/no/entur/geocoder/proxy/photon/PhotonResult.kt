@@ -25,7 +25,7 @@ data class PhotonResult(
 
     data class PhotonGeometry(
         val type: String,
-        val coordinates: List<BigDecimal>,
+        val coordinates: List<BigDecimal>, // [lon, lat]
     )
 
     data class PhotonProperties(

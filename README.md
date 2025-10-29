@@ -25,7 +25,7 @@ curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest
           -s ./tiamat-*.xml \
           -m Basis*/*.csv \
           -p converter/src/test/resources/oslo-center.osm.pbf \
-          -o /tmp/output-photon.nbjson
+          -o /tmp/nominatim.ndjson
 ```
 
 #### Manually importing the converted data to photon
@@ -35,8 +35,7 @@ cd ..
 git clone https://github.com/komoot/photon.git
 cd photon
 ./gradlew build
-java -jar target/photon-0.7.0.jar -nominatim-import -import-file /tmp/output-photon.nbjson \
-     -languages no -extra-tags ALL
+java -jar target/photon-0.7.0.jar -nominatim-import -import-file /tmp/nominatim.ndjson -languages no -extra-tags ALL
 ```
 Start the server with `java -jar target/photon-0.7.0.jar`, and visit e.g. http://localhost:2322/api?q=jernbanetorget&limit=20 to see the imported data.
 

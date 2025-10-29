@@ -31,6 +31,7 @@ data class PeliasResult(
         val popular_name: String? = null,
         val housenumber: String? = null,
         val street: String? = null,
+        val distance: BigDecimal? = null,
         val postalcode: String? = null,
         val accuracy: String? = null,
         val country_a: String? = null,

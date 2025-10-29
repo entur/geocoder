@@ -6,9 +6,9 @@ import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
-import no.entur.geocoder.converter.Util.titleize
+import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.converter.importance.ImportanceCalculator
-import no.entur.geocoder.converter.matrikkel.Geo
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
 import java.io.File

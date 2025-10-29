@@ -4,6 +4,9 @@ plugins {
 
 dependencies {
     api(libs.jackson.databind)
+    implementation(libs.geotools.referencing)
+    implementation(libs.geotools.main)
+    implementation(libs.geotools.epsg.wkt)
     testImplementation(libs.kotlin.test)
 }
 

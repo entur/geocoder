@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter
+package no.entur.geocoder.common
 
 import java.math.BigDecimal
 import java.math.RoundingMode.HALF_UP
@@ -9,5 +9,6 @@ object Util {
             word.lowercase().replaceFirstChar { it.titlecase() }
         }
 
-    fun Double.toBigDecimalWithScale(scale: Int = 6): BigDecimal = BigDecimal(this).setScale(scale, HALF_UP)
+    fun Double.toBigDecimalWithScale(scale: Int = 6): BigDecimal =
+        BigDecimal(this).setScale(scale, HALF_UP)
 }

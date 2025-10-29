@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
+import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasFeature
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
@@ -19,8 +22,12 @@ class PeliasResultTransformer {
             setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
         }
 
-    fun parseAndTransform(photonResult: PhotonResult): String {
-        val transformedFeatures = photonResult.features.map { transformFeature(it) }
+    fun parseAndTransform(photonResult: PhotonResult, focus: FocusParams? = null): String {
+        val transformedFeatures =
+            photonResult.features.map { feature ->
+                val distance = if (focus != null) calculateDistance(feature, focus) else null
+                transformFeature(feature, distance)
+            }
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
@@ -32,7 +39,26 @@ class PeliasResultTransformer {
         return mapper.writeValueAsString(peliasCollection)
     }
 
-    private fun calculateBoundingBox(features: List<PeliasResult.PeliasFeature>): List<BigDecimal>? {
+    // Distance in km
+    private fun calculateDistance(
+        feature: PhotonFeature,
+        focus: FocusParams?,
+    ): BigDecimal? {
+        if (focus == null) return null
+
+        val featureCoords = feature.geometry.coordinates
+        if (featureCoords.size < 2) return null
+
+        val lon1 = featureCoords[0].toDouble()
+        val lat1 = featureCoords[1].toDouble()
+        val lat2 = focus.lat.toDouble()
+        val lon2 = focus.lon.toDouble()
+        val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
+
+        return (distance / 1000).toBigDecimalWithScale(3)
+    }
+
+    private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {
         if (features.isEmpty()) return null
 
         var minLon = BigDecimal(Double.MAX_VALUE)
@@ -60,11 +86,11 @@ class PeliasResultTransformer {
         }
     }
 
-    fun transformFeature(feature: PhotonFeature): PeliasResult.PeliasFeature {
+    fun transformFeature(feature: PhotonFeature, distance: BigDecimal?): PeliasFeature {
         val props = feature.properties
         val extra = props.extra
 
-        return PeliasResult.PeliasFeature(
+        return PeliasFeature(
             type = feature.type,
             geometry =
                 PeliasResult.PeliasGeometry(
@@ -86,6 +112,7 @@ class PeliasResultTransformer {
                             ?.firstOrNull()
                             ?.ifBlank { null },
                     street = transformStreet(props),
+                    distance = distance,
                     postalcode = props.postcode,
                     housenumber = props.housenumber,
                     accuracy = extra?.accuracy,
