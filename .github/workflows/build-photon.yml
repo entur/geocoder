@@ -1,4 +1,4 @@
-name: Photon - Import data and/or deploy
+name: Photon
 
 on:
   workflow_dispatch:
@@ -110,15 +110,6 @@ jobs:
       release_name: geocoder-photon
     secrets: inherit
 
-  acceptance-tests-dev:
-    if: |
-      !cancelled() &&
-      needs.dev-deploy.result == 'success'
-    needs: dev-deploy
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: dev
-
   staging-deploy:
     if: |
       !cancelled() &&
@@ -135,11 +126,21 @@ jobs:
       release_name: geocoder-photon
     secrets: inherit
 
-  acceptance-tests-staging:
-    if: |
-      !cancelled() &&
-      needs.staging-deploy.result == 'success'
-    needs: staging-deploy
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: staging
+  # Environment parameter preparation for acceptance tests, triggered by workflow_run
+  acceptance-tests:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [dev-deploy, staging-deploy ]
+    steps:
+      - run: |
+          if [ "${{ needs.dev-deploy.result }}" = "success" ]; then
+            echo "environment=dev" > params.txt
+          elif [ "${{ needs.staging-deploy.result }}" = "success" ]; then
+            echo "environment=staging" > params.txt
+          else
+            exit 0
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workflow-params
+          path: params.txt

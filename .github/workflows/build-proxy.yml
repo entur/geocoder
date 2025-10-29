@@ -1,4 +1,4 @@
-name: Proxy - Build and deploy
+name: Proxy
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
     with:
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
 
-  deploy-dev:
+  dev-deploy:
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -53,24 +53,13 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  acceptance-tests-dev:
-    if: |
-      !cancelled() &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      needs.deploy-dev.result == 'success'
-    needs: deploy-dev
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: dev
-
-  deploy-staging:
+  staging-deploy:
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
-    needs: [build-push, deploy-dev]
+    needs: [build-push, dev-deploy]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
@@ -80,15 +69,21 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  acceptance-tests-staging:
-    if: |
-      !cancelled() &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      needs.deploy-staging.result == 'success'
-    needs: deploy-staging
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: staging
-
-
+  # Environment parameter preparation for acceptance tests, triggered by workflow_run
+  acceptance-tests:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [dev-deploy, staging-deploy ]
+    steps:
+      - run: |
+          if [ "${{ needs.dev-deploy.result }}" = "success" ]; then
+            echo "environment=dev" > params.txt
+          elif [ "${{ needs.staging-deploy.result }}" = "success" ]; then
+            echo "environment=staging" > params.txt
+          else
+            exit 0
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workflow-params
+          path: params.txt
