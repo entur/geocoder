@@ -5,4 +5,9 @@ plugins {
 
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    afterEvaluate {
+        tasks.findByName("build")?.dependsOn("ktlintFormat")
+    }
 }
+
