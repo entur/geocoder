@@ -14,19 +14,21 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class PeliasResultTransformer {
-    private val mapper: ObjectMapper = jacksonObjectMapper().apply {
-        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-    }
+    private val mapper: ObjectMapper =
+        jacksonObjectMapper().apply {
+            setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+        }
 
     fun parseAndTransform(photonResult: PhotonResult): String {
         val transformedFeatures = photonResult.features.map { transformFeature(it) }
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
-        val peliasCollection = PeliasResult(
-            features = transformedFeatures,
-            bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
-        )
+        val peliasCollection =
+            PeliasResult(
+                features = transformedFeatures,
+                bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
+            )
         return mapper.writeValueAsString(peliasCollection)
     }
 
@@ -64,33 +66,40 @@ class PeliasResultTransformer {
 
         return PeliasResult.PeliasFeature(
             type = feature.type,
-            geometry = PeliasResult.PeliasGeometry(
-                type = feature.geometry.type,
-                coordinates = feature.geometry.coordinates,
-            ),
-            properties = PeliasProperties(
-                id = extra?.id,
-                gid = "whosonfirst:address:" + extra?.id,
-                layer = transformLayer(extra),
-                source = transformSource(extra),
-                source_id = extra?.id,
-                name = transformName(props),
-                popular_name = extra?.alt_name?.split(";")?.firstOrNull()?.ifBlank { null },
-                street = transformStreet(props),
-                postalcode = props.postcode,
-                housenumber = props.housenumber,
-                accuracy = extra?.accuracy,
-                country_a = extra?.country_a,
-                county = props.county,
-                county_gid = transformCountyGid(extra?.county_gid),
-                locality = extra?.locality,
-                locality_gid = transformLocalityGid(extra?.locality_gid),
-                borough = extra?.borough,
-                borough_gid = transformBoroughGid(extra?.borough_gid),
-                label = createLabel(props),
-                category = transformCategory(extra),
-                tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
-            ),
+            geometry =
+                PeliasResult.PeliasGeometry(
+                    type = feature.geometry.type,
+                    coordinates = feature.geometry.coordinates,
+                ),
+            properties =
+                PeliasProperties(
+                    id = extra?.id,
+                    gid = "whosonfirst:address:" + extra?.id,
+                    layer = transformLayer(extra),
+                    source = transformSource(extra),
+                    source_id = extra?.id,
+                    name = transformName(props),
+                    popular_name =
+                        extra
+                            ?.alt_name
+                            ?.split(";")
+                            ?.firstOrNull()
+                            ?.ifBlank { null },
+                    street = transformStreet(props),
+                    postalcode = props.postcode,
+                    housenumber = props.housenumber,
+                    accuracy = extra?.accuracy,
+                    country_a = extra?.country_a,
+                    county = props.county,
+                    county_gid = transformCountyGid(extra?.county_gid),
+                    locality = extra?.locality,
+                    locality_gid = transformLocalityGid(extra?.locality_gid),
+                    borough = extra?.borough,
+                    borough_gid = transformBoroughGid(extra?.borough_gid),
+                    label = createLabel(props),
+                    category = transformCategory(extra),
+                    tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
+                ),
         )
     }
 

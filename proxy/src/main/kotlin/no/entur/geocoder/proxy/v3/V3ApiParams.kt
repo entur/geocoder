@@ -13,7 +13,7 @@ data class V3AutocompleteParams(
     val localityIds: List<String> = emptyList(),
     val tariffZones: List<String> = emptyList(),
     val tariffZoneAuthorities: List<String> = emptyList(),
-    val transportModes: List<String> = emptyList()
+    val transportModes: List<String> = emptyList(),
 ) {
     companion object {
         fun fromRequest(request: ApplicationRequest): V3AutocompleteParams {
@@ -29,7 +29,7 @@ data class V3AutocompleteParams(
                 localityIds = params["localityIds"]?.split(",") ?: emptyList(),
                 tariffZones = params["tariffZones"]?.split(",") ?: emptyList(),
                 tariffZoneAuthorities = params["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
-                transportModes = params["transportModes"]?.split(",") ?: emptyList()
+                transportModes = params["transportModes"]?.split(",") ?: emptyList(),
             )
         }
     }
@@ -40,7 +40,7 @@ data class V3ReverseParams(
     val longitude: String = "",
     val radius: String? = null,
     val limit: Int = 10,
-    val language: String = "no"
+    val language: String = "no",
 ) {
     init {
         require(latitude.isNotBlank()) { "Parameter 'latitude' is required" }
@@ -61,9 +61,8 @@ data class V3ReverseParams(
                 longitude = params["longitude"] ?: params["lon"] ?: "",
                 radius = params["radius"],
                 limit = params["limit"]?.toIntOrNull() ?: 10,
-                language = params["language"] ?: params["lang"] ?: "no"
+                language = params["language"] ?: params["lang"] ?: "no",
             )
         }
     }
 }
-

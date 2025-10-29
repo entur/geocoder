@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StopPlacePopularityCalculatorTest {
-
     @Test
     fun `basic stop place returns expected popularity`() {
         // Basic stop with default value (30)
@@ -23,8 +22,10 @@ class StopPlacePopularityCalculatorTest {
         val basicPopularity = StopPlacePopularityCalculator.calculatePopularity(basicStop)
         val busStationPopularity = StopPlacePopularityCalculator.calculatePopularity(busStation)
 
-        assertTrue(busStationPopularity > basicPopularity,
-            "Bus station should have higher popularity than basic stop")
+        assertTrue(
+            busStationPopularity > basicPopularity,
+            "Bus station should have higher popularity than basic stop",
+        )
     }
 
     @Test
@@ -47,45 +48,54 @@ class StopPlacePopularityCalculatorTest {
 
     @Test
     fun `recommended interchange multiplies popularity`() {
-        val stopWithInterchange = createStopPlace(
-            stopPlaceType = "railStation",
-            weighting = "recommendedInterchange"
-        )
+        val stopWithInterchange =
+            createStopPlace(
+                stopPlaceType = "railStation",
+                weighting = "recommendedInterchange",
+            )
         val popularity = StopPlacePopularityCalculator.calculatePopularity(stopWithInterchange)
 
         // Expected: popularity = 30 * 2 (rail) * 3 (interchange) = 180
-        assertEquals(180L, popularity,
-            "Rail station with recommended interchange should have popularity 180")
+        assertEquals(
+            180L, popularity,
+            "Rail station with recommended interchange should have popularity 180",
+        )
     }
 
     @Test
     fun `preferred interchange gives high popularity`() {
-        val stopWithInterchange = createStopPlace(
-            stopPlaceType = "railStation",
-            weighting = "preferredInterchange"
-        )
+        val stopWithInterchange =
+            createStopPlace(
+                stopPlaceType = "railStation",
+                weighting = "preferredInterchange",
+            )
         val popularity = StopPlacePopularityCalculator.calculatePopularity(stopWithInterchange)
 
         // Expected: popularity = 30 * 2 (rail) * 10 (interchange) = 600
-        assertEquals(600L, popularity,
-            "Rail station with preferred interchange should have popularity 600")
+        assertEquals(
+            600L, popularity,
+            "Rail station with preferred interchange should have popularity 600",
+        )
     }
 
     @Test
     fun `popularity values are strictly ordered`() {
-        val stops = listOf(
-            createStopPlace(stopPlaceType = null), // 30
-            createStopPlace(stopPlaceType = "busStation"), // 60
-            createStopPlace(stopPlaceType = "railStation", weighting = "recommendedInterchange"), // 180
-            createStopPlace(stopPlaceType = "railStation", weighting = "preferredInterchange"), // 600
-        )
+        val stops =
+            listOf(
+                createStopPlace(stopPlaceType = null), // 30
+                createStopPlace(stopPlaceType = "busStation"), // 60
+                createStopPlace(stopPlaceType = "railStation", weighting = "recommendedInterchange"), // 180
+                createStopPlace(stopPlaceType = "railStation", weighting = "preferredInterchange"), // 600
+            )
 
         val popularities = stops.map { StopPlacePopularityCalculator.calculatePopularity(it) }
 
         // Verify strictly increasing
         for (i in 0 until popularities.size - 1) {
-            assertTrue(popularities[i] < popularities[i + 1],
-                "Popularity should increase: ${popularities[i]} >= ${popularities[i + 1]}")
+            assertTrue(
+                popularities[i] < popularities[i + 1],
+                "Popularity should increase: ${popularities[i]} >= ${popularities[i + 1]}",
+            )
         }
     }
 
@@ -129,7 +139,7 @@ class StopPlacePopularityCalculatorTest {
     @Test
     fun `multimodal parent with unconfigured child types defaults to factor 1`() {
         val parentStop = createStopPlace(stopPlaceType = null)
-        val childTypes = listOf("ferryStop", "tramStation")  // Neither configured
+        val childTypes = listOf("ferryStop", "tramStation") // Neither configured
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
@@ -139,17 +149,20 @@ class StopPlacePopularityCalculatorTest {
 
     @Test
     fun `multimodal parent with interchange applies to total`() {
-        val parentStop = createStopPlace(
-            stopPlaceType = null,
-            weighting = "preferredInterchange"
-        )
+        val parentStop =
+            createStopPlace(
+                stopPlaceType = null,
+                weighting = "preferredInterchange",
+            )
         val childTypes = listOf("railStation", "metroStation")
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
         // Expected: popularity = 30 * (2 + 2) * 10 = 1200
-        assertEquals(1200L, popularity,
-            "Interchange factor should apply after summing stop type factors")
+        assertEquals(
+            1200L, popularity,
+            "Interchange factor should apply after summing stop type factors",
+        )
     }
 
     @Test
@@ -169,7 +182,7 @@ class StopPlacePopularityCalculatorTest {
     fun `many children of same type produce high popularity`() {
         // Parent with 5 bus station children
         val parentStop = createStopPlace(stopPlaceType = null)
-        val childTypes = List(5) { "busStation" }  // 5 identical entries
+        val childTypes = List(5) { "busStation" } // 5 identical entries
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
@@ -182,27 +195,29 @@ class StopPlacePopularityCalculatorTest {
         id: String = "NSR:StopPlace:1",
         stopPlaceType: String? = null,
         weighting: String? = null,
-        transportMode: String? = null
-    ): StopPlace {
-        return StopPlace(
+        transportMode: String? = null,
+    ): StopPlace =
+        StopPlace(
             id = id,
             version = "1",
             modification = null,
             created = null,
             changed = null,
-            name = StopPlace.LocalizedText().apply {
-                lang = "no"
-                text = "Test Stop"
-            },
-            centroid = StopPlace.Centroid(
-                location = StopPlace.Location(
-                    longitude = 10.746.toBigDecimal(),
-                    latitude = 59.911.toBigDecimal()
-                )
-            ),
+            name =
+                StopPlace.LocalizedText().apply {
+                    lang = "no"
+                    text = "Test Stop"
+                },
+            centroid =
+                StopPlace.Centroid(
+                    location =
+                        StopPlace.Location(
+                            longitude = 10.746.toBigDecimal(),
+                            latitude = 59.911.toBigDecimal(),
+                        ),
+                ),
             stopPlaceType = stopPlaceType,
             weighting = weighting,
-            transportMode = transportMode
+            transportMode = transportMode,
         )
-    }
 }

@@ -18,7 +18,6 @@ import kotlin.test.assertTrue
  * - tettbebyggelse (built-up area)
  */
 class StedsnavnPlaceTypeTest {
-
     @Test
     fun `by type is recognized`() {
         val type = StedsnavnPlaceType.fromString("by")
@@ -109,7 +108,7 @@ class StedsnavnPlaceTypeTest {
         targetTypes.forEach { typeName ->
             assertTrue(
                 StedsnavnPlaceType.isTarget(typeName),
-                "$typeName should be a target type"
+                "$typeName should be a target type",
             )
         }
     }

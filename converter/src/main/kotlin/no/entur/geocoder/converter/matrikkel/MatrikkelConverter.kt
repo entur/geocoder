@@ -4,21 +4,20 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
-import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.photon.NominatimPlace
-import no.entur.geocoder.converter.photon.NominatimPlace.*
+import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.Util.titleize
 import no.entur.geocoder.converter.importance.ImportanceCalculator
+import no.entur.geocoder.converter.photon.NominatimPlace
+import no.entur.geocoder.converter.photon.NominatimPlace.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
 
 class MatrikkelConverter(
-    private val stedsnavnGmlFile: File? = null
+    private val stedsnavnGmlFile: File? = null,
 ) : Converter {
-
     private val kommuneFylkeMapping: Map<String, KommuneFylkeMapping.KommuneInfo> by lazy {
         if (stedsnavnGmlFile != null && stedsnavnGmlFile.exists()) {
             println("Building kommune-fylke mapping from ${stedsnavnGmlFile.absolutePath}...")
@@ -44,16 +43,18 @@ class MatrikkelConverter(
         parseCsv(input).forEach { adresse ->
             if (adresse.adressenavn != null) {
                 val key = adresse.adressenavn to adresse.kommunenummer
-                val aggregator = streetData.getOrPut(key) {
-                    StreetAggregator(adresse)
-                }
+                val aggregator =
+                    streetData.getOrPut(key) {
+                        StreetAggregator(adresse)
+                    }
                 aggregator.add(adresse.nord, adresse.ost)
             }
         }
 
-        val streetNominatim = streetData.values.asSequence().map { agg ->
-            convertStreetToNominatim(agg.representative, agg.getAvgNord(), agg.getAvgOst())
-        }
+        val streetNominatim =
+            streetData.values.asSequence().map { agg ->
+                convertStreetToNominatim(agg.representative, agg.getAvgNord(), agg.getAvgOst())
+            }
         JsonWriter().export(streetNominatim, outputPath, true)
     }
 
@@ -69,6 +70,7 @@ class MatrikkelConverter(
         }
 
         fun getAvgNord() = sumNord / count
+
         fun getAvgOst() = sumOst / count
     }
 
@@ -128,7 +130,7 @@ class MatrikkelConverter(
                 source = Source.KARTVERKET_ADRESSE,
                 accuracy = "point",
                 country_a = "NOR",
-                county_gid = fylkesnummer?.let { "KVE:TopographicPlace:${it}" },
+                county_gid = fylkesnummer?.let { "KVE:TopographicPlace:$it" },
                 locality = adresse.kommunenavn?.titleize(),
                 locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
                 borough = adresse.grunnkretsnavn?.titleize(),
@@ -165,7 +167,6 @@ class MatrikkelConverter(
 
         return NominatimPlace("Place", listOf(properties))
     }
-
 
     fun parseCsv(inputFile: File): Sequence<MatrikkelAdresse> =
         sequence {

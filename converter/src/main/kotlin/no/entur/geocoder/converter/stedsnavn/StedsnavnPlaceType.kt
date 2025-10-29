@@ -40,7 +40,9 @@ enum class StedsnavnPlaceType {
     /**
      * Tettbebyggelse (Built-up area) - Generic built-up area
      */
-    tettbebyggelse;
+    tettbebyggelse,
+
+    ;
 
     companion object {
         /**

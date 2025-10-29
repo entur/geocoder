@@ -13,78 +13,93 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class V3ResultTransformer {
-    private val mapper: ObjectMapper = jacksonObjectMapper().apply {
-        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-    }
+    private val mapper: ObjectMapper =
+        jacksonObjectMapper().apply {
+            setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+        }
 
     fun parseAndTransform(
         photonResult: PhotonResult,
-        params: V3AutocompleteParams
+        params: V3AutocompleteParams,
     ): String {
         val places = photonResult.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
 
-        val filters = if (params.placeTypes.isNotEmpty() || params.sources.isNotEmpty() || params.countries.isNotEmpty() ||
-            params.countyIds.isNotEmpty() || params.localityIds.isNotEmpty() || params.tariffZones.isNotEmpty() ||
-            params.tariffZoneAuthorities.isNotEmpty() || params.transportModes.isNotEmpty()
-        ) {
-            V3Result.Filters(
-                placeTypes = params.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
-                sources = params.sources.takeIf { it.isNotEmpty() },
-                countries = params.countries.takeIf { it.isNotEmpty() },
-                countyIds = params.countyIds.takeIf { it.isNotEmpty() },
-                localityIds = params.localityIds.takeIf { it.isNotEmpty() },
-                tariffZones = params.tariffZones.takeIf { it.isNotEmpty() },
-                tariffZoneAuthorities = params.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
-                transportModes = params.transportModes.takeIf { it.isNotEmpty() }
-            )
-        } else null
+        val filters =
+            if (params.placeTypes.isNotEmpty() ||
+                params.sources.isNotEmpty() ||
+                params.countries.isNotEmpty() ||
+                params.countyIds.isNotEmpty() ||
+                params.localityIds.isNotEmpty() ||
+                params.tariffZones.isNotEmpty() ||
+                params.tariffZoneAuthorities.isNotEmpty() ||
+                params.transportModes.isNotEmpty()
+            ) {
+                V3Result.Filters(
+                    placeTypes = params.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
+                    sources = params.sources.takeIf { it.isNotEmpty() },
+                    countries = params.countries.takeIf { it.isNotEmpty() },
+                    countyIds = params.countyIds.takeIf { it.isNotEmpty() },
+                    localityIds = params.localityIds.takeIf { it.isNotEmpty() },
+                    tariffZones = params.tariffZones.takeIf { it.isNotEmpty() },
+                    tariffZoneAuthorities = params.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
+                    transportModes = params.transportModes.takeIf { it.isNotEmpty() },
+                )
+            } else {
+                null
+            }
 
-        val result = V3Result(
-            results = places,
-            metadata = Metadata(
-                query = QueryInfo(
-                    text = params.query,
-                    latitude = null,
-                    longitude = null,
-                    limit = params.limit,
-                    language = params.language,
-                    filters = filters
-                ),
-                resultCount = places.size,
-                timestamp = System.currentTimeMillis(),
-                boundingBox = boundingBox
+        val result =
+            V3Result(
+                results = places,
+                metadata =
+                    Metadata(
+                        query =
+                            QueryInfo(
+                                text = params.query,
+                                latitude = null,
+                                longitude = null,
+                                limit = params.limit,
+                                language = params.language,
+                                filters = filters,
+                            ),
+                        resultCount = places.size,
+                        timestamp = System.currentTimeMillis(),
+                        boundingBox = boundingBox,
+                    ),
             )
-        )
 
         return mapper.writeValueAsString(result)
     }
 
     fun parseAndTransform(
         photonResult: PhotonResult,
-        params: V3ReverseParams
+        params: V3ReverseParams,
     ): String {
         val places = photonResult.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
 
-        val result = V3Result(
-            results = places,
-            metadata = Metadata(
-                query = QueryInfo(
-                    text = null,
-                    latitude = params.latitude.toBigDecimalOrNull(),
-                    longitude = params.longitude.toBigDecimalOrNull(),
-                    limit = params.limit,
-                    language = params.language,
-                    filters = null
-                ),
-                resultCount = places.size,
-                timestamp = System.currentTimeMillis(),
-                boundingBox = boundingBox
+        val result =
+            V3Result(
+                results = places,
+                metadata =
+                    Metadata(
+                        query =
+                            QueryInfo(
+                                text = null,
+                                latitude = params.latitude.toBigDecimalOrNull(),
+                                longitude = params.longitude.toBigDecimalOrNull(),
+                                limit = params.limit,
+                                language = params.language,
+                                filters = null,
+                            ),
+                        resultCount = places.size,
+                        timestamp = System.currentTimeMillis(),
+                        boundingBox = boundingBox,
+                    ),
             )
-        )
 
         return mapper.writeValueAsString(result)
     }
@@ -99,30 +114,51 @@ class V3ResultTransformer {
 
         val label = props.name + extra?.locality?.let { ", $it" }.orEmpty()
         return V3Result.Place(
-            id = extra?.id
-                ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
+            id =
+                extra?.id
+                    ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
             name = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed",
             displayName = label,
             placeType = placeType,
-            location = V3Result.Location(
-                latitude = coords.getOrElse(1) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
-                longitude = coords.getOrElse(0) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP)
-            ),
+            location =
+                V3Result.Location(
+                    latitude = coords.getOrElse(1) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
+                    longitude = coords.getOrElse(0) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
+                ),
             address = buildAddress(props, extra),
-            categories = extra?.tags?.split(",")?.map { it.substringAfter('.') }?.filter { it.isNotBlank() },
-            transportModes = extra?.transport_modes?.split(',')?.map { it.trim() }?.filter { it.isNotBlank() },
-            tariffZones = extra?.tariff_zones?.split(',')?.map { it.trim() }?.filter { it.isNotBlank() },
-            source = V3Result.DataSource(
-                provider = mapProviderName(extra?.source),
-                sourceId = buildSourceId(extra?.source, extra?.id, props.osm_type, props.osm_id),
-                accuracy = accuracy
-            )
+            categories =
+                extra
+                    ?.tags
+                    ?.split(",")
+                    ?.map { it.substringAfter('.') }
+                    ?.filter { it.isNotBlank() },
+            transportModes =
+                extra
+                    ?.transport_modes
+                    ?.split(',')
+                    ?.map { it.trim() }
+                    ?.filter { it.isNotBlank() },
+            tariffZones =
+                extra
+                    ?.tariff_zones
+                    ?.split(',')
+                    ?.map { it.trim() }
+                    ?.filter { it.isNotBlank() },
+            source =
+                V3Result.DataSource(
+                    provider = mapProviderName(extra?.source),
+                    sourceId = buildSourceId(extra?.source, extra?.id, props.osm_type, props.osm_id),
+                    accuracy = accuracy,
+                ),
         )
     }
 
     private fun buildAddress(props: PhotonResult.PhotonProperties, extra: Extra?): V3Result.Address? {
-        if (props.street == null && props.housenumber == null && props.postcode == null &&
-            props.extra?.locality == null && props?.county == null
+        if (props.street == null &&
+            props.housenumber == null &&
+            props.postcode == null &&
+            props.extra?.locality == null &&
+            props?.county == null
         ) {
             return null
         }
@@ -138,23 +174,22 @@ class V3ResultTransformer {
             county = props.county,
             countyId = extra?.county_gid,
             country = null, // Not provided in Photon response
-            countryCode = extra?.country_a
+            countryCode = extra?.country_a,
         )
     }
 
-    private fun buildSourceId(source: String?, id: String?, osmType: String?, osmId: Long?): String? {
-        return when {
+    private fun buildSourceId(source: String?, id: String?, osmType: String?, osmId: Long?): String? =
+        when {
             source == Source.OSM && id != null -> id
             source == Source.NSR && id != null -> "NSR:$id"
             source == Source.KARTVERKET_ADRESSE && id != null -> "Kartverket:$id"
-            osmType != null && osmId != null -> "OSM:${osmType}:${osmId}"
+            osmType != null && osmId != null -> "OSM:$osmType:$osmId"
             id != null -> id
             else -> null
         }
-    }
 
-    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): V3Result.PlaceType {
-        return when {
+    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): V3Result.PlaceType =
+        when {
             source == Source.KARTVERKET_ADRESSE -> V3Result.PlaceType.ADDRESS
             source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.PlaceType.STOP_PLACE
             source == Source.NSR && osmValue?.contains("station") == true -> V3Result.PlaceType.STATION
@@ -170,34 +205,30 @@ class V3ResultTransformer {
             osmKey == "tourism" -> V3Result.PlaceType.POI
             else -> V3Result.PlaceType.UNKNOWN
         }
-    }
 
-    private fun parseAccuracy(accuracy: String?): V3Result.Accuracy? {
-        return when (accuracy?.lowercase()) {
+    private fun parseAccuracy(accuracy: String?): V3Result.Accuracy? =
+        when (accuracy?.lowercase()) {
             "point" -> V3Result.Accuracy.EXACT
             "centroid" -> V3Result.Accuracy.APPROXIMATE
             "interpolated" -> V3Result.Accuracy.INTERPOLATED
             else -> null
         }
-    }
 
-    private fun mapProviderName(source: String?): String {
-        return when (source?.lowercase()) {
+    private fun mapProviderName(source: String?): String =
+        when (source?.lowercase()) {
             Source.OSM -> "OpenStreetMap"
             Source.NSR -> "National Stop Register"
             Source.KARTVERKET_ADRESSE -> "Kartverket MatrikkelenAdresse"
             Source.KARTVERKET_STEDSNAVN -> "Kartverket Stedsnavn"
             else -> source ?: "Unknown"
         }
-    }
 
-    private fun mapToPlaceType(type: String): V3Result.PlaceType? {
-        return try {
+    private fun mapToPlaceType(type: String): V3Result.PlaceType? =
+        try {
             V3Result.PlaceType.valueOf(type.uppercase())
         } catch (_: IllegalArgumentException) {
             null
         }
-    }
 
     private fun calculateBoundingBox(places: List<V3Result.Place>): V3Result.BoundingBox? {
         if (places.isEmpty()) return null
@@ -220,11 +251,10 @@ class V3ResultTransformer {
         return if (minLon != BigDecimal(Double.MAX_VALUE)) {
             V3Result.BoundingBox(
                 southwest = V3Result.Location(latitude = minLat, longitude = minLon),
-                northeast = V3Result.Location(latitude = maxLat, longitude = maxLon)
+                northeast = V3Result.Location(latitude = maxLat, longitude = maxLon),
             )
         } else {
             null
         }
     }
 }
-

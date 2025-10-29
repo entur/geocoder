@@ -4,13 +4,13 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
-import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.JsonWriter
+import no.entur.geocoder.converter.PlaceId
+import no.entur.geocoder.converter.Util.titleize
+import no.entur.geocoder.converter.importance.ImportanceCalculator
+import no.entur.geocoder.converter.matrikkel.Geo
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
-import no.entur.geocoder.converter.Util.titleize
-import no.entur.geocoder.converter.matrikkel.Geo
-import no.entur.geocoder.converter.importance.ImportanceCalculator
 import java.io.File
 import java.nio.file.Paths
 import javax.xml.stream.XMLInputFactory
@@ -68,7 +68,6 @@ class StedsnavnConverter : Converter {
         }
         return sb.toString()
     }
-
 
     private fun parseFeatureMember(reader: XMLStreamReader): StedsnavnEntry? {
         var lokalId: String? = null
@@ -165,13 +164,14 @@ class StedsnavnConverter : Converter {
         val hasAcceptedStatus = StedsnavnSpellingStatus.isAccepted(skrivemåtestatus)
 
         // Filter 3: All required fields must be present
-        val hasRequiredFields = lokalId != null &&
-            navnerom != null &&
-            stedsnavn != null &&
-            kommunenummer != null &&
-            kommunenavn != null &&
-            fylkesnummer != null &&
-            fylkesnavn != null
+        val hasRequiredFields =
+            lokalId != null &&
+                navnerom != null &&
+                stedsnavn != null &&
+                kommunenummer != null &&
+                kommunenavn != null &&
+                fylkesnummer != null &&
+                fylkesnavn != null
 
         return if (isTargetType && hasAcceptedStatus && hasRequiredFields) {
             StedsnavnEntry(
@@ -206,9 +206,10 @@ class StedsnavnConverter : Converter {
                 Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
             }
 
-        val categories = listOf(Category.OSM_POI)
-            .plus("place.${entry.navneobjekttype}")
-            .plus(Category.SOURCE_STEDSNAVN)
+        val categories =
+            listOf(Category.OSM_POI)
+                .plus("place.${entry.navneobjekttype}")
+                .plus(Category.SOURCE_STEDSNAVN)
 
         val extra =
             Extra(
@@ -230,14 +231,16 @@ class StedsnavnConverter : Converter {
                 object_id = placeId,
                 categories = categories,
                 rank_address = 16,
-                importance = ImportanceCalculator.calculateImportance(
-                    StedsnavnPopularityCalculator.calculatePopularity(entry.navneobjekttype)
-                ),
+                importance =
+                    ImportanceCalculator.calculateImportance(
+                        StedsnavnPopularityCalculator.calculatePopularity(entry.navneobjekttype),
+                    ),
                 parent_place_id = 0,
-                name = Name(
-                    name = entry.stedsnavn,
-                    alt_name = entry.annenSkrivemåte.joinToString(";").ifBlank { null },
-                ),
+                name =
+                    Name(
+                        name = entry.stedsnavn,
+                        alt_name = entry.annenSkrivemåte.joinToString(";").ifBlank { null },
+                    ),
                 housenumber = null,
                 address =
                     Address(
@@ -255,4 +258,3 @@ class StedsnavnConverter : Converter {
         return NominatimPlace("Place", listOf(properties))
     }
 }
-

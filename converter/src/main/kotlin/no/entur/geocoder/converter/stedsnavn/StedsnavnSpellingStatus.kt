@@ -29,7 +29,9 @@ enum class StedsnavnSpellingStatus {
     /**
      * Samlevedtak (Collective decision) - Approved by collective decision
      */
-    samlevedtak;
+    samlevedtak,
+
+    ;
 
     companion object {
         /**
@@ -49,7 +51,6 @@ enum class StedsnavnSpellingStatus {
          * @return true if the status is accepted, false otherwise
          */
         fun isAccepted(status: String?): Boolean = entries.any { it.name == status?.lowercase() }
-
 
         /**
          * Get the enum value for a spelling status code.

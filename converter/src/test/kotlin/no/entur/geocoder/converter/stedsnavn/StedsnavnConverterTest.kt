@@ -45,7 +45,6 @@ class StedsnavnConverterTest {
 
         assertTrue(outputFile.readText().contains("Grünerløkka"))
         assertEquals(outputFile.readLines().size, 3)
-
     }
 
     @Test
@@ -157,12 +156,12 @@ class StedsnavnConverterTest {
         assertEquals(
             "KVE:TopographicPlace:${entry.kommunenummer}",
             extra.locality_gid,
-            "Locality GID should have correct format"
+            "Locality GID should have correct format",
         )
         assertEquals(
             "KVE:TopographicPlace:${entry.fylkesnummer}",
             extra.county_gid,
-            "County GID should have correct format"
+            "County GID should have correct format",
         )
     }
 
@@ -173,7 +172,7 @@ class StedsnavnConverterTest {
         entries.forEach { entry ->
             assertTrue(
                 entry.navneobjekttype != null && targetTypes.contains(entry.navneobjekttype.lowercase()),
-                "All entries should have a target navneobjekttype"
+                "All entries should have a target navneobjekttype",
             )
         }
     }
@@ -191,7 +190,7 @@ class StedsnavnConverterTest {
         entries.forEach { entry ->
             assertFalse(
                 administrativeTypes.contains(entry.navneobjekttype?.lowercase()),
-                "Administrative types should be filtered out, found: ${entry.navneobjekttype}"
+                "Administrative types should be filtered out, found: ${entry.navneobjekttype}",
             )
         }
     }
@@ -235,7 +234,7 @@ class StedsnavnConverterTest {
         assertNotNull(jomna.skrivemåtestatus, "Should have skrivemåtestatus field")
         assertTrue(
             StedsnavnSpellingStatus.isAccepted(jomna.skrivemåtestatus),
-            "Parsed entry should have accepted spelling status"
+            "Parsed entry should have accepted spelling status",
         )
     }
 
@@ -246,7 +245,7 @@ class StedsnavnConverterTest {
         entries.forEach { entry ->
             assertTrue(
                 StedsnavnSpellingStatus.isAccepted(entry.skrivemåtestatus),
-                "Entry ${entry.stedsnavn} should have accepted spelling status, got: ${entry.skrivemåtestatus}"
+                "Entry ${entry.stedsnavn} should have accepted spelling status, got: ${entry.skrivemåtestatus}",
             )
         }
     }
@@ -270,7 +269,7 @@ class StedsnavnConverterTest {
         assertEquals(
             byImportance,
             tettbebyggelseImportance,
-            "All place types should have same importance (matching kakka's flat placeBoost)"
+            "All place types should have same importance (matching kakka's flat placeBoost)",
         )
     }
 
@@ -290,4 +289,3 @@ class StedsnavnConverterTest {
         }
     }
 }
-

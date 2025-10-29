@@ -59,7 +59,7 @@ class OsmIterator(inputFile: File, private val filter: ((Entity) -> Boolean)? = 
         /** Filter for POI entities (entities with name and wanted tags) */
         val POI_FILTER: (Entity) -> Boolean = { entity ->
             entity.tags.any { it.key == "name" } &&
-                    entity.tags.any { tag -> OSMPopularityCalculator.hasFilter(tag.key, tag.value) }
+                entity.tags.any { tag -> OSMPopularityCalculator.hasFilter(tag.key, tag.value) }
         }
 
         /** Filter for administrative boundary relations only */
@@ -67,10 +67,11 @@ class OsmIterator(inputFile: File, private val filter: ((Entity) -> Boolean)? = 
             if (entity is Relation) {
                 val tags = entity.tags.associate { it.key to it.value }
                 tags["boundary"] == "administrative" &&
-                        tags["admin_level"] in listOf(
-                    AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
-                    AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString()
-                )
+                    tags["admin_level"] in
+                    listOf(
+                        AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
+                        AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString(),
+                    )
             } else {
                 false
             }

@@ -38,9 +38,10 @@ object GroupOfStopPlacesPopularityCalculator {
 
         // Calculate product of all member popularities
         // Use Double to handle large products (can exceed Long.MAX_VALUE)
-        val product = memberPopularities.fold(1.0) { acc, popularity ->
-            acc * popularity
-        }
+        val product =
+            memberPopularities.fold(1.0) { acc, popularity ->
+                acc * popularity
+            }
 
         // Apply gosBoostFactor
         return GOS_BOOST_FACTOR * product

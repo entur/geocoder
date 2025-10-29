@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * Formula: popularity = DEFAULT_VALUE (40.0 for all target types)
  */
 class StedsnavnPopularityCalculatorTest {
-
     @Test
     fun `all target types return same popularity`() {
         val byPop = StedsnavnPopularityCalculator.calculatePopularity("by")
@@ -53,12 +52,12 @@ class StedsnavnPopularityCalculatorTest {
         assertEquals(
             StedsnavnPopularityCalculator.calculatePopularity("by"),
             StedsnavnPopularityCalculator.calculatePopularity("BY"),
-            "Case should not affect popularity"
+            "Case should not affect popularity",
         )
         assertEquals(
             StedsnavnPopularityCalculator.calculatePopularity("tettsted"),
             StedsnavnPopularityCalculator.calculatePopularity("TETTSTED"),
-            "Case should not affect popularity"
+            "Case should not affect popularity",
         )
     }
 

@@ -13,24 +13,24 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object PeliasApi {
-
     suspend fun RoutingContext.peliasAutocompleteRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        transformer: PeliasResultTransformer
+        transformer: PeliasResultTransformer,
     ) {
-        val params = try {
-            PeliasAutocompleteParams.fromRequest(call.request)
-        } catch (e: Exception) {
-            logger.error("Invalid parameters for Pelias autocomplete: ${e.message}")
-            val error = ErrorHandler.handleError(e, "Autocomplete")
-            call.respondText(
-                ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode)
-            )
-            return
-        }
+        val params =
+            try {
+                PeliasAutocompleteParams.fromRequest(call.request)
+            } catch (e: Exception) {
+                logger.error("Invalid parameters for Pelias autocomplete: ${e.message}")
+                val error = ErrorHandler.handleError(e, "Autocomplete")
+                call.respondText(
+                    ErrorHandler.toJson(error),
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.fromValue(error.statusCode),
+                )
+                return
+            }
 
         val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
@@ -69,7 +69,7 @@ object PeliasApi {
             call.respondText(
                 ErrorHandler.toJson(error),
                 contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode)
+                status = HttpStatusCode.fromValue(error.statusCode),
             )
         }
     }
@@ -77,20 +77,21 @@ object PeliasApi {
     suspend fun RoutingContext.peliasReverseRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        transformer: PeliasResultTransformer
+        transformer: PeliasResultTransformer,
     ) {
-        val params = try {
-            PeliasReverseParams.fromRequest(call.request)
-        } catch (e: Exception) {
-            logger.error("Invalid parameters for Pelias reverse: ${e.message}")
-            val error = ErrorHandler.handleError(e, "Reverse geocoding")
-            call.respondText(
-                ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode)
-            )
-            return
-        }
+        val params =
+            try {
+                PeliasReverseParams.fromRequest(call.request)
+            } catch (e: Exception) {
+                logger.error("Invalid parameters for Pelias reverse: ${e.message}")
+                val error = ErrorHandler.handleError(e, "Reverse geocoding")
+                call.respondText(
+                    ErrorHandler.toJson(error),
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.fromValue(error.statusCode),
+                )
+                return
+            }
 
         val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
@@ -117,11 +118,10 @@ object PeliasApi {
             call.respondText(
                 ErrorHandler.toJson(error),
                 contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode)
+                status = HttpStatusCode.fromValue(error.statusCode),
             )
         }
     }
 
     private val logger = LoggerFactory.getLogger(PeliasApi::class.java)
 }
-

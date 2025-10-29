@@ -35,9 +35,10 @@ class MatrikkelConverterTest {
         assertTrue(lines.size > 1, "Output file should have at least two lines (header and data)")
 
         // Find the address with lokalid 225678815
-        val targetPlaceJson = lines.find { line ->
-            line.contains("\"225678815\"")
-        }
+        val targetPlaceJson =
+            lines.find { line ->
+                line.contains("\"225678815\"")
+            }
         assertNotNull(targetPlaceJson, "Could not find address with lokalid 225678815")
 
         val nominatimPlace: NominatimPlace = objectMapper.readValue(targetPlaceJson)
@@ -85,9 +86,10 @@ class MatrikkelConverterTest {
         assertTrue(lines.isNotEmpty())
 
         // Find the address with lokalid 225678815 (same as previous test)
-        val targetPlaceJson = lines.find { line ->
-            line.contains("\"225678815\"")
-        }
+        val targetPlaceJson =
+            lines.find { line ->
+                line.contains("\"225678815\"")
+            }
         assertNotNull(targetPlaceJson, "Could not find address with lokalid 225678815")
 
         val nominatimPlace: NominatimPlace = objectMapper.readValue(targetPlaceJson)

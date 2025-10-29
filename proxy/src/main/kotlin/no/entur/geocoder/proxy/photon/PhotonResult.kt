@@ -16,6 +16,7 @@ data class PhotonResult(
 
         fun parse(json: String): PhotonResult = mapper.readValue(json)
     }
+
     data class PhotonFeature(
         val type: String = "PhotonFeature",
         val geometry: PhotonGeometry,

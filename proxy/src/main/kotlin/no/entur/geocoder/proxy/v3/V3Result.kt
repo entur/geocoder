@@ -56,14 +56,14 @@ data class V3Result(
         STOP_PLACE,
         STATION,
         POI,
-        UNKNOWN
+        UNKNOWN,
     }
 
     enum class Accuracy {
         EXACT,
         INTERPOLATED,
         APPROXIMATE,
-        UNKNOWN
+        UNKNOWN,
     }
 
     data class Metadata(
@@ -98,4 +98,3 @@ data class V3Result(
         val northeast: Location,
     )
 }
-

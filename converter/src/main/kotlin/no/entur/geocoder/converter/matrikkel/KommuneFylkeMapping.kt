@@ -9,12 +9,11 @@ import javax.xml.stream.XMLStreamReader
  * Utility to build a mapping from kommune to fylke information by parsing Stedsnavn GML files.
  */
 object KommuneFylkeMapping {
-
     data class KommuneInfo(
         val kommunenummer: String,
         val kommunenavn: String,
         val fylkesnummer: String,
-        val fylkesnavn: String
+        val fylkesnavn: String,
     )
 
     /**
@@ -71,8 +70,11 @@ object KommuneFylkeMapping {
             }
         }
 
-        return if (kommunenummer != null && kommunenavn != null &&
-                   fylkesnummer != null && fylkesnavn != null) {
+        return if (kommunenummer != null &&
+            kommunenavn != null &&
+            fylkesnummer != null &&
+            fylkesnavn != null
+        ) {
             KommuneInfo(kommunenummer, kommunenavn, fylkesnummer, fylkesnavn)
         } else {
             null
@@ -95,4 +97,3 @@ object KommuneFylkeMapping {
         return sb.toString()
     }
 }
-

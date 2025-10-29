@@ -19,9 +19,10 @@ class JsonWriter {
         outputPath: Path,
         isAppending: Boolean = true,
     ) {
-        val objectMapper = jacksonObjectMapper().apply {
-            setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-        }
+        val objectMapper =
+            jacksonObjectMapper().apply {
+                setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+            }
         Files.createDirectories(outputPath.parent)
 
         if (!isAppending) {

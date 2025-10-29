@@ -91,7 +91,6 @@ class Command(
                     i += 1
                 }
 
-
                 else -> exit("Error: Unknown option ${args[i]}")
             }
         }
@@ -101,11 +100,11 @@ class Command(
         }
 
         if (stopplaceInputPath == null && matrikkelInputPath == null && osmInputPath == null && stedsnavnInputPath == null) {
-            exit("Error: No conversion type specified. Use -s for stopplace, -m for matrikkel, -p for OSM PBF, and/or -g for Stedsnavn GML.")
+            exit("Error: No conversion specified. Use -s for stopplace, -m for matrikkel, -p for OSM PBF, and/or -g for Stedsnavn GML.")
         }
 
         if (matrikkelInputPath != null && stedsnavnInputPath == null && !noCounty) {
-            exit("Error: Matrikkel conversion requires either -g <stedsnavn-gml-file> to populate county data, or --no-county to skip county population.")
+            exit("Error: Matrikkel conversion requires either -g <stedsnavn-gml> to populate county data, or --no-county to skip it.")
         }
 
         if (forceOverwrite && appendMode) {
@@ -162,8 +161,8 @@ class Command(
                 println(
                     "$name conversion completed in %.2f seconds. $action ${outputFile.absolutePath}, size: %.2f MB.".format(
                         durationSeconds,
-                        fileSizeMB
-                    )
+                        fileSizeMB,
+                    ),
                 )
                 isFirstConversion = false
             }
@@ -186,7 +185,8 @@ class Command(
     }
 
     fun printUsage() {
-        println("""
+        println(
+            """
             Usage: ./geocoder-convert [options] -o <output-file>
             
             Options:
@@ -199,6 +199,7 @@ class Command(
               -a                      Append to existing output file
               --no-county             Skip county population for Matrikkel data (when -m is provided and -g is not)
               --no-stedsnavn          Skip Stedsnavn output when converting Matrikkel (when both -m and -g is provided)
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 }

@@ -17,7 +17,7 @@ object ImportanceCalculator {
         popularity: Number,
         minPopularity: Double = MIN_POPULARITY,
         maxPopularity: Double = MAX_POPULARITY,
-        floor: Double = IMPORTANCE_FLOOR
+        floor: Double = IMPORTANCE_FLOOR,
     ): Double {
         val pop = popularity.toDouble()
 

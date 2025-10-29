@@ -50,4 +50,3 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
-

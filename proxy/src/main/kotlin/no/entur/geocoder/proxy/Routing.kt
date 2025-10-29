@@ -13,7 +13,6 @@ import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteReq
 import no.entur.geocoder.proxy.v3.V3Api.reverseRequest as v3ReverseRequest
 
 object Routing {
-
     fun Application.configureRouting(
         client: HttpClient,
         photonBaseUrl: String,

@@ -11,7 +11,6 @@ import kotlin.test.assertTrue
  * matching kakka's implementation (KartverketFeatureSpellingStatusCode.java).
  */
 class StedsnavnSpellingStatusTest {
-
     @Test
     fun `vedtatt status is accepted`() {
         assertTrue(StedsnavnSpellingStatus.isAccepted("vedtatt"), "vedtatt (approved) should be accepted")
@@ -90,7 +89,7 @@ class StedsnavnSpellingStatusTest {
         accepted.forEach { status ->
             assertTrue(
                 StedsnavnSpellingStatus.isAccepted(status),
-                "$status should be in accepted list"
+                "$status should be in accepted list",
             )
         }
     }
@@ -101,7 +100,7 @@ class StedsnavnSpellingStatusTest {
         rejected.forEach { status ->
             assertFalse(
                 StedsnavnSpellingStatus.isAccepted(status),
-                "$status should be in rejected list"
+                "$status should be in rejected list",
             )
         }
     }

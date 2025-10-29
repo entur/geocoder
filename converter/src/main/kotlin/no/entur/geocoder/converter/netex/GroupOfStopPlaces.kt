@@ -61,4 +61,3 @@ class GroupOfStopPlaces(
         val latitude: BigDecimal,
     )
 }
-

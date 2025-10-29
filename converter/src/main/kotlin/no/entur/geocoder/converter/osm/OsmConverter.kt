@@ -61,7 +61,6 @@ class OsmConverter : Converter {
     private val wayCentroids = CoordinateStore(50000)
     private val adminBoundaryIndex = AdministrativeBoundaryIndex()
 
-
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
 
@@ -101,9 +100,10 @@ class OsmConverter : Converter {
                 val tags = entity.tags.associate { it.key to it.value }
                 val adminLevelStr = tags["admin_level"]
                 if (tags["boundary"] == "administrative" &&
-                    adminLevelStr in listOf(
+                    adminLevelStr in
+                    listOf(
                         AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
-                        AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString()
+                        AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString(),
                     )
                 ) {
                     val adminLevel = adminLevelStr?.toIntOrNull()
@@ -113,9 +113,10 @@ class OsmConverter : Converter {
 
                     // Only process Norwegian boundaries
                     if (adminLevel != null && name != null && ref != null && countryCode == "NO") {
-                        val wayIds = entity.members
-                            .filter { it.memberType == EntityType.Way }
-                            .map { it.memberId }
+                        val wayIds =
+                            entity.members
+                                .filter { it.memberType == EntityType.Way }
+                                .map { it.memberId }
 
                         adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds, countryCode))
                     }
@@ -137,19 +138,18 @@ class OsmConverter : Converter {
         parsePbf(inputFile, null).forEach { entity ->
             when (entity) {
                 is Way -> {
-                    // Collect nodes from admin boundary ways
                     if (entity.id in adminWayIds) {
+                        // Collect nodes from admin boundary ways
                         entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
-                    }
-                    // Collect nodes from POI ways
-                    else if (isPotentialPoi(entity)) {
+                    } else if (isPotentialPoi(entity)) {
+                        // Collect nodes from POI ways
                         entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
                     }
                 }
 
                 is Relation -> {
-                    // Collect direct node members from admin boundaries
                     if (entity.tags.any { it.key == "boundary" && it.value == "administrative" }) {
+                        // Collect direct node members from admin boundaries
                         entity.members
                             .filter { it.memberType == EntityType.Node }
                             .forEach { nodeIds.add(it.memberId) }
@@ -168,7 +168,7 @@ class OsmConverter : Converter {
     private fun isPotentialPoi(entity: Entity): Boolean {
         val tags = entity.tags.associate { it.key to it.value }
         return tags.containsKey("name") &&
-                tags.any { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
+            tags.any { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
     }
 
     /**
@@ -226,32 +226,35 @@ class OsmConverter : Converter {
         // Build admin boundaries from the collected data
         adminRelations.forEach { relation ->
             // Collect ALL node coordinates from all ways in the boundary (not just way centroids)
-            val allNodeCoords = relation.wayIds.flatMap { wayId ->
-                wayIdToNodeCoords[wayId] ?: emptyList()
-            }
+            val allNodeCoords =
+                relation.wayIds.flatMap { wayId ->
+                    wayIdToNodeCoords[wayId] ?: emptyList()
+                }
 
             if (allNodeCoords.isNotEmpty()) {
                 // Calculate centroid from all actual nodes for better accuracy
                 val centroidLon = allNodeCoords.map { it.first }.average()
                 val centroidLat = allNodeCoords.map { it.second }.average()
 
-                val bbox = BoundingBox.fromCoordinates(
-                    allNodeCoords.map { (lon, lat) -> lat to lon }
-                )
+                val bbox =
+                    BoundingBox.fromCoordinates(
+                        allNodeCoords.map { (lon, lat) -> lat to lon },
+                    )
 
                 // Convert node coords to (lat, lon) pairs for ray-casting
                 val boundaryNodes = allNodeCoords.map { (lon, lat) -> lat to lon }
 
-                val boundary = AdministrativeBoundary(
-                    id = relation.id,
-                    name = relation.name,
-                    adminLevel = relation.adminLevel,
-                    refCode = relation.ref,
-                    countryCode = relation.countryCode,
-                    centroid = centroidLat to centroidLon,
-                    bbox = bbox,
-                    boundaryNodes = boundaryNodes
-                )
+                val boundary =
+                    AdministrativeBoundary(
+                        id = relation.id,
+                        name = relation.name,
+                        adminLevel = relation.adminLevel,
+                        refCode = relation.ref,
+                        countryCode = relation.countryCode,
+                        centroid = centroidLat to centroidLon,
+                        bbox = bbox,
+                        boundaryNodes = boundaryNodes,
+                    )
 
                 adminBoundaryIndex.addBoundary(boundary)
             }
@@ -264,7 +267,7 @@ class OsmConverter : Converter {
         val adminLevel: Int,
         val ref: String,
         val wayIds: List<Long>,
-        val countryCode: String
+        val countryCode: String,
     )
 
     private fun processEntities(inputFile: File): Sequence<NominatimPlace> =
@@ -310,9 +313,9 @@ class OsmConverter : Converter {
     }
 
     private fun filterTags(tags: Collection<Tag>): Map<String, String> =
-        tags.associate { it.key to it.value }
+        tags
+            .associate { it.key to it.value }
             .filter { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
-
 
     private fun createPlaceContent(
         entity: Entity,
@@ -331,42 +334,45 @@ class OsmConverter : Converter {
         val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
-        val altName = listOfNotNull(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
-            .joinToString(";")
-            .ifBlank { null }
+        val altName =
+            listOfNotNull(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
+                .joinToString(";")
+                .ifBlank { null }
 
-        val extra = Extra(
-            id = "OSM:TopographicPlace:" + entity.id,
-            source = Source.OSM,
-            accuracy = accuracy,
-            country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
-            county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
-            locality = municipality?.name?.titleize(),
-            locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-            tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
-            alt_name = altName,
-        )
+        val extra =
+            Extra(
+                id = "OSM:TopographicPlace:" + entity.id,
+                source = Source.OSM,
+                accuracy = accuracy,
+                country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
+                county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
+                locality = municipality?.name?.titleize(),
+                locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
+                tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
+                alt_name = altName,
+            )
 
         val categories = buildCategories(tags, country, county, municipality)
 
         val placeId = PlaceId.osm.create(entity.id)
-        val content = PlaceContent(
-            place_id = placeId,
-            object_type = objectType,
-            object_id = placeId,
-            categories = categories,
-            rank_address = determineRankAddress(tags),
-            importance = calculateImportance(tags),
-            parent_place_id = 0,
-            name = Name(name = name, alt_name = altName),
-            housenumber = null,
-            address = updatedAddress,
-            postcode = null,
-            country_code = country.lowercase(),
-            centroid = listOf(lon, lat),
-            bbox = listOf(lon, lat, lon, lat),
-            extra = extra,
-        )
+        val content =
+            PlaceContent(
+                place_id = placeId,
+                object_type = objectType,
+                object_id = placeId,
+                categories = categories,
+                rank_address = determineRankAddress(tags),
+                importance = calculateImportance(tags),
+                parent_place_id = 0,
+                name = Name(name = name, alt_name = altName),
+                housenumber = null,
+                address = updatedAddress,
+                postcode = null,
+                country_code = country.lowercase(),
+                centroid = listOf(lon, lat),
+                bbox = listOf(lon, lat, lon, lat),
+                extra = extra,
+            )
 
         return NominatimPlace("Place", listOf(content))
     }
@@ -381,7 +387,7 @@ class OsmConverter : Converter {
     private fun determineCountry(
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
-        tags: Map<String, String>
+        tags: Map<String, String>,
     ): String {
         val addrCountry = tags["addr:country"]
         return when {
@@ -399,7 +405,7 @@ class OsmConverter : Converter {
         tags: Map<String, String>,
         country: String,
         county: AdministrativeBoundary?,
-        municipality: AdministrativeBoundary?
+        municipality: AdministrativeBoundary?,
     ): List<String> =
         buildList {
             add(Category.OSM_POI)

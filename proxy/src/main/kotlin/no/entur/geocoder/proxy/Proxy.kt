@@ -38,7 +38,3 @@ fun main() {
         configureRouting(httpClient, photonBaseUrl)
     }.start(wait = true)
 }
-
-
-
-

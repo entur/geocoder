@@ -8,12 +8,13 @@ enum class PlaceId(val prefix: Int) {
     street(2000),
     stedsnavn(3000),
     stopplace(4000),
-    osm(5000);
+    osm(5000),
+    ;
 
     fun create(id: Long): Long = create("" + id)
 
     fun create(id: String): Long {
         val num = abs(id.toLongOrNull() ?: id.hashCode().toLong())
-        return "${prefix}${num}".toLong()
+        return "${prefix}$num".toLong()
     }
 }

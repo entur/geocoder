@@ -10,3 +10,4 @@ build
 /*.ndjson
 /matrikkelenAdresse.csv
 /Basis*/*csv
+/tmp/*

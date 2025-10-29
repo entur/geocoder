@@ -6,12 +6,11 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OSMPopularityCalculatorTest {
-
     @Test
     fun `calculates popularity as base times priority`() {
         // Test that the formula is: popularity = DEFAULT_VALUE × priority
-        val hospitalTags = mapOf("amenity" to "hospital")  // Priority 9
-        val cinemaTags = mapOf("amenity" to "cinema")      // Priority 1
+        val hospitalTags = mapOf("amenity" to "hospital") // Priority 9
+        val cinemaTags = mapOf("amenity" to "cinema") // Priority 1
 
         val hospitalPop = OSMPopularityCalculator.calculatePopularity(hospitalTags)
         val cinemaPop = OSMPopularityCalculator.calculatePopularity(cinemaTags)
@@ -24,12 +23,13 @@ class OSMPopularityCalculatorTest {
 
     @Test
     fun `multiple matching tags use highest priority not sum or average`() {
-        val highOnly = mapOf("amenity" to "hospital")  // Priority 9
-        val lowOnly = mapOf("amenity" to "cinema")      // Priority 1
-        val both = mapOf(
-            "amenity" to "hospital",  // Priority 9
-            "tourism" to "attraction"  // Priority 1
-        )
+        val highOnly = mapOf("amenity" to "hospital") // Priority 9
+        val lowOnly = mapOf("amenity" to "cinema") // Priority 1
+        val both =
+            mapOf(
+                "amenity" to "hospital", // Priority 9
+                "tourism" to "attraction", // Priority 1
+            )
 
         val highPop = OSMPopularityCalculator.calculatePopularity(highOnly)
         val lowPop = OSMPopularityCalculator.calculatePopularity(lowOnly)
@@ -62,8 +62,8 @@ class OSMPopularityCalculatorTest {
         // Test that it's not just checking keys or doing partial matches
         assertTrue(OSMPopularityCalculator.hasFilter("amenity", "hospital"))
         assertFalse(OSMPopularityCalculator.hasFilter("amenity", "bench"))
-        assertFalse(OSMPopularityCalculator.hasFilter("amenity", "hospitals"))  // Plural
-        assertFalse(OSMPopularityCalculator.hasFilter("building", "hospital"))  // Wrong key
+        assertFalse(OSMPopularityCalculator.hasFilter("amenity", "hospitals")) // Plural
+        assertFalse(OSMPopularityCalculator.hasFilter("building", "hospital")) // Wrong key
     }
 
     @Test

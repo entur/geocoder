@@ -18,16 +18,18 @@ class OsmConverterTest {
     fun testConvertOsmNodeToNominatim() {
         val osmConverter = OsmConverter()
 
-        val mockNode = createMockNode(
-            id = 1L,
-            name = "Test Node",
-            lat = 59.9133,
-            lon = 10.7389,
-            tags = listOf(
-                Tag("name", "Test Node"),
-                Tag("amenity", "restaurant"),
+        val mockNode =
+            createMockNode(
+                id = 1L,
+                name = "Test Node",
+                lat = 59.9133,
+                lon = 10.7389,
+                tags =
+                    listOf(
+                        Tag("name", "Test Node"),
+                        Tag("amenity", "restaurant"),
+                    ),
             )
-        )
 
         val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockNode)
 
@@ -45,15 +47,17 @@ class OsmConverterTest {
     fun testConvertOsmWayWithoutCoordinates() {
         val osmConverter = OsmConverter()
 
-        val mockWay = createMockWay(
-            id = 1L,
-            name = "Test Cinema",
-            tags = listOf(
-                Tag("name", "Test Cinema"),
-                Tag("amenity", "cinema"),
-            ),
-            nodeIds = listOf(100L, 101L, 102L, 103L)
-        )
+        val mockWay =
+            createMockWay(
+                id = 1L,
+                name = "Test Cinema",
+                tags =
+                    listOf(
+                        Tag("name", "Test Cinema"),
+                        Tag("amenity", "cinema"),
+                    ),
+                nodeIds = listOf(100L, 101L, 102L, 103L),
+            )
 
         // Without pre-loaded node coordinates, way conversion should return null
         val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockWay)
@@ -65,14 +69,16 @@ class OsmConverterTest {
     fun testConvertOsmWayWithMissingName() {
         val osmConverter = OsmConverter()
 
-        val mockWay = createMockWay(
-            id = 1L,
-            name = null,
-            tags = listOf(
-                Tag("amenity", "cinema"),
-            ),
-            nodeIds = listOf(100L, 101L, 102L, 103L)
-        )
+        val mockWay =
+            createMockWay(
+                id = 1L,
+                name = null,
+                tags =
+                    listOf(
+                        Tag("amenity", "cinema"),
+                    ),
+                nodeIds = listOf(100L, 101L, 102L, 103L),
+            )
 
         val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockWay)
 
@@ -83,15 +89,17 @@ class OsmConverterTest {
     fun testConvertOsmWayWithoutMatchingTags() {
         val osmConverter = OsmConverter()
 
-        val mockWay = createMockWay(
-            id = 1L,
-            name = "Random Way",
-            tags = listOf(
-                Tag("name", "Random Way"),
-                Tag("random_tag", "random_value"),
-            ),
-            nodeIds = listOf(100L, 101L, 102L, 103L)
-        )
+        val mockWay =
+            createMockWay(
+                id = 1L,
+                name = "Random Way",
+                tags =
+                    listOf(
+                        Tag("name", "Random Way"),
+                        Tag("random_tag", "random_value"),
+                    ),
+                nodeIds = listOf(100L, 101L, 102L, 103L),
+            )
 
         val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockWay)
 
@@ -103,50 +111,58 @@ class OsmConverterTest {
         val osmConverter = OsmConverter()
 
         // Create ways to test
-        val cinemaWay = createMockWay(
-            id = 1L,
-            name = "ODEON Oslo",
-            tags = listOf(
-                Tag("name", "ODEON Oslo"),
-                Tag("amenity", "cinema"),
-            ),
-            nodeIds = listOf(100L, 101L, 102L)
-        )
+        val cinemaWay =
+            createMockWay(
+                id = 1L,
+                name = "ODEON Oslo",
+                tags =
+                    listOf(
+                        Tag("name", "ODEON Oslo"),
+                        Tag("amenity", "cinema"),
+                    ),
+                nodeIds = listOf(100L, 101L, 102L),
+            )
 
-        val noNameWay = createMockWay(
-            id = 2L,
-            name = null,
-            tags = listOf(
-                Tag("amenity", "cinema"),
-            ),
-            nodeIds = listOf(200L, 201L, 202L)
-        )
+        val noNameWay =
+            createMockWay(
+                id = 2L,
+                name = null,
+                tags =
+                    listOf(
+                        Tag("amenity", "cinema"),
+                    ),
+                nodeIds = listOf(200L, 201L, 202L),
+            )
 
-        val noMatchingTagWay = createMockWay(
-            id = 3L,
-            name = "Random Building",
-            tags = listOf(
-                Tag("name", "Random Building"),
-                Tag("building", "yes"),
-            ),
-            nodeIds = listOf(300L, 301L, 302L)
-        )
+        val noMatchingTagWay =
+            createMockWay(
+                id = 3L,
+                name = "Random Building",
+                tags =
+                    listOf(
+                        Tag("name", "Random Building"),
+                        Tag("building", "yes"),
+                    ),
+                nodeIds = listOf(300L, 301L, 302L),
+            )
 
         // Test using reflection to access private method
-        val isPotentialPoiMethod = OsmConverter::class.java.getDeclaredMethod("isPotentialPoi", org.openstreetmap.osmosis.core.domain.v0_6.Entity::class.java)
+        val isPotentialPoiMethod =
+            OsmConverter::class.java
+                .getDeclaredMethod("isPotentialPoi", org.openstreetmap.osmosis.core.domain.v0_6.Entity::class.java)
         isPotentialPoiMethod.isAccessible = true
 
         assertTrue(
             isPotentialPoiMethod.invoke(osmConverter, cinemaWay) as Boolean,
-            "Cinema with name should be potential POI"
+            "Cinema with name should be potential POI",
         )
         assertTrue(
             !(isPotentialPoiMethod.invoke(osmConverter, noNameWay) as Boolean),
-            "Cinema without name should not be potential POI"
+            "Cinema without name should not be potential POI",
         )
         assertTrue(
             !(isPotentialPoiMethod.invoke(osmConverter, noMatchingTagWay) as Boolean),
-            "Building without matching tags should not be potential POI"
+            "Building without matching tags should not be potential POI",
         )
     }
 
@@ -204,22 +220,24 @@ class OsmConverterTest {
         name: String?,
         lat: Double,
         lon: Double,
-        tags: List<Tag>
+        tags: List<Tag>,
     ): Node {
-        val allTags = if (name != null && tags.none { it.key == "name" }) {
-            tags + Tag("name", name)
-        } else {
-            tags
-        }
+        val allTags =
+            if (name != null && tags.none { it.key == "name" }) {
+                tags + Tag("name", name)
+            } else {
+                tags
+            }
 
-        val entityData = CommonEntityData(
-            id,
-            1, // version
-            Date(),
-            null, // user
-            0L, // changesetId
-            allTags,
-        )
+        val entityData =
+            CommonEntityData(
+                id,
+                1, // version
+                Date(),
+                null, // user
+                0L, // changesetId
+                allTags,
+            )
 
         return Node(entityData, lat, lon)
     }
@@ -228,22 +246,24 @@ class OsmConverterTest {
         id: Long,
         name: String?,
         tags: List<Tag>,
-        nodeIds: List<Long>
+        nodeIds: List<Long>,
     ): Way {
-        val allTags = if (name != null && tags.none { it.key == "name" }) {
-            tags + Tag("name", name)
-        } else {
-            tags
-        }
+        val allTags =
+            if (name != null && tags.none { it.key == "name" }) {
+                tags + Tag("name", name)
+            } else {
+                tags
+            }
 
-        val entityData = CommonEntityData(
-            id,
-            1, // version
-            Date(),
-            null, // user
-            0L, // changesetId
-            allTags,
-        )
+        val entityData =
+            CommonEntityData(
+                id,
+                1, // version
+                Date(),
+                null, // user
+                0L, // changesetId
+                allTags,
+            )
 
         val wayNodes = nodeIds.map { WayNode(it) }
 

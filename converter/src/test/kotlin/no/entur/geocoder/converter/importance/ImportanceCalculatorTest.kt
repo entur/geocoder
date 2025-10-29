@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ImportanceCalculatorTest {
-
     @Test
     fun `output is always within valid range`() {
         val testValues = listOf(1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, 100_000_000, 1_000_000_000)

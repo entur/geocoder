@@ -13,17 +13,19 @@ package no.entur.geocoder.converter.netex
 object StopPlacePopularityCalculator {
     private const val DEFAULT_VALUE = 30
 
-    private val STOP_TYPE_FACTORS = mapOf(
-        "busStation" to 2.0,
-        "metroStation" to 2.0,
-        "railStation" to 2.0
-    )
+    private val STOP_TYPE_FACTORS =
+        mapOf(
+            "busStation" to 2.0,
+            "metroStation" to 2.0,
+            "railStation" to 2.0,
+        )
 
     // Interchange weighting factors
-    private val INTERCHANGE_FACTORS = mapOf(
-        "recommendedInterchange" to 3.0,
-        "preferredInterchange" to 10.0
-    )
+    private val INTERCHANGE_FACTORS =
+        mapOf(
+            "recommendedInterchange" to 3.0,
+            "preferredInterchange" to 10.0,
+        )
 
     /**
      * Calculate raw popularity value (boost) for a stop place.

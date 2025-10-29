@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GroupOfStopPlacesPopularityCalculatorTest {
-
     @Test
     fun `single member group has boosted popularity`() {
         // Group with one member stop that has popularity 60 (bus station)
@@ -115,18 +114,21 @@ class GroupOfStopPlacesPopularityCalculatorTest {
 
     @Test
     fun `popularity ordering preserved for increasing member count`() {
-        val groups = listOf(
-            listOf(60L),           // 1 member
-            listOf(60L, 60L),      // 2 members
-            listOf(60L, 60L, 60L), // 3 members
-        )
+        val groups =
+            listOf(
+                listOf(60L), // 1 member
+                listOf(60L, 60L), // 2 members
+                listOf(60L, 60L, 60L), // 3 members
+            )
 
         val popularities = groups.map { GroupOfStopPlacesPopularityCalculator.calculatePopularity(it) }
 
         // Verify strictly increasing
         for (i in 0 until popularities.size - 1) {
-            assertTrue(popularities[i] < popularities[i + 1],
-                "Popularity should increase with member count: ${popularities[i]} >= ${popularities[i + 1]}")
+            assertTrue(
+                popularities[i] < popularities[i + 1],
+                "Popularity should increase with member count: ${popularities[i]} >= ${popularities[i + 1]}",
+            )
         }
     }
 

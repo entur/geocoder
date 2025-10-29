@@ -13,33 +13,34 @@ data class PhotonAutocompleteRequest(
     val includes: List<String> = emptyList(),
     val excludes: List<String> = emptyList(),
     val lat: String?,
-    val lon: String?
+    val lon: String?,
 ) {
     companion object {
         fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
-            val includes = buildList {
-                if (params.countries.isNotEmpty()) {
-                    addAll(params.countries.map { "country.$it" })
+            val includes =
+                buildList {
+                    if (params.countries.isNotEmpty()) {
+                        addAll(params.countries.map { "country.$it" })
+                    }
+                    if (params.countyIds.isNotEmpty()) {
+                        addAll(params.countyIds.map { "county_gid.$it" })
+                    }
+                    if (params.localityIds.isNotEmpty()) {
+                        addAll(params.localityIds.map { "locality_gid.$it" })
+                    }
+                    if (params.tariffZones.isNotEmpty()) {
+                        addAll(params.tariffZones.map { "tariff_zone_id.$it" })
+                    }
+                    if (params.tariffZoneAuthorities.isNotEmpty()) {
+                        addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
+                    }
+                    if (params.sources.isNotEmpty()) {
+                        addAll(params.sources.map { "source.$it" })
+                    }
+                    if (params.placeTypes.isNotEmpty()) {
+                        addAll(params.placeTypes.map { "layer.$it" })
+                    }
                 }
-                if (params.countyIds.isNotEmpty()) {
-                    addAll(params.countyIds.map { "county_gid.$it" })
-                }
-                if (params.localityIds.isNotEmpty()) {
-                    addAll(params.localityIds.map { "locality_gid.$it" })
-                }
-                if (params.tariffZones.isNotEmpty()) {
-                    addAll(params.tariffZones.map { "tariff_zone_id.$it" })
-                }
-                if (params.tariffZoneAuthorities.isNotEmpty()) {
-                    addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
-                }
-                if (params.sources.isNotEmpty()) {
-                    addAll(params.sources.map { "source.$it" })
-                }
-                if (params.placeTypes.isNotEmpty()) {
-                    addAll(params.placeTypes.map { "layer.$it" })
-                }
-            }
 
             return PhotonAutocompleteRequest(
                 query = params.query,
@@ -47,41 +48,43 @@ data class PhotonAutocompleteRequest(
                 language = params.language,
                 includes = includes,
                 lat = null,
-                lon = null
+                lon = null,
             )
         }
 
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
-            val includes = buildList {
-                params.boundaryCountry?.let { add("country.$it") }
-                if (params.boundaryCountyIds.isNotEmpty()) {
-                    addAll(params.boundaryCountyIds.map { "county_gid.$it" })
-                }
-                if (params.boundaryLocalityIds.isNotEmpty()) {
-                    addAll(params.boundaryLocalityIds.map { "locality_gid.$it" })
-                }
-                if (params.tariffZones.isNotEmpty()) {
-                    addAll(params.tariffZones.map { "tariff_zone_id.$it" })
-                }
-                if (params.tariffZoneAuthorities.isNotEmpty()) {
-                    addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
-                }
-                if (params.sources.isNotEmpty()) {
-                    addAll(params.sources.map { "source.$it" })
-                }
-                if (params.layers.isNotEmpty()) {
-                    addAll(params.layers.map { "layer.$it" })
-                }
-            }
-            val excludes = buildList {
-                when (params.multiModal) {
-                    "child" -> add("multimodal.parent")
-                    "parent" -> add("multimodal.child")
-                    "both" -> {
-                        // No exclusion
+            val includes =
+                buildList {
+                    params.boundaryCountry?.let { add("country.$it") }
+                    if (params.boundaryCountyIds.isNotEmpty()) {
+                        addAll(params.boundaryCountyIds.map { "county_gid.$it" })
+                    }
+                    if (params.boundaryLocalityIds.isNotEmpty()) {
+                        addAll(params.boundaryLocalityIds.map { "locality_gid.$it" })
+                    }
+                    if (params.tariffZones.isNotEmpty()) {
+                        addAll(params.tariffZones.map { "tariff_zone_id.$it" })
+                    }
+                    if (params.tariffZoneAuthorities.isNotEmpty()) {
+                        addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
+                    }
+                    if (params.sources.isNotEmpty()) {
+                        addAll(params.sources.map { "source.$it" })
+                    }
+                    if (params.layers.isNotEmpty()) {
+                        addAll(params.layers.map { "layer.$it" })
                     }
                 }
-            }
+            val excludes =
+                buildList {
+                    when (params.multiModal) {
+                        "child" -> add("multimodal.parent")
+                        "parent" -> add("multimodal.child")
+                        "both" -> {
+                            // No exclusion
+                        }
+                    }
+                }
 
             return PhotonAutocompleteRequest(
                 query = params.text,
@@ -90,7 +93,7 @@ data class PhotonAutocompleteRequest(
                 includes = includes,
                 excludes = excludes,
                 lat = params.focus?.lat,
-                lon = params.focus?.lon
+                lon = params.focus?.lon,
             )
         }
     }
@@ -102,28 +105,25 @@ data class PhotonReverseRequest(
     val language: String,
     val limit: Int,
     val radius: String? = null,
-    val exclude: String = Category.OSM_ADDRESS // Exclude addresses with house numbers in reverse requests
+    val exclude: String = Category.OSM_ADDRESS, // Exclude addresses with house numbers in reverse requests
 ) {
     companion object {
-        fun from(params: V3ReverseParams): PhotonReverseRequest {
-            return PhotonReverseRequest(
+        fun from(params: V3ReverseParams): PhotonReverseRequest =
+            PhotonReverseRequest(
                 latitude = params.latitude,
                 longitude = params.longitude,
                 language = params.language,
                 limit = params.limit,
-                radius = params.radius
+                radius = params.radius,
             )
-        }
 
-        fun from(params: PeliasReverseParams): PhotonReverseRequest {
-            return PhotonReverseRequest(
+        fun from(params: PeliasReverseParams): PhotonReverseRequest =
+            PhotonReverseRequest(
                 latitude = params.lat,
                 longitude = params.lon,
                 language = params.lang,
                 limit = params.size,
-                radius = params.radius
+                radius = params.radius,
             )
-        }
     }
 }
-

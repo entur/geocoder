@@ -4,7 +4,7 @@ import io.ktor.server.request.ApplicationRequest
 
 data class FocusParams(
     val lat: String,
-    val lon: String
+    val lon: String,
 ) {
     init {
         require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
@@ -31,7 +31,7 @@ data class PeliasAutocompleteParams(
     val layers: List<String> = emptyList(),
     val categories: List<String> = emptyList(),
     val focus: FocusParams? = null,
-    val multiModal: String
+    val multiModal: String,
 ) {
     companion object {
         fun fromRequest(request: ApplicationRequest): PeliasAutocompleteParams {
@@ -48,17 +48,19 @@ data class PeliasAutocompleteParams(
                 sources = params["sources"]?.split(",") ?: emptyList(),
                 layers = params["layers"]?.split(",") ?: emptyList(),
                 categories = params["transport_mode"]?.split(",") ?: emptyList(),
-                focus = params["focus.point.lat"]?.let { lat ->
-                    params["focus.point.lon"]?.let { lon ->
-                        FocusParams(lat, lon)
-                    }
-                },
-                multiModal = when (params["multiModal"]) {
-                    "child" -> "child"
-                    "parent" -> "parent"
-                    "both" -> "both"
-                    else -> "parent"
-                }
+                focus =
+                    params["focus.point.lat"]?.let { lat ->
+                        params["focus.point.lon"]?.let { lon ->
+                            FocusParams(lat, lon)
+                        }
+                    },
+                multiModal =
+                    when (params["multiModal"]) {
+                        "child" -> "child"
+                        "parent" -> "parent"
+                        "both" -> "both"
+                        else -> "parent"
+                    },
             )
         }
     }
@@ -69,7 +71,7 @@ data class PeliasReverseParams(
     val lon: String = "",
     val radius: String? = null,
     val size: Int = 10,
-    val lang: String = "no"
+    val lang: String = "no",
 ) {
     init {
         require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
@@ -90,9 +92,8 @@ data class PeliasReverseParams(
                 lon = params["point.lon"] ?: "",
                 radius = params["boundary.circle.radius"],
                 size = params["size"]?.toIntOrNull() ?: 10,
-                lang = params["lang"] ?: "no"
+                lang = params["lang"] ?: "no",
             )
         }
     }
 }
-

@@ -20,7 +20,7 @@ data class AdministrativeBoundary(
     val countryCode: String,
     val centroid: Pair<Double, Double>, // lat, lon
     val bbox: BoundingBox?,
-    val boundaryNodes: List<Pair<Double, Double>> = emptyList()
+    val boundaryNodes: List<Pair<Double, Double>> = emptyList(),
 ) {
     /**
      * Checks if the given point is within the bounding box.
@@ -59,7 +59,8 @@ data class AdministrativeBoundary(
             val (lat2, lon2) = boundaryNodes[j]
 
             if ((lon1 > lon) != (lon2 > lon) &&
-                lat < (lat2 - lat1) * (lon - lon1) / (lon2 - lon1) + lat1) {
+                lat < (lat2 - lat1) * (lon - lon1) / (lon2 - lon1) + lat1
+            ) {
                 inside = !inside
             }
             j = i
@@ -81,12 +82,10 @@ data class BoundingBox(
     val minLat: Double,
     val maxLat: Double,
     val minLon: Double,
-    val maxLon: Double
+    val maxLon: Double,
 ) {
     /** Checks if the given point is within this bounding box. */
-    fun contains(lat: Double, lon: Double): Boolean {
-        return lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon
-    }
+    fun contains(lat: Double, lon: Double): Boolean = lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon
 
     /** Calculate the area of the bounding box (used to prioritize smaller, more specific boundaries). */
     fun area(): Double = (maxLat - minLat) * (maxLon - minLon)
@@ -102,7 +101,7 @@ data class BoundingBox(
                 minLat = coords.minOf { it.first },
                 maxLat = coords.maxOf { it.first },
                 minLon = coords.minOf { it.second },
-                maxLon = coords.maxOf { it.second }
+                maxLon = coords.maxOf { it.second },
             )
         }
     }
@@ -170,7 +169,7 @@ class AdministrativeBoundaryIndex {
     private fun findBestMatch(
         boundaries: List<AdministrativeBoundary>,
         lat: Double,
-        lon: Double
+        lon: Double,
     ): AdministrativeBoundary? {
         // First, try ray-casting for boundaries that have polygon data
         val candidatesContainingPoint = boundaries.filter { it.containsPoint(lat, lon) }
@@ -201,4 +200,3 @@ class AdministrativeBoundaryIndex {
     fun getStatistics(): String =
         "Loaded ${counties.size} counties and ${municipalities.size} municipalities"
 }
-
