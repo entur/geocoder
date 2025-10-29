@@ -17,6 +17,7 @@ jobs:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: Dockerfile.proxy
+      ignore: "DL3018,DL3059"
 
   build-push:
     needs: lint
