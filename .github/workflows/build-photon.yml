@@ -111,9 +111,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-dev:
-    if: |
-      !cancelled() &&
-      needs.dev-deploy.result == 'success'
+    if: needs.dev-deploy.result == 'success'
     needs: dev-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
@@ -136,9 +134,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-staging:
-    if: |
-      !cancelled() &&
-      needs.staging-deploy.result == 'success'
+    if: needs.staging-deploy.result == 'success'
     needs: staging-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
     with:

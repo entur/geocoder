@@ -54,11 +54,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-dev:
-    if: |
-      !cancelled() &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      needs.deploy-dev.result == 'success'
+    if: needs.deploy-dev.result == 'success'
     needs: deploy-dev
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
@@ -81,11 +77,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-staging:
-    if: |
-      !cancelled() &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      needs.deploy-staging.result == 'success'
+    if: needs.deploy-staging.result == 'success'
     needs: deploy-staging
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
