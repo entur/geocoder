@@ -15,7 +15,7 @@ on:
         options:
           - none
           - dev
-          - tst
+          - staging
           - both
         default: 'none'
       import_image_tag:
@@ -119,12 +119,12 @@ jobs:
     with:
       environment: dev
 
-  tst-deploy:
+  staging-deploy:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.photon-build-push.result == 'success' &&
-      (inputs.deploy_env == 'tst' || inputs.deploy_env == 'both')
+      (inputs.deploy_env == 'staging' || inputs.deploy_env == 'both')
     needs: [photon-build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -138,8 +138,8 @@ jobs:
   acceptance-tests-staging:
     if: |
       !cancelled() &&
-      needs.tst-deploy.result == 'success'
-    needs: tst-deploy
+      needs.staging-deploy.result == 'success'
+    needs: staging-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
       environment: staging

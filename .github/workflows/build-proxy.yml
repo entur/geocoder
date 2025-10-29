@@ -64,7 +64,7 @@ jobs:
     with:
       environment: dev
 
-  deploy-tst:
+  deploy-staging:
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -85,8 +85,8 @@ jobs:
       !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      needs.deploy-tst.result == 'success'
-    needs: deploy-tst
+      needs.deploy-staging.result == 'success'
+    needs: deploy-staging
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
       environment: staging
