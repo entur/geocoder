@@ -1,17 +1,9 @@
 package no.entur.geocoder.converter.osm
 
-import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData
-import org.openstreetmap.osmosis.core.domain.v0_6.Node
-import org.openstreetmap.osmosis.core.domain.v0_6.Tag
-import org.openstreetmap.osmosis.core.domain.v0_6.Way
-import org.openstreetmap.osmosis.core.domain.v0_6.WayNode
+import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.io.File
 import java.util.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class OsmConverterTest {
     @Test
@@ -147,9 +139,7 @@ class OsmConverterTest {
             )
 
         // Test using reflection to access private method
-        val isPotentialPoiMethod =
-            OsmConverter::class.java
-                .getDeclaredMethod("isPotentialPoi", org.openstreetmap.osmosis.core.domain.v0_6.Entity::class.java)
+        val isPotentialPoiMethod = OsmConverter::class.java.getDeclaredMethod("isPotentialPoi", Entity::class.java)
         isPotentialPoiMethod.isAccessible = true
 
         assertTrue(

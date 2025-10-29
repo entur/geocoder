@@ -24,7 +24,7 @@ class PeliasResultTransformer {
     fun parseAndTransform(photonResult: PhotonResult, focus: FocusParams? = null): String {
         val transformedFeatures =
             photonResult.features.map { feature ->
-                val distance = if (focus != null) calculateDistance(feature.geometry, focus) else null
+                val distance = if (focus != null) calculateDistanceKm(feature.geometry, focus) else null
                 transformFeature(feature, distance)
             }
 
@@ -196,8 +196,7 @@ class PeliasResultTransformer {
     companion object {
         const val PELIAS_DISTANCE_FUDGE_FACTOR = 1.001119
 
-        // Distance in km
-        internal fun calculateDistance(
+        internal fun calculateDistanceKm(
             geometry: PhotonGeometry,
             focus: FocusParams?,
         ): BigDecimal? {
@@ -208,8 +207,8 @@ class PeliasResultTransformer {
 
             val lon1 = featureCoords[0].toDouble()
             val lat1 = featureCoords[1].toDouble()
-            val lat2 = focus.lat.toDouble()
             val lon2 = focus.lon.toDouble()
+            val lat2 = focus.lat.toDouble()
             val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
 
             return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)

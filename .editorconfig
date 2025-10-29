@@ -8,4 +8,5 @@ ktlint_standard_function-signature = disabled
 ktlint_standard_enum-entry-name-case = disabled
 ktlint_standard_import-ordering = disabled
 ktlint_standard_property-naming = disabled
+ij_kotlin_continuation_indent_size = 4
 max_line_length = 140
