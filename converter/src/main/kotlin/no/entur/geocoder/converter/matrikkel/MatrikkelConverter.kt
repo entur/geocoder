@@ -11,24 +11,13 @@ import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
+import no.entur.geocoder.converter.stedsnavn.KommuneFylkeMapping
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
 
-class MatrikkelConverter(
-    private val stedsnavnGmlFile: File? = null,
-) : Converter {
-    private val kommuneFylkeMapping: Map<String, KommuneFylkeMapping.KommuneInfo> by lazy {
-        if (stedsnavnGmlFile != null && stedsnavnGmlFile.exists()) {
-            println("Building kommune-fylke mapping from ${stedsnavnGmlFile.absolutePath}...")
-            KommuneFylkeMapping.buildMapping(stedsnavnGmlFile).also {
-                println("Loaded ${it.size} kommune-fylke mappings")
-            }
-        } else {
-            emptyMap()
-        }
-    }
+class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
 
     override fun convert(
         input: File,
@@ -122,6 +111,8 @@ class MatrikkelConverter(
         postcode: String?,
     ): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
+
+        val kommuneFylkeMapping = KommuneFylkeMapping.build(stedsnavnGmlFile)
 
         val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }
 

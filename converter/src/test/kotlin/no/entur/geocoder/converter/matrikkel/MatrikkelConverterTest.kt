@@ -59,8 +59,8 @@ class MatrikkelConverterTest {
         assertNotNull(placeContent.centroid, "Centroid should not be null")
         assertEquals(2, placeContent.centroid.size, "Centroid should have 2 coordinates")
         assertEquals("1A", placeContent.housenumber)
-        assertEquals("Ildervegen", placeContent.address?.street)
-        assertEquals(null, placeContent.address?.county)
+        assertEquals("Ildervegen", placeContent.address.street)
+        assertEquals("Innlandet", placeContent.address.county)
         assertEquals("2406", placeContent.postcode)
         assertEquals(null, placeContent.name, "Name should be null for addresses")
 

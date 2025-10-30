@@ -190,7 +190,7 @@ class Command(
             Usage: ./geocoder-convert [options] -o <output-file>
             
             Options:
-              -s <input-xml-file>     Convert StopPlace XML data
+              -s <input-xml-file>     Convert StopPlace NeTEx data
               -m <input-csv-file>     Convert Matrikkel CSV data
               -p <input-pbf-file>     Convert OSM PBF data
               -g <input-gml-file>     Convert Stedsnavn GML data

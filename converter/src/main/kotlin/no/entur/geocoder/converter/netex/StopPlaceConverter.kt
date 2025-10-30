@@ -127,6 +127,7 @@ class StopPlaceConverter : Converter {
         groupOfStopPlaces: GroupOfStopPlaces,
         topoPlaces: Map<String, TopographicPlace>,
         stopPlacePopularities: Map<String, Long>,
+        stopPlaces: List<StopPlace>,
     ): NominatimPlace {
         val lat = groupOfStopPlaces.centroid.location.latitude
         val lon = groupOfStopPlaces.centroid.location.longitude
@@ -139,17 +140,19 @@ class StopPlaceConverter : Converter {
         var countyGid: String? = null
         var country: String? = null
 
-        for ((gid, topoPlace) in topoPlaces) {
-            if (topoPlace.descriptor?.name?.text == groupName) {
-                if (topoPlace.topographicPlaceType == "municipality") {
-                    localityGid = gid
-                    locality = topoPlace.descriptor?.name?.text
-                    countyGid = topoPlace.parentTopographicPlaceRef?.ref
-                    county = topoPlaces[countyGid]?.descriptor?.name?.text
-                    country = topoPlace.countryRef?.ref
-                    break
-                }
+        groupOfStopPlaces.members?.stopPlaceRef?.any { stopPlaceRef ->
+            val stopPlace = stopPlaces.find { it.id == stopPlaceRef.ref }
+            val topoPlaceRef = stopPlace?.topographicPlaceRef?.ref
+            val topoPlace = topoPlaces[topoPlaceRef]
+            if (topoPlace?.topographicPlaceType == "municipality") {
+                localityGid = topoPlaceRef
+                locality = topoPlace.descriptor?.name?.text
+                countyGid = topoPlace.parentTopographicPlaceRef?.ref
+                county = topoPlaces[countyGid]?.descriptor?.name?.text
+                country = topoPlace.countryRef?.ref
+                return@any true
             }
+            return@any false
         }
 
         // Calculate importance based on member stop place popularities
@@ -233,6 +236,7 @@ class StopPlaceConverter : Converter {
                     it,
                     result.topoPlaces,
                     stopPlacePopularities,
+                    stopPlacesList,
                 )
             }
 
