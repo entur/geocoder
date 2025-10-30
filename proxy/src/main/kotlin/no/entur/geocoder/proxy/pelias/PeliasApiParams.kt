@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.server.request.ApplicationRequest
+import io.ktor.server.request.*
 
 data class FocusParams(
     val lat: String,
@@ -93,6 +93,25 @@ data class PeliasReverseParams(
                 radius = params["boundary.circle.radius"],
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"] ?: "no",
+            )
+        }
+    }
+}
+
+data class PeliasPlaceParams(val ids: List<String> = emptyList()) {
+    init {
+        require(ids.isNotEmpty()) { "Parameter 'ids' is required" }
+        require(ids.all { it.split(":").size == 3 }) { "id must be colon separated" }
+    }
+
+    companion object {
+        fun fromRequest(request: ApplicationRequest): PeliasPlaceParams {
+            val params = request.queryParameters
+            return PeliasPlaceParams(
+                ids = params["ids"]
+                    ?.split(",")
+                    ?.map { it.split(":").takeLast(3).joinToString(":") }
+                    ?: emptyList(),
             )
         }
     }

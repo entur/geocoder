@@ -123,5 +123,54 @@ object PeliasApi {
         }
     }
 
+    suspend fun RoutingContext.peliasPlaceRequest(
+        photonBaseUrl: String,
+        client: HttpClient,
+        transformer: PeliasResultTransformer,
+    ) {
+        val peliasParams =
+            try {
+                PeliasPlaceParams.fromRequest(call.request)
+            } catch (e: Exception) {
+                logger.error("Invalid parameters for Pelias place: ${e.message}")
+                val error = ErrorHandler.handleError(e, "Place")
+                call.respondText(
+                    ErrorHandler.toJson(error),
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.fromValue(error.statusCode),
+                )
+                return
+            }
+
+        val photonRequests = PhotonAutocompleteRequest.from(peliasParams)
+        val url = "$photonBaseUrl/api"
+        logger.info("Proxying /v2/autocomplete to $url with ids='${peliasParams.ids}'")
+
+        try {
+            val photonResponses = photonRequests.map { photonRequest ->
+                client
+                    .get(url) {
+                        parameter("q", photonRequest.query)
+                    }.bodyAsText()
+            }
+            val photonResults = photonResponses.map { PhotonResult.parse(it) }
+            val photonResult = PhotonResult(
+                type = "FeatureCollection",
+                features = photonResults.map { it.features.first() },
+                bbox = null,
+            )
+            val json = transformer.parseAndTransform(photonResult, null)
+            call.respondText(json, contentType = ContentType.Application.Json)
+        } catch (e: Exception) {
+            logger.error("Error proxying to Photon: $e", e)
+            val error = ErrorHandler.handleError(e, "Autocomplete")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode),
+            )
+        }
+    }
+
     private val logger = LoggerFactory.getLogger(PeliasApi::class.java)
 }

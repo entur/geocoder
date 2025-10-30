@@ -7,6 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasApi.peliasPlaceRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
 import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
 import no.entur.geocoder.proxy.v3.V3ResultTransformer
@@ -29,6 +30,10 @@ object Routing {
 
             get("/v2/reverse") {
                 peliasReverseRequest(photonBaseUrl, client, transformer)
+            }
+
+            get("/v2/place") {
+                peliasPlaceRequest(photonBaseUrl, client, transformer)
             }
 
             get("/v3/autocomplete") {

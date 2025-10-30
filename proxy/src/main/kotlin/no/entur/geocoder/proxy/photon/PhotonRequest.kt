@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
+import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
 import no.entur.geocoder.proxy.pelias.PeliasReverseParams
 import no.entur.geocoder.proxy.v3.V3AutocompleteParams
 import no.entur.geocoder.proxy.v3.V3ReverseParams
@@ -50,6 +51,18 @@ data class PhotonAutocompleteRequest(
                 lat = null,
                 lon = null,
             )
+        }
+
+        fun from(params: PeliasPlaceParams): List<PhotonAutocompleteRequest> {
+            return params.ids.map { id ->
+                PhotonAutocompleteRequest(
+                    query = id,
+                    limit = 1,
+                    language = "no",
+                    lat = null,
+                    lon = null,
+                )
+            }
         }
 
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
