@@ -11,7 +11,7 @@ common:
     prometheus:
       enabled: true
       path: /metrics
-      port: 9404
+      port: 2322
   container:
     image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
     cpu: 0.3 # Adjust this to your application needs
