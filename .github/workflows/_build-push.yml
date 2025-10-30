@@ -105,6 +105,7 @@ jobs:
           echo "## Docker Build & Push Summary" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`${{ env.REGISTRY }}/${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Tag:** \`${{ env.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Full reference:** \`${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ env.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Push requested:** ${{ inputs.push }}" >> $GITHUB_STEP_SUMMARY
           echo "**Job status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

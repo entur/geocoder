@@ -18,7 +18,7 @@ on:
         required: true
         type: string
 
-run-name: "Acceptance tests: ${{ inputs.environment }} (sha: ${{ github.sha }})"
+run-name: "Acceptance tests: ${{ inputs.environment }}"
 
 jobs:
   acceptance-tests:
@@ -67,7 +67,7 @@ jobs:
           echo "## Acceptance Test Results - v2${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cat test-output.log >> $GITHUB_STEP_SUMMARY
+          cat test-output.log |grep -v 'Tests completed:' >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
 #      - name: Fail workflow if tests failed
