@@ -9,6 +9,7 @@ import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.common.Geo
+import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
 import java.io.File
@@ -211,9 +212,10 @@ class StedsnavnConverter : Converter {
                 .plus("place.${entry.navneobjekttype}")
                 .plus(Category.SOURCE_STEDSNAVN)
 
+        val id = entry.lokalId
         val extra =
             Extra(
-                id = entry.lokalId,
+                id = id,
                 source = Source.KARTVERKET_STEDSNAVN,
                 accuracy = "point",
                 country_a = "NOR",
@@ -239,7 +241,7 @@ class StedsnavnConverter : Converter {
                 name =
                     Name(
                         name = entry.stedsnavn,
-                        alt_name = entry.annenSkrivemåte.joinToString(";").ifBlank { null },
+                        alt_name = entry.annenSkrivemåte.plus(id).altName()
                     ),
                 housenumber = null,
                 address =

@@ -3,11 +3,12 @@ package no.entur.geocoder.converter.osm
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.Util.titleize
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
-import no.entur.geocoder.common.Util.titleize
-import no.entur.geocoder.common.Util.toBigDecimalWithScale
+import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
@@ -335,13 +336,12 @@ class OsmConverter : Converter {
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
 
         val altName =
-            listOfNotNull(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
-                .joinToString(";")
-                .ifBlank { null }
+            altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
 
+        val id = "OSM:TopographicPlace:" + entity.id
         val extra =
             Extra(
-                id = "OSM:TopographicPlace:" + entity.id,
+                id = id,
                 source = Source.OSM,
                 accuracy = accuracy,
                 country_a = if (country.equals("no", ignoreCase = true)) "NOR" else country,
@@ -364,7 +364,7 @@ class OsmConverter : Converter {
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,
-                name = Name(name = name, alt_name = altName),
+                name = Name(name = name, alt_name = altName(altName, id)),
                 housenumber = null,
                 address = updatedAddress,
                 postcode = null,

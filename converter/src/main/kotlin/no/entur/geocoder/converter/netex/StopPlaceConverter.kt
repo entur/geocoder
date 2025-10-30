@@ -6,6 +6,7 @@ import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
+import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
@@ -79,6 +80,25 @@ class StopPlaceConverter : Converter {
         // Extract alternative names from NeTEx AlternativeNames
         val alternativeNames = stopPlace.alternativeNames?.alternativeName
         val altName = alternativeNames?.mapNotNull { it.name?.text }?.joinToString(";")?.ifBlank { null }
+        val id = stopPlace.id
+
+        val extra = Extra(
+            id = id,
+            source = Source.NSR,
+            accuracy = "point",
+            country_a = Country.getThreeLetterCode(country),
+            county_gid = countyGid,
+            locality = locality,
+            locality_gid = localityGid,
+            transport_modes = transportModes.joinToString(","),
+            tariff_zones = (
+                stopPlace.tariffZones
+                    ?.tariffZoneRef
+                    ?.mapNotNull { it.ref }
+                    ?.joinToString(",")
+                ),
+            alt_name = altName,
+        )
 
         val placeId = PlaceId.stopplace.create(stopPlace.id)
         val stopPlaceContent =
@@ -90,7 +110,10 @@ class StopPlaceConverter : Converter {
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
-                name = stopPlace.name.text?.let { Name(name = it, alt_name = altName) },
+                name = stopPlace.name.text?.let { Name(
+                    name = it,
+                    alt_name = altName(altName, id)
+                ) },
                 address =
                     Address(
                         county = county,
@@ -99,24 +122,8 @@ class StopPlaceConverter : Converter {
                 country_code = (country ?: "no"),
                 centroid = listOf(lon, lat),
                 bbox = listOf(lat, lon, lat, lon),
-                extra =
-                    Extra(
-                        id = stopPlace.id,
-                        source = Source.NSR,
-                        accuracy = "point",
-                        country_a = Country.getThreeLetterCode(country),
-                        county_gid = countyGid,
-                        locality = locality,
-                        locality_gid = localityGid,
-                        transport_modes = transportModes.joinToString(","),
-                        tariff_zones = (
-                            stopPlace.tariffZones
-                                ?.tariffZoneRef
-                                ?.mapNotNull { it.ref }
-                                ?.joinToString(",")
-                        ),
-                        alt_name = altName,
-                    ),
+                extra = extra
+
             )
         entries.add(NominatimPlace("Place", listOf(stopPlaceContent)))
 
@@ -176,6 +183,7 @@ class StopPlaceConverter : Converter {
                 .plus(Category.SOURCE_NSR)
                 .filterNotNull()
 
+        val id = groupOfStopPlaces.id
         val placeContent =
             PlaceContent(
                 place_id = abs(groupOfStopPlaces.id.hashCode().toLong()),
@@ -185,7 +193,7 @@ class StopPlaceConverter : Converter {
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
-                name = groupName?.let { Name(name = it) },
+                name = groupName?.let { Name(name = it, alt_name = id) },
                 address =
                     Address(
                         county = county,
@@ -196,7 +204,7 @@ class StopPlaceConverter : Converter {
                 bbox = listOf(lat, lon, lat, lon),
                 extra =
                     Extra(
-                        id = groupOfStopPlaces.id,
+                        id = id,
                         source = Source.NSR,
                         accuracy = "point",
                         country_a = Country.getThreeLetterCode(country),

@@ -8,6 +8,7 @@ import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
+import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
@@ -142,7 +143,12 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 rank_address = 26,
                 importance = ImportanceCalculator.calculateImportance(popularity),
                 parent_place_id = 0,
-                name = displayName?.let { Name(name = it, alt_name = adresse.adressetilleggsnavn) },
+                name = displayName?.let {
+                    Name(
+                        name = it,
+                        alt_name = altName(adresse.adressetilleggsnavn, id)
+                    )
+                },
                 housenumber = housenumber,
                 address =
                     Address(
