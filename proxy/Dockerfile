@@ -1,11 +1,8 @@
-FROM bellsoft/liberica-runtime-container:jre-21-musl
+FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
 
 WORKDIR /srv
-RUN apk add --no-cache curl
-RUN curl -sfLO --retry 2 \
-    https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar
 
-COPY ./jmx-exporter.yml ./proxy-start.sh ./
+COPY ./proxy-start.sh ./
 COPY ./build/libs/proxy-all.jar proxy.jar
 RUN chown -R 1000:1000 /srv
 USER 1000:1000
