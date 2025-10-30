@@ -69,6 +69,8 @@ class PeliasResultTransformer {
     fun transformFeature(feature: PhotonFeature, distance: BigDecimal?): PeliasFeature {
         val props = feature.properties
         val extra = props.extra
+        val source = transformSource(extra)
+        val layer = transformLayer(extra)
 
         return PeliasFeature(
             type = feature.type,
@@ -80,9 +82,9 @@ class PeliasResultTransformer {
             properties =
                 PeliasProperties(
                     id = extra?.id,
-                    gid = "whosonfirst:address:" + extra?.id,
-                    layer = transformLayer(extra),
-                    source = transformSource(extra),
+                    gid = transformGid(source, layer, extra?.id),
+                    layer = layer,
+                    source = source,
                     source_id = extra?.id,
                     name = transformName(props),
                     popular_name =
@@ -118,6 +120,9 @@ class PeliasResultTransformer {
         } else {
             props.name
         }
+
+    private fun transformGid(source: String?, layer: String?, extraId: String?): String? =
+        extraId?.let { "$source:$layer:$it" }
 
     private fun transformStreet(props: PhotonProperties): String? =
         when {
