@@ -147,17 +147,16 @@ object PeliasApi {
         logger.info("Proxying /v2/autocomplete to $url with ids='${peliasParams.ids}'")
 
         try {
-            val photonResponses = photonRequests.map { photonRequest ->
-                client
-                    .get(url) {
-                        parameter("q", photonRequest.query)
-                    }.bodyAsText()
+            val photonResults = photonRequests.map { photonRequest ->
+                val res = client.get(url) {
+                    parameter("q", photonRequest.query)
+                    parameter("limit", "1")
+                }.bodyAsText()
+                PhotonResult.parse(res)
             }
-            val photonResults = photonResponses.map { PhotonResult.parse(it) }
             val photonResult = PhotonResult(
                 type = "FeatureCollection",
                 features = photonResults.map { it.features.first() },
-                bbox = null,
             )
             val json = transformer.parseAndTransform(photonResult, null)
             call.respondText(json, contentType = ContentType.Application.Json)
