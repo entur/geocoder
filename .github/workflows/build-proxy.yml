@@ -3,10 +3,18 @@ name: Proxy - Build and deploy
 on:
   push:
     paths-ignore:
+      - '**/*.md'
       - '.entur/**'
+      - 'converter/**'
+      - 'helm/**'
+      - 'photon/**'
   pull_request:
     paths-ignore:
+      - '**/*.md'
       - '.entur/**'
+      - 'converter/**'
+      - 'helm/**'
+      - 'photon/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
