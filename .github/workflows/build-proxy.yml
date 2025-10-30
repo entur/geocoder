@@ -16,7 +16,7 @@ jobs:
   lint:
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
-      dockerfile: Dockerfile.proxy
+      dockerfile: proxy/Dockerfile
       ignore: "DL3018,DL3059"
 
   build-push:
@@ -24,7 +24,7 @@ jobs:
     uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-proxy
-      dockerfile: Dockerfile.proxy
+      context: proxy
       push: ${{ github.event_name != 'pull_request' }}
       do-gradle-build: true
 

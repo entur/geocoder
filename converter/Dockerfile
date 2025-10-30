@@ -3,7 +3,7 @@ FROM bellsoft/liberica-runtime-container:jre-21-musl AS build-image
 WORKDIR /srv
 SHELL ["/bin/ash", "-co", "pipefail"]
 
-COPY ./converter/build/libs/converter-all.jar convert.jar
+COPY ./build/libs/converter-all.jar convert.jar
 RUN apk add --no-cache curl
 
 ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip \

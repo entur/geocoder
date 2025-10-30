@@ -8,7 +8,7 @@ RUN apk add --no-cache curl
 RUN curl -sfLO --retry 2 \
     https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar
 
-COPY photon-start.sh .
+COPY . .
 COPY --from=import-image /photon.jar photon.jar
 COPY --from=import-image /photon_data photon_data
 RUN chown -R 1000:1000 /srv

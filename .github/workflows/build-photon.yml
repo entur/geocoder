@@ -36,7 +36,7 @@ jobs:
     if: inputs.build_import == true
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
-      dockerfile: Dockerfile.import
+      dockerfile: converter/Dockerfile
       ignore: "DL3018,DL3059"
 
   import-build-push:
@@ -45,7 +45,7 @@ jobs:
     uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-import
-      dockerfile: Dockerfile.import
+      context: converter
       push: true
       run-group: 'grp-ubuntu-24.04-8core-x64'
       do-gradle-build: true
@@ -65,7 +65,7 @@ jobs:
     if: inputs.deploy_env != 'none'
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
-      dockerfile: Dockerfile.photon
+      dockerfile: photon/Dockerfile
       ignore: "DL3018,DL3059"
 
   photon-build-push:
@@ -78,7 +78,7 @@ jobs:
     uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-photon
-      dockerfile: Dockerfile.photon
+      context: photon
       push: ${{ inputs.deploy_env != 'none' }}
       build_args: |
         IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}

@@ -21,7 +21,7 @@ If you don't like docker, you can also run the converter and photon manually.
 ./gradlew build
 curl -sfL https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip | jar -xv
 curl -sfL https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip | jar -xv
-./geocoder-convert \
+converter/geocoder-convert \
           -s ./tiamat-*.xml \
           -m Basis*/*.csv \
           -p converter/src/test/resources/oslo-center.osm.pbf \

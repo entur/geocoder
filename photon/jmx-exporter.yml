@@ -1,0 +1,66 @@
+startDelaySeconds: 0
+ssl: false
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+
+# Scope to OS-level MBeans only to avoid colliding with built-in jvm_* collectors
+includeObjectNames:
+  - java.lang:type=OperatingSystem
+
+rules:
+  # ======================
+  # CPU (process/system)
+  # ======================
+
+  # JVM process CPU fraction (0..1) - Micrometer-style alias
+  - pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'
+    name: process_cpu_usage
+    type: GAUGE
+    help: 'Recent CPU usage for the JVM process (0..1)'
+
+  # JVM process CPU time (nanoseconds) - Micrometer-style alias
+  - pattern: 'java.lang<type=OperatingSystem><>ProcessCpuTime'
+    name: process_cpu_time_ns_total
+    type: COUNTER
+    help: 'Total CPU time for the JVM process (nanoseconds)'
+
+  # Also expose seconds (widely used by JVM dashboards)
+  - pattern: 'java.lang<type=OperatingSystem><>ProcessCpuTime'
+    name: process_cpu_seconds_total
+    type: COUNTER
+    valueFactor: 1.0e-9  # ns -> s
+    help: 'Total user and system CPU time spent in seconds'
+
+  # System-wide recent CPU usage (0..1)
+  - pattern: 'java.lang<type=OperatingSystem><>SystemCpuLoad'
+    name: system_cpu_usage
+    type: GAUGE
+    help: 'Recent CPU usage of the system (0..1)'
+
+  # ======================
+  # System memory (host RAM) - use os_* names to avoid collisions
+  # ======================
+
+  - pattern: 'java.lang<type=OperatingSystem><>TotalPhysicalMemorySize'
+    name: os_memory_total_bytes
+    type: GAUGE
+    help: 'Total physical memory on the host (bytes)'
+
+  - pattern: 'java.lang<type=OperatingSystem><>FreePhysicalMemorySize'
+    name: os_memory_free_bytes
+    type: GAUGE
+    help: 'Free physical memory on the host (bytes)'
+
+  # ======================
+  # File descriptors (Unix-like JVMs) - os_* names to avoid collisions
+  # ======================
+
+  - pattern: 'java.lang<type=OperatingSystem><>OpenFileDescriptorCount'
+    name: os_open_file_descriptors
+    type: GAUGE
+    help: 'Open file descriptors for the JVM process (Unix-like JVMs)'
+
+  - pattern: 'java.lang<type=OperatingSystem><>MaxFileDescriptorCount'
+    name: os_max_file_descriptors
+    type: GAUGE
+    help: 'Max file descriptors allowed for the JVM process (Unix-like JVMs)'

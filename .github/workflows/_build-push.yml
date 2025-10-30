@@ -7,6 +7,10 @@ on:
         description: "Docker image name"
         type: string
         required: true
+      context:
+        description: "Build context"
+        type: string
+        default: "."
       dockerfile:
         description: "Path to Dockerfile"
         type: string
@@ -86,7 +90,7 @@ jobs:
       - name: Build and push to GCR
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ inputs.context }}
           file: ${{ inputs.dockerfile }}
           push: ${{ inputs.push }}
           tags: |

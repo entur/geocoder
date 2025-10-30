@@ -1,5 +1,5 @@
 *
 !converter/src/test/resources/oslo-center.osm.pbf
 !*/build/libs/*-all.jar
-!photon-start.sh
-!proxy-start.sh
+!*/*-start.sh
+!photon/jmx-exporter.yml

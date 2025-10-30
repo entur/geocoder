@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
-JAR=converter/build/libs/converter-all.jar
+SCRIPTDIR=$(cd $(dirname $0); pwd)
+JAR=$SCRIPTDIR/build/libs/converter-all.jar
 if [ ! -f "$JAR" ]; then
   echo "Could not find $JAR. Run './gradlew assemble' to create it."
   exit 1
