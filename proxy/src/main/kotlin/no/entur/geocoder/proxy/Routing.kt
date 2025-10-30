@@ -5,6 +5,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
 import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
@@ -16,6 +17,7 @@ object Routing {
     fun Application.configureRouting(
         client: HttpClient,
         photonBaseUrl: String,
+        appMicrometerRegistry: PrometheusMeterRegistry,
     ) {
         val transformer = PeliasResultTransformer()
         val v3Transformer = V3ResultTransformer()
@@ -47,6 +49,10 @@ object Routing {
 
             get("/actuator/health/readiness") {
                 readinessRequest()
+            }
+
+            get("/metrics") {
+                call.respond(appMicrometerRegistry.scrape())
             }
         }
     }

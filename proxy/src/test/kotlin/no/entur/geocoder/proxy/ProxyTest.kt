@@ -8,6 +8,8 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.Routing.configureRouting
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import org.junit.jupiter.api.Test
@@ -68,6 +70,7 @@ class ProxyTest {
                 configureRouting(
                     client = HttpClient(mockEngine),
                     photonBaseUrl = "http://photon-test",
+                    appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 )
             }
 
@@ -118,6 +121,7 @@ class ProxyTest {
                 configureRouting(
                     client = HttpClient(mockEngine),
                     photonBaseUrl = "http://photon-test",
+                    appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 )
             }
 
