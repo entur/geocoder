@@ -3,64 +3,115 @@ ssl: false
 lowercaseOutputName: true
 lowercaseOutputLabelNames: true
 
-# Scope to OS-level MBeans only to avoid colliding with built-in jvm_* collectors
+# Scope to ONLY the MXBeans we need for extra aliases and OS data.
+# This avoids touching Memory/GC for which client_java already publishes jvm_*,
+# and prevents duplicate-name collisions.
 includeObjectNames:
   - java.lang:type=OperatingSystem
+  - java.lang:type=Threading
+  - java.lang:type=ClassLoading
+  - java.lang:type=Runtime
 
 rules:
   # ======================
   # CPU (process/system)
   # ======================
 
-  # JVM process CPU fraction (0..1) - Micrometer-style alias
+  # Spring/Micrometer-like: recent CPU usage of the JVM process (0..1)
+  # getProcessCpuLoad()
   - pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'
     name: process_cpu_usage
     type: GAUGE
     help: 'Recent CPU usage for the JVM process (0..1)'
 
-  # JVM process CPU time (nanoseconds) - Micrometer-style alias
+  # Micrometer-like: total CPU time in nanoseconds (no scaling needed)
+  # getProcessCpuTime() -> nanoseconds
   - pattern: 'java.lang<type=OperatingSystem><>ProcessCpuTime'
     name: process_cpu_time_ns_total
     type: COUNTER
     help: 'Total CPU time for the JVM process (nanoseconds)'
 
-  # Also expose seconds (widely used by JVM dashboards)
+  # Also expose seconds (widely used in common dashboards)
   - pattern: 'java.lang<type=OperatingSystem><>ProcessCpuTime'
     name: process_cpu_seconds_total
     type: COUNTER
-    valueFactor: 1.0e-9  # ns -> s
+    valueFactor: 1.0e-9   # ns -> s
     help: 'Total user and system CPU time spent in seconds'
 
-  # System-wide recent CPU usage (0..1)
+  # System-wide CPU usage (0..1): getSystemCpuLoad()
   - pattern: 'java.lang<type=OperatingSystem><>SystemCpuLoad'
     name: system_cpu_usage
     type: GAUGE
     help: 'Recent CPU usage of the system (0..1)'
 
+  # CPU core count (Spring exposes system.cpu.count)
+  # getAvailableProcessors()
+  - pattern: 'java.lang<type=OperatingSystem><>AvailableProcessors'
+    name: system_cpu_count
+    type: GAUGE
+    help: 'Number of CPUs available to the JVM'
+
+
   # ======================
-  # System memory (host RAM) - use os_* names to avoid collisions
+  # System load & memory (host)
   # ======================
 
+  # 1-minute load average (Spring: system.load.average.1m)
+  # getSystemLoadAverage()
+  - pattern: 'java.lang<type=OperatingSystem><>SystemLoadAverage'
+    name: system_load_average_1m
+    type: GAUGE
+    help: 'System load average for the last minute'
+
+  # Host RAM totals (these are NOT provided by client_java process collector)
+  # TotalPhysicalMemorySize / FreePhysicalMemorySize -> bytes
   - pattern: 'java.lang<type=OperatingSystem><>TotalPhysicalMemorySize'
-    name: os_memory_total_bytes
+    name: system_memory_total_bytes
     type: GAUGE
     help: 'Total physical memory on the host (bytes)'
 
   - pattern: 'java.lang<type=OperatingSystem><>FreePhysicalMemorySize'
-    name: os_memory_free_bytes
+    name: system_memory_free_bytes
     type: GAUGE
     help: 'Free physical memory on the host (bytes)'
 
+
   # ======================
-  # File descriptors (Unix-like JVMs) - os_* names to avoid collisions
+  # JVM uptime (Spring often shows process.uptime)
   # ======================
 
-  - pattern: 'java.lang<type=OperatingSystem><>OpenFileDescriptorCount'
-    name: os_open_file_descriptors
+  # RuntimeMXBean Uptime is in milliseconds -> convert to seconds
+  - pattern: 'java.lang<type=Runtime><>Uptime'
+    name: process_uptime_seconds
     type: GAUGE
-    help: 'Open file descriptors for the JVM process (Unix-like JVMs)'
+    valueFactor: 0.001    # ms -> s
+    help: 'The uptime of the JVM process in seconds'
 
-  - pattern: 'java.lang<type=OperatingSystem><>MaxFileDescriptorCount'
-    name: os_max_file_descriptors
+
+  # ======================
+  # Threads & Classes — Spring-style aliases that DO NOT collide
+  # with client_java built-ins (which expose jvm_threads_live, daemon, etc.)
+  # ======================
+
+  # ThreadingMXBean ThreadCount / DaemonThreadCount
+  - pattern: 'java.lang<type=Threading><>ThreadCount'
+    name: jvm_threads_live_threads
     type: GAUGE
-    help: 'Max file descriptors allowed for the JVM process (Unix-like JVMs)'
+    help: 'Current number of live threads (daemon + non-daemon)'
+
+  - pattern: 'java.lang<type=Threading><>DaemonThreadCount'
+    name: jvm_threads_daemon_threads
+    type: GAUGE
+    help: 'Current number of live daemon threads'
+
+  # ClassLoadingMXBean LoadedClassCount (Spring-style alias)
+  - pattern: 'java.lang<type=ClassLoading><>LoadedClassCount'
+    name: jvm_classes_loaded_classes
+    type: GAUGE
+    help: 'Number of classes currently loaded in the JVM'
+
+  # (Optional) If you want a Spring-like total loaded counter alias:
+  # - pattern: 'java.lang<type=ClassLoading><>TotalLoadedClassCount'
+  #   name: jvm_classes_loaded_total_classes
+  #   type: COUNTER
+  #   help: 'Total number of classes loaded since JVM start'
