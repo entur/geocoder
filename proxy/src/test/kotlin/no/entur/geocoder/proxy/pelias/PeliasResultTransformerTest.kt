@@ -25,6 +25,7 @@ class PeliasResultTransformerTest {
             FocusParams(
                 lat = "60.39299",
                 lon = "5.32415",
+                null,
                 null
             )
 

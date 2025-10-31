@@ -5,7 +5,8 @@ import io.ktor.server.request.*
 data class FocusParams(
     val lat: String,
     val lon: String,
-    val scale: String?
+    val scale: String?,
+    val weight: String?
 ) {
     init {
         require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
@@ -16,12 +17,17 @@ data class FocusParams(
         val longitude = lon.toDouble()
         require(latitude in -90.0..90.0) { "Parameter 'point.lat' must be between -90 and 90" }
         require(longitude in -180.0..180.0) { "Parameter 'point.lon' must be between -180 and 180" }
-        require(scale == null || (scale.endsWith("km") && scale.split("km")[0].toIntOrNull() != null))
         if (scale != null) {
-            require(scale.endsWith("km"))
             val scaleValue = scale.split("km")[0]
-            require(scaleValue.toIntOrNull() != null)
-            require(scaleValue.toInt() > 0)
+            require(
+                scale.endsWith("km")
+                        && scaleValue.toIntOrNull() != null
+                        && scaleValue.toInt() > 0
+            ) { "Parameter 'scale' must be a number > 0 followed by 'km'" }
+        }
+        if (weight != null) {
+            val weightValue = weight.toDouble()
+            require(weightValue > 0) { "Parameter 'weight' must be a number > 0" }
         }
     }
 }
@@ -59,7 +65,7 @@ data class PeliasAutocompleteParams(
                 focus =
                     params["focus.point.lat"]?.let { lat ->
                         params["focus.point.lon"]?.let { lon ->
-                            FocusParams(lat, lon, params["focus.scale"])
+                            FocusParams(lat, lon, params["focus.scale"], params["focus.weight"])
                         }
                     },
                 multiModal =
