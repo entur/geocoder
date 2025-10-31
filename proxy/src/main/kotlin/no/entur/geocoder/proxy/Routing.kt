@@ -28,6 +28,10 @@ object Routing {
                 peliasAutocompleteRequest(photonBaseUrl, client, transformer)
             }
 
+            get("/v2/search") {
+                peliasAutocompleteRequest(photonBaseUrl, client, transformer)
+            }
+
             get("/v2/reverse") {
                 peliasReverseRequest(photonBaseUrl, client, transformer)
             }
