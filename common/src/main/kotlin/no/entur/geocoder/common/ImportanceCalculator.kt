@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.importance
+package no.entur.geocoder.common
 
 import kotlin.math.log10
 import kotlin.math.max

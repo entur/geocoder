@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.importance
+package no.entur.geocoder.common
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

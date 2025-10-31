@@ -12,7 +12,7 @@ import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.Text.altName
-import no.entur.geocoder.converter.importance.ImportanceCalculator
+import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
 import java.io.File
