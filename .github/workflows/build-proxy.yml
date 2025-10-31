@@ -33,13 +33,14 @@ jobs:
     with:
       image_name: geocoder-proxy
       context: proxy
-      push: ${{ github.event_name != 'pull_request' }}
+      push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       do-gradle-build: true
 
   scan:
     if: |
       !cancelled() &&
-      github.event_name != 'pull_request' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
     needs: [build-push]
     uses: "./.github/workflows/_docker-scan.yml"

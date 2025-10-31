@@ -79,7 +79,7 @@ jobs:
     with:
       image_name: geocoder-photon
       context: photon
-      push: ${{ inputs.deploy_env != 'none' }}
+      push: true
       build_args: |
         IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
 
