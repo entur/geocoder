@@ -20,6 +20,10 @@ import java.nio.file.Paths
 
 class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
 
+    val kommuneFylkeMapping: Map<String, KommuneFylkeMapping.KommuneInfo> by lazy {
+        KommuneFylkeMapping.build(stedsnavnGmlFile)
+    }
+
     override fun convert(
         input: File,
         output: File,
@@ -112,8 +116,6 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
         postcode: String?,
     ): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
-
-        val kommuneFylkeMapping = KommuneFylkeMapping.build(stedsnavnGmlFile)
 
         val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }
 
