@@ -1,6 +1,5 @@
 package no.entur.geocoder.converter.osm
 
-import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
@@ -323,7 +322,7 @@ class OsmConverter : Converter {
 
     private fun createPlaceContent(
         entity: Entity,
-        tagMap: Map<String, String>,
+        tags: Map<String, String>,
         name: String,
         objectType: String,
         accuracy: String,
@@ -335,15 +334,15 @@ class OsmConverter : Converter {
         // Look up administrative boundaries for this location
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
 
-        val country = determineCountry(county, municipality, tagMap)
+        val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
-        val tags = tagMap.map { "${it.key}.${it.value}" }
+        val tagList: List<String> = tags.map { "${it.key}.${it.value}" }
             .plus(LEGACY_SOURCE_WHOSONFIRST)
             .plus(LEGACY_LAYER_ADDRESS)
             .plus(OSM_POI)
 
         val altName =
-            altName(tagMap["alt_name"], tagMap["old_name"], tagMap["no:name"], tagMap["loc_name"], tagMap["short_name"])
+            altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
 
         val id = "OSM:TopographicPlace:" + entity.id
         val extra =
@@ -355,11 +354,11 @@ class OsmConverter : Converter {
                 county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
                 locality = municipality?.name?.titleize(),
                 locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-                tags = tags.joinToString(","),
+                tags = tagList.joinToString(","),
                 alt_name = altName,
             )
 
-        val categories = buildCategories(tags, country, county, municipality)
+        val categories = buildCategories(tagList, country, county, municipality)
 
         val placeId = PlaceId.osm.create(entity.id)
         val content =
@@ -368,8 +367,8 @@ class OsmConverter : Converter {
                 object_type = objectType,
                 object_id = placeId,
                 categories = categories,
-                rank_address = determineRankAddress(tagMap),
-                importance = calculateImportance(tagMap),
+                rank_address = determineRankAddress(tags),
+                importance = calculateImportance(tags),
                 parent_place_id = 0,
                 name = Name(name = name, alt_name = altName(altName, id)),
                 housenumber = null,
@@ -424,7 +423,7 @@ class OsmConverter : Converter {
     private fun convertNodeToNominatim(node: Node, tags: Map<String, String>, name: String): NominatimPlace =
         createPlaceContent(
             entity = node,
-            tagMap = tags,
+            tags = tags,
             name = name,
             objectType = "N",
             accuracy = "point",
@@ -436,7 +435,7 @@ class OsmConverter : Converter {
 
         return createPlaceContent(
             entity = way,
-            tagMap = tags,
+            tags = tags,
             name = name,
             objectType = "W",
             accuracy = "polygon",
@@ -465,7 +464,7 @@ class OsmConverter : Converter {
 
         return createPlaceContent(
             entity = relation,
-            tagMap = tags,
+            tags = tags,
             name = name,
             objectType = "R",
             accuracy = "polygon",
