@@ -182,10 +182,9 @@ class StopPlaceConverter : Converter {
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
         val importance = ImportanceCalculator.calculateImportance(popularity.toLong())
 
-        val tags = listOf(LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
+        val tags = listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
 
         val categories = tags
-            .plus(OSM_GOSP)
             .plus(SOURCE_NSR)
             .plus(country?.let { "country.$it" })
             .plus(countyGid?.let { "county_gid.$it" })
