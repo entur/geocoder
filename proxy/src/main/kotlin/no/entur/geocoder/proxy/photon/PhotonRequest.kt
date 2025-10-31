@@ -104,7 +104,7 @@ data class PhotonAutocompleteRequest(
                 }
 
             val zoom = params.focus?.scale?.split("km")?.get(0)?.toDoubleOrNull().let {
-                Geo.radiusToZoom(it ?: 2500.0)
+                Geo.radiusToZoom((it ?: 2500.0) / 2.0)
             }
 
             return PhotonAutocompleteRequest(
