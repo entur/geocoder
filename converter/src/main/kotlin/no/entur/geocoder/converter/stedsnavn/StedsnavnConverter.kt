@@ -1,15 +1,18 @@
 package no.entur.geocoder.converter.stedsnavn
 
-import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
+import no.entur.geocoder.common.Category.OSM_POI
+import no.entur.geocoder.common.Category.SOURCE_STEDSNAVN
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
-import no.entur.geocoder.common.Util.titleize
-import no.entur.geocoder.converter.importance.ImportanceCalculator
-import no.entur.geocoder.common.Geo
 import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
 import java.io.File
@@ -111,6 +114,7 @@ class StedsnavnConverter : Converter {
                             stedsnavn = text
                         }
                     }
+
                     "navneobjekttype" -> navneobjekttype = readElementText(reader)
                     "skrivemåtestatus" -> {
                         val text = readElementText(reader)
@@ -118,6 +122,7 @@ class StedsnavnConverter : Converter {
                             skrivemåtestatus = text
                         }
                     }
+
                     "matrikkelId" -> matrikkelId = readElementText(reader)
                     "adressekode" -> adressekode = readElementText(reader)
                     "kommunenummer" -> kommunenummer = readElementText(reader)
@@ -207,10 +212,9 @@ class StedsnavnConverter : Converter {
                 Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
             }
 
-        val categories =
-            listOf(Category.OSM_POI)
-                .plus("place.${entry.navneobjekttype}")
-                .plus(Category.SOURCE_STEDSNAVN)
+        val tags = listOf(OSM_POI, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, "place.${entry.navneobjekttype}")
+
+        val categories = tags.plus(SOURCE_STEDSNAVN)
 
         val id = entry.lokalId
         val extra =
@@ -222,7 +226,7 @@ class StedsnavnConverter : Converter {
                 county_gid = "KVE:TopographicPlace:${entry.fylkesnummer}",
                 locality = entry.kommunenavn,
                 locality_gid = "KVE:TopographicPlace:${entry.kommunenummer}",
-                tags = categories.joinToString(",") { it },
+                tags = tags.joinToString(","),
             )
 
         val placeId = PlaceId.stedsnavn.create(entry.lokalId)

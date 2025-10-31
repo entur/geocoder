@@ -9,4 +9,9 @@ object Category {
     const val SOURCE_ADRESSE = "source.kartverket.matrikkelenadresse"
     const val SOURCE_STEDSNAVN = "source.kartverket.stedsnavn"
     const val SOURCE_NSR = "source.nsr"
+    const val LEGACY_LAYER_VENUE = "legacy.layer.venue"
+    const val LEGACY_LAYER_ADDRESS = "legacy.layer.address"
+    const val LEGACY_SOURCE_WHOSONFIRST = "legacy.source.whosonfirst"
+    const val LEGACY_SOURCE_OPENADDRESSES = "legacy.source.openaddresses"
+    const val LEGACY_SOURCE_OPENSTREETMAP = "legacy.source.openstreetmap"
 }

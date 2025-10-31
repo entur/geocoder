@@ -41,7 +41,7 @@ class StopPlaceConverterTest {
         assertTrue(content.contains("NSR:GroupOfStopPlaces:72"), "Should contain Hammerfest GroupOfStopPlaces")
         assertTrue(content.contains("\"name\":\"Oslo\""), "Should contain Oslo name")
         assertTrue(
-            content.contains("\"categories\":[\"osm.public_transport.group_of_stop_places\""),
+            content.contains("\"osm.public_transport.group_of_stop_places\""),
             "Should contain GroupOfStopPlaces category",
         )
     }

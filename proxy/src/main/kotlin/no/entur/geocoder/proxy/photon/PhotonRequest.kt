@@ -70,7 +70,7 @@ data class PhotonAutocompleteRequest(
         }
 
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
-            val includes =
+            val includes: List<String> =
                 buildList {
                     params.boundaryCountry?.let { add("country.$it") }
                     if (params.boundaryCountyIds.isNotEmpty()) {
@@ -86,10 +86,10 @@ data class PhotonAutocompleteRequest(
                         addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
                     }
                     if (params.sources.isNotEmpty()) {
-                        addAll(params.sources.map { "source.$it" })
+                        addAll(params.sources.map { "legacy.source.$it" })
                     }
                     if (params.layers.isNotEmpty()) {
-                        addAll(params.layers.map { "layer.$it" })
+                        addAll(params.layers.map { "legacy.layer.$it" })
                     }
                 }
             val excludes =

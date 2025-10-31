@@ -1,6 +1,12 @@
 package no.entur.geocoder.converter.netex
 
-import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
+import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
+import no.entur.geocoder.common.Category.OSM_GOSP
+import no.entur.geocoder.common.Category.OSM_STOP_PLACE
+import no.entur.geocoder.common.Category.SOURCE_NSR
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
@@ -66,16 +72,16 @@ class StopPlaceConverter : Converter {
                 else -> null
             }
 
-        val categories =
-            listOf(Category.OSM_STOP_PLACE)
-                .plus(tariffZoneCategories)
-                .plus(country?.let { "country.$it" })
-                .plus(countyGid?.let { "county_gid.$it" })
-                .plus(localityGid?.let { "locality_gid.$it" })
-                .plus(multimodalityCategory)
-                .plus("layer.stopplace")
-                .plus(Category.SOURCE_NSR)
-                .filterNotNull()
+        val tags = listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE, LEGACY_SOURCE_OPENADDRESSES)
+
+        val categories = tags
+            .plus(SOURCE_NSR)
+            .plus(tariffZoneCategories)
+            .plus(country?.let { "country.$it" })
+            .plus(countyGid?.let { "county_gid.$it" })
+            .plus(localityGid?.let { "locality_gid.$it" })
+            .plus(multimodalityCategory)
+            .filterNotNull()
 
         // Extract alternative names from NeTEx AlternativeNames
         val alternativeNames = stopPlace.alternativeNames?.alternativeName
@@ -98,6 +104,7 @@ class StopPlaceConverter : Converter {
                     ?.joinToString(",")
                 ),
             alt_name = altName,
+            tags = tags.joinToString(",")
         )
 
         val placeId = PlaceId.stopplace.create(stopPlace.id)
@@ -110,10 +117,12 @@ class StopPlaceConverter : Converter {
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
-                name = stopPlace.name.text?.let { Name(
-                    name = it,
-                    alt_name = altName(altName, id)
-                ) },
+                name = stopPlace.name.text?.let {
+                    Name(
+                        name = it,
+                        alt_name = altName(altName, id)
+                    )
+                },
                 address =
                     Address(
                         county = county,
@@ -173,15 +182,15 @@ class StopPlaceConverter : Converter {
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
         val importance = ImportanceCalculator.calculateImportance(popularity.toLong())
 
-        val categories =
-            listOf(Category.OSM_GOSP)
-                .plus("GroupOfStopPlaces")
-                .plus(country?.let { "country.$it" })
-                .plus(countyGid?.let { "county_gid.$it" })
-                .plus(localityGid?.let { "locality_gid.$it" })
-                .plus("layer.groupofstopplaces")
-                .plus(Category.SOURCE_NSR)
-                .filterNotNull()
+        val tags = listOf(LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
+
+        val categories = tags
+            .plus(OSM_GOSP)
+            .plus(SOURCE_NSR)
+            .plus(country?.let { "country.$it" })
+            .plus(countyGid?.let { "county_gid.$it" })
+            .plus(localityGid?.let { "locality_gid.$it" })
+            .filterNotNull()
 
         val id = groupOfStopPlaces.id
         val placeContent =
@@ -211,6 +220,7 @@ class StopPlaceConverter : Converter {
                         county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,
+                        tags = tags.joinToString(",")
                     ),
             )
 

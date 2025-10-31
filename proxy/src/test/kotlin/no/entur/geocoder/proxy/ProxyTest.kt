@@ -10,6 +10,8 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.proxy.Routing.configureRouting
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import org.junit.jupiter.api.Test
@@ -40,7 +42,8 @@ class ProxyTest {
                   "locality": "Oslo",
                   "locality_gid": "locality:1",
                   "transport_modes": "city,transport",
-                  "tariff_zones": "zone1,zone2"
+                  "tariff_zones": "zone1,zone2",
+                  "tags": "${LEGACY_SOURCE_OPENSTREETMAP},${LEGACY_LAYER_ADDRESS}"
                 }
               }
             }

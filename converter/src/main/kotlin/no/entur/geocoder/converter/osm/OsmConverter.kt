@@ -1,6 +1,9 @@
 package no.entur.geocoder.converter.osm
 
 import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
+import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.titleize
@@ -320,7 +323,7 @@ class OsmConverter : Converter {
 
     private fun createPlaceContent(
         entity: Entity,
-        tags: Map<String, String>,
+        tagMap: Map<String, String>,
         name: String,
         objectType: String,
         accuracy: String,
@@ -332,11 +335,15 @@ class OsmConverter : Converter {
         // Look up administrative boundaries for this location
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
 
-        val country = determineCountry(county, municipality, tags)
+        val country = determineCountry(county, municipality, tagMap)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
+        val tags = tagMap.map { "${it.key}.${it.value}" }
+            .plus(LEGACY_SOURCE_WHOSONFIRST)
+            .plus(LEGACY_LAYER_ADDRESS)
+            .plus(OSM_POI)
 
         val altName =
-            altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
+            altName(tagMap["alt_name"], tagMap["old_name"], tagMap["no:name"], tagMap["loc_name"], tagMap["short_name"])
 
         val id = "OSM:TopographicPlace:" + entity.id
         val extra =
@@ -348,7 +355,7 @@ class OsmConverter : Converter {
                 county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
                 locality = municipality?.name?.titleize(),
                 locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
-                tags = tags.map { "${it.key}.${it.value}" }.joinToString(","),
+                tags = tags.joinToString(","),
                 alt_name = altName,
             )
 
@@ -361,8 +368,8 @@ class OsmConverter : Converter {
                 object_type = objectType,
                 object_id = placeId,
                 categories = categories,
-                rank_address = determineRankAddress(tags),
-                importance = calculateImportance(tags),
+                rank_address = determineRankAddress(tagMap),
+                importance = calculateImportance(tagMap),
                 parent_place_id = 0,
                 name = Name(name = name, alt_name = altName(altName, id)),
                 housenumber = null,
@@ -402,16 +409,13 @@ class OsmConverter : Converter {
      * Builds the list of category tags for the POI.
      */
     private fun buildCategories(
-        tags: Map<String, String>,
+        tags: List<String>,
         country: String,
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
     ): List<String> =
         buildList {
-            add(Category.OSM_POI)
-            addAll(tags.map { "${it.key}.${it.value}" })
-            add("source.osm")
-            add("layer.address")
+            addAll(tags)
             add("country.$country")
             county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
             municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
@@ -420,7 +424,7 @@ class OsmConverter : Converter {
     private fun convertNodeToNominatim(node: Node, tags: Map<String, String>, name: String): NominatimPlace =
         createPlaceContent(
             entity = node,
-            tags = tags,
+            tagMap = tags,
             name = name,
             objectType = "N",
             accuracy = "point",
@@ -432,7 +436,7 @@ class OsmConverter : Converter {
 
         return createPlaceContent(
             entity = way,
-            tags = tags,
+            tagMap = tags,
             name = name,
             objectType = "W",
             accuracy = "polygon",
@@ -461,7 +465,7 @@ class OsmConverter : Converter {
 
         return createPlaceContent(
             entity = relation,
-            tags = tags,
+            tagMap = tags,
             name = name,
             objectType = "R",
             accuracy = "polygon",

@@ -164,25 +164,14 @@ class PeliasResultTransformer {
     }
 
     fun transformSource(extra: Extra?): String? =
-        when {
-            isGosp(extra) -> "whosonfirst"
-            extra?.source == Source.OSM -> "whosonfirst"
-            extra?.source == Source.NSR -> "openstreetmap"
-            extra?.source == Source.KARTVERKET_ADRESSE && isStreet(extra) -> "whosonfirst"
-            extra?.source == Source.KARTVERKET_ADRESSE -> "openaddresses"
-            extra?.source == Source.KARTVERKET_STEDSNAVN -> "whosonfirst"
-            else -> extra?.source
-        }
+        extra?.tags?.split(",")
+            ?.firstOrNull { it.startsWith("legacy.source.") }
+            ?.substringAfterLast(".")
 
     fun transformLayer(extra: Extra?): String? =
-        when {
-            isGosp(extra) -> "address"
-            extra?.source == Source.NSR -> "venue"
-            extra?.source == Source.OSM -> "address"
-            extra?.source == Source.KARTVERKET_ADRESSE -> "address"
-            extra?.source == Source.KARTVERKET_STEDSNAVN -> "address"
-            else -> extra?.source
-        }
+        extra?.tags?.split(",")
+            ?.firstOrNull { it.startsWith("legacy.layer.") }
+            ?.substringAfterLast(".")
 
     fun isStreet(extra: Extra): Boolean =
         extra.tags?.split(',')?.any { it == Category.OSM_STREET } == true

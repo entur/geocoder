@@ -1,6 +1,11 @@
 package no.entur.geocoder.converter.matrikkel
 
-import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
+import no.entur.geocoder.common.Category.OSM_ADDRESS
+import no.entur.geocoder.common.Category.OSM_STREET
+import no.entur.geocoder.common.Category.SOURCE_ADRESSE
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
@@ -77,9 +82,10 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             easting = adresse.ost,
             placeId = PlaceId.address.create(adresse.lokalid),
             id = adresse.lokalid,
-            categories = listOf(Category.OSM_ADDRESS, Category.SOURCE_ADRESSE),
+            tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS),
+            categories = listOf(SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
-            displayName = null, // Addresses proper are considered to be "nameless"
+            displayName = null, // Addresses proper are considered to be "nameless" in Photon
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
             postcode = adresse.postnummer,
         )
@@ -96,7 +102,8 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             easting = easting,
             placeId = PlaceId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            categories = listOf(Category.OSM_STREET, Category.SOURCE_ADRESSE),
+            tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS),
+            categories = listOf(SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,
@@ -110,6 +117,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
         easting: Double,
         placeId: Long,
         id: String,
+        tags: List<String>,
         categories: List<String>,
         popularity: Double,
         displayName: String?,
@@ -131,7 +139,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
-                tags = categories.joinToString(","),
+                tags = tags.joinToString(","),
                 alt_name = adresse.adressetilleggsnavn,
             )
 
@@ -142,7 +150,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 place_id = placeId,
                 object_type = "N",
                 object_id = placeId,
-                categories = categories,
+                categories = categories.plus(tags),
                 rank_address = 26,
                 importance = ImportanceCalculator.calculateImportance(popularity),
                 parent_place_id = 0,
