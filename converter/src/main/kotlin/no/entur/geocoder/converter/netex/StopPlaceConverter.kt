@@ -2,7 +2,7 @@ package no.entur.geocoder.converter.netex
 
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
@@ -72,7 +72,7 @@ class StopPlaceConverter : Converter {
                 else -> null
             }
 
-        val tags = listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE, LEGACY_SOURCE_OPENADDRESSES)
+        val tags = listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE, LEGACY_SOURCE_OPENSTREETMAP)
 
         val categories = tags
             .plus(SOURCE_NSR)
