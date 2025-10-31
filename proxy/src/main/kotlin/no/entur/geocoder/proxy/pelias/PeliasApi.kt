@@ -44,10 +44,9 @@ object PeliasApi {
                         parameter("limit", photonRequest.limit.toString())
                         parameter("lang", photonRequest.language)
 
-                        // For now hardcoded value that is close to the current
-                        // default in v1, but we need to discuss how to translate
-                        parameter("zoom", "7")
-
+                        if (photonRequest.zoom != null) {
+                            parameter("zoom", photonRequest.zoom)
+                        }
                         if (photonRequest.includes.isNotEmpty()) {
                             parameter("include", photonRequest.includes.joinToString(","))
                         }

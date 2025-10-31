@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Coordinate
 import java.math.BigDecimal
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.log2
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -57,5 +58,16 @@ object Geo {
 
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return earthRadius * c
+    }
+
+    /**
+     * Converts a radius to a zoom level
+     *
+     * @param radius The radius in kilometers
+     * @return Zoom level as a string, clamped to the range [0, 18]
+     */
+    fun radiusToZoom(radius: Double): String {
+        val zoom = (18 - log2(radius * 4)).toInt()
+        return zoom.coerceIn(0, 18).toString()
     }
 }

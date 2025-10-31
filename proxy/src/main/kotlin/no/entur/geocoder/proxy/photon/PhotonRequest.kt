@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
 import no.entur.geocoder.proxy.pelias.PeliasReverseParams
@@ -15,6 +16,7 @@ data class PhotonAutocompleteRequest(
     val excludes: List<String> = emptyList(),
     val lat: String?,
     val lon: String?,
+    val zoom: String?
 ) {
     companion object {
         fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
@@ -50,6 +52,7 @@ data class PhotonAutocompleteRequest(
                 includes = includes,
                 lat = null,
                 lon = null,
+                zoom = null
             )
         }
 
@@ -61,6 +64,7 @@ data class PhotonAutocompleteRequest(
                     language = "no",
                     lat = null,
                     lon = null,
+                    zoom = null
                 )
             }
         }
@@ -99,6 +103,10 @@ data class PhotonAutocompleteRequest(
                     }
                 }
 
+            val zoom = params.focus?.scale?.split("km")?.get(0)?.toDoubleOrNull().let {
+                Geo.radiusToZoom(it ?: 2500.0)
+            }
+
             return PhotonAutocompleteRequest(
                 query = params.text,
                 limit = params.size,
@@ -107,6 +115,7 @@ data class PhotonAutocompleteRequest(
                 excludes = excludes,
                 lat = params.focus?.lat,
                 lon = params.focus?.lon,
+                zoom = zoom
             )
         }
     }
