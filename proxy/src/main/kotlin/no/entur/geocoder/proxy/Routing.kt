@@ -28,7 +28,11 @@ object Routing {
                 peliasAutocompleteRequest(photonBaseUrl, client, transformer)
             }
 
-            get("/v2/(reverse|nearby)".toRegex()) {
+            get("/v2/reverse") {
+                peliasReverseRequest(photonBaseUrl, client, transformer)
+            }
+
+            get("/v2/nearby") {
                 peliasReverseRequest(photonBaseUrl, client, transformer)
             }
 
