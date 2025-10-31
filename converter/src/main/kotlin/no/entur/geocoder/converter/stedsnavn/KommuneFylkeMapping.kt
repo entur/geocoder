@@ -92,11 +92,18 @@ object KommuneFylkeMapping {
             fylkesnummer != null &&
             fylkesnavn != null
         ) {
-            KommuneInfo(kommunenummer, kommunenavn, fylkesnummer, fylkesnavn)
+            KommuneInfo(
+                kommunenummer,
+                normalizeName(kommunenavn), fylkesnummer,
+                normalizeName(fylkesnavn)
+            )
         } else {
             null
         }
     }
+
+    private fun normalizeName(name: String): String =
+        name.split(" - ").first()
 
     private fun readElementText(reader: XMLStreamReader): String {
         val sb = StringBuilder()

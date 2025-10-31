@@ -13,6 +13,7 @@ import no.entur.geocoder.converter.importance.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
 import no.entur.geocoder.converter.stedsnavn.KommuneFylkeMapping
+import no.entur.geocoder.converter.stedsnavn.KommuneFylkeMapping.KommuneInfo
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -20,7 +21,7 @@ import java.nio.file.Paths
 
 class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
 
-    val kommuneFylkeMapping: Map<String, KommuneFylkeMapping.KommuneInfo> by lazy {
+    val kommuneFylkeMapping: Map<String, KommuneInfo> by lazy {
         KommuneFylkeMapping.build(stedsnavnGmlFile)
     }
 
