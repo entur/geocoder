@@ -38,7 +38,10 @@ runs:
 
     - name: Configure Docker for GCR
       shell: bash
-      run: gcloud auth configure-docker ${{ inputs.registry }} --quiet
+      run: |
+        # Extract registry domain (e.g., eu.gcr.io from eu.gcr.io/entur-system-1287)
+        REGISTRY_DOMAIN=$(echo "${{ inputs.registry }}" | cut -d'/' -f1)
+        gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
 
     - name: Extract artifact from Docker image
       id: extract

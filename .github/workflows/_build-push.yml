@@ -97,7 +97,10 @@ jobs:
 
       - name: Configure Docker for GCR
         if: ${{ inputs.push }}
-        run: gcloud auth configure-docker ${REGISTRY%%/*} --quiet
+        run: |
+          # Extract registry domain (e.g., eu.gcr.io from eu.gcr.io/entur-system-1287)
+          REGISTRY_DOMAIN=$(echo "${REGISTRY}" | cut -d'/' -f1)
+          gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
 
       - name: Set image tag variable
         id: set-image-tag
