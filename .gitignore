@@ -11,3 +11,8 @@ build
 /matrikkelenAdresse.csv
 /Basis*/*csv
 /tmp/*
+photon_data
+photon_data.tar.xz
+nominatim.ndjson.xz
+nominatim.ndjson
+photon*jar

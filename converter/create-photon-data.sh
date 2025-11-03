@@ -10,7 +10,7 @@ if [ "${1:-}" = "-z" ];then
     shift
 fi
 
-PHOTON_JAR_SOURCE=${1:-}
+PHOTON_JAR_SOURCE=${1:-photon.jar}
 
 fail() {
     echo "Error: $*"
