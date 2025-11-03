@@ -18,7 +18,8 @@ data class PhotonAutocompleteRequest(
     val lat: String?,
     val lon: String?,
     val zoom: String?,
-    val weight: String?
+    val weight: String?,
+    val useLinearDecay: String?
 ) {
     companion object {
         fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
@@ -55,7 +56,8 @@ data class PhotonAutocompleteRequest(
                 lat = null,
                 lon = null,
                 zoom = null,
-                weight = null
+                weight = null,
+                useLinearDecay = null
             )
         }
 
@@ -68,7 +70,8 @@ data class PhotonAutocompleteRequest(
                     lat = null,
                     lon = null,
                     zoom = null,
-                    weight = null
+                    weight = null,
+                    useLinearDecay = null
                 )
             }
         }
@@ -119,6 +122,14 @@ data class PhotonAutocompleteRequest(
                 (1.0 - ImportanceCalculator.calculateImportance(it ?: 15.0)).toString()
             }
 
+            val useLinearDecay = params.focus?.function.let {
+                if (it == null || it == "linear") {
+                    "true"
+                } else {
+                    "false"
+                }
+            }
+
             return PhotonAutocompleteRequest(
                 query = params.text,
                 limit = params.size,
@@ -128,7 +139,8 @@ data class PhotonAutocompleteRequest(
                 lat = params.focus?.lat,
                 lon = params.focus?.lon,
                 zoom = zoom,
-                weight = weight
+                weight = weight,
+                useLinearDecay = useLinearDecay
             )
         }
     }
