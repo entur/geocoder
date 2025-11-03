@@ -3,10 +3,11 @@ FROM ${IMPORT_IMAGE} AS import-image
 
 FROM bellsoft/liberica-runtime-container:jre-21-musl
 
+ARG PHOTON_JAR_URL
+
 WORKDIR /srv
 RUN apk add --no-cache curl
-RUN curl -sfL --retry 2 -o photon.jar \
-    https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.jar
+RUN curl -sfL --retry 2 -o photon.jar ${PHOTON_JAR_URL}
 
 COPY photon-start.sh ./
 #COPY --from=import-image /photon.jar photon.jar

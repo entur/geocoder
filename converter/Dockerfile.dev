@@ -6,10 +6,10 @@ SHELL ["/bin/ash", "-co", "pipefail"]
 COPY build/libs/converter-all.jar convert.jar
 RUN apk add --no-cache curl
 
+ARG PHOTON_JAR_URL
 ENV ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_03_Oslo_25833_MatrikkelenAdresse_CSV.zip \
     STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_03_Oslo_25833_Stedsnavn_GML.zip \
     TIAMAT_URL=https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip \
-    PHOTON_URL=https://github.com/entur/photon/releases/download/henrik%2Falways-fuzzy/photon-0.7.0.jar
 
 RUN curl -sfL $ADRESSE_URL | unzip -p - > adresse.csv && \
     curl -sfL $STEDSNAVN_URL | unzip -p - > stedsnavn.gml && \
@@ -24,7 +24,7 @@ RUN curl -sfL $TIAMAT_URL -o tiamat.zip && \
 RUN java -jar convert.jar -a -p oslo-center.osm.pbf -o nominatim.ndjson && \
     rm oslo-center.osm.pbf
 
-RUN curl -sfL $PHOTON_URL -o photon.jar && \
+RUN curl -sfL $PHOTON_JAR_URL -o photon.jar && \
     java -jar photon.jar \
         -nominatim-import \
         -import-file nominatim.ndjson \
