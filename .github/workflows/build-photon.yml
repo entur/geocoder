@@ -36,36 +36,65 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Import image jobs
-  import-lint:
+  # Run import and create artifacts
+  create-nominatim-data:
     if: inputs.build_import == true
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: converter/Dockerfile
-      ignore: "DL3018,DL3059"
+    runs-on: ubuntu-latest-8core
+    steps:
+      - uses: actions/checkout@v4
 
-  import-build-push:
-    if: inputs.build_import == true
-    needs: import-lint
-    uses: "./.github/workflows/_build-push.yml"
-    with:
-      image_name: geocoder-import
-      context: converter
-      push: true
-      run-group: 'grp-ubuntu-24.04-8core-x64'
-      do-gradle-build: true
-      build_args: |
-        PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'liberica'
+          java-version: '21'
+          cache: gradle
 
-  import-scan:
+      - name: Build converter JAR
+        run: ./gradlew :converter:shadowJar
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libarchive-tools
+
+      - name: Run create-nominatim-data.sh
+        run: ./create-nominatim-data.sh
+        working-directory: converter
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nominatim-data
+          path: converter/nominatim.ndjson.xz
+          retention-days: 1
+
+  create-photon-data:
     if: |
-      !cancelled() &&
       inputs.build_import == true &&
-      needs.import-build-push.result == 'success'
-    needs: [import-build-push]
-    uses: "./.github/workflows/_docker-scan.yml"
-    with:
-      image: "geocoder-import:${{ needs.import-build-push.outputs.image_tag }}"
+      needs.run-import.result == 'success'
+    needs: create-nominatim-data
+    runs-on: ubuntu-latest-8core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'liberica'
+          java-version: '21'
+
+      - name: Download nominatim data
+        uses: actions/download-artifact@v4
+        with:
+          name: nominatim-data
+          path: converter
+
+      - name: Run create-photon-data.sh
+        working-directory: converter
+        run: ./create-photon-data.sh "${{ inputs.photon_jar_url }}"
+
+      - name: Upload photon data
+        uses: actions/upload-artifact@v4
+        with:
+          name: photon-data
+          path: converter/photon_data.tar.xz
+          retention-days: 1
 
   # Photon image jobs
   photon-lint:
@@ -77,19 +106,17 @@ jobs:
 
   photon-build-push:
     if: |
-      always() &&
       !cancelled() &&
       inputs.deploy_env != 'none' &&
-      (inputs.build_import == false || needs.import-build-push.result == 'success')
-    needs: [photon-lint, import-build-push]
+      (inputs.build_import == false || needs.create-photon-data.result == 'success')
+    needs: [photon-lint, create-photon-data]
     uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-photon
       context: photon
       push: true
-      build_args: |
-        IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
-        PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
+      artifact_name: ${{ inputs.build_import == true && 'photon-data' || '' }}
+      build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
     if: |

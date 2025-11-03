@@ -187,7 +187,7 @@ class Command(
     fun printUsage() {
         println(
             """
-            Usage: ./geocoder-convert [options] -o <output-file>
+            Usage: ./convert.sh [options] -o <output-file>
             
             Options:
               -s <input-xml-file>     Convert StopPlace NeTEx data
