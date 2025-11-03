@@ -164,7 +164,6 @@ jobs:
         with:
           file_path: converter/photon_data.tar.xz
           image_name: geocoder-photon-data
-          artifact_path: converter/photon_data.tar.xz
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 

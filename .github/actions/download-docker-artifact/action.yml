@@ -47,35 +47,37 @@ runs:
       shell: bash
       run: |
         FULL_IMAGE="${{ inputs.registry }}/${{ inputs.image }}"
+        FILE_NAME=$(basename "${{ inputs.artifact_path }}")
+        
         echo "Pulling image: $FULL_IMAGE"
         docker pull "$FULL_IMAGE"
         
-        echo "Extracting ${{ inputs.artifact_path }} from image"
+        echo "Extracting ${FILE_NAME} from image"
         mkdir -p "${{ inputs.destination }}"
         
-        # Export the image and extract the file from the blob
-        # This works with FROM scratch images where docker create fails
+        # Export image to temp directory
         TEMP_DIR=$(mktemp -d)
         docker save "$FULL_IMAGE" -o "${TEMP_DIR}/image.tar"
+        tar -xf "${TEMP_DIR}/image.tar" -C "${TEMP_DIR}"
         
-        # Extract all blobs and find our file
-        cd "${TEMP_DIR}"
-        tar -xf image.tar
-        
-        # The file is stored with just its basename in FROM scratch images
-        FILE_NAME=$(basename "${{ inputs.artifact_path }}")
-        
-        # Find and extract the layer containing our file
-        for blob in blobs/sha256/*; do
-          if tar tf "$blob" "${FILE_NAME}" 2>/dev/null; then
-            echo "Found file in blob: blobs/sha256/$blob"
-            tar xf "blobs/sha256/$blob" -C "${{ inputs.destination }}" "${FILE_NAME}"
+        # Find and extract the file from blob layers
+        FOUND=false
+        for blob in "${TEMP_DIR}"/blobs/sha256/*; do
+          if tar -tf "$blob" "${FILE_NAME}" 2>/dev/null; then
+            echo "Found ${FILE_NAME} in blob: $(basename $blob)"
+            tar -xf "$blob" -C "${{ inputs.destination }}" "${FILE_NAME}"
+            FOUND=true
             break
           fi
         done
         
+        if [ "$FOUND" = false ]; then
+          echo "ERROR: File ${FILE_NAME} not found in any image layer"
+          rm -rf "${TEMP_DIR}"
+          exit 1
+        fi
+        
         # Cleanup
-        cd -
         rm -rf "${TEMP_DIR}"
         
         ARTIFACT_FILE="${{ inputs.destination }}/${FILE_NAME}"

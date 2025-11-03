@@ -13,9 +13,8 @@ Packages a workflow artifact or file as a Docker image and pushes it to GCR for 
 - name: Upload to GCR
   uses: ./.github/actions/upload-docker-artifact
   with:
-    file_path: path/to/file.tar.xz  # Path to file on disk
-    image_name: my-data-image        # Docker image name (without registry)
-    artifact_path: path/to/file.tar.xz  # Used for naming in Dockerfile
+    file_path: path/to/file.tar.xz       # Path to file on disk
+    image_name: my-data-image             # Docker image name (without registry)
     workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
     service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
@@ -25,9 +24,8 @@ Packages a workflow artifact or file as a Docker image and pushes it to GCR for 
 - name: Upload to GCR
   uses: ./.github/actions/upload-docker-artifact
   with:
-    artifact_name: my-artifact       # Name of artifact from upload-artifact
-    image_name: my-data-image        # Docker image name (without registry)
-    artifact_path: path/to/file.tar.xz  # Path to the artifact file
+    artifact_name: my-artifact            # Name of artifact from upload-artifact
+    image_name: my-data-image             # Docker image name (without registry)
     workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
     service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
@@ -36,7 +34,6 @@ Packages a workflow artifact or file as a Docker image and pushes it to GCR for 
 - `file_path` (optional): Direct path to file on disk
 - `artifact_name` (optional): Name of workflow artifact to download (mutually exclusive with file_path)
 - `image_name` (required): Docker image name
-- `artifact_path` (required): Path for naming/reference
 
 **Outputs:**
 - `image_tag`: The generated tag (e.g., `main.20251103-SHA1234567`)

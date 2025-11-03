@@ -11,11 +11,8 @@ inputs:
   image_name:
     description: 'Name of the Docker image to create (without registry prefix)'
     required: true
-  artifact_path:
-    description: 'Path to the artifact file to include in the image (used for naming only when file_path is provided)'
-    required: true
+  # Note: vars and secrets are not available in composite actions, so they must be passed explicitly
   workload_identity_provider:
-    description: 'GCP Workload Identity Provider'
     required: true
   service_account:
     description: 'GCP Service Account'
@@ -54,12 +51,13 @@ runs:
       shell: bash
       run: |
         cd /tmp/docker-artifact-upload
-        ARTIFACT_FILE=$(basename "${{ inputs.artifact_path }}")
+        # Get the actual filename from the directory (works for both artifact and file_path)
+        ARTIFACT_FILE=$(ls -1 | head -n1)
         cat > Dockerfile << EOF
         FROM scratch
         COPY ${ARTIFACT_FILE} /${ARTIFACT_FILE}
         EOF
-        echo "Created Dockerfile for $ARTIFACT_FILE"
+        echo "Created Dockerfile for ${ARTIFACT_FILE}"
         cat Dockerfile
 
     - name: Authenticate with GCP
@@ -106,7 +104,7 @@ runs:
       shell: bash
       run: |
         echo "## Docker Artifact Upload" >> $GITHUB_STEP_SUMMARY
-        echo "**Artifact:** \`${{ inputs.artifact_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Source:** \`${{ inputs.artifact_name != '' && inputs.artifact_name || inputs.file_path }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Tag:** \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Full reference:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
