@@ -8,17 +8,15 @@
 ./gradlew build
 
 # Import and convert data
-cd converter
 curl -sfLo photon.jar https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.1.jar
-./create-nominatim-data.sh # creates nominatim.ndjson
-./create-photon-data.sh    # creates the opensearch data folder for photon
+converter/create-nominatim-data.sh # creates nominatim.ndjson
+converter/create-photon-data.sh    # creates the opensearch data folder for photon
 
 # Run Photon
 java -jar photon.jar
 
 # Switch to a different terminal and start the proxy, or just run ProxyKt from your IDE
-cd ../proxy
-java -jar build/libs/proxy-all.jar
+java -jar proxy/build/libs/proxy-all.jar
 ```
 
 Now try some example requests:

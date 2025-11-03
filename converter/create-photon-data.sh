@@ -17,7 +17,7 @@ fail() {
     exit 1
 }
 
-[ -f "$NOMINATIM_FILE" ] || fail "$NOMINATIM_FILE not found. Please run import-all.sh first."
+[ -f "$NOMINATIM_FILE" ] || fail "$NOMINATIM_FILE not found. Please run create-nominatim-data.sh first."
 which tar >/dev/null || fail "bsdtar not found. Please install it to proceed."
 which curl >/dev/null || fail "curl not found. Please install it to proceed."
 which xz >/dev/null || fail "xz not found. Please install it to proceed."
@@ -38,7 +38,7 @@ if $COMPRESS; then
   echo "Decompressing $NOMINATIM_FILE..."
   xz -d $NOMINATIM_FILE
 fi
-java -jar $PHOTON_JAR \
+java -jar "$PHOTON_JAR" \
         -nominatim-import \
         -import-file nominatim.ndjson \
         -languages no,en \
