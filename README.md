@@ -36,6 +36,25 @@ curl -s http://localhost:9201/photon/_mapping | jq .       # Available fields
 curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 ```
 
+### Using a patched Photon version
+
+* Fetch Photon from source (`https://github.com/komoot/photon`) and make your changes
+* Push it to a branch on EnTur's fork (`https://github.com/entur/photon`)
+* Build your branch with `./gradlew build`
+* Draft a new release at https://github.com/entur/photon/releases/new
+* Click "Select tag" --> "Create new tag" and enter a tag name
+* Select Target: `<your branch name>`
+* Fill in release title and description
+* Add `photon-<tag>.jar` from Photon's `target/` folder as a binary asset
+* Check "Set as a pre-release"
+* Publish the release
+* On the release page, right-click the `photon-<tag>.jar` asset and copy the link address
+* Go to [build-photon.yml](.github/workflows/build-photon.yml) in `geocoder` and
+  update `on.workflow_dispatch.inputs.photon_jar_url.default` variable with the new link
+* Push your `geocoder` changes
+* Go to https://github.com/entur/geocoder/actions/workflows/build-photon.yml and trigger the workflow.
+  If you made changes to the Photon import code you need to check the "Build import image", otherwise
+  you can just deploy to e.g. `dev`.
 
 ## Links
 
