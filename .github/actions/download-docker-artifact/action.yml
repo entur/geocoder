@@ -39,7 +39,6 @@ runs:
     - name: Configure Docker for GCR
       shell: bash
       run: |
-        # Extract registry domain (e.g., eu.gcr.io from eu.gcr.io/entur-system-1287)
         REGISTRY_DOMAIN=$(echo "${{ inputs.registry }}" | cut -d'/' -f1)
         gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
 
@@ -69,8 +68,8 @@ runs:
         # Find and extract the layer containing our file
         for blob in blobs/sha256/*; do
           if tar tf "$blob" "${FILE_NAME}" 2>/dev/null; then
-            echo "Found file in blob: $blob"
-            tar xf "$blob" -C "${{ inputs.destination }}" "${FILE_NAME}"
+            echo "Found file in blob: blobs/sha256/$blob"
+            tar xf "blobs/sha256/$blob" -C "${{ inputs.destination }}" "${FILE_NAME}"
             break
           fi
         done
