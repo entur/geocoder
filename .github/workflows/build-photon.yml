@@ -39,7 +39,8 @@ jobs:
   # Run import and create artifacts
   create-nominatim-data:
     if: inputs.build_import == true
-    runs-on: ubuntu-latest-8core
+    runs-on:
+        group: grp-ubuntu-24.04-8core-x64
     steps:
       - uses: actions/checkout@v4
 
@@ -70,7 +71,8 @@ jobs:
       inputs.build_import == true &&
       needs.run-import.result == 'success'
     needs: create-nominatim-data
-    runs-on: ubuntu-latest-8core
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
     steps:
       - uses: actions/checkout@v4
 
