@@ -41,7 +41,7 @@ fun main() {
             anyHost()
             allowCredentials = true
             allowNonSimpleContentTypes = true
-            allowHeader("ET-Client-Nmae")
+            allowHeader("et-client-name")
         }
         install(ServerContentNegotiation) {
             jackson()
