@@ -6,7 +6,7 @@ FROM bellsoft/liberica-runtime-container:jre-21-musl
 WORKDIR /srv
 RUN apk add --no-cache curl
 RUN curl -sfL --retry 2 -o photon.jar \
-    https://github.com/entur/photon/releases/download/with-metrics/photon-0.7.0.jar
+    https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.jar
 
 COPY photon-start.sh ./
 #COPY --from=import-image /photon.jar photon.jar
