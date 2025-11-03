@@ -30,10 +30,15 @@ on:
         description: "Run Gradle build before building the Docker image"
         type: boolean
         default: false
-      artifact_name:
-        description: "Name of artifact to download into context directory before building"
+      artifact_from_image:
+        description: "Docker image to extract artifact from (format: image:tag)"
         type: string
         required: false
+      artifact_from_image_path:
+        description: "Path to file inside the Docker image to extract"
+        type: string
+        required: false
+        default: "/photon_data.tar.xz"
     outputs:
       image_tag:
         description: "Image tag"
@@ -70,12 +75,15 @@ jobs:
         if: ${{ inputs.do-gradle-build }}
         run: ./gradlew --no-daemon build
 
-      - name: Download artifact for build context
-        if: ${{ inputs.artifact_name != '' }}
-        uses: actions/download-artifact@v4
+      - name: Download artifact from Docker image
+        if: ${{ inputs.artifact_from_image != '' }}
+        uses: ./.github/actions/download-docker-artifact
         with:
-          name: ${{ inputs.artifact_name }}
-          path: ${{ inputs.context }}
+          image: ${{ inputs.artifact_from_image }}
+          artifact_path: ${{ inputs.artifact_from_image_path }}
+          destination: ${{ inputs.context }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -89,7 +97,7 @@ jobs:
 
       - name: Configure Docker for GCR
         if: ${{ inputs.push }}
-        run: gcloud auth configure-docker eu.gcr.io --quiet
+        run: gcloud auth configure-docker ${REGISTRY%%/*} --quiet
 
       - name: Set image tag variable
         id: set-image-tag

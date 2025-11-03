@@ -1,0 +1,72 @@
+name: 'Download Artifact from Docker Image'
+description: 'Download an artifact by extracting it from a Docker image in GCR'
+
+inputs:
+  image:
+    description: 'Docker image to extract from (format: image-name:tag, without registry prefix)'
+    required: true
+  artifact_path:
+    description: 'Path to file inside the Docker image to extract'
+    required: true
+  destination:
+    description: 'Destination directory to extract the artifact to'
+    required: true
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+  registry:
+    description: 'Docker registry URL'
+    required: false
+    default: 'eu.gcr.io/entur-system-1287'
+
+outputs:
+  artifact_file:
+    description: 'Path to the extracted artifact file'
+    value: ${{ steps.extract.outputs.artifact_file }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate with GCP
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: Configure Docker for GCR
+      shell: bash
+      run: gcloud auth configure-docker ${{ inputs.registry }} --quiet
+
+    - name: Extract artifact from Docker image
+      id: extract
+      shell: bash
+      run: |
+        FULL_IMAGE="${{ inputs.registry }}/${{ inputs.image }}"
+        echo "Pulling image: $FULL_IMAGE"
+        docker pull "$FULL_IMAGE"
+        
+        CONTAINER_ID=$(docker create "$FULL_IMAGE")
+        echo "Extracting ${{ inputs.artifact_path }} from container $CONTAINER_ID"
+        
+        mkdir -p "${{ inputs.destination }}"
+        docker cp "$CONTAINER_ID:${{ inputs.artifact_path }}" "${{ inputs.destination }}/"
+        docker rm "$CONTAINER_ID"
+        
+        ARTIFACT_FILE="${{ inputs.destination }}/$(basename ${{ inputs.artifact_path }})"
+        echo "artifact_file=${ARTIFACT_FILE}" >> $GITHUB_OUTPUT
+        
+        echo "Artifact extracted to: ${ARTIFACT_FILE}"
+        ls -lh "${{ inputs.destination }}/"
+
+    - name: Summary
+      shell: bash
+      run: |
+        echo "## Docker Artifact Download" >> $GITHUB_STEP_SUMMARY
+        echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Artifact path:** \`${{ inputs.artifact_path }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Destination:** \`${{ inputs.destination }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Extracted file:** \`${{ steps.extract.outputs.artifact_file }}\`" >> $GITHUB_STEP_SUMMARY
+

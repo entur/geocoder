@@ -1,0 +1,111 @@
+name: 'Upload Artifact to Docker Image'
+description: 'Upload an artifact by packaging it in a Docker image and pushing to GCR'
+
+inputs:
+  artifact_name:
+    description: 'Name of the artifact to download from the current workflow (mutually exclusive with file_path)'
+    required: false
+  file_path:
+    description: 'Path to file on disk to upload (mutually exclusive with artifact_name)'
+    required: false
+  image_name:
+    description: 'Name of the Docker image to create (without registry prefix)'
+    required: true
+  artifact_path:
+    description: 'Path to the artifact file to include in the image (used for naming only when file_path is provided)'
+    required: true
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+  registry:
+    description: 'Docker registry URL'
+    required: false
+    default: 'eu.gcr.io/entur-system-1287'
+
+outputs:
+  image_tag:
+    description: 'The tag of the pushed image'
+    value: ${{ steps.set-tag.outputs.image_tag }}
+  full_image:
+    description: 'Full image reference (registry/name:tag)'
+    value: ${{ steps.set-tag.outputs.full_image }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download artifact
+      if: ${{ inputs.artifact_name != '' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: /tmp/docker-artifact-upload
+
+    - name: Copy file to build context
+      if: ${{ inputs.file_path != '' }}
+      shell: bash
+      run: |
+        mkdir -p /tmp/docker-artifact-upload
+        cp "${{ inputs.file_path }}" /tmp/docker-artifact-upload/
+
+    - name: Create Dockerfile
+      shell: bash
+      run: |
+        cd /tmp/docker-artifact-upload
+        ARTIFACT_FILE=$(basename "${{ inputs.artifact_path }}")
+        cat > Dockerfile << EOF
+        FROM scratch
+        COPY ${ARTIFACT_FILE} /${ARTIFACT_FILE}
+        EOF
+        echo "Created Dockerfile for $ARTIFACT_FILE"
+        cat Dockerfile
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Authenticate with GCP
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: Configure Docker for GCR
+      shell: bash
+      run: gcloud auth configure-docker ${{ inputs.registry }} --quiet
+
+    - name: Set image tag
+      id: set-tag
+      shell: bash
+      run: |
+        branch=$(echo "${GITHUB_REF_NAME:-detached}" | sed 's/[^a-zA-Z0-9_-]\+/_/g')
+        IMAGE_TAG="${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}"
+        FULL_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}:${IMAGE_TAG}"
+        
+        echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        echo "full_image=${FULL_IMAGE}" >> $GITHUB_OUTPUT
+        
+        echo "Image tag: ${IMAGE_TAG}"
+        echo "Full image: ${FULL_IMAGE}"
+
+    - name: Build and push to GCR
+      uses: docker/build-push-action@v6
+      with:
+        context: /tmp/docker-artifact-upload
+        file: /tmp/docker-artifact-upload/Dockerfile
+        push: true
+        tags: |
+          ${{ inputs.registry }}/${{ inputs.image_name }}:${{ steps.set-tag.outputs.image_tag }}
+          ${{ inputs.registry }}/${{ inputs.image_name }}:latest
+        provenance: false
+
+    - name: Summary
+      shell: bash
+      run: |
+        echo "## Docker Artifact Upload" >> $GITHUB_STEP_SUMMARY
+        echo "**Artifact:** \`${{ inputs.artifact_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Tag:** \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Full reference:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
+

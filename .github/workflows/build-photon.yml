@@ -18,8 +18,8 @@ on:
           - staging
           - both
         default: 'none'
-      import_image_tag:
-        description: 'Import image tag to use for photon build (if not building import)'
+      photon_data_image_tag:
+        description: 'Photon data image tag to use (default: latest, only used if not building import)'
         required: false
         default: 'latest'
         type: string
@@ -29,7 +29,7 @@ on:
         type: string
         default: 'https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.1.jar'
 
-run-name: "Photon: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }}, tag=${{ inputs.import_image_tag }}"
+run-name: "Photon: ${{ inputs.build_import == true && 'build+deploy' || format('deploy:{0}', inputs.photon_data_image_tag) }} → ${{ inputs.deploy_env }}"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -103,6 +103,11 @@ jobs:
     needs: create-nominatim-data
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.upload-to-gcr.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -150,11 +155,13 @@ jobs:
           fi
 
       - name: Upload photon data
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/upload-docker-artifact
         with:
-          name: photon-data
-          path: converter/photon_data.tar.xz
-          retention-days: 14
+          file_path: converter/photon_data.tar.xz
+          image_name: geocoder-photon-data
+          artifact_path: converter/photon_data.tar.xz
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   # Photon image jobs
   photon-lint:
@@ -177,7 +184,7 @@ jobs:
       image_name: geocoder-photon
       context: photon
       push: true
-      artifact_name: photon-data
+      artifact_from_image: geocoder-photon-data:${{ inputs.build_import == true && needs.create-photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
