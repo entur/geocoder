@@ -31,5 +31,5 @@ curl -sfLO --retry 2 $OSM_URL
 ./convert.sh -a -p norway-latest.osm.pbf -o nominatim.ndjson
 rm norway-latest.osm.pbf
 
-xz -z nominatim.ndjson
+xz -zk nominatim.ndjson
 echo "nominatim.ndjson.xz created."

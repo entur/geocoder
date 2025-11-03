@@ -60,6 +60,34 @@ jobs:
         run: ./create-nominatim-data.sh
         working-directory: converter
 
+      - name: Generate stats summary
+        working-directory: converter
+        run: |
+          echo "## Nominatim Data Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f nominatim.ndjson.xz ] && [ -f nominatim.ndjson ]; then
+            COMPRESSED_SIZE=$(du -h nominatim.ndjson.xz | cut -f1)
+            UNCOMPRESSED_SIZE=$(du -h nominatim.ndjson | cut -f1)
+            
+            # Calculate compression ratio
+            COMPRESSED_BYTES=$(stat -f%z nominatim.ndjson.xz 2>/dev/null || stat -c%s nominatim.ndjson.xz)
+            UNCOMPRESSED_BYTES=$(stat -f%z nominatim.ndjson 2>/dev/null || stat -c%s nominatim.ndjson)
+            RATIO=$(awk "BEGIN {printf \"%.1f\", $UNCOMPRESSED_BYTES / $COMPRESSED_BYTES}")
+            
+            # Count lines in uncompressed file
+            LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
+            
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Compressed size | $COMPRESSED_SIZE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Uncompressed size | $UNCOMPRESSED_SIZE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Compression ratio | ${RATIO}x |" >> $GITHUB_STEP_SUMMARY
+            echo "| Number of records | $LINE_COUNT |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: nominatim-data
@@ -69,7 +97,7 @@ jobs:
   create-photon-data:
     if: |
       inputs.build_import == true &&
-      needs.run-import.result == 'success'
+      needs.create-nominatim-data.result == 'success'
     needs: create-nominatim-data
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
@@ -90,6 +118,34 @@ jobs:
       - name: Run create-photon-data.sh
         working-directory: converter
         run: ./create-photon-data.sh "${{ inputs.photon_jar_url }}"
+
+      - name: Generate stats summary
+        working-directory: converter
+        run: |
+          echo "## Photon Data Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f photon_data.tar.xz ]; then
+            FILE_SIZE=$(du -h photon_data.tar.xz | cut -f1)
+            UNCOMPRESSED_SIZE=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $5}')
+            COMPRESSION_RATIO=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $6}')
+            
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Archive size | $FILE_SIZE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Uncompressed size | $UNCOMPRESSED_SIZE |" >> $GITHUB_STEP_SUMMARY
+            echo "| Compression ratio | $COMPRESSION_RATIO |" >> $GITHUB_STEP_SUMMARY
+            
+            # Show photon_data directory details if it exists
+            if [ -d photon_data ]; then
+              DIR_SIZE=$(du -sh photon_data | cut -f1)
+              FILE_COUNT=$(find photon_data -type f | wc -l | tr -d ' ')
+              echo "| Data directory size | $DIR_SIZE |" >> $GITHUB_STEP_SUMMARY
+              echo "| Number of files | $FILE_COUNT |" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ photon_data.tar.xz not found" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Upload photon data
         uses: actions/upload-artifact@v4
