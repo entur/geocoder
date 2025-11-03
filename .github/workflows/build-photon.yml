@@ -55,7 +55,11 @@ jobs:
         run: ./gradlew :converter:shadowJar
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libarchive-tools
+        run: |
+          sudo apt-get update
+          sudo apt-get clean
+          sudo apt-get purge -y needrestart
+          sudo apt-get install -fy libarchive-tools
 
       - name: Run create-nominatim-data.sh
         run: ./create-nominatim-data.sh -z
