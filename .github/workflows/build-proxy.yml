@@ -22,12 +22,14 @@ concurrency:
 
 jobs:
   lint:
+    name: Lint
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: proxy/Dockerfile
       ignore: "DL3018,DL3059"
 
   build-push:
+    name: Proxy
     needs: lint
     uses: "./.github/workflows/_build-push.yml"
     with:
@@ -37,6 +39,7 @@ jobs:
       do-gradle-build: true
 
   scan:
+    name: Scan
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -48,6 +51,7 @@ jobs:
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
 
   deploy-dev:
+    name: Dev
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -64,6 +68,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-dev:
+    name: Dev Tests
     if: needs.deploy-dev.result == 'success'
     needs: deploy-dev
     uses: "./.github/workflows/acceptance-tests.yml"
@@ -71,6 +76,7 @@ jobs:
       environment: dev
 
   deploy-staging:
+    name: Staging
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -87,6 +93,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-staging:
+    name: Staging Tests
     if: needs.deploy-staging.result == 'success'
     needs: deploy-staging
     uses: "./.github/workflows/acceptance-tests.yml"

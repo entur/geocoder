@@ -41,7 +41,7 @@ concurrency:
 
 jobs:
   helm-lint:
-    name: Helm Lint
+    name: Lint
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
     strategy:
       matrix:

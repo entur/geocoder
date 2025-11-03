@@ -22,6 +22,7 @@ run-name: "Acceptance tests: ${{ inputs.environment }}"
 
 jobs:
   acceptance-tests:
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout acceptance tests repository

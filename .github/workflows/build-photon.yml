@@ -38,6 +38,7 @@ concurrency:
 jobs:
   # Run import and create artifacts
   create-nominatim-data:
+    name: Nominatim Data
     if: inputs.build_import == true
     runs-on:
         group: grp-ubuntu-24.04-8core-x64
@@ -95,6 +96,7 @@ jobs:
           retention-days: 1
 
   create-photon-data:
+    name: Photon Data
     if: |
       inputs.build_import == true &&
       needs.create-nominatim-data.result == 'success'
@@ -127,8 +129,8 @@ jobs:
           
           if [ -f photon_data.tar.xz ]; then
             FILE_SIZE=$(du -h photon_data.tar.xz | cut -f1)
-            UNCOMPRESSED_SIZE=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $5}')
-            COMPRESSION_RATIO=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $6}')
+            UNCOMPRESSED_SIZE=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $5 $6}')
+            COMPRESSION_RATIO=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $7}')
             
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -156,6 +158,7 @@ jobs:
 
   # Photon image jobs
   photon-lint:
+    name: Lint
     if: inputs.deploy_env != 'none'
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
@@ -163,6 +166,7 @@ jobs:
       ignore: "DL3018,DL3059"
 
   photon-build-push:
+    name: Photon
     if: |
       !cancelled() &&
       inputs.deploy_env != 'none' &&
@@ -177,6 +181,7 @@ jobs:
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
+    name: Scan
     if: |
       !cancelled() &&
       needs.photon-build-push.result == 'success' &&
@@ -188,6 +193,7 @@ jobs:
 
   # Deploy jobs
   dev-deploy:
+    name: Dev
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
@@ -204,6 +210,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-dev:
+    name: Dev Tests
     if: needs.dev-deploy.result == 'success'
     needs: dev-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
@@ -211,6 +218,7 @@ jobs:
       environment: dev
 
   staging-deploy:
+    name: Staging
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
@@ -227,6 +235,7 @@ jobs:
     secrets: inherit
 
   acceptance-tests-staging:
+    name: Staging Tests
     if: needs.staging-deploy.result == 'success'
     needs: staging-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
