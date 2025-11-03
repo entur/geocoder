@@ -2,9 +2,16 @@
 
 set -eu
 
+COMPRESS=false
+NOMINATIM_FILE=nominatim.ndjson
+if [ "${1:-}" = "-z" ];then
+    COMPRESS=true
+    NOMINATIM_FILE=nominatim.ndjson.xz
+    shift
+fi
+
 PHOTON_JAR_URL=${1:-}
-NOMINATIM_FILE=${2:-nominatim.ndjson.xz}
-TARGET_DIR=${3:-.}
+TARGET_DIR=.
 
 fail() {
     echo "Error: $*"
@@ -18,14 +25,23 @@ which curl >/dev/null || fail "curl not found. Please install it to proceed."
 which xz >/dev/null || fail "xz not found. Please install it to proceed."
 which java >/dev/null || fail "java not found. Please install it to proceed."
 
+echo "Downloading Photon JAR..."
+
 curl -sfL --retry 2 -o photon.jar "$PHOTON_JAR_URL"
 
-xz -d $NOMINATIM_FILE
+if $COMPRESS; then
+  echo "Decompressing $NOMINATIM_FILE..."
+  xz -d $NOMINATIM_FILE
+fi
 java -jar photon.jar \
         -nominatim-import \
         -import-file nominatim.ndjson \
         -languages no,en \
         -extra-tags ALL
 
-tar cJvf $TARGET_DIR/photon_data.tar.xz photon_data
-echo "$TARGET_DIR/photon_data.tar.xz created."
+if $COMPRESS; then
+  tar cJvf $TARGET_DIR/photon_data.tar.xz photon_data
+  echo "$TARGET_DIR/photon_data.tar.xz created."
+else
+  echo "$TARGET_DIR/photon_data created."
+fi

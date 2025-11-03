@@ -6,6 +6,11 @@ TIAMAT_URL=https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_lates
 
 set -eu
 
+COMPRESS=false
+if [ "${1:-}" = "-z" ];then
+    COMPRESS=true
+fi
+
 fail() {
     echo "Error: $*"
     exit 1
@@ -28,5 +33,9 @@ rm tiamat.*
 
 ./convert.sh -a -p src/test/resources/oslo-center.osm.pbf -o nominatim.ndjson
 
-xz -z nominatim.ndjson
-echo "nominatim.ndjson.xz created."
+if $COMPRESS; then
+  xz -zk nominatim.ndjson
+  echo "nominatim.ndjson.xz created."
+else
+  echo "nominatim.ndjson created."
+fi

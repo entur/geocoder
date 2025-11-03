@@ -7,6 +7,11 @@ OSM_URL=https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.os
 
 set -eu
 
+COMPRESS=false
+if [ "${1:-}" = "-z" ];then
+    COMPRESS=true
+fi
+
 fail() {
     echo "Error: $*"
     exit 1
@@ -17,6 +22,8 @@ which curl >/dev/null 2>&1 || fail "curl not found. Please install curl to proce
 which xz >/dev/null 2>&1 || fail "xz not found. Please install xz to proceed."
 which java >/dev/null 2>&1 || fail "java not found. Please install java to proceed."
 [ -f ./convert.sh ] || fail "convert.sh not found."
+
+echo "Downloading and converting data..."
 
 curl -sfL --retry 2 $ADRESSE_URL |  bsdtar -xOf - '*.csv'  > adresse.csv
 curl -sfL --retry 2 $STEDSNAVN_URL |  bsdtar -xOf - '*.gml'  > stedsnavn.gml
@@ -31,5 +38,9 @@ curl -sfLO --retry 2 $OSM_URL
 ./convert.sh -a -p norway-latest.osm.pbf -o nominatim.ndjson
 rm norway-latest.osm.pbf
 
-xz -zk nominatim.ndjson
-echo "nominatim.ndjson.xz created."
+if $COMPRESS; then
+  xz -zk nominatim.ndjson
+  echo "nominatim.ndjson.xz created."
+else
+  echo "nominatim.ndjson created."
+fi

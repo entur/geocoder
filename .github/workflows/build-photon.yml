@@ -57,7 +57,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools
 
       - name: Run create-nominatim-data.sh
-        run: ./create-nominatim-data.sh
+        run: ./create-nominatim-data.sh -z
         working-directory: converter
 
       - name: Generate stats summary
@@ -117,7 +117,7 @@ jobs:
 
       - name: Run create-photon-data.sh
         working-directory: converter
-        run: ./create-photon-data.sh "${{ inputs.photon_jar_url }}"
+        run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url }}"
 
       - name: Generate stats summary
         working-directory: converter
