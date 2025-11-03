@@ -62,9 +62,6 @@ runs:
         echo "Created Dockerfile for $ARTIFACT_FILE"
         cat Dockerfile
 
-    - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
     - name: Authenticate with GCP
       uses: google-github-actions/auth@v2
       with:
@@ -73,7 +70,13 @@ runs:
 
     - name: Configure Docker for GCR
       shell: bash
-      run: gcloud auth configure-docker ${{ inputs.registry }} --quiet
+      run: |
+        # Extract registry domain (e.g., eu.gcr.io from eu.gcr.io/entur-system-1287)
+        REGISTRY_DOMAIN=$(echo "${{ inputs.registry }}" | cut -d'/' -f1)
+        gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: Set image tag
       id: set-tag

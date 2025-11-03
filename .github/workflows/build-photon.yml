@@ -158,7 +158,8 @@ jobs:
             echo "❌ photon_data.tar.xz not found" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload photon data
+      - name: Upload photon data to GCR
+        id: upload-to-gcr
         uses: ./.github/actions/upload-docker-artifact
         with:
           file_path: converter/photon_data.tar.xz
