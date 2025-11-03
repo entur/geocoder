@@ -27,7 +27,7 @@ on:
         description: 'Photon JAR URL'
         required: false
         type: string
-        default: 'https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.jar'
+        default: 'https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.1.jar'
 
 run-name: "Photon: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }}, tag=${{ inputs.import_image_tag }}"
 
