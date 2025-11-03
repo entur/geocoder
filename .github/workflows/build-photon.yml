@@ -37,7 +37,7 @@ concurrency:
 
 jobs:
   # Run import and create artifacts
-  create-nominatim-data:
+  nominatim-data:
     name: Nominatim Data
     if: inputs.build_import == true
     runs-on:
@@ -99,12 +99,12 @@ jobs:
           path: converter/nominatim.ndjson.xz
           retention-days: 1
 
-  create-photon-data:
+  photon-data:
     name: Photon Data
     if: |
       inputs.build_import == true &&
-      needs.create-nominatim-data.result == 'success'
-    needs: create-nominatim-data
+      needs.nominatim-data.result == 'success'
+    needs: nominatim-data
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -181,14 +181,15 @@ jobs:
     if: |
       !cancelled() &&
       inputs.deploy_env != 'none' &&
-      (inputs.build_import == false || needs.create-photon-data.result == 'success')
-    needs: [photon-lint, create-photon-data]
+      (inputs.build_import == false || needs.photon-data.result == 'success')
+    needs: [photon-lint, photon-data]
     uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-photon
       context: photon
       push: true
-      artifact_from_image: geocoder-photon-data:${{ inputs.build_import == true && needs.create-photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
+      artifact_from_image: geocoder-photon-data:${{ inputs.build_import == true && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
+      artifact_from_image_path: photon_data.tar.xz
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:

@@ -22,10 +22,6 @@ on:
         description: "Push image to registry"
         type: boolean
         default: false
-      run-group:
-        description: "The run group to use for the job"
-        type: string
-        default: grp-ubuntu-24.04-2core-x64
       do-gradle-build:
         description: "Run Gradle build before building the Docker image"
         type: boolean
@@ -38,7 +34,6 @@ on:
         description: "Path to file inside the Docker image to extract"
         type: string
         required: false
-        default: "/photon_data.tar.xz"
     outputs:
       image_tag:
         description: "Image tag"
@@ -50,8 +45,7 @@ env:
 jobs:
   build-push:
     name: Build and Push
-    runs-on:
-      group: ${{ inputs.run-group }}
+    runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
       contents: read
