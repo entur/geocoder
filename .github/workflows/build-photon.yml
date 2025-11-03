@@ -154,7 +154,7 @@ jobs:
         with:
           name: photon-data
           path: converter/photon_data.tar.xz
-          retention-days: 1
+          retention-days: 14
 
   # Photon image jobs
   photon-lint:
@@ -177,7 +177,7 @@ jobs:
       image_name: geocoder-photon
       context: photon
       push: true
-      artifact_name: ${{ inputs.build_import == true && 'photon-data' || '' }}
+      artifact_name: photon-data
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
