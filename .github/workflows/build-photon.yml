@@ -23,11 +23,13 @@ on:
         required: false
         default: 'latest'
         type: string
+      photon_jar_url:
+        description: 'Photon JAR URL'
+        required: false
+        type: string
+        default: 'https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.jar'
 
 run-name: "Photon: import=${{ inputs.build_import }}, deploy=${{ inputs.deploy_env }}, tag=${{ inputs.import_image_tag }}"
-
-env:
-  photon_jar_url: https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.jar
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -53,7 +55,7 @@ jobs:
       run-group: 'grp-ubuntu-24.04-8core-x64'
       do-gradle-build: true
       build_args: |
-        PHOTON_JAR_URL=${{ env.photon_jar_url }}
+        PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   import-scan:
     if: |
@@ -87,7 +89,7 @@ jobs:
       push: true
       build_args: |
         IMPORT_IMAGE=eu.gcr.io/entur-system-1287/geocoder-import:${{ inputs.build_import == true && needs.import-build-push.outputs.image_tag || inputs.import_image_tag }}
-        PHOTON_JAR_URL=${{ env.photon_jar_url }}
+        PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
     if: |
