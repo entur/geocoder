@@ -51,14 +51,35 @@ runs:
         echo "Pulling image: $FULL_IMAGE"
         docker pull "$FULL_IMAGE"
         
-        CONTAINER_ID=$(docker create "$FULL_IMAGE")
-        echo "Extracting ${{ inputs.artifact_path }} from container $CONTAINER_ID"
-        
+        echo "Extracting ${{ inputs.artifact_path }} from image"
         mkdir -p "${{ inputs.destination }}"
-        docker cp "$CONTAINER_ID:${{ inputs.artifact_path }}" "${{ inputs.destination }}/"
-        docker rm "$CONTAINER_ID"
         
-        ARTIFACT_FILE="${{ inputs.destination }}/$(basename ${{ inputs.artifact_path }})"
+        # Export the image and extract the file from the blob
+        # This works with FROM scratch images where docker create fails
+        TEMP_DIR=$(mktemp -d)
+        docker save "$FULL_IMAGE" -o "${TEMP_DIR}/image.tar"
+        
+        # Extract all blobs and find our file
+        cd "${TEMP_DIR}"
+        tar -xf image.tar
+        
+        # The file is stored with just its basename in FROM scratch images
+        FILE_NAME=$(basename "${{ inputs.artifact_path }}")
+        
+        # Find and extract the layer containing our file
+        for blob in blobs/sha256/*; do
+          if tar tf "$blob" "${FILE_NAME}" 2>/dev/null; then
+            echo "Found file in blob: $blob"
+            tar xf "$blob" -C "${{ inputs.destination }}" "${FILE_NAME}"
+            break
+          fi
+        done
+        
+        # Cleanup
+        cd -
+        rm -rf "${TEMP_DIR}"
+        
+        ARTIFACT_FILE="${{ inputs.destination }}/${FILE_NAME}"
         echo "artifact_file=${ARTIFACT_FILE}" >> $GITHUB_OUTPUT
         
         echo "Artifact extracted to: ${ARTIFACT_FILE}"
