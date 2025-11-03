@@ -51,7 +51,7 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      image_tag: ${{ env.image_tag }}
+      image_tag: ${{ steps.set-tag.outputs.image_tag }}
 
     steps:
       - name: Checkout code
@@ -95,12 +95,11 @@ jobs:
           REGISTRY_DOMAIN=$(echo "${REGISTRY}" | cut -d'/' -f1)
           gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
 
-      - name: Set image tag variable
-        id: set-image-tag
-        shell: bash
-        run: |
-          branch=$(echo "${GITHUB_REF_NAME:-detached}" | sed 's/[^a-zA-Z0-9_-]\+/_/g')
-          echo "image_tag=${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}" > $GITHUB_ENV
+      - name: Generate image tag
+        id: set-tag
+        uses: ./.github/actions/generate-image-tag
+        with:
+          image_name: ${{ inputs.image_name }}
 
       - name: Build and push to GCR
         uses: docker/build-push-action@v6
@@ -109,8 +108,8 @@ jobs:
           file: ${{ inputs.context }}/${{ inputs.dockerfile }}
           push: ${{ inputs.push }}
           tags: |
-            ${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ env.image_tag }}
-            ${{ env.REGISTRY }}/${{ inputs.image_name }}:latest
+            ${{ steps.set-tag.outputs.full_image }}
+            ${{ steps.set-tag.outputs.base_image }}:latest
           build-args: ${{ inputs.build_args }}
           provenance: false
 
@@ -118,10 +117,10 @@ jobs:
         if: always()
         run: |
           echo "## Docker Build & Push Summary" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`${{ env.REGISTRY }}/${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** \`${{ env.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.set-tag.outputs.base_image }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Build args:** \`${{ inputs.build_args != '' && inputs.build_args || 'None' }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Full reference:** \`${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ env.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Full reference:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Push requested:** ${{ inputs.push }}" >> $GITHUB_STEP_SUMMARY
           echo "**Job status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

@@ -2,6 +2,25 @@
 
 This directory contains reusable composite actions for the geocoder project.
 
+## generate-image-tag
+
+Generates a consistent Docker image tag based on the current branch and commit SHA.
+
+**Use case:** Standardize image tagging across all Docker builds.
+
+**Usage:**
+```yaml
+- name: Generate tag
+  id: tag
+  uses: ./.github/actions/generate-image-tag
+
+- name: Use the tag
+  run: echo "Tag is ${{ steps.tag.outputs.image_tag }}"
+```
+
+**Outputs:**
+- `image_tag`: The generated tag (format: `{branch}.{date}-SHA{short-sha}`, e.g., `main.20251103-SHA1234567`)
+
 ## upload-docker-artifact
 
 Packages a workflow artifact or file as a Docker image and pushes it to GCR for long-term storage and easy reuse.

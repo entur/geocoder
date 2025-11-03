@@ -13,6 +13,7 @@ inputs:
     required: true
   # Note: vars and secrets are not available in composite actions, so they must be passed explicitly
   workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
     required: true
   service_account:
     description: 'GCP Service Account'
@@ -75,19 +76,11 @@ runs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Set image tag
+    - name: Generate image tag
       id: set-tag
-      shell: bash
-      run: |
-        branch=$(echo "${GITHUB_REF_NAME:-detached}" | sed 's/[^a-zA-Z0-9_-]\+/_/g')
-        IMAGE_TAG="${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}"
-        FULL_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}:${IMAGE_TAG}"
-        
-        echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
-        echo "full_image=${FULL_IMAGE}" >> $GITHUB_OUTPUT
-        
-        echo "Image tag: ${IMAGE_TAG}"
-        echo "Full image: ${FULL_IMAGE}"
+      uses: ./.github/actions/generate-image-tag
+      with:
+        image_name: ${{ inputs.image_name }}
 
     - name: Build and push to GCR
       uses: docker/build-push-action@v6
@@ -96,8 +89,8 @@ runs:
         file: /tmp/docker-artifact-upload/Dockerfile
         push: true
         tags: |
-          ${{ inputs.registry }}/${{ inputs.image_name }}:${{ steps.set-tag.outputs.image_tag }}
-          ${{ inputs.registry }}/${{ inputs.image_name }}:latest
+          ${{ steps.set-tag.outputs.full_image }}
+          ${{ steps.set-tag.outputs.base_image }}:latest
         provenance: false
 
     - name: Summary
@@ -105,7 +98,7 @@ runs:
       run: |
         echo "## Docker Artifact Upload" >> $GITHUB_STEP_SUMMARY
         echo "**Source:** \`${{ inputs.artifact_name != '' && inputs.artifact_name || inputs.file_path }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Image:** \`${{ steps.set-tag.outputs.base_image }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Tag:** \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Full reference:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
 
