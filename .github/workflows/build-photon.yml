@@ -31,7 +31,7 @@ on:
         description: 'Photon JAR URL'
         required: false
         type: string
-        default: 'https://github.com/entur/photon/releases/download/with-metrics/photon-0.7.0.jar'
+        default: 'https://github.com/entur/photon/releases/download/2025-11-03/photon-0.7.0.jar'
 
 run-name: "Photon: ${{ inputs.build_import == 'yes' && 'all-data' || inputs.build_import == 'only-photon-data' && 'photon-data' || format('deploy:{0}', inputs.photon_data_image_tag) }} → ${{ inputs.deploy_env }}"
 

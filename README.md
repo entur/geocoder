@@ -8,7 +8,7 @@
 ./gradlew build
 
 # Import and convert data
-curl -sfLo photon.jar https://github.com/entur/photon/releases/download/with-metrics/photon-0.7.0.jar
+curl -sfLo photon.jar https://github.com/entur/photon/releases/download/2025-11-03/photon-0.7.0.jar
 converter/create-nominatim-data.sh # creates nominatim.ndjson
 converter/create-photon-data.sh    # creates the opensearch data folder for photon
 
