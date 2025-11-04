@@ -70,8 +70,6 @@ runs:
     - name: Build and push to GCR
       uses: docker/build-push-action@v6
       with:
-        context: /tmp/docker-artifact-upload
-        file: /tmp/docker-artifact-upload/Dockerfile
         context: ${{ steps.create-dockerfile.outputs.temp_dir }}
         file: ${{ steps.create-dockerfile.outputs.temp_dir }}/Dockerfile
         push: true
