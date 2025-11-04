@@ -54,13 +54,13 @@ runs:
       shell: bash
       if: always()
       run: |
-        echo "## Docker Security Scan Summary" >> $GITHUB_STEP_SUMMARY
-        echo "**Image:** ${{ inputs.registry }}/${{ inputs.image }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Scan Status:** ${{ steps.scan.outcome }}" >> $GITHUB_STEP_SUMMARY
+        echo "### Docker Security Scan" >> $GITHUB_STEP_SUMMARY
+        echo "**In:** image=\`${{ inputs.image }}\` registry=\`${{ inputs.registry }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ steps.scan.outcome }}" >> $GITHUB_STEP_SUMMARY
         if [ "${{ steps.scan.outputs.success }}" = "false" ]; then
-          echo "**⚠️ Critical vulnerabilities detected!**" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Critical vulnerabilities detected!" >> $GITHUB_STEP_SUMMARY
         else
-          echo "**✅ No critical vulnerabilities found.**" >> $GITHUB_STEP_SUMMARY
+          echo "✅ No critical vulnerabilities found." >> $GITHUB_STEP_SUMMARY
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "View full report in the [Security tab](https://github.com/${{ github.repository }}/security/code-scanning)." >> $GITHUB_STEP_SUMMARY

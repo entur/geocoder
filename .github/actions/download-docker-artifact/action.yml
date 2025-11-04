@@ -78,9 +78,7 @@ runs:
     - name: Summary
       shell: bash
       run: |
-        echo "## Docker Artifact Download" >> $GITHUB_STEP_SUMMARY
-        echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Extracted file:** \`${{ steps.extract.outputs.artifact_file }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Outputs:**" >> $GITHUB_STEP_SUMMARY
-        echo "- Artifact file: \`${{ steps.extract.outputs.artifact_file }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "### Docker Artifact Download" >> $GITHUB_STEP_SUMMARY
+        echo "**In:** image=\`${{ inputs.image }}\` destination=\`${{ inputs.destination }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Out:** artifact_file=\`${{ steps.extract.outputs.artifact_file }}\`" >> $GITHUB_STEP_SUMMARY
 
