@@ -5,9 +5,6 @@ inputs:
   image:
     description: 'Docker image to extract from (format: image-name:tag, without registry prefix)'
     required: true
-  filename:
-    description: 'File inside the Docker image to extract'
-    required: true
   destination:
     description: 'Destination directory to extract the artifact to'
     required: true
@@ -63,13 +60,15 @@ runs:
         [ -n "$BLOB_HASH" ] || { echo "ERROR: Blob hash not found for $REPO_KEY:$TAG"; jq . "$TEMP_DIR/repositories"; exit 1; }
         
         # Extract file from blob
-        echo "Extracting ${{ inputs.filename }} from blob ${BLOB_HASH}"
+        echo "Extracting from blob ${BLOB_HASH}"
         mkdir -p "${{ inputs.destination }}"
-        tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "${{ inputs.destination }}" "${{ inputs.filename }}" || { echo "ERROR: Failed to extract file"; exit 1; }
+        tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "${{ inputs.destination }}" || { echo "ERROR: Failed to extract file"; exit 1; }
         
         rm -rf "$TEMP_DIR"
         
-        echo "artifact_file=${{ inputs.destination }}/${{ inputs.filename }}" >> $GITHUB_OUTPUT
+        # Get the extracted filename
+        ARTIFACT_FILE=$(ls -1 "${{ inputs.destination }}" | head -n1)
+        echo "artifact_file=${{ inputs.destination }}/${ARTIFACT_FILE}" >> $GITHUB_OUTPUT
         ls -lh "${{ inputs.destination }}/"
 
     - name: Summary
@@ -77,7 +76,5 @@ runs:
       run: |
         echo "## Docker Artifact Download" >> $GITHUB_STEP_SUMMARY
         echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Artifact path:** \`${{ inputs.filename }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Destination:** \`${{ inputs.destination }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Extracted file:** \`${{ steps.extract.outputs.artifact_file }}\`" >> $GITHUB_STEP_SUMMARY
 

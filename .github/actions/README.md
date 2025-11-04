@@ -33,7 +33,7 @@ Packages a workflow artifact or file as a Docker image and pushes it to GCR for 
   uses: ./.github/actions/upload-docker-artifact
   with:
     file_path: path/to/file.tar.xz       # Path to file on disk
-    image_name: my-data-image            # Docker image name (without registry)
+    image_name: my-data-image            # Docker image name (without registry and tag)
     workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
     service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
@@ -58,7 +58,6 @@ Extracts an artifact from a Docker image stored in GCR.
   uses: ./.github/actions/download-docker-artifact
   with:
     image: my-data-image:latest  # Image name and tag (without registry)
-    filename: file.tar.xz        # Filename inside the Docker image
     destination: ./output        # Where to extract the file
     workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
     service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
