@@ -74,6 +74,17 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
+      - name: Extract photon data
+        if: ${{ inputs.docker_artifact_image != '' }}
+        working-directory: ${{ inputs.context }}
+        run: |
+          if [ -f photon_data.tar.xz ]; then
+            echo "Extracting photon_data.tar.xz..."
+            tar -xJf photon_data.tar.xz
+            rm photon_data.tar.xz
+            echo "Extracted photon_data ($(du -sh photon_data | cut -f1))"
+          fi
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
