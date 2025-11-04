@@ -15,10 +15,10 @@ outputs:
     description: 'The generated image tag (e.g., main.20251103-SHA1234567)'
     value: ${{ steps.generate.outputs.image_tag }}
   base_image:
-    description: 'Base image without tag if registry and image_name provided (e.g., eu.gcr.io/entur-system-1287/my-image)'
+    description: 'Base image without tag (e.g., eu.gcr.io/entur-system-1287/my-image)'
     value: ${{ steps.generate.outputs.base_image }}
   full_image:
-    description: 'Full image reference if registry and image_name provided (e.g., eu.gcr.io/entur-system-1287/my-image:main.20251103-SHA1234567)'
+    description: 'Full image reference (e.g., eu.gcr.io/entur-system-1287/my-image:main.20251103-SHA1234567)'
     value: ${{ steps.generate.outputs.full_image }}
 
 runs:
@@ -29,17 +29,17 @@ runs:
       shell: bash
       run: |
         branch=$(echo "${GITHUB_REF_NAME:-detached}" | sed 's/[^a-zA-Z0-9_-]\+/_/g')
+        
         IMAGE_TAG="${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}"
+        BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
+        FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
+        
+        echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
+        echo "full_image=${FULL_IMAGE}" >> $GITHUB_OUTPUT
         echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        
+        echo "Base image: ${BASE_IMAGE}"
+        echo "Full image reference: ${FULL_IMAGE}"
         echo "Generated image tag: ${IMAGE_TAG}"
         
-        # Generate base image and full image reference if inputs provided
-        if [ -n "${{ inputs.registry }}" ] && [ -n "${{ inputs.image_name }}" ]; then
-          BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
-          FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
-          echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
-          echo "full_image=${FULL_IMAGE}" >> $GITHUB_OUTPUT
-          echo "Base image: ${BASE_IMAGE}"
-          echo "Full image reference: ${FULL_IMAGE}"
-        fi
 

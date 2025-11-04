@@ -26,11 +26,11 @@ on:
         description: "Run Gradle build before building the Docker image"
         type: boolean
         default: false
-      artifact_from_image:
+      docker_artifact_image:
         description: "Docker image to extract artifact from (format: image:tag)"
         type: string
         required: false
-      artifact_from_image_path:
+      docker_artifact_image_path:
         description: "Path to file inside the Docker image to extract"
         type: string
         required: false
@@ -70,11 +70,11 @@ jobs:
         run: ./gradlew --no-daemon build
 
       - name: Download artifact from Docker image
-        if: ${{ inputs.artifact_from_image != '' }}
+        if: ${{ inputs.docker_artifact_image != '' }}
         uses: ./.github/actions/download-docker-artifact
         with:
-          image: ${{ inputs.artifact_from_image }}
-          artifact_path: ${{ inputs.artifact_from_image_path }}
+          image: ${{ inputs.docker_artifact_image }}
+          filename: ${{ inputs.docker_artifact_image_path }}
           destination: ${{ inputs.context }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
@@ -117,10 +117,6 @@ jobs:
         if: always()
         run: |
           echo "## Docker Build & Push Summary" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`${{ steps.set-tag.outputs.base_image }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Build args:** \`${{ inputs.build_args != '' && inputs.build_args || 'None' }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Full reference:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Push requested:** ${{ inputs.push }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Job status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

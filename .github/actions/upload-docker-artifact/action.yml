@@ -2,12 +2,9 @@ name: 'Upload Artifact to Docker Image'
 description: 'Upload an artifact by packaging it in a Docker image and pushing to GCR'
 
 inputs:
-  artifact_name:
-    description: 'Name of the artifact to download from the current workflow (mutually exclusive with file_path)'
-    required: false
   file_path:
-    description: 'Path to file on disk to upload (mutually exclusive with artifact_name)'
-    required: false
+    description: 'Path to file on disk to upload'
+    required: true
   image_name:
     description: 'Name of the Docker image to create (without registry prefix)'
     required: true
@@ -34,29 +31,15 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Download artifact
-      if: ${{ inputs.artifact_name != '' }}
-      uses: actions/download-artifact@v4
-      with:
-        name: ${{ inputs.artifact_name }}
-        path: /tmp/docker-artifact-upload
-
-    - name: Copy file to build context
-      if: ${{ inputs.file_path != '' }}
-      shell: bash
-      run: |
-        mkdir -p /tmp/docker-artifact-upload
-        cp "${{ inputs.file_path }}" /tmp/docker-artifact-upload/
-
     - name: Create Dockerfile
       shell: bash
       run: |
-        cd /tmp/docker-artifact-upload
-        # Get the actual filename from the directory (works for both artifact and file_path)
-        ARTIFACT_FILE=$(ls -1 | head -n1)
+        TEMP_DIR=$(mktemp -d)
+        cp "${{ inputs.file_path }}" $TEMP_DIR/
+        cd $TEMP_DIR
         cat > Dockerfile << EOF
         FROM scratch
-        COPY ${ARTIFACT_FILE} /${ARTIFACT_FILE}
+        COPY . .
         EOF
         echo "Created Dockerfile for ${ARTIFACT_FILE}"
         cat Dockerfile
@@ -97,8 +80,6 @@ runs:
       shell: bash
       run: |
         echo "## Docker Artifact Upload" >> $GITHUB_STEP_SUMMARY
-        echo "**Source:** \`${{ inputs.artifact_name != '' && inputs.artifact_name || inputs.file_path }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Image:** \`${{ steps.set-tag.outputs.base_image }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Tag:** \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Full reference:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**File path:** \`${{ inputs.file_path }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Image:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
 

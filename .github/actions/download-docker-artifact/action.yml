@@ -5,8 +5,8 @@ inputs:
   image:
     description: 'Docker image to extract from (format: image-name:tag, without registry prefix)'
     required: true
-  artifact_path:
-    description: 'Path to file inside the Docker image to extract'
+  filename:
+    description: 'File inside the Docker image to extract'
     required: true
   destination:
     description: 'Destination directory to extract the artifact to'
@@ -47,43 +47,29 @@ runs:
       shell: bash
       run: |
         FULL_IMAGE="${{ inputs.registry }}/${{ inputs.image }}"
-        FILE_NAME=$(basename "${{ inputs.artifact_path }}")
-        
         echo "Pulling image: $FULL_IMAGE"
         docker pull "$FULL_IMAGE"
         
-        echo "Extracting ${FILE_NAME} from image"
-        mkdir -p "${{ inputs.destination }}"
-        
-        # Export image to temp directory
+        # Export and extract image
         TEMP_DIR=$(mktemp -d)
-        docker save "$FULL_IMAGE" -o "${TEMP_DIR}/image.tar"
-        tar -xf "${TEMP_DIR}/image.tar" -C "${TEMP_DIR}"
+        docker save "$FULL_IMAGE" | tar -xC "$TEMP_DIR"
         
-        # Find and extract the file from blob layers
-        FOUND=false
-        for blob in "${TEMP_DIR}"/blobs/sha256/*; do
-          if tar -tf "$blob" "${FILE_NAME}" 2>/dev/null; then
-            echo "Found ${FILE_NAME} in blob: $(basename $blob)"
-            tar -xf "$blob" -C "${{ inputs.destination }}" "${FILE_NAME}"
-            FOUND=true
-            break
-          fi
-        done
+        # Get blob hash from repositories file
+        IMAGE_NAME="${{ inputs.image }}"
+        REPO_KEY="${{ inputs.registry }}/${IMAGE_NAME%:*}"
+        TAG="${IMAGE_NAME##*:}"
+        BLOB_HASH=$(jq -r ".\"$REPO_KEY\".\"$TAG\" // empty" "$TEMP_DIR/repositories")
         
-        if [ "$FOUND" = false ]; then
-          echo "ERROR: File ${FILE_NAME} not found in any image layer"
-          rm -rf "${TEMP_DIR}"
-          exit 1
-        fi
+        [ -n "$BLOB_HASH" ] || { echo "ERROR: Blob hash not found for $REPO_KEY:$TAG"; jq . "$TEMP_DIR/repositories"; exit 1; }
         
-        # Cleanup
-        rm -rf "${TEMP_DIR}"
+        # Extract file from blob
+        echo "Extracting ${{ inputs.filename }} from blob ${BLOB_HASH}"
+        mkdir -p "${{ inputs.destination }}"
+        tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "${{ inputs.destination }}" "${{ inputs.filename }}" || { echo "ERROR: Failed to extract file"; exit 1; }
         
-        ARTIFACT_FILE="${{ inputs.destination }}/${FILE_NAME}"
-        echo "artifact_file=${ARTIFACT_FILE}" >> $GITHUB_OUTPUT
+        rm -rf "$TEMP_DIR"
         
-        echo "Artifact extracted to: ${ARTIFACT_FILE}"
+        echo "artifact_file=${{ inputs.destination }}/${{ inputs.filename }}" >> $GITHUB_OUTPUT
         ls -lh "${{ inputs.destination }}/"
 
     - name: Summary
@@ -91,7 +77,7 @@ runs:
       run: |
         echo "## Docker Artifact Download" >> $GITHUB_STEP_SUMMARY
         echo "**Image:** \`${{ inputs.registry }}/${{ inputs.image }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Artifact path:** \`${{ inputs.artifact_path }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Artifact path:** \`${{ inputs.filename }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Destination:** \`${{ inputs.destination }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Extracted file:** \`${{ steps.extract.outputs.artifact_file }}\`" >> $GITHUB_STEP_SUMMARY
 

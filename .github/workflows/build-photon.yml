@@ -188,8 +188,8 @@ jobs:
       image_name: geocoder-photon
       context: photon
       push: true
-      artifact_from_image: geocoder-photon-data:${{ inputs.build_import == true && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
-      artifact_from_image_path: photon_data.tar.xz
+      docker_artifact_image: geocoder-photon-data:${{ inputs.build_import == true && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
+      docker_artifact_image_path: photon_data.tar.xz
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
@@ -223,7 +223,9 @@ jobs:
 
   acceptance-tests-dev:
     name: Dev Tests
-    if: needs.dev-deploy.result == 'success'
+    if: |
+      !cancelled() &&
+      needs.dev-deploy.result == 'success'
     needs: dev-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
@@ -248,7 +250,9 @@ jobs:
 
   acceptance-tests-staging:
     name: Staging Tests
-    if: needs.staging-deploy.result == 'success'
+    if: |
+      !cancelled() &&
+      needs.staging-deploy.result == 'success'
     needs: staging-deploy
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
