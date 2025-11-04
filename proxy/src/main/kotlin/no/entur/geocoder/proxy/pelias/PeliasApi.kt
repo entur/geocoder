@@ -57,9 +57,6 @@ object PeliasApi {
                             parameter("lat", photonRequest.lat)
                             parameter("lon", photonRequest.lon)
                         }
-                        if (photonRequest.useLinearDecay != null) {
-                            parameter("use_linear_decay", photonRequest.useLinearDecay)
-                        }
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)

@@ -6,8 +6,7 @@ data class FocusParams(
     val lat: String,
     val lon: String,
     val scale: String?,
-    val weight: String?,
-    val function: String?
+    val weight: String?
 ) {
     init {
         require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
@@ -29,9 +28,6 @@ data class FocusParams(
         if (weight != null) {
             val weightValue = weight.toDouble()
             require(weightValue > 0) { "Parameter 'weight' must be a number > 0" }
-        }
-        if (function != null) {
-            require(function == "linear" || function == "exp") { "Parameter 'function' must be 'linear' or 'exp'"}
         }
     }
 }
@@ -69,7 +65,7 @@ data class PeliasAutocompleteParams(
                 focus =
                     params["focus.point.lat"]?.let { lat ->
                         params["focus.point.lon"]?.let { lon ->
-                            FocusParams(lat, lon, params["focus.scale"], params["focus.weight"], params["focus.function"])
+                            FocusParams(lat, lon, params["focus.scale"], params["focus.weight"])
                         }
                     },
                 multiModal =
