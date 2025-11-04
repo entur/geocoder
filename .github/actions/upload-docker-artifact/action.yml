@@ -32,6 +32,7 @@ runs:
   using: 'composite'
   steps:
     - name: Create Dockerfile
+      id: create-dockerfile
       shell: bash
       run: |
         TEMP_DIR=$(mktemp -d)
@@ -41,6 +42,7 @@ runs:
         FROM scratch
         COPY . .
         EOF
+        echo "temp_dir=$TEMP_DIR" >> $GITHUB_OUTPUT
         echo "Created Dockerfile for ${ARTIFACT_FILE}"
         cat Dockerfile
 
@@ -70,6 +72,8 @@ runs:
       with:
         context: /tmp/docker-artifact-upload
         file: /tmp/docker-artifact-upload/Dockerfile
+        context: ${{ steps.create-dockerfile.outputs.temp_dir }}
+        file: ${{ steps.create-dockerfile.outputs.temp_dir }}/Dockerfile
         push: true
         tags: |
           ${{ steps.set-tag.outputs.full_image }}
