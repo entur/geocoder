@@ -81,12 +81,12 @@ jobs:
           echo "## Nominatim Data Generation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ -f nominatim.ndjson.xz ] && [ -f nominatim.ndjson ]; then
-            COMPRESSED_SIZE=$(du -h nominatim.ndjson.xz | cut -f1)
+          if [ -f nominatim.ndjson.gz ] && [ -f nominatim.ndjson ]; then
+            COMPRESSED_SIZE=$(du -h nominatim.ndjson.gz | cut -f1)
             UNCOMPRESSED_SIZE=$(du -h nominatim.ndjson | cut -f1)
             
             # Calculate compression ratio
-            COMPRESSED_BYTES=$(stat -f%z nominatim.ndjson.xz 2>/dev/null || stat -c%s nominatim.ndjson.xz)
+            COMPRESSED_BYTES=$(stat -f%z nominatim.ndjson.gz 2>/dev/null || stat -c%s nominatim.ndjson.gz)
             UNCOMPRESSED_BYTES=$(stat -f%z nominatim.ndjson 2>/dev/null || stat -c%s nominatim.ndjson)
             RATIO=$(awk "BEGIN {printf \"%.1f\", $UNCOMPRESSED_BYTES / $COMPRESSED_BYTES}")
             
@@ -108,7 +108,7 @@ jobs:
         uses: ./.github/actions/upload-docker-artifact
         with:
           image_name: geocoder-nominatim-data
-          file_path: converter/nominatim.ndjson.xz
+          file_path: converter/nominatim.ndjson.gz
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -153,10 +153,10 @@ jobs:
           echo "## Photon Data Generation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ -f photon_data.tar.xz ]; then
-            FILE_SIZE=$(du -h photon_data.tar.xz | cut -f1)
-            UNCOMPRESSED_SIZE=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $5 $6}')
-            COMPRESSION_RATIO=$(xz -l photon_data.tar.xz | tail -n 1 | awk '{print $7}')
+          if [ -f photon_data.tar.gz ]; then
+            FILE_SIZE=$(du -h photon_data.tar.gz | cut -f1)
+            UNCOMPRESSED_SIZE=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $5 $6}')
+            COMPRESSION_RATIO=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $7}')
             
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -172,7 +172,7 @@ jobs:
               echo "| Number of files | $FILE_COUNT |" >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo "❌ photon_data.tar.xz not found" >> $GITHUB_STEP_SUMMARY
+            echo "❌ photon_data.tar.gz not found" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Upload photon data
@@ -180,7 +180,7 @@ jobs:
         uses: ./.github/actions/upload-docker-artifact
         with:
           image_name: geocoder-photon-data
-          file_path: converter/photon_data.tar.xz
+          file_path: converter/photon_data.tar.gz
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 

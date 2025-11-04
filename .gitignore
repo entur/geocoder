@@ -12,7 +12,7 @@ build
 /Basis*/*csv
 /tmp/*
 photon_data
-photon_data.tar.xz
-nominatim.ndjson.xz
+photon_data.tar.gz
+nominatim.ndjson.gz
 nominatim.ndjson
 photon*jar

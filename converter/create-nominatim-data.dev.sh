@@ -42,7 +42,7 @@ download() {
 
 which bsdtar >/dev/null 2>&1 || fail "bsdtar not found. Please install bsdtar to proceed."
 which curl >/dev/null 2>&1 || fail "curl not found. Please install curl to proceed."
-which xz >/dev/null 2>&1 || fail "xz not found. Please install xz to proceed."
+which gzip >/dev/null 2>&1 || fail "gzip not found. Please install gzip to proceed."
 which java >/dev/null 2>&1 || fail "java not found. Please install java to proceed."
 [ -f "$CONVERT" ] || fail "$CONVERT not found."
 
@@ -63,9 +63,9 @@ END_TIME=$(date +%s)
 echo "Created nominatim.ndjson in $((END_TIME - START_TIME)) seconds."
 
 if $COMPRESS; then
-  echo "Creating compressed nominatim.ndjson.xz..."
+  echo "Creating compressed nominatim.ndjson.gz..."
   START_TIME=$(date +%s)
-  xz -zk nominatim.ndjson
+  gzip -k nominatim.ndjson
   END_TIME=$(date +%s)
   echo "Done in $((END_TIME - START_TIME)) seconds."
 fi

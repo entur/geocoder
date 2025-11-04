@@ -32,7 +32,7 @@ Packages a workflow artifact or file as a Docker image and pushes it to GCR for 
 - name: Upload to GCR
   uses: ./.github/actions/upload-docker-artifact
   with:
-    file_path: path/to/file.tar.xz       # Path to file on disk
+    file_path: path/to/file.tar.gz       # Path to file on disk
     image_name: my-data-image            # Docker image name (without registry and tag)
     workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
     service_account: ${{ vars.CI_SERVICE_ACCOUNT }}

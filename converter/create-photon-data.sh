@@ -6,7 +6,7 @@ COMPRESS=false
 NOMINATIM_FILE=nominatim.ndjson
 if [ "${1:-}" = "-z" ];then
     COMPRESS=true
-    NOMINATIM_FILE=nominatim.ndjson.xz
+    NOMINATIM_FILE=nominatim.ndjson.gz
     shift
 fi
 
@@ -20,7 +20,7 @@ fail() {
 [ -f "$NOMINATIM_FILE" ] || fail "$NOMINATIM_FILE not found. Please run create-nominatim-data.sh first."
 which tar >/dev/null || fail "bsdtar not found. Please install it to proceed."
 which curl >/dev/null || fail "curl not found. Please install it to proceed."
-which xz >/dev/null || fail "xz not found. Please install it to proceed."
+which gzip >/dev/null || fail "gzip not found. Please install it to proceed."
 which java >/dev/null || fail "java not found. Please install it to proceed."
 
 if [ -f "$PHOTON_JAR_SOURCE" ]; then
@@ -36,7 +36,7 @@ fi
 
 if $COMPRESS; then
   echo "Decompressing $NOMINATIM_FILE..."
-  xz -d $NOMINATIM_FILE
+  gzip -d $NOMINATIM_FILE
 fi
 
 START_TIME=$(date +%s)
@@ -49,9 +49,9 @@ END_TIME=$(date +%s)
 echo "Created photon_data in $((END_TIME - START_TIME)) seconds."
 
 if $COMPRESS; then
-  echo "Creating compressed photon_data.tar.xz..."
+  echo "Creating compressed photon_data.tar.gz..."
   START_TIME=$(date +%s)
-  tar cJf photon_data.tar.xz photon_data
+  tar czf photon_data.tar.gz photon_data
   END_TIME=$(date +%s)
   echo "Done in $((END_TIME - START_TIME)) seconds."
 else
