@@ -36,7 +36,7 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      image_tag: ${{ steps.upload-photon-data.outputs.image_tag }}
+      image_tag: ${{ steps.build-push.outputs.image_tag }}
 
     steps:
       - name: Checkout code
@@ -53,6 +53,7 @@ jobs:
         run: ./gradlew --no-daemon build
 
       - name: Build and Push
+        id: build-push
         uses: ./.github/actions/docker-build-push
         with:
           image_name: geocoder-proxy

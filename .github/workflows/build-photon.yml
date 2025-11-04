@@ -185,7 +185,7 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   # Photon image jobs
-  photon-lint:
+  lint:
     name: Lint
     if: inputs.deploy_env != 'none'
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
@@ -193,13 +193,13 @@ jobs:
       dockerfile: photon/Dockerfile
       ignore: "DL3018,DL3059"
 
-  photon-build-push:
+  build-push:
     name: Photon
     if: |
       !cancelled() &&
       inputs.deploy_env != 'none' &&
       (inputs.build_import == 'no' || needs.photon-data.result == 'success')
-    needs: [photon-lint, photon-data]
+    needs: [lint, photon-data]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -229,16 +229,16 @@ jobs:
           service_account: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           workload_identity_provider: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  photon-scan:
+  scan:
     name: Scan
     if: |
       !cancelled() &&
-      needs.photon-build-push.result == 'success' &&
+      needs.build-push.result == 'success' &&
       inputs.deploy_env != 'none'
-    needs: [photon-build-push]
+    needs: [build-push]
     uses: "./.github/workflows/_docker-scan.yml"
     with:
-      image: "geocoder-photon:${{ needs.photon-build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
 
   # Deploy jobs
   dev-deploy:
@@ -246,13 +246,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.photon-build-push.result == 'success' &&
+      needs.build-push.result == 'success' &&
       (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
-    needs: [photon-build-push]
+    needs: [build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: "geocoder-photon:${{ needs.photon-build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -273,13 +273,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.photon-build-push.result == 'success' &&
+      needs.build-push.result == 'success' &&
       (inputs.deploy_env == 'staging' || inputs.deploy_env == 'both')
-    needs: [photon-build-push]
+    needs: [build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-photon:${{ needs.photon-build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
