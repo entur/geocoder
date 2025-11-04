@@ -38,15 +38,22 @@ if $COMPRESS; then
   echo "Decompressing $NOMINATIM_FILE..."
   xz -d $NOMINATIM_FILE
 fi
+
+START_TIME=$(date +%s)
 java -jar "$PHOTON_JAR" \
         -nominatim-import \
         -import-file nominatim.ndjson \
         -languages no,en \
         -extra-tags ALL
+END_TIME=$(date +%s)
+echo "Created photon_data in $((END_TIME - START_TIME)) seconds."
 
 if $COMPRESS; then
-  tar cJvf photon_data.tar.xz photon_data
-  echo "photon_data.tar.xz created."
+  echo "Creating compressed photon_data.tar.xz..."
+  START_TIME=$(date +%s)
+  tar cJf photon_data.tar.xz photon_data
+  END_TIME=$(date +%s)
+  echo "Done in $((END_TIME - START_TIME)) seconds."
 else
   echo "photon_data created."
 fi

@@ -47,6 +47,8 @@ which xz >/dev/null 2>&1 || fail "xz not found. Please install xz to proceed."
 which java >/dev/null 2>&1 || fail "java not found. Please install java to proceed."
 [ -f "$CONVERT" ] || fail "$CONVERT not found."
 
+START_TIME=$(date +%s)
+
 download "$ADRESSE_URL" adresse.csv '*.csv'
 download "$STEDSNAVN_URL" stedsnavn.gml '*.gml'
 $CONVERT -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson
@@ -60,9 +62,13 @@ download "$OSM_URL" norway-latest.osm.pbf
 $CONVERT -a -p norway-latest.osm.pbf -o nominatim.ndjson
 rm norway-latest.osm.pbf
 
+END_TIME=$(date +%s)
+echo "Created nominatim.ndjson in $((END_TIME - START_TIME)) seconds."
+
 if $COMPRESS; then
+  echo "Creating compressed nominatim.ndjson.xz..."
+  START_TIME=$(date +%s)
   xz -zk nominatim.ndjson
-  echo "nominatim.ndjson.xz created."
-else
-  echo "nominatim.ndjson created."
+  END_TIME=$(date +%s)
+  echo "Done in $((END_TIME - START_TIME)) seconds."
 fi
