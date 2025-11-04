@@ -200,13 +200,34 @@ jobs:
       inputs.deploy_env != 'none' &&
       (inputs.build_import == 'no' || needs.photon-data.result == 'success')
     needs: [photon-lint, photon-data]
-    uses: "./.github/workflows/_build-push.yml"
-    with:
-      image_name: geocoder-photon
-      context: photon
-      push: true
-      docker_artifact_image: geocoder-photon-data:${{ inputs.build_import != 'no' && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
-      build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build-push.outputs.image_tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Download photon data
+        uses: ./.github/actions/download-docker-artifact
+        with:
+          image: geocoder-photon-data:${{ inputs.build_import != 'no' && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
+          destination: photon
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+      - name: Build and Push Photon image
+        uses: ./.github/actions/docker-build-push
+        with:
+          image_name: geocoder-photon
+          context: photon
+          push: true
+          build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
+          service_account: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          workload_identity_provider: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   photon-scan:
     name: Scan

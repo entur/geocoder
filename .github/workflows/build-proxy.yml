@@ -31,12 +31,34 @@ jobs:
   build-push:
     name: Proxy
     needs: lint
-    uses: "./.github/workflows/_build-push.yml"
-    with:
-      image_name: geocoder-proxy
-      context: proxy
-      push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      do-gradle-build: true
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.upload-photon-data.outputs.image_tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        if: ${{ inputs.do-gradle-build }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: liberica
+          java-version: 21
+          cache: gradle
+
+      - name: Build with Gradle
+        if: ${{ inputs.do-gradle-build }}
+        run: ./gradlew --no-daemon build
+
+      - name: Build and Push
+        uses: ./.github/actions/docker-build-push
+        with:
+          image_name: geocoder-proxy
+          context: proxy
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   scan:
     name: Scan
