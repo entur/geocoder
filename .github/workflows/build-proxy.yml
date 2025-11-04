@@ -80,6 +80,9 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
       - name: Security Scan
         uses: ./.github/actions/docker-scan
         with:
