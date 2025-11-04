@@ -65,7 +65,7 @@ jobs:
         if: ${{ inputs.do-gradle-build }}
         run: ./gradlew --no-daemon build
 
-      - name: Download artifact from Docker image
+      - name: Download artifact data
         if: ${{ inputs.docker_artifact_image != '' }}
         uses: ./.github/actions/download-docker-artifact
         with:

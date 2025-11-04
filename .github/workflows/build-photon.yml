@@ -9,8 +9,8 @@ on:
         type: choice
         options:
           - 'no'
-          - 'full'
-          - 'skip-nominatim'
+          - 'yes'
+          - 'only-photon-data'
         default: 'no'
       deploy_env:
         description: 'Deploy Photon to (none = no deployment)'
@@ -33,7 +33,7 @@ on:
         type: string
         default: 'https://github.com/entur/photon/releases/download/linear-decay/photon-0.7.0.1.jar'
 
-run-name: "Photon: ${{ inputs.build_import == true && 'build+deploy' || format('deploy:{0}', inputs.photon_data_image_tag) }} → ${{ inputs.deploy_env }}"
+run-name: "Photon: ${{ inputs.build_import == 'yes' && 'all-data' || inputs.build_import == 'only-photon-data' && 'photon-data' || format('deploy:{0}', inputs.photon_data_image_tag) }} → ${{ inputs.deploy_env }}"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,7 +43,7 @@ jobs:
   # Run import and create artifacts
   nominatim-data:
     name: Nominatim Data
-    if: inputs.build_import == 'full'
+    if: inputs.build_import == 'yes'
     runs-on:
         group: grp-ubuntu-24.04-8core-x64
     steps:
@@ -97,7 +97,7 @@ jobs:
             echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload photon data to GCR
+      - name: Upload nominatim data
         uses: ./.github/actions/upload-docker-artifact
         with:
           image_name: geocoder-nominatim-data
@@ -110,7 +110,7 @@ jobs:
     if: |
       !cancelled() &&
       inputs.build_import != 'no' &&
-      (inputs.build_import == 'skip-nominatim' || needs.nominatim-data.result == 'success')
+      (inputs.build_import == 'only-photon-data' || needs.nominatim-data.result == 'success')
     needs: nominatim-data
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
@@ -130,7 +130,7 @@ jobs:
       - name: Download nominatim data
         uses: ./.github/actions/download-docker-artifact
         with:
-          image: geocoder-nominatim-data:${{ inputs.build_import == 'skip-nominatim' && 'latest' || needs.nominatim-data.outputs.image_tag }}
+          image: geocoder-nominatim-data:${{ inputs.build_import == 'only-photon-data' && 'latest' || needs.nominatim-data.outputs.image_tag }}
           destination: converter
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
@@ -167,7 +167,7 @@ jobs:
             echo "❌ photon_data.tar.xz not found" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload photon data to GCR
+      - name: Upload photon data
         uses: ./.github/actions/upload-docker-artifact
         with:
           image_name: geocoder-photon-data
@@ -189,14 +189,14 @@ jobs:
     if: |
       !cancelled() &&
       inputs.deploy_env != 'none' &&
-      (inputs.build_import == false || needs.photon-data.result == 'success')
+      (inputs.build_import == 'no' || needs.photon-data.result == 'success')
     needs: [photon-lint, photon-data]
     uses: "./.github/workflows/_build-push.yml"
     with:
       image_name: geocoder-photon
       context: photon
       push: true
-      docker_artifact_image: geocoder-photon-data:${{ inputs.build_import == true && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
+      docker_artifact_image: geocoder-photon-data:${{ inputs.build_import != 'no' && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:
