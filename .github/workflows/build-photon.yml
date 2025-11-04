@@ -159,7 +159,6 @@ jobs:
           fi
 
       - name: Upload photon data to GCR
-        id: upload-to-gcr
         uses: ./.github/actions/upload-docker-artifact
         with:
           file_path: converter/photon_data.tar.xz
@@ -189,7 +188,7 @@ jobs:
       context: photon
       push: true
       docker_artifact_image: geocoder-photon-data:${{ inputs.build_import == true && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
-      docker_artifact_image_path: photon_data.tar.xz
+      docker_artifact_path: photon_data.tar.xz
       build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
 
   photon-scan:

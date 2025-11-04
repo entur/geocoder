@@ -30,7 +30,7 @@ on:
         description: "Docker image to extract artifact from (format: image:tag)"
         type: string
         required: false
-      docker_artifact_image_path:
+      docker_artifact_path:
         description: "Path to file inside the Docker image to extract"
         type: string
         required: false
@@ -74,7 +74,7 @@ jobs:
         uses: ./.github/actions/download-docker-artifact
         with:
           image: ${{ inputs.docker_artifact_image }}
-          filename: ${{ inputs.docker_artifact_image_path }}
+          filename: ${{ inputs.docker_artifact_path }}
           destination: ${{ inputs.context }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
