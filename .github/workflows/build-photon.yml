@@ -82,13 +82,10 @@ jobs:
           
           if [ -f nominatim.ndjson.gz ] && [ -f nominatim.ndjson ]; then
             COMPRESSED_SIZE=$(du -h nominatim.ndjson.gz | cut -f1)
-            UNCOMPRESSED_SIZE=$(du -h nominatim.ndjson | cut -f1)
-            COMPRESSED_BYTES=$(stat -f%z nominatim.ndjson.gz 2>/dev/null || stat -c%s nominatim.ndjson.gz)
-            UNCOMPRESSED_BYTES=$(stat -f%z nominatim.ndjson 2>/dev/null || stat -c%s nominatim.ndjson)
-            RATIO=$(awk "BEGIN {printf \"%.1f\", $UNCOMPRESSED_BYTES / $COMPRESSED_BYTES}")
+            RATIO=$(gzip -l nominatim.ndjson.gz  | tail -n 1 | awk '{print $3}')
             LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
             
-            echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}x → ${UNCOMPRESSED_SIZE}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
           fi
@@ -144,10 +141,8 @@ jobs:
           
           if [ -f photon_data.tar.gz ]; then
             FILE_SIZE=$(du -h photon_data.tar.gz | cut -f1)
-            COMPRESSION_RATIO=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $7}')
-            UNCOMPRESSED_SIZE=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $5 $6}')
-            
-            OUTPUT="**Archive:** ${FILE_SIZE} (${COMPRESSION_RATIO} → ${UNCOMPRESSED_SIZE})"
+            RATIO=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $3}')
+            OUTPUT="**Archive:** ${FILE_SIZE} (${COMPRESSION_RATIO})"
             
             if [ -d photon_data ]; then
               DIR_SIZE=$(du -sh photon_data | cut -f1)
