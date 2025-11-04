@@ -42,6 +42,7 @@ fun main() {
             allowCredentials = true
             allowNonSimpleContentTypes = true
             allowHeader("et-client-name")
+            allowHeader("x-correlation-id")
         }
         install(ServerContentNegotiation) {
             jackson()
