@@ -37,14 +37,14 @@ runs:
       run: |
         TEMP_DIR=$(mktemp -d)
         cp "${{ inputs.file_path }}" $TEMP_DIR/
-        cd $TEMP_DIR
-        cat > Dockerfile << EOF
+        FILE_NAME=$(basename "${{ inputs.file_path }}")
+        cat > $TEMP_DIR/Dockerfile << EOF
         FROM scratch
-        COPY . .
+        COPY ${FILE_NAME} /${FILE_NAME}
         EOF
         echo "temp_dir=$TEMP_DIR" >> $GITHUB_OUTPUT
-        echo "Created Dockerfile for ${ARTIFACT_FILE}"
-        cat Dockerfile
+        echo "Created Dockerfile for ${FILE_NAME}"
+        cat $TEMP_DIR/Dockerfile
 
     - name: Authenticate with GCP
       uses: google-github-actions/auth@v2
