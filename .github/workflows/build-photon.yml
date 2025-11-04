@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_import:
-        description: 'Build import image?'
+        description: 'Import and convert data?'
         required: true
         type: choice
         options:
@@ -13,7 +13,7 @@ on:
           - 'only-photon-data'
         default: 'no'
       deploy_env:
-        description: 'Deploy Photon to (none = no deployment)'
+        description: 'Photon deploy target'
         required: true
         type: choice
         options:
@@ -23,7 +23,7 @@ on:
           - 'both'
         default: 'none'
       photon_data_image_tag:
-        description: 'Photon data image tag to use (default: latest, only used if not building import)'
+        description: 'Photon Data image tag (only used if not building import)'
         required: false
         default: 'latest'
         type: string

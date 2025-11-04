@@ -29,7 +29,7 @@ inputs:
 outputs:
   image_tag:
     description: "Image tag"
-    value: ${{ steps.build-push.outputs.image_tag }}
+    value: ${{ steps.set-tag.outputs.image_tag }}
 
 runs:
   using: 'composite'
