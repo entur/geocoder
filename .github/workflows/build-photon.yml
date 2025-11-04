@@ -46,6 +46,12 @@ jobs:
     if: inputs.build_import == 'yes'
     runs-on:
         group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.upload-nominatim-data.outputs.image_tag }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -98,6 +104,7 @@ jobs:
           fi
 
       - name: Upload nominatim data
+        id: upload-nominatim-data
         uses: ./.github/actions/upload-docker-artifact
         with:
           image_name: geocoder-nominatim-data
@@ -118,7 +125,8 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      image_tag: ${{ steps.upload-to-gcr.outputs.image_tag }}
+      image_tag: ${{ steps.upload-photon-data.outputs.image_tag }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -168,6 +176,7 @@ jobs:
           fi
 
       - name: Upload photon data
+        id: upload-photon-data
         uses: ./.github/actions/upload-docker-artifact
         with:
           image_name: geocoder-photon-data

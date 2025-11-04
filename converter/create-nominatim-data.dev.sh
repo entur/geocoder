@@ -19,20 +19,41 @@ fail() {
     exit 1
 }
 
+download() {
+    URL="$1"
+    OUTPUT="$2"
+    EXTRACT_PATTERN="${3:-}"
+
+    printf "Downloading: %s... " "$URL"
+
+    if [ -n "$EXTRACT_PATTERN" ]; then
+        curl -sfL --retry 2 "$URL" | bsdtar -xOf - "$EXTRACT_PATTERN" > "$OUTPUT"
+    else
+        curl -sfL --retry 2 "$URL" -o "$OUTPUT"
+    fi
+
+    if [ -f "$OUTPUT" ]; then
+        SIZE=$(du -h "$OUTPUT" | awk '{ print $1 }')
+        echo "Extracted $OUTPUT, size: $SIZE"
+    else
+        fail "Failed to download $URL"
+    fi
+}
+
 which bsdtar >/dev/null 2>&1 || fail "bsdtar not found. Please install bsdtar to proceed."
 which curl >/dev/null 2>&1 || fail "curl not found. Please install curl to proceed."
 which xz >/dev/null 2>&1 || fail "xz not found. Please install xz to proceed."
 which java >/dev/null 2>&1 || fail "java not found. Please install java to proceed."
 [ -f "$CONVERT" ] || fail "$CONVERT not found."
 
-curl -sfL --retry 2 $ADRESSE_URL |  bsdtar -xOf - '*.csv'  > adresse.csv
-curl -sfL --retry 2 $STEDSNAVN_URL |  bsdtar -xOf - '*.gml'  > stedsnavn.gml
+download "$ADRESSE_URL" adresse.csv '*.csv'
+download "$STEDSNAVN_URL" stedsnavn.gml '*.gml'
 $CONVERT -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson
 rm adresse.csv stedsnavn.gml
 
-curl -sfL --retry 2 $TIAMAT_URL | bsdtar -xOf - '*.xml' > tiamat.xml
+download "$TIAMAT_URL" tiamat.xml '*.xml'
 $CONVERT -a -s tiamat.xml -o nominatim.ndjson
-rm tiamat.*
+rm tiamat.xml
 
 $CONVERT -a -p "$SCRIPTDIR/src/test/resources/oslo-center.osm.pbf" -o nominatim.ndjson
 
