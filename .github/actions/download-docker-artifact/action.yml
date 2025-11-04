@@ -62,14 +62,18 @@ runs:
         # Extract file from blob
         echo "Extracting from blob ${BLOB_HASH}"
         mkdir -p "${{ inputs.destination }}"
+        
+        # Get the filename from the tar archive before extracting
+        ARTIFACT_FILENAME=$(tar -tf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" | head -n1)
+        echo "Found file in blob: $ARTIFACT_FILENAME"
+        
         tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "${{ inputs.destination }}" || { echo "ERROR: Failed to extract file"; exit 1; }
         
         rm -rf "$TEMP_DIR"
         
-        # Get the extracted filename
-        ARTIFACT_FILE=$(ls -1 "${{ inputs.destination }}" | head -n1)
-        echo "artifact_file=${{ inputs.destination }}/${ARTIFACT_FILE}" >> $GITHUB_OUTPUT
-        ls -lh "${{ inputs.destination }}/"
+        # Set output
+        echo "artifact_file=${{ inputs.destination }}/${ARTIFACT_FILENAME}" >> $GITHUB_OUTPUT
+        ls -lh "${{ inputs.destination }}/${ARTIFACT_FILENAME}"
 
     - name: Summary
       shell: bash
