@@ -70,9 +70,22 @@ jobs:
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success'
     needs: [build-push]
-    uses: "./.github/workflows/_docker-scan.yml"
-    with:
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - name: Security Scan
+        uses: ./.github/actions/docker-scan
+        with:
+          image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   deploy-dev:
     name: Dev
