@@ -134,6 +134,15 @@ jobs:
         working-directory: converter
         run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url }}"
 
+      - name: Upload photon data
+        id: upload-photon-data
+        uses: ./.github/actions/upload-docker-artifact
+        with:
+          image_name: geocoder-photon-data
+          file_path: converter/photon_data.tar.gz
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
       - name: Generate stats summary
         working-directory: converter
         run: |
@@ -154,15 +163,6 @@ jobs:
           else
             echo "❌ photon_data.tar.gz not found" >> $GITHUB_STEP_SUMMARY
           fi
-
-      - name: Upload photon data
-        id: upload-photon-data
-        uses: ./.github/actions/upload-docker-artifact
-        with:
-          image_name: geocoder-photon-data
-          file_path: converter/photon_data.tar.gz
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   # Photon image jobs
   lint:
