@@ -78,3 +78,5 @@ runs:
         echo "**Image:** \`${{ steps.set-tag.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Build args:** \`${{ inputs.build_args != '' && inputs.build_args || 'None' }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Push requested:** ${{ inputs.push }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Outputs:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Image tag: \`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY

@@ -42,4 +42,10 @@ runs:
         echo "Full image reference: ${FULL_IMAGE}"
         echo "Generated image tag: ${IMAGE_TAG}"
         
-
+    - name: Summary
+      shell: bash
+      run: |
+          echo "## Generated Docker Image Tag" >> $GITHUB_STEP_SUMMARY
+          echo "**Base Image:** \`${{ steps.generate.outputs.base_image }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Full Image:** \`${{ steps.generate.outputs.full_image }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image Tag:** \`${{ steps.generate.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
