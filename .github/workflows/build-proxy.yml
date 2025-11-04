@@ -43,7 +43,6 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        if: ${{ inputs.do-gradle-build }}
         uses: actions/setup-java@v5
         with:
           distribution: liberica
@@ -51,7 +50,6 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
-        if: ${{ inputs.do-gradle-build }}
         run: ./gradlew --no-daemon build
 
       - name: Build and Push
