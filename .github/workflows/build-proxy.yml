@@ -32,6 +32,9 @@ jobs:
     name: Proxy
     needs: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       image_tag: ${{ steps.upload-photon-data.outputs.image_tag }}
 
