@@ -1,75 +1,79 @@
-# GitHub Actions - Composite Actions
+# Composite Actions
 
-This directory contains reusable composite actions for the geocoder project.
+Reusable actions for Docker workflows.
 
 ## generate-image-tag
 
-Generates a consistent Docker image tag based on the current branch and commit SHA.
+Generate Docker image tags: `{branch}.{date}-SHA{sha}` (e.g., `main.20251104-SHA1234567`)
 
-**Use case:** Standardize image tagging across all Docker builds.
-
-**Usage:**
 ```yaml
-- name: Generate tag
-  id: tag
-  uses: ./.github/actions/generate-image-tag
-
-- name: Use the tag
-  run: echo "Tag is ${{ steps.tag.outputs.image_tag }}"
+uses: ./.github/actions/generate-image-tag
+with:
+  image_name: my-image
 ```
 
-**Outputs:**
-- `image_tag`: The generated tag (format: `{branch}.{date}-SHA{short-sha}`, e.g., `main.20251103-SHA1234567`)
+**Outputs:** `image_tag`, `base_image`, `full_image`
+
+## docker-build-push
+
+Build and push Docker images to GCR.
+
+```yaml
+uses: ./.github/actions/docker-build-push
+with:
+  image_name: my-image
+  context: ./path
+  push: true
+  build_args: |
+    ARG1=value1
+    ARG2=value2
+  workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+  service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+```
+
+**Outputs:** `image_tag`
 
 ## upload-docker-artifact
 
-Packages a workflow artifact or file as a Docker image and pushes it to GCR for long-term storage and easy reuse.
+Store files as Docker images in GCR. Useful for large build artifacts (data files, compiled outputs).
 
-**Use case:** Store build artifacts (like compiled data files) as Docker images so they can be referenced by tag instead of workflow run IDs.
-
-**Usage (from file):**
 ```yaml
-- name: Upload to GCR
-  uses: ./.github/actions/upload-docker-artifact
-  with:
-    file_path: path/to/file.tar.gz       # Path to file on disk
-    image_name: my-data-image            # Docker image name (without registry and tag)
-    workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-    service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+uses: ./.github/actions/upload-docker-artifact
+with:
+  file_path: path/to/file.tar.gz
+  image_name: my-data
+  workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+  service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
 
-**Inputs:**
-- `file_path` (optional): Direct path to file on disk
-- `image_name` (required): Docker image name
-
-**Outputs:**
-- `image_tag`: The generated tag (e.g., `main.20251103-SHA1234567`)
-- `full_image`: Full image reference (e.g., `eu.gcr.io/entur-system-1287/my-data-image:main.20251103-SHA1234567`)
+**Outputs:** `image_tag`
 
 ## download-docker-artifact
 
-Extracts an artifact from a Docker image stored in GCR.
+Extract files from Docker images stored in GCR.
 
-**Use case:** Download previously stored artifacts from GCR by image tag instead of workflow run ID.
-
-**Usage:**
 ```yaml
-- name: Download from GCR
-  uses: ./.github/actions/download-docker-artifact
-  with:
-    image: my-data-image:latest  # Image name and tag (without registry)
-    destination: ./output        # Where to extract the file
-    workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-    service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+uses: ./.github/actions/download-docker-artifact
+with:
+  image: my-data:latest
+  destination: ./output
+  workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+  service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
 
-**Outputs:**
-- `artifact_file`: Path to the extracted artifact file
+**Outputs:** `artifact_file`
 
-## Benefits
+## docker-scan
 
-- **No run IDs needed:** Reference artifacts by semantic tags (e.g., `latest`, `v1.2.3`)
-- **Long-term storage:** GCR retention vs. GitHub Actions artifact retention
-- **Reusable:** Can be used across different workflows
-- **Simple:** Clean abstraction over Docker commands
+Security scan Docker images with Anchore Grype. Uploads results to GitHub Security.
+
+```yaml
+uses: ./.github/actions/docker-scan
+with:
+  image: my-image:tag
+  workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+  service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+```
+
+Fails on critical vulnerabilities. Results appear in Security tab.
 
