@@ -220,6 +220,7 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
       - name: Build and Push Photon image
+        id: build-push
         uses: ./.github/actions/docker-build-push
         with:
           image_name: geocoder-photon
