@@ -78,27 +78,17 @@ jobs:
       - name: Generate stats summary
         working-directory: converter
         run: |
-          echo "## Nominatim Data Generation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Nominatim Data" >> $GITHUB_STEP_SUMMARY
           
           if [ -f nominatim.ndjson.gz ] && [ -f nominatim.ndjson ]; then
             COMPRESSED_SIZE=$(du -h nominatim.ndjson.gz | cut -f1)
             UNCOMPRESSED_SIZE=$(du -h nominatim.ndjson | cut -f1)
-            
-            # Calculate compression ratio
             COMPRESSED_BYTES=$(stat -f%z nominatim.ndjson.gz 2>/dev/null || stat -c%s nominatim.ndjson.gz)
             UNCOMPRESSED_BYTES=$(stat -f%z nominatim.ndjson 2>/dev/null || stat -c%s nominatim.ndjson)
             RATIO=$(awk "BEGIN {printf \"%.1f\", $UNCOMPRESSED_BYTES / $COMPRESSED_BYTES}")
-            
-            # Count lines in uncompressed file
             LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
             
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Compressed size | $COMPRESSED_SIZE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Uncompressed size | $UNCOMPRESSED_SIZE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Compression ratio | ${RATIO}x |" >> $GITHUB_STEP_SUMMARY
-            echo "| Number of records | $LINE_COUNT |" >> $GITHUB_STEP_SUMMARY
+            echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}x → ${UNCOMPRESSED_SIZE}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
           fi
@@ -150,27 +140,22 @@ jobs:
       - name: Generate stats summary
         working-directory: converter
         run: |
-          echo "## Photon Data Generation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Photon Data" >> $GITHUB_STEP_SUMMARY
           
           if [ -f photon_data.tar.gz ]; then
             FILE_SIZE=$(du -h photon_data.tar.gz | cut -f1)
-            UNCOMPRESSED_SIZE=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $5 $6}')
             COMPRESSION_RATIO=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $7}')
+            UNCOMPRESSED_SIZE=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $5 $6}')
             
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Archive size | $FILE_SIZE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Uncompressed size | $UNCOMPRESSED_SIZE |" >> $GITHUB_STEP_SUMMARY
-            echo "| Compression ratio | $COMPRESSION_RATIO |" >> $GITHUB_STEP_SUMMARY
+            OUTPUT="**Archive:** ${FILE_SIZE} (${COMPRESSION_RATIO} → ${UNCOMPRESSED_SIZE})"
             
-            # Show photon_data directory details if it exists
             if [ -d photon_data ]; then
               DIR_SIZE=$(du -sh photon_data | cut -f1)
               FILE_COUNT=$(find photon_data -type f | wc -l | tr -d ' ')
-              echo "| Data directory size | $DIR_SIZE |" >> $GITHUB_STEP_SUMMARY
-              echo "| Number of files | $FILE_COUNT |" >> $GITHUB_STEP_SUMMARY
+              OUTPUT="${OUTPUT} • **Data:** ${DIR_SIZE} (${FILE_COUNT} files)"
             fi
+            
+            echo "$OUTPUT" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ photon_data.tar.gz not found" >> $GITHUB_STEP_SUMMARY
           fi

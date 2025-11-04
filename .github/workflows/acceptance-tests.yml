@@ -65,7 +65,7 @@ jobs:
         if: always()
         working-directory: acceptance-tests
         run: |
-          echo "## Acceptance Test Results - v2${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Acceptance Test Results - v2${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           cat test-output.log |grep -v 'Tests completed:' >> $GITHUB_STEP_SUMMARY
