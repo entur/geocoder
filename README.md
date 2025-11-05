@@ -1,5 +1,39 @@
-## Usage
+# Geocoder
 
+Geocoding service consisting of a Photon search engine and a proxy service.
+
+## Deployment Scenarios
+
+### Proxy
+
+Builds and deploys on push to main branch.
+
+- Deploys to **dev**
+- Review needed for deploy to **staging**
+
+### Photon
+
+Manual build and deploy via GitHub Actions workflow.
+
+**Workflow options:**
+- `build_import`: Controls data import
+    - `no` - Build/deploy only (uses latest Photon Data)
+    - `yes` - Full import (Nominatim + Photon data)
+    - `only-photon-data` - Photon Data only (uses latest Nominatim Data)
+- `deploy_env`: Deployment target (`none`, `dev`, `staging`, `both`)
+- `photon_data_image_tag`: Tag to use when `build_import=no` (default: `latest`)
+- `photon_jar_url`: Custom Photon JAR URL
+
+**Data pipeline:**
+1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace/etc data to Nominatim format
+2. **Photon Data** - Imports Nominatim data into Photon search index
+3. **Photon Image** - Builds Docker image with Photon JAR and Photon Data
+4. **Deploy** - Deploys to selected environments. Review required for staging & prod.
+
+Data artifacts are stored as Docker images in GCR for efficient transfer and caching.
+
+
+## Usage
 
 ### Running locally
 
@@ -36,9 +70,11 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 
 ### Using a patched Photon version
 
-* Fetch Photon from source (`https://github.com/komoot/photon`) and make your changes
-* Push it to a branch on EnTur's fork (`https://github.com/entur/photon`)
+#### Build and release patched Photon
+
+* Fetch Photon from source (https://github.com/komoot/photon) and make your changes
 * Build your branch with `./gradlew build`
+* Push it to a branch on EnTur's fork (https://github.com/entur/photon)
 * Draft a new release at https://github.com/entur/photon/releases/new
 * Click "Select tag" --> "Create new tag" and enter a tag name
 * Select Target: `<your branch name>`
@@ -47,6 +83,9 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 * Check "Set as a pre-release"
 * Publish the release
 * On the release page, right-click the `photon-<tag>.jar` asset and copy the link address
+
+#### Update geocoder to use the patched Photon
+
 * Go to [build-photon.yml](.github/workflows/build-photon.yml) in `geocoder` and
   update `on.workflow_dispatch.inputs.photon_jar_url.default` variable with the new link
 * Push your `geocoder` changes
