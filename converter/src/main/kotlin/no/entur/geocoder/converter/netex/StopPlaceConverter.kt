@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.netex
 
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
@@ -73,6 +74,7 @@ class StopPlaceConverter : Converter {
             }
 
         val tags = listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE, LEGACY_SOURCE_OPENSTREETMAP)
+            .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it.lowercase() })
 
         val categories = tags
             .plus(SOURCE_NSR)
@@ -183,6 +185,7 @@ class StopPlaceConverter : Converter {
         val importance = ImportanceCalculator.calculateImportance(popularity.toLong())
 
         val tags = listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
+            .plus(LEGACY_CATEGORY_PREFIX + "GroupOfStopPlaces")
 
         val categories = tags
             .plus(SOURCE_NSR)

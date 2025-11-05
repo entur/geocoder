@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
@@ -39,6 +40,11 @@ data class PhotonAutocompleteRequest(
                     }
                     if (params.layers.isNotEmpty()) {
                         addAll(params.layers.map { "legacy.layer.$it" })
+                    }
+                    if (params.categories.isNotEmpty()) {
+                        if (params.categories.none { it == "NO_FILTER" }) {
+                            addAll(params.categories.map { LEGACY_CATEGORY_PREFIX + it })
+                        }
                     }
                 }
             val excludes =

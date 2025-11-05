@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.osm
 
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
@@ -340,6 +341,7 @@ class OsmConverter : Converter {
             .plus(LEGACY_SOURCE_WHOSONFIRST)
             .plus(LEGACY_LAYER_ADDRESS)
             .plus(OSM_POI)
+            .plus(LEGACY_CATEGORY_PREFIX + "poi")
 
         val altName =
             altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
