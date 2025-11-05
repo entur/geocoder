@@ -36,7 +36,7 @@ object V3Api {
 
         val photonRequest = PhotonAutocompleteRequest.Companion.from(params)
         val url = "$photonBaseUrl/api"
-        logger.info("V3 autocomplete request to $url with query='${photonRequest.query}'")
+        logger.debug("V3 autocomplete request to $url with query='${photonRequest.query}'")
 
         try {
             val photonResponse =
@@ -87,7 +87,7 @@ object V3Api {
 
         val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
-        logger.info("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
+        logger.debug("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
         try {
             val photonResponse =
