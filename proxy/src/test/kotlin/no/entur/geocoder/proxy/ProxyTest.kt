@@ -10,6 +10,7 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.proxy.Routing.configureRouting
@@ -43,7 +44,7 @@ class ProxyTest {
                   "locality_gid": "locality:1",
                   "transport_modes": "city,transport",
                   "tariff_zones": "zone1,zone2",
-                  "tags": "${LEGACY_SOURCE_OPENSTREETMAP},${LEGACY_LAYER_ADDRESS}"
+                  "tags": "$LEGACY_SOURCE_OPENSTREETMAP,$LEGACY_LAYER_ADDRESS,${LEGACY_CATEGORY_PREFIX}poi,${LEGACY_CATEGORY_PREFIX}transport,${LEGACY_CATEGORY_PREFIX}city"
                 }
               }
             }
@@ -98,7 +99,7 @@ class ProxyTest {
             assertEquals("Oslo", feature.properties.name)
             assertEquals("Oslo", feature.properties.county)
             assertEquals("Oslo", feature.properties.label)
-            assertEquals(listOf("city", "transport", "poi"), feature.properties.category)
+            assertEquals(setOf("city", "transport", "poi").toSet(), feature.properties.category?.toSet())
             assertEquals(listOf("zone1", "zone2"), feature.properties.tariff_zones)
         }
 

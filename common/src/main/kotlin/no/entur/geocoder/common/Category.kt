@@ -9,11 +9,15 @@ object Category {
     const val SOURCE_ADRESSE = "source.kartverket.matrikkelenadresse"
     const val SOURCE_STEDSNAVN = "source.kartverket.stedsnavn"
     const val SOURCE_NSR = "source.nsr"
-    const val LEGACY_LAYER_VENUE = "legacy.layer.venue"
-    const val LEGACY_LAYER_ADDRESS = "legacy.layer.address"
-    const val LEGACY_SOURCE_WHOSONFIRST = "legacy.source.whosonfirst"
-    const val LEGACY_SOURCE_OPENADDRESSES = "legacy.source.openaddresses"
-    const val LEGACY_SOURCE_OPENSTREETMAP = "legacy.source.openstreetmap"
+
+    const val LEGACY_LAYER_PREFIX = "legacy.layer."
+    const val LEGACY_LAYER_VENUE = LEGACY_LAYER_PREFIX + "venue"
+    const val LEGACY_LAYER_ADDRESS = LEGACY_LAYER_PREFIX + "address"
+
+    const val LEGACY_SOURCE_PREFIX = "legacy.source."
+    const val LEGACY_SOURCE_WHOSONFIRST = LEGACY_SOURCE_PREFIX + "whosonfirst"
+    const val LEGACY_SOURCE_OPENADDRESSES = LEGACY_SOURCE_PREFIX + "openaddresses"
+    const val LEGACY_SOURCE_OPENSTREETMAP = LEGACY_SOURCE_PREFIX + "openstreetmap"
 
     /**
      * NSR, layer = venue:

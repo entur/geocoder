@@ -9,8 +9,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasPlaceRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
-import no.entur.geocoder.proxy.pelias.PeliasResultTransformer
-import no.entur.geocoder.proxy.v3.V3ResultTransformer
 import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteRequest
 import no.entur.geocoder.proxy.v3.V3Api.reverseRequest as v3ReverseRequest
 
@@ -20,36 +18,33 @@ object Routing {
         photonBaseUrl: String,
         appMicrometerRegistry: PrometheusMeterRegistry,
     ) {
-        val transformer = PeliasResultTransformer()
-        val v3Transformer = V3ResultTransformer()
-
         routing {
             get("/v2/autocomplete") {
-                peliasAutocompleteRequest(photonBaseUrl, client, transformer)
+                peliasAutocompleteRequest(photonBaseUrl, client)
             }
 
             get("/v2/search") {
-                peliasAutocompleteRequest(photonBaseUrl, client, transformer)
+                peliasAutocompleteRequest(photonBaseUrl, client)
             }
 
             get("/v2/reverse") {
-                peliasReverseRequest(photonBaseUrl, client, transformer)
+                peliasReverseRequest(photonBaseUrl, client)
             }
 
             get("/v2/nearby") {
-                peliasReverseRequest(photonBaseUrl, client, transformer)
+                peliasReverseRequest(photonBaseUrl, client)
             }
 
             get("/v2/place") {
-                peliasPlaceRequest(photonBaseUrl, client, transformer)
+                peliasPlaceRequest(photonBaseUrl, client)
             }
 
             get("/v3/autocomplete") {
-                v3AutocompleteRequest(photonBaseUrl, client, v3Transformer)
+                v3AutocompleteRequest(photonBaseUrl, client)
             }
 
             get("/v3/reverse") {
-                v3ReverseRequest(photonBaseUrl, client, v3Transformer)
+                v3ReverseRequest(photonBaseUrl, client)
             }
 
             get("/") {

@@ -3,7 +3,9 @@ package no.entur.geocoder.proxy.pelias
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.common.Category.LEGACY_LAYER_PREFIX
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_PREFIX
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
@@ -16,7 +18,7 @@ import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class PeliasResultTransformer {
+object PeliasResultTransformer {
     private val mapper: ObjectMapper =
         jacksonObjectMapper().apply {
             setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
@@ -139,45 +141,21 @@ class PeliasResultTransformer {
             else -> props.street
         }
 
-    fun transformCategory(extra: Extra?): List<String> {
-        val category = mutableSetOf<String>()
-        extra?.transport_modes?.split(',')?.map { it.trim() }?.let {
-            category.addAll(it)
-        }
-        if (extra?.source == Source.KARTVERKET_ADRESSE) {
-            if (isStreet(extra)) category.add("street") else category.add("vegadresse")
-        }
-        if (extra?.source == Source.OSM) {
-            category.add("poi")
-        }
-        if (isGosp(extra)) {
-            category.add("GroupOfStopPlaces")
-        }
-        if (extra?.tags?.isNotBlank() == true) {
-            extra.tags?.split(",")?.forEach { tag ->
-                val parts = tag.split('.')
-                if (parts.size == 2 && parts[1].isNotBlank()) {
-                    category.add(parts[1])
-                }
-            }
-        }
-        return category.toList()
-    }
+    fun transformCategory(extra: Extra?): List<String> =
+        extra?.tags?.split(",")
+            ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
+            ?.map { it.substringAfterLast(".") }
+            ?: emptyList()
 
     fun transformSource(extra: Extra?): String? =
         extra?.tags?.split(",")
-            ?.firstOrNull { it.startsWith("legacy.source.") }
+            ?.firstOrNull { it.startsWith(LEGACY_SOURCE_PREFIX) }
             ?.substringAfterLast(".")
 
     fun transformLayer(extra: Extra?): String? =
         extra?.tags?.split(",")
-            ?.firstOrNull { it.startsWith("legacy.layer.") }
+            ?.firstOrNull { it.startsWith(LEGACY_LAYER_PREFIX) }
             ?.substringAfterLast(".")
-
-    fun isStreet(extra: Extra): Boolean =
-        extra.tags?.split(',')?.any { it == Category.OSM_STREET } == true
-
-    fun isGosp(extra: Extra?): Boolean = extra?.id?.contains("GroupOfStopPlaces") == true
 
     fun transformBoroughGid(boroughGid: String?): String? =
         boroughGid?.let { "whosonfirst:$it" }
@@ -188,25 +166,23 @@ class PeliasResultTransformer {
     fun transformLocalityGid(localityGid: String?): String? =
         localityGid?.let { "whosonfirst:locality:$it" }
 
-    companion object {
-        const val PELIAS_DISTANCE_FUDGE_FACTOR = 1.001119
+    const val PELIAS_DISTANCE_FUDGE_FACTOR = 1.001119
 
-        internal fun calculateDistanceKm(
-            geometry: PhotonGeometry,
-            focus: FocusParams?,
-        ): BigDecimal? {
-            if (focus == null) return null
+    internal fun calculateDistanceKm(
+        geometry: PhotonGeometry,
+        focus: FocusParams?,
+    ): BigDecimal? {
+        if (focus == null) return null
 
-            val featureCoords = geometry.coordinates
-            if (featureCoords.size < 2) return null
+        val featureCoords = geometry.coordinates
+        if (featureCoords.size < 2) return null
 
-            val lon1 = featureCoords[0].toDouble()
-            val lat1 = featureCoords[1].toDouble()
-            val lon2 = focus.lon.toDouble()
-            val lat2 = focus.lat.toDouble()
-            val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
+        val lon1 = featureCoords[0].toDouble()
+        val lat1 = featureCoords[1].toDouble()
+        val lon2 = focus.lon.toDouble()
+        val lat2 = focus.lat.toDouble()
+        val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
 
-            return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)
-        }
+        return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)
     }
 }

@@ -15,11 +15,7 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object V3Api {
-    suspend fun RoutingContext.autocompleteRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        transformer: V3ResultTransformer,
-    ) {
+    suspend fun RoutingContext.autocompleteRequest(photonBaseUrl: String, client: HttpClient) {
         val params =
             try {
                 V3AutocompleteParams.fromRequest(call.request)
@@ -52,7 +48,7 @@ object V3Api {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = transformer.parseAndTransform(photonResult, params)
+            val json = V3ResultTransformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
@@ -66,11 +62,7 @@ object V3Api {
         }
     }
 
-    suspend fun RoutingContext.reverseRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        transformer: V3ResultTransformer,
-    ) {
+    suspend fun RoutingContext.reverseRequest(photonBaseUrl: String, client: HttpClient) {
         val params =
             try {
                 V3ReverseParams.fromRequest(call.request)
@@ -102,7 +94,7 @@ object V3Api {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.Companion.parse(photonResponse)
-            val json = transformer.parseAndTransform(photonResult, params)
+            val json = V3ResultTransformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {

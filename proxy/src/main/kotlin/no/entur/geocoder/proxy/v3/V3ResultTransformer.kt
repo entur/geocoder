@@ -12,7 +12,7 @@ import no.entur.geocoder.proxy.v3.V3Result.QueryInfo
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class V3ResultTransformer {
+object V3ResultTransformer {
     private val mapper: ObjectMapper =
         jacksonObjectMapper().apply {
             setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
@@ -158,7 +158,7 @@ class V3ResultTransformer {
             props.housenumber == null &&
             props.postcode == null &&
             props.extra?.locality == null &&
-            props?.county == null
+            props.county == null
         ) {
             return null
         }

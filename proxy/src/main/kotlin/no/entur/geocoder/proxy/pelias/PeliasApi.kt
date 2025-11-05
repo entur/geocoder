@@ -13,11 +13,7 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object PeliasApi {
-    suspend fun RoutingContext.peliasAutocompleteRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        transformer: PeliasResultTransformer,
-    ) {
+    suspend fun RoutingContext.peliasAutocompleteRequest(photonBaseUrl: String, client: HttpClient) {
         val peliasParams =
             try {
                 PeliasAutocompleteParams.fromRequest(call.request)
@@ -60,7 +56,7 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = transformer.parseAndTransform(photonResult, peliasParams.focus)
+            val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
@@ -73,11 +69,7 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.peliasReverseRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        transformer: PeliasResultTransformer,
-    ) {
+    suspend fun RoutingContext.peliasReverseRequest(photonBaseUrl: String, client: HttpClient) {
         val peliasParams =
             try {
                 PeliasReverseParams.fromRequest(call.request)
@@ -109,7 +101,7 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = transformer.parseAndTransform(photonResult)
+            val json = PeliasResultTransformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
@@ -122,11 +114,7 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.peliasPlaceRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        transformer: PeliasResultTransformer,
-    ) {
+    suspend fun RoutingContext.peliasPlaceRequest(photonBaseUrl: String, client: HttpClient) {
         val peliasParams =
             try {
                 PeliasPlaceParams.fromRequest(call.request)
@@ -157,7 +145,7 @@ object PeliasApi {
                 type = "FeatureCollection",
                 features = photonResults.map { it.features.first() },
             )
-            val json = transformer.parseAndTransform(photonResult, null)
+            val json = PeliasResultTransformer.parseAndTransform(photonResult, null)
             call.respondText(json, contentType = ContentType.Application.Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
