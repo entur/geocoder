@@ -25,14 +25,14 @@ common:
           periodSeconds: 1
           timeoutSeconds: 1
           failureThreshold: 300
-        livenessProbe:
+        readinessProbe:
           httpGet:
-            path: /api?q=zzz
+            path: /api?q=zzzzz
             port: 2322
           periodSeconds: 5
           successThreshold: 1
           timeoutSeconds: 1
-        readinessProbe:
+        livenessProbe:
           tcpSocket:
             port: 2322
           periodSeconds: 5
