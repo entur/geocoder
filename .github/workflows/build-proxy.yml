@@ -89,7 +89,7 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   deploy-dev:
-    name: Dev
+    name: 1.Dev
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -114,7 +114,7 @@ jobs:
       environment: dev
 
   deploy-tst:
-    name: Staging
+    name: 2.Staging
     if: |
       !cancelled() &&
       github.event_name == 'push' &&
@@ -139,7 +139,7 @@ jobs:
       environment: tst
 
   deploy-prd:
-    name: Prod
+    name: 3.Prod
     if: |
       !cancelled() &&
       github.event_name == 'push' &&

@@ -238,7 +238,7 @@ jobs:
 
   # Deploy jobs
   deploy-dev:
-    name: Dev
+    name: 1.Dev
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
@@ -265,7 +265,7 @@ jobs:
       environment: dev
 
   deploy-tst:
-    name: Staging
+    name: 2.Staging
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
@@ -292,7 +292,7 @@ jobs:
       environment: tst
 
   deploy-prd:
-    name: Prod
+    name: 3.Prod
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
