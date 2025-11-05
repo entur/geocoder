@@ -1,6 +1,8 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.server.request.*
+import no.entur.geocoder.proxy.Text.safeVar
+import no.entur.geocoder.proxy.Text.safeVars
 
 data class PeliasAutocompleteParams(
     val text: String = "",
@@ -21,17 +23,17 @@ data class PeliasAutocompleteParams(
         fun fromRequest(request: ApplicationRequest): PeliasAutocompleteParams {
             val params = request.queryParameters
             return PeliasAutocompleteParams(
-                text = params["text"] ?: "",
+                text = params["text"].safeVar() ?: "",
                 size = params["size"]?.toIntOrNull() ?: 10,
-                lang = params["lang"] ?: "no",
-                boundaryCountry = params["boundary.country"],
-                boundaryCountyIds = params["boundary.county.ids"]?.split(",") ?: emptyList(),
-                boundaryLocalityIds = params["boundary.locality.ids"]?.split(",") ?: emptyList(),
-                tariffZones = params["tariff_zone_ids"]?.split(",") ?: emptyList(),
-                tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",") ?: emptyList(),
-                sources = params["sources"]?.split(",") ?: emptyList(),
-                layers = params["layers"]?.split(",") ?: emptyList(),
-                categories = params["categories"]?.split(",") ?: emptyList(),
+                lang = params["lang"].safeVar() ?: "no",
+                boundaryCountry = params["boundary.country"]?.safeVar(),
+                boundaryCountyIds = params["boundary.county.ids"]?.split(",").safeVars() ?: emptyList(),
+                boundaryLocalityIds = params["boundary.locality.ids"]?.split(",").safeVars() ?: emptyList(),
+                tariffZones = params["tariff_zone_ids"]?.split(",")?.safeVars() ?: emptyList(),
+                tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",").safeVars() ?: emptyList(),
+                sources = params["sources"]?.split(",").safeVars() ?: emptyList(),
+                layers = params["layers"]?.split(",").safeVars() ?: emptyList(),
+                categories = params["categories"]?.split(",").safeVars() ?: emptyList(),
                 focus =
                     params["focus.point.lat"]?.let { lat ->
                         params["focus.point.lon"]?.let { lon ->
@@ -79,3 +81,4 @@ data class PeliasAutocompleteParams(
         }
     }
 }
+

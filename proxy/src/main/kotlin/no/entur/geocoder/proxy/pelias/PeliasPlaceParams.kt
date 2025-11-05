@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.server.request.*
+import no.entur.geocoder.proxy.Text.safeVars
 
 data class PeliasPlaceParams(val ids: List<String> = emptyList()) {
     init {
@@ -15,6 +16,7 @@ data class PeliasPlaceParams(val ids: List<String> = emptyList()) {
                 ids = params["ids"]
                     ?.split(",")
                     ?.map { it.split(":").takeLast(3).joinToString(":") }
+                    .safeVars()
                     ?: emptyList(),
             )
         }

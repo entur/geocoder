@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.server.request.*
+import no.entur.geocoder.proxy.Text.safeVar
 
 data class PeliasReverseParams(
     val lat: String = "",
@@ -26,9 +27,9 @@ data class PeliasReverseParams(
             return PeliasReverseParams(
                 lat = params["point.lat"] ?: "",
                 lon = params["point.lon"] ?: "",
-                radius = params["boundary.circle.radius"],
+                radius = params["boundary.circle.radius"].safeVar(),
                 size = params["size"]?.toIntOrNull() ?: 10,
-                lang = params["lang"] ?: "no",
+                lang = params["lang"].safeVar() ?: "no",
             )
         }
     }
