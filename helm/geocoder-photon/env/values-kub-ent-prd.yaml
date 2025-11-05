@@ -3,3 +3,14 @@ common:
   replicas: 2
   ingress:
     enabled: false
+  hpa:
+    spec:
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+      maxReplicas: 10
+      minReplicas: 2
