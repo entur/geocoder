@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         chart: [geocoder-proxy, geocoder-photon]
-        environment: [dev,tst]
+        environment: [dev,tst,prd]
     with:
       environment: ${{ matrix.environment }}
       chart: helm/${{ matrix.chart }}
