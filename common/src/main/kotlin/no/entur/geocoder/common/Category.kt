@@ -14,4 +14,33 @@ object Category {
     const val LEGACY_SOURCE_WHOSONFIRST = "legacy.source.whosonfirst"
     const val LEGACY_SOURCE_OPENADDRESSES = "legacy.source.openaddresses"
     const val LEGACY_SOURCE_OPENSTREETMAP = "legacy.source.openstreetmap"
+
+    /**
+     * NSR, layer = venue:
+     * - railStation
+     * - onstreetBus
+     * - busStation
+     * - metroStation
+     * - coachStation
+     * - onstreetTram
+     * - tramStation
+     * - ferryStop
+     * - ferryPort
+     * - harbourPort
+     * - vehicleRailInterchange
+     * - airport
+     * - liftStation
+     * - other
+     *
+     * NSR, layer = address:
+     * - GroupOfStopPlaces
+     *
+     * Kartverket, layer = address:
+     * - street
+     * - vegadresse
+     *
+     * OSM, layer = address:
+     * - poi
+     */
+    const val LEGACY_CATEGORY_PREFIX = "legacy.category."
 }

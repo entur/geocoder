@@ -19,8 +19,9 @@ on:
         options:
           - 'none'
           - 'dev'
-          - 'staging'
-          - 'both'
+          - 'tst'
+          - 'prd'
+          - 'all'
         default: 'none'
       photon_data_image_tag:
         description: 'Photon Data image tag (only used if not building import)'
@@ -236,13 +237,13 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   # Deploy jobs
-  dev-deploy:
+  deploy-dev:
     name: Dev
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success' &&
-      (inputs.deploy_env == 'dev' || inputs.deploy_env == 'both')
+      (inputs.deploy_env == 'dev' || inputs.deploy_env == 'all')
     needs: [build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -257,19 +258,19 @@ jobs:
     name: Dev Tests
     if: |
       !cancelled() &&
-      needs.dev-deploy.result == 'success'
-    needs: dev-deploy
+      needs.deploy-dev.result == 'success'
+    needs: deploy-dev
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
       environment: dev
 
-  staging-deploy:
+  deploy-tst:
     name: Staging
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success' &&
-      (inputs.deploy_env == 'staging' || inputs.deploy_env == 'both')
+      (inputs.deploy_env == 'tst' || inputs.deploy_env == 'all')
     needs: [build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -280,12 +281,39 @@ jobs:
       release_name: geocoder-photon
     secrets: inherit
 
-  acceptance-tests-staging:
+  acceptance-tests-tst:
     name: Staging Tests
     if: |
       !cancelled() &&
-      needs.staging-deploy.result == 'success'
-    needs: staging-deploy
+      needs.deploy-tst.result == 'success'
+    needs: deploy-tst
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
-      environment: staging
+      environment: tst
+
+  deploy-prd:
+    name: Prod
+    if: |
+      !cancelled() &&
+      github.ref == 'refs/heads/main' &&
+      needs.build-push.result == 'success' &&
+      (inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
+    needs: [build-push]
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: prd
+      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+    secrets: inherit
+
+  acceptance-tests-prd:
+    name: Prod Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-prd.result == 'success'
+    needs: deploy-prd
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: prd

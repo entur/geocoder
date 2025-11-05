@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonGeometry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail

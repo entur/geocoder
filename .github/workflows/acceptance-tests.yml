@@ -9,7 +9,8 @@ on:
         type: choice
         options:
           - dev
-          - staging
+          - tst
+          - prd
         default: 'dev'
   workflow_call:
     inputs:

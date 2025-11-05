@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.stedsnavn
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.converter.photon.NominatimPlace
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -84,7 +85,7 @@ class StedsnavnConverterTest {
         assertNotNull(placeContent.name, "Name should not be null")
         assertNotNull(placeContent.address, "Address should not be null")
         assertEquals("no", placeContent.country_code, "Country code should be 'no'")
-        assertTrue(placeContent.categories.any { it.startsWith("place") }, "Categories should contain 'place'")
+        assertTrue(placeContent.categories.any { it.startsWith(LEGACY_CATEGORY_PREFIX) }, "Categories should contain 'place'")
         assertTrue(placeContent.rank_address <= 20, "Rank address should be appropriate for settlement")
     }
 

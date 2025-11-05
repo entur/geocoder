@@ -1,0 +1,5 @@
+common:
+  env: prd
+  replicas: 2
+  ingress:
+    host: geocoder-proxy.entur.io

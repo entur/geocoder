@@ -1,13 +1,11 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
-import no.entur.geocoder.proxy.pelias.PeliasReverseParams
 import no.entur.geocoder.proxy.v3.V3AutocompleteParams
-import no.entur.geocoder.proxy.v3.V3ReverseParams
 
 data class PhotonAutocompleteRequest(
     val query: String,
@@ -21,58 +19,6 @@ data class PhotonAutocompleteRequest(
     val weight: String?
 ) {
     companion object {
-        fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
-            val includes =
-                buildList {
-                    if (params.countries.isNotEmpty()) {
-                        addAll(params.countries.map { "country.$it" })
-                    }
-                    if (params.countyIds.isNotEmpty()) {
-                        addAll(params.countyIds.map { "county_gid.$it" })
-                    }
-                    if (params.localityIds.isNotEmpty()) {
-                        addAll(params.localityIds.map { "locality_gid.$it" })
-                    }
-                    if (params.tariffZones.isNotEmpty()) {
-                        addAll(params.tariffZones.map { "tariff_zone_id.$it" })
-                    }
-                    if (params.tariffZoneAuthorities.isNotEmpty()) {
-                        addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
-                    }
-                    if (params.sources.isNotEmpty()) {
-                        addAll(params.sources.map { "source.$it" })
-                    }
-                    if (params.placeTypes.isNotEmpty()) {
-                        addAll(params.placeTypes.map { "layer.$it" })
-                    }
-                }
-
-            return PhotonAutocompleteRequest(
-                query = params.query,
-                limit = params.limit,
-                language = params.language,
-                includes = includes,
-                lat = null,
-                lon = null,
-                zoom = null,
-                weight = null
-            )
-        }
-
-        fun from(params: PeliasPlaceParams): List<PhotonAutocompleteRequest> {
-            return params.ids.map { id ->
-                PhotonAutocompleteRequest(
-                    query = id,
-                    limit = 1,
-                    language = "no",
-                    lat = null,
-                    lon = null,
-                    zoom = null,
-                    weight = null
-                )
-            }
-        }
-
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
             val includes: List<String> =
                 buildList {
@@ -94,6 +40,11 @@ data class PhotonAutocompleteRequest(
                     }
                     if (params.layers.isNotEmpty()) {
                         addAll(params.layers.map { "legacy.layer.$it" })
+                    }
+                    if (params.categories.isNotEmpty()) {
+                        if (params.categories.none { it == "NO_FILTER" }) {
+                            addAll(params.categories.map { LEGACY_CATEGORY_PREFIX + it })
+                        }
                     }
                 }
             val excludes =
@@ -131,34 +82,57 @@ data class PhotonAutocompleteRequest(
                 weight = weight
             )
         }
-    }
-}
 
-data class PhotonReverseRequest(
-    val latitude: String,
-    val longitude: String,
-    val language: String,
-    val limit: Int,
-    val radius: String? = null,
-    val exclude: String = Category.OSM_ADDRESS, // Exclude addresses with house numbers in reverse requests
-) {
-    companion object {
-        fun from(params: V3ReverseParams): PhotonReverseRequest =
-            PhotonReverseRequest(
-                latitude = params.latitude,
-                longitude = params.longitude,
-                language = params.language,
+        fun from(params: PeliasPlaceParams): List<PhotonAutocompleteRequest> {
+            return params.ids.map { id ->
+                PhotonAutocompleteRequest(
+                    query = id,
+                    limit = 1,
+                    language = "no",
+                    lat = null,
+                    lon = null,
+                    zoom = null,
+                    weight = null
+                )
+            }
+        }
+
+        fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
+            val includes =
+                buildList {
+                    if (params.countries.isNotEmpty()) {
+                        addAll(params.countries.map { "country.$it" })
+                    }
+                    if (params.countyIds.isNotEmpty()) {
+                        addAll(params.countyIds.map { "county_gid.$it" })
+                    }
+                    if (params.localityIds.isNotEmpty()) {
+                        addAll(params.localityIds.map { "locality_gid.$it" })
+                    }
+                    if (params.tariffZones.isNotEmpty()) {
+                        addAll(params.tariffZones.map { "tariff_zone_id.$it" })
+                    }
+                    if (params.tariffZoneAuthorities.isNotEmpty()) {
+                        addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
+                    }
+                    if (params.sources.isNotEmpty()) {
+                        addAll(params.sources.map { "source.$it" })
+                    }
+                    if (params.placeTypes.isNotEmpty()) {
+                        addAll(params.placeTypes.map { "layer.$it" })
+                    }
+                }
+
+            return PhotonAutocompleteRequest(
+                query = params.query,
                 limit = params.limit,
-                radius = params.radius,
+                language = params.language,
+                includes = includes,
+                lat = null,
+                lon = null,
+                zoom = null,
+                weight = null
             )
-
-        fun from(params: PeliasReverseParams): PhotonReverseRequest =
-            PhotonReverseRequest(
-                latitude = params.lat,
-                longitude = params.lon,
-                language = params.lang,
-                limit = params.size,
-                radius = params.radius,
-            )
+        }
     }
 }

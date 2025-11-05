@@ -1,18 +1,19 @@
 package no.entur.geocoder.converter.stedsnavn
 
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Category.SOURCE_STEDSNAVN
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
+import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.PlaceId
 import no.entur.geocoder.converter.Text.altName
-import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.converter.photon.NominatimPlace
 import no.entur.geocoder.converter.photon.NominatimPlace.*
 import java.io.File
@@ -212,7 +213,10 @@ class StedsnavnConverter : Converter {
                 Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
             }
 
-        val tags = listOf(OSM_POI, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, "place.${entry.navneobjekttype}")
+        val tags = listOf(
+            OSM_POI, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS,
+            LEGACY_CATEGORY_PREFIX + entry.navneobjekttype
+        )
 
         val categories = tags.plus(SOURCE_STEDSNAVN)
 

@@ -113,7 +113,7 @@ jobs:
     with:
       environment: dev
 
-  deploy-staging:
+  deploy-tst:
     name: Staging
     if: |
       !cancelled() &&
@@ -130,12 +130,36 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  acceptance-tests-staging:
+  acceptance-tests-tst:
     name: Staging Tests
-    if: needs.deploy-staging.result == 'success'
-    needs: deploy-staging
+    if: needs.deploy-tst.result == 'success'
+    needs: deploy-tst
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
-      environment: staging
+      environment: tst
 
+  deploy-prd:
+    name: Prod
+    if: |
+      !cancelled() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.build-push.result == 'success'
+    needs: [build-push, deploy-dev]
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: prd
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy
+    secrets: inherit
+
+  acceptance-tests-prd:
+    name: Prod Tests
+    if: needs.deploy-prd.result == 'success'
+    needs: deploy-prd
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: prd
 

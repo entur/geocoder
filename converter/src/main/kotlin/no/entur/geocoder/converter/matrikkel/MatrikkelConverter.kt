@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.matrikkel
 
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
@@ -82,7 +83,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             easting = adresse.ost,
             placeId = PlaceId.address.create(adresse.lokalid),
             id = adresse.lokalid,
-            tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS),
+            tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
             categories = listOf(SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null, // Addresses proper are considered to be "nameless" in Photon
@@ -102,7 +103,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             easting = easting,
             placeId = PlaceId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS),
+            tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
             categories = listOf(SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
