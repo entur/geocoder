@@ -8,6 +8,7 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams.FocusParams
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasFeature
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
