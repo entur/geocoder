@@ -90,8 +90,8 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
   update `on.workflow_dispatch.inputs.photon_jar_url.default` variable with the new link
 * Push your `geocoder` changes
 * Go to https://github.com/entur/geocoder/actions/workflows/build-photon.yml and trigger the workflow.
-  If you made changes to the Photon import code you need to check the "Build import image", otherwise
-  you can just deploy to e.g. `dev`.
+  You should set "Import and convert data" --> `only-photon-data` (or `all`) to avoid OpenSearch data
+  inconsistencies, and deploy to e.g. `dev`.
 
 ## Links
 
