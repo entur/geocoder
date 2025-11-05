@@ -3,4 +3,4 @@ kind: GitHubActions
 metadata:
   id: geocoder
 spec:
-  environments: [dev,tst]
+  environments: [dev,tst,prd]
