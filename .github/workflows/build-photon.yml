@@ -28,7 +28,7 @@ on:
         type: string
         default: 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar'
 
-run-name: "Photon: ${{ inputs.build || 'build nominatim/photon, deploy to all (scheduled)' }} (tag: ${{ inputs.photon_image_tag || 'latest' }})"
+run-name: "Photon: ${{ inputs.build || 'Scheduled full import' }}${{ startsWith(inputs.build, '🚀') && format(' (tag: {0})', inputs.photon_image_tag) || '' }}"
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
