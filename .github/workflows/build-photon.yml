@@ -3,27 +3,20 @@ name: Photon - Import data and/or deploy
 on:
   workflow_dispatch:
     inputs:
-      build_import:
-        description: 'Import and convert data?'
+      build:
+        description: 'Import and convert data? (NB! Deploy does not require review!)'
         required: true
         type: choice
         options:
-          - 'no'
-          - 'yes'
-          - 'only-photon-data'
-        default: 'no'
-      deploy_env:
-        description: 'Deploy to env (NB! No review required!)'
-        required: true
-        type: choice
-        options:
-          - 'dev'
-          - 'tst'
-          - 'prd'
-          - 'all'
-        default: 'dev'
+          - 'build nominatim/photon, deploy to dev'
+          - 'build photon, deploy to dev'
+          - 'deploy specified tag to dev'
+          - 'deploy specified tag to tst'
+          - 'deploy specified tag to prd'
+          - 'deploy specified tag to all'
+        default: 'build nominatim/photon, deploy to dev'
       photon_image_tag:
-        description: 'Photon image tag (only used if not building import)'
+        description: 'Photon image tag (only used if not building nominatim/photon)'
         required: false
         default: 'latest'
         type: string
@@ -33,17 +26,56 @@ on:
         type: string
         default: 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar'
 
-run-name: "Photon: ${{ inputs.build_import == 'yes' && 'all-data' || inputs.build_import == 'only-photon-data' && 'photon-data' || format('deploy:{0}', inputs.photon_image_tag) }} → ${{ inputs.deploy_env }}"
+run-name: "Photon: ${{ inputs.build }} (tag: ${{ inputs.photon_image_tag }})"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
   cancel-in-progress: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      nominatim_data: ${{ steps.vars.outputs.nominatim_data }}
+      photon_data: ${{ steps.vars.outputs.photon_data }}
+      dev: ${{ steps.vars.outputs.dev }}
+      tst: ${{ steps.vars.outputs.tst }}
+      prd: ${{ steps.vars.outputs.prd }}
+    steps:
+      - id: vars
+        run: |
+          if [ "${{ inputs.build }}" = "build nominatim/photon, deploy to dev" ]; then
+            nominatim_data=true
+            photon_data=true
+            dev=true
+          elif [ "${{ inputs.build }}" = "build photon, deploy to dev" ]; then
+            photon_data=true
+            dev=true
+          elif [ "${{ inputs.build }}" = "deploy specified tag to dev" ]; then
+            dev=true
+          elif [ "${{ inputs.build }}" = "deploy specified tag to tst" ]; then
+            tst=true
+          elif [ "${{ inputs.build }}" = "deploy specified tag to prd" ]; then
+            prd=true
+          elif [ "${{ inputs.build }}" = "deploy specified tag to all" ]; then
+            dev=true
+            tst=true
+            prd=true
+          else
+            echo "Invalid build input: ${{ inputs.build }}"
+            exit 1
+          fi
+          echo "nominatim_data=${nominatim_data:-false}" >> $GITHUB_OUTPUT
+          echo "photon_data=${photon_data:-false}" >> $GITHUB_OUTPUT
+          echo "dev=${dev:-false}" >> $GITHUB_OUTPUT
+          echo "tst=${tst:-false}" >> $GITHUB_OUTPUT
+          echo "prd=${prd:-false}" >> $GITHUB_OUTPUT
+
   # Run import and create artifacts
   nominatim-data:
     name: Nominatim Data
-    if: inputs.build_import == 'yes'
+    needs: [setup]
+    if:  needs.setup.outputs.nominatim_data  == 'true'
     runs-on:
         group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -103,9 +135,9 @@ jobs:
     name: Photon Data
     if: |
       !cancelled() &&
-      inputs.build_import != 'no' &&
-      (inputs.build_import == 'only-photon-data' || needs.nominatim-data.result == 'success')
-    needs: nominatim-data
+      needs.setup.outputs.photon_data  == 'true' &&
+      (needs.nominatim-data.result == 'success' || needs.setup.outputs.nominatim_data  == 'false')
+    needs: [setup, nominatim-data]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -125,7 +157,7 @@ jobs:
       - name: Download nominatim data
         uses: ./.github/actions/download-docker-artifact
         with:
-          image: geocoder-nominatim-data:${{ inputs.build_import == 'only-photon-data' && 'latest' || needs.nominatim-data.outputs.image_tag }}
+          image: geocoder-nominatim-data:${{ needs.setup.outputs.nominatim_data == 'true' && needs.nominatim-data.outputs.image_tag || 'latest' }}
           destination: converter
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
@@ -151,7 +183,7 @@ jobs:
           if [ -f photon_data.tar.gz ]; then
             FILE_SIZE=$(du -h photon_data.tar.gz | cut -f1)
             RATIO=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $3}')
-            OUTPUT="**Archive:** ${FILE_SIZE} (${COMPRESSION_RATIO})"
+            OUTPUT="**Archive:** ${FILE_SIZE} (${RATIO})"
             
             if [ -d photon_data ]; then
               DIR_SIZE=$(du -sh photon_data | cut -f1)
@@ -169,8 +201,9 @@ jobs:
     name: Lint
     if: |
       !cancelled() &&
-      ((inputs.build_import != 'no' && needs.photon-data.result == 'success') || inputs.build_import == 'no')
-    needs: [photon-data]
+      needs.setup.outputs.dev == 'true' &&
+      (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, photon-data]
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: photon/Dockerfile
@@ -181,7 +214,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.lint.result == 'success'
-    needs: [lint, photon-data]
+    needs: [setup, lint, photon-data]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -195,7 +228,7 @@ jobs:
       - name: Download photon data
         uses: ./.github/actions/download-docker-artifact
         with:
-          image: geocoder-photon-data:${{ inputs.build_import != 'no' && needs.photon-data.outputs.image_tag || 'latest' }}
+          image: "geocoder-photon-data:${{ needs.setup.outputs.photon_data  == 'true' && needs.photon-data.outputs.image_tag || 'latest' }}"
           destination: photon
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
@@ -242,13 +275,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      (inputs.deploy_env == 'all' || inputs.deploy_env == 'dev') &&
-      ((inputs.build_import != 'no' && needs.build-push.result == 'success') || inputs.build_import == 'no')
-    needs: [build-push]
+      needs.setup.outputs.dev == 'true' &&
+      (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, photon-data, build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: "geocoder-photon:${{ inputs.build_import != 'no' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
+      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -269,13 +302,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      (inputs.deploy_env == 'all' || inputs.deploy_env == 'tst') &&
-      ((inputs.build_import != 'no' && needs.deploy-dev.result == 'success') || inputs.build_import == 'no')
-    needs: [build-push, deploy-dev]
+      needs.setup.outputs.tst == 'true' &&
+      (needs.deploy-dev.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, build-push, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-photon:${{ inputs.build_import != 'no' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
+      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -296,13 +329,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      (inputs.deploy_env == 'all' || inputs.deploy_env == 'prd') &&
-      ((inputs.build_import != 'no' && needs.deploy-tst.result == 'success') || inputs.build_import == 'no')
-    needs: [build-push, deploy-tst]
+      needs.setup.outputs.prd == 'true' &&
+      (needs.deploy-tst.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, build-push, deploy-tst]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
-      image: "geocoder-photon:${{ inputs.build_import != 'no' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
+      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
