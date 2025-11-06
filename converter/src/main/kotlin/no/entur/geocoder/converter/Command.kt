@@ -11,9 +11,9 @@ fun main(args: Array<String>) {
     Command(args).init()
 }
 
-class Command(
-    private val args: Array<String>,
-) {
+class Command(private val args: Array<String>) {
+    private val fileTypeDetector = FileTypeDetector()
+
     fun init() {
         if (args.isEmpty()) {
             exit("Error: No arguments provided.")
@@ -135,31 +135,30 @@ class Command(
 
         val conversionTasks =
             listOf(
-                "StopPlace" to (stopplaceInputPath to StopPlaceConverter()),
-                "Matrikkel" to (matrikkelInputPath to MatrikkelConverter(stedsnavnFile)),
-                "OSM PBF" to (osmInputPath to OsmConverter()),
-                "Stedsnavn GML" to (stedsnavnConversionPath to StedsnavnConverter()),
+                ConversionTask("StopPlace", stopplaceInputPath, StopPlaceConverter(), FileTypeDetector.FileType.XML, "-s"),
+                ConversionTask("Matrikkel", matrikkelInputPath, MatrikkelConverter(stedsnavnFile), FileTypeDetector.FileType.CSV, "-m"),
+                ConversionTask("OSM PBF", osmInputPath, OsmConverter(), FileTypeDetector.FileType.PBF, "-p"),
+                ConversionTask("Stedsnavn GML", stedsnavnConversionPath, StedsnavnConverter(), FileTypeDetector.FileType.GML, "-g"),
             )
 
-        for ((name, pair) in conversionTasks) {
-            val (path, converter) = pair
-            if (path != null) {
-                val inputFile = readFile(path)
+        for (task in conversionTasks) {
+            if (task.path != null) {
+                val inputFile = readAndValidateFile(task.path, task.expectedType, task.flagName)
                 if (!isFirstConversion) {
-                    println("\nAppending $name conversion...")
+                    println("\nAppending ${task.name} conversion...")
                 } else {
-                    println("Starting $name conversion...")
+                    println("Starting ${task.name} conversion...")
                 }
 
                 val startTime = System.currentTimeMillis()
-                converter.convert(inputFile, outputFile, !isFirstConversion)
+                task.converter.convert(inputFile, outputFile, !isFirstConversion)
                 val endTime = System.currentTimeMillis()
                 val durationSeconds = (endTime - startTime) / 1000.0
 
                 val action = if (isFirstConversion) "Output written to" else "Appended to"
                 val fileSizeMB = outputFile.length() / (1024.0 * 1024.0)
                 println(
-                    "$name conversion completed in %.2f seconds. $action ${outputFile.absolutePath}, size: %.2f MB.".format(
+                    "${task.name} conversion completed in %.2f seconds. $action ${outputFile.absolutePath}, size: %.2f MB.".format(
                         durationSeconds,
                         fileSizeMB,
                     ),
@@ -169,12 +168,26 @@ class Command(
         }
     }
 
-    private fun readFile(path: String): File {
+    private data class ConversionTask(
+        val name: String,
+        val path: String?,
+        val converter: Converter,
+        val expectedType: FileTypeDetector.FileType,
+        val flagName: String
+    )
+
+    private fun readAndValidateFile(path: String, expectedType: FileTypeDetector.FileType, flagName: String): File {
         val inputFile = File(path)
         if (!inputFile.exists()) {
-            println("The StopPlace input file ${inputFile.absolutePath} does not exist.")
-            exitProcess(1)
+            exit("Error: Input file does not exist: ${inputFile.absolutePath}")
         }
+
+        try {
+            fileTypeDetector.validateFileType(inputFile, expectedType, flagName)
+        } catch (e: IllegalArgumentException) {
+            exit(e.message ?: "Error: File validation failed")
+        }
+
         return inputFile
     }
 
