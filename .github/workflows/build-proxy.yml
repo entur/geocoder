@@ -32,7 +32,7 @@ on:
         default: 'latest'
         type: string
 
-run-name: ${{ github.event_name == 'workflow_dispatch' && format('Deploy to {0} (tag={1})', inputs.deploy_env, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}
+run-name: "Proxy: ${{ github.event_name == 'workflow_dispatch' && format('Deploy to {0} (tag={1})', inputs.deploy_env, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
