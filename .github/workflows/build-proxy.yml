@@ -35,7 +35,7 @@ on:
 run-name: "Proxy: ${{ github.event_name == 'workflow_dispatch' && format('{0} (tag={1})', inputs.deploy_env, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.deploy_env || 'none' }}"
   cancel-in-progress: true
 
 jobs:
