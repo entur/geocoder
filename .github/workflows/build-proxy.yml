@@ -17,7 +17,7 @@ on:
       - 'photon/**'
   workflow_dispatch:
     inputs:
-      deploy_environment:
+      deploy_env:
         description: 'Environment to deploy to (dev, tst, prd)'
         required: true
         default: 'dev'
@@ -27,12 +27,12 @@ on:
           - tst
           - prd
       image_tag:
-        description: 'Tag to deploy'
+        description: 'Image tag to deploy'
         required: false
         default: 'latest'
         type: string
 
-run-name: ${{ github.event_name == 'workflow_dispatch' && format('Deploy to {0} (tag={1})', inputs.deploy_environment, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Deploy to {0} (tag={1})', inputs.deploy_env, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -112,7 +112,7 @@ jobs:
     name: Dev
     if: |
       !cancelled() &&
-      ((github.event_name == 'push' && needs.build-push.result == 'success') || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'dev')) &&
+      ((github.event_name == 'push' && needs.build-push.result == 'success') || (github.event_name == 'workflow_dispatch' && inputs.deploy_env == 'dev')) &&
       github.ref == 'refs/heads/main'
     needs: build-push
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
@@ -138,7 +138,7 @@ jobs:
       !cancelled() &&
       github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      inputs.deploy_environment == 'tst'
+      inputs.deploy_env == 'tst'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
@@ -162,7 +162,7 @@ jobs:
       !cancelled() &&
       github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      inputs.deploy_environment == 'prd'
+      inputs.deploy_env == 'prd'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
