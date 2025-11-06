@@ -42,38 +42,7 @@ runs:
     - name: Extract artifact from Docker image
       id: extract
       shell: bash
-      run: |
-        FULL_IMAGE="${{ inputs.registry }}/${{ inputs.image }}"
-        echo "Pulling image: $FULL_IMAGE"
-        docker pull "$FULL_IMAGE"
-        
-        # Export and extract image
-        TEMP_DIR=$(mktemp -d)
-        docker save "$FULL_IMAGE" | tar -xC "$TEMP_DIR"
-        
-        # Get blob hash from repositories file
-        IMAGE_NAME="${{ inputs.image }}"
-        REPO_KEY="${{ inputs.registry }}/${IMAGE_NAME%:*}"
-        TAG="${IMAGE_NAME##*:}"
-        BLOB_HASH=$(jq -r ".\"$REPO_KEY\".\"$TAG\" // empty" "$TEMP_DIR/repositories")
-        
-        [ -n "$BLOB_HASH" ] || { echo "ERROR: Blob hash not found for $REPO_KEY:$TAG"; jq . "$TEMP_DIR/repositories"; exit 1; }
-        
-        # Extract file from blob
-        echo "Extracting from blob ${BLOB_HASH}"
-        mkdir -p "${{ inputs.destination }}"
-        
-        # Get the filename from the tar archive before extracting
-        ARTIFACT_FILENAME=$(tar -tf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" | head -n1)
-        echo "Found file in blob: $ARTIFACT_FILENAME"
-        
-        tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "${{ inputs.destination }}" || { echo "ERROR: Failed to extract file"; exit 1; }
-        
-        rm -rf "$TEMP_DIR"
-        
-        # Set output
-        echo "artifact_file=${{ inputs.destination }}/${ARTIFACT_FILENAME}" >> $GITHUB_OUTPUT
-        ls -lh "${{ inputs.destination }}/${ARTIFACT_FILENAME}"
+      run: ${{ github.action_path }}/extract.sh "${{ inputs.registry }}" "${{ inputs.image }}" "${{ inputs.destination }}"
 
     - name: Summary
       shell: bash
