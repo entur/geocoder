@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.21"
-ktor = "3.3.1"
-jackson = "2.20.0"
+ktor = "3.3.2"
+jackson = "2.20.1"
 logback = "1.5.20"
 geotools = "33.2"
 ktlint = "1.7.1"

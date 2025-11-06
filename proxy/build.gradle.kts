@@ -9,6 +9,12 @@ application {
 }
 
 dependencies {
+    constraints {
+        implementation("org.apache.commons:commons-lang3") {
+            version { require("[3.19.0,)") }
+            because("require at least 3.19.0 to fix CVE-2025-48924")
+        }
+    }
     implementation(project(":common"))
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.core)
