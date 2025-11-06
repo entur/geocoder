@@ -13,18 +13,17 @@ on:
           - 'only-photon-data'
         default: 'no'
       deploy_env:
-        description: 'Photon deploy target'
+        description: 'Deploy to env (NB! No review required!)'
         required: true
         type: choice
         options:
-          - 'none'
           - 'dev'
           - 'tst'
           - 'prd'
           - 'all'
-        default: 'none'
-      photon_data_image_tag:
-        description: 'Photon Data image tag (only used if not building import)'
+        default: 'dev'
+      photon_image_tag:
+        description: 'Photon image tag (only used if not building import)'
         required: false
         default: 'latest'
         type: string
@@ -34,7 +33,7 @@ on:
         type: string
         default: 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar'
 
-run-name: "Photon: ${{ inputs.build_import == 'yes' && 'all-data' || inputs.build_import == 'only-photon-data' && 'photon-data' || format('deploy:{0}', inputs.photon_data_image_tag) }} → ${{ inputs.deploy_env }}"
+run-name: "Photon: ${{ inputs.build_import == 'yes' && 'all-data' || inputs.build_import == 'only-photon-data' && 'photon-data' || format('deploy:{0}', inputs.photon_image_tag) }} → ${{ inputs.deploy_env }}"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -168,7 +167,10 @@ jobs:
   # Photon image jobs
   lint:
     name: Lint
-    if: inputs.deploy_env != 'none'
+    if: |
+      !cancelled() &&
+      ((inputs.build_import != 'no' && needs.photon-data.result == 'success') || inputs.build_import == 'no')
+    needs: [photon-data]
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: photon/Dockerfile
@@ -178,8 +180,7 @@ jobs:
     name: Photon
     if: |
       !cancelled() &&
-      inputs.deploy_env != 'none' &&
-      (inputs.build_import == 'no' || needs.photon-data.result == 'success')
+      needs.lint.result == 'success'
     needs: [lint, photon-data]
     runs-on: ubuntu-latest
     permissions:
@@ -194,7 +195,7 @@ jobs:
       - name: Download photon data
         uses: ./.github/actions/download-docker-artifact
         with:
-          image: geocoder-photon-data:${{ inputs.build_import != 'no' && needs.photon-data.outputs.image_tag || inputs.photon_data_image_tag }}
+          image: geocoder-photon-data:${{ inputs.build_import != 'no' && needs.photon-data.outputs.image_tag || 'latest' }}
           destination: photon
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
@@ -214,8 +215,7 @@ jobs:
     name: Scan
     if: |
       !cancelled() &&
-      needs.build-push.result == 'success' &&
-      inputs.deploy_env != 'none'
+      needs.build-push.result == 'success'
     needs: [build-push]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -242,13 +242,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.build-push.result == 'success' &&
-      (inputs.deploy_env == 'dev' || inputs.deploy_env == 'tst' || inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
+      (inputs.deploy_env == 'all' || inputs.deploy_env == 'dev') &&
+      ((inputs.build_import != 'no' && needs.build-push.result == 'success') || inputs.build_import == 'no')
     needs: [build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ inputs.build_import != 'no' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -269,13 +269,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.deploy-dev.result == 'success' &&
-      (inputs.deploy_env == 'tst' || inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
+      (inputs.deploy_env == 'all' || inputs.deploy_env == 'tst') &&
+      ((inputs.build_import != 'no' && needs.deploy-dev.result == 'success') || inputs.build_import == 'no')
     needs: [build-push, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ inputs.build_import != 'no' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -296,13 +296,13 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.deploy-tst.result == 'success' &&
-      (inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
+      (inputs.deploy_env == 'all' || inputs.deploy_env == 'prd') &&
+      ((inputs.build_import != 'no' && needs.deploy-tst.result == 'success') || inputs.build_import == 'no')
     needs: [build-push, deploy-tst]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
-      image: "geocoder-photon:${{ needs.build-push.outputs.image_tag }}"
+      image: "geocoder-photon:${{ inputs.build_import != 'no' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
