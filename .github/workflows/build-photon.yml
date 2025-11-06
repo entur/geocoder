@@ -1,6 +1,9 @@
 name: Photon - Import data and/or deploy
 
 on:
+#  schedule:
+#    # Run full build every night at 2 AM UTC
+#    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       build:
@@ -13,7 +16,6 @@ on:
           - 'deploy specified tag to dev'
           - 'deploy specified tag to tst'
           - 'deploy specified tag to prd'
-          - 'deploy specified tag to all'
         default: 'build nominatim/photon, deploy to dev'
       photon_image_tag:
         description: 'Photon image tag (only used if not building nominatim/photon)'
@@ -26,7 +28,7 @@ on:
         type: string
         default: 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar'
 
-run-name: "Photon: ${{ inputs.build }} (tag: ${{ inputs.photon_image_tag }})"
+run-name: "Photon: ${{ inputs.build || 'build nominatim/photon, deploy to all (scheduled)' }} (tag: ${{ inputs.photon_image_tag || 'latest' }})"
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
@@ -44,7 +46,14 @@ jobs:
     steps:
       - id: vars
         run: |
-          if [ "${{ inputs.build }}" = "build nominatim/photon, deploy to dev" ]; then
+          # Full build and deploy to all environments for scheduled runs
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            nominatim_data=true
+            photon_data=true
+            dev=true
+            tst=true
+            prd=true
+          elif [ "${{ inputs.build }}" = "build nominatim/photon, deploy to dev" ]; then
             nominatim_data=true
             photon_data=true
             dev=true
@@ -57,12 +66,8 @@ jobs:
             tst=true
           elif [ "${{ inputs.build }}" = "deploy specified tag to prd" ]; then
             prd=true
-          elif [ "${{ inputs.build }}" = "deploy specified tag to all" ]; then
-            dev=true
-            tst=true
-            prd=true
           else
-            echo "Invalid build input: ${{ inputs.build }}"
+            echo "Error: Invalid or missing build input (received: '${{ inputs.build }}', event: ${{ github.event_name }})"
             exit 1
           fi
           echo "nominatim_data=${nominatim_data:-false}" >> $GITHUB_OUTPUT
@@ -164,7 +169,7 @@ jobs:
 
       - name: Run create-photon-data.sh
         working-directory: converter
-        run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url }}"
+        run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url || 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar' }}"
 
       - name: Upload photon data
         id: upload-photon-data
@@ -240,7 +245,7 @@ jobs:
           image_name: geocoder-photon
           context: photon
           push: true
-          build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
+          build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url || 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar' }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
