@@ -12,7 +12,7 @@ on:
         type: choice
         options:
           - '🔨 Full import → Dev'
-          - '⚡ Photon only → Dev'
+          - '⚡ Photon data only → Dev'
           - '🚀 Deploy tag → Dev'
           - '🚀 Deploy tag → Staging'
           - '🚀 Deploy tag → Prod'
@@ -57,7 +57,7 @@ jobs:
             nominatim_data=true
             photon_data=true
             dev=true
-          elif [ "${{ inputs.build }}" = "⚡ Photon only → Dev" ]; then
+          elif [ "${{ inputs.build }}" = "⚡ Photon data only → Dev" ]; then
             photon_data=true
             dev=true
           elif [ "${{ inputs.build }}" = "🚀 Deploy tag → Dev" ]; then
