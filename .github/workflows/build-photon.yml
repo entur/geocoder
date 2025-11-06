@@ -243,7 +243,7 @@ jobs:
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.build-push.result == 'success' &&
-      (inputs.deploy_env == 'dev' || inputs.deploy_env == 'all')
+      (inputs.deploy_env == 'dev' || inputs.deploy_env == 'tst' || inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
     needs: [build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -269,9 +269,9 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.build-push.result == 'success' &&
-      (inputs.deploy_env == 'tst' || inputs.deploy_env == 'all')
-    needs: [build-push]
+      needs.deploy-dev.result == 'success' &&
+      (inputs.deploy_env == 'tst' || inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
+    needs: [build-push, deploy-dev]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
@@ -296,9 +296,9 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.build-push.result == 'success' &&
+      needs.deploy-tst.result == 'success' &&
       (inputs.deploy_env == 'prd' || inputs.deploy_env == 'all')
-    needs: [build-push]
+    needs: [build-push, deploy-tst]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd

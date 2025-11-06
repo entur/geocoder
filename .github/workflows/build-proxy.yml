@@ -15,6 +15,22 @@ on:
       - 'converter/**'
       - 'helm/**'
       - 'photon/**'
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Environment to deploy to (dev, tst, prd)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - tst
+          - prd
+      image_tag:
+        description: 'Tag to deploy'
+        required: false
+        default: 'latest'
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -117,14 +133,13 @@ jobs:
     name: Staging
     if: |
       !cancelled() &&
-      github.event_name == 'push' &&
+      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      needs.build-push.result == 'success'
-    needs: [build-push]
+      inputs.deploy_environment == 'tst'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+      image: "geocoder-proxy:${{ inputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -142,14 +157,13 @@ jobs:
     name: Prod
     if: |
       !cancelled() &&
-      github.event_name == 'push' &&
+      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      needs.build-push.result == 'success'
-    needs: [build-push]
+      inputs.deploy_environment == 'prd'
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+      image: "geocoder-proxy:${{ inputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
