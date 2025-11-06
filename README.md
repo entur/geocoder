@@ -8,29 +8,35 @@ Geocoding service consisting of a Photon search engine and a proxy service.
 
 Builds and deploys on push to main branch.
 
-- Deploys to **dev**
-- Review needed for deploy to **staging**
+- Deploys to **dev** automatically
+- Manual deployment to **tst** and **prd** via workflow dispatch (no review required)
+
+**Workflow options:**
+- `deploy_env`: Deployment target (`dev`, `tst`, `prd`)
+- `image_tag`: Tag to use when deploying (default: `latest`)
 
 ### Photon
 
 Manual build and deploy via GitHub Actions workflow.
 
 **Workflow options:**
-- `build_import`: Controls data import
-    - `no` - Build/deploy only (uses latest Photon Data)
-    - `yes` - Full import (Nominatim + Photon data)
-    - `only-photon-data` - Photon Data only (uses latest Nominatim Data)
-- `deploy_env`: Deployment target (`none`, `dev`, `staging`, `both`)
-- `photon_data_image_tag`: Tag to use when `build_import=no` (default: `latest`)
+- `build`: Controls data import and deployment
+    - `build nominatim/photon, deploy to dev` - Full import and deploy
+    - `build photon, deploy to dev` - Build Photon data only (uses latest Nominatim data)
+    - `deploy specified tag to dev` - Deploy existing image to dev
+    - `deploy specified tag to tst` - Deploy existing image to staging
+    - `deploy specified tag to prd` - Deploy existing image to prod
+    - `deploy specified tag to all` - Deploy existing image to all environments
+- `photon_image_tag`: Tag to use when deploying existing image (default: `latest`)
 - `photon_jar_url`: Custom Photon JAR URL
 
 **Data pipeline:**
 1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace/etc data to Nominatim format
 2. **Photon Data** - Imports Nominatim data into Photon search index
 3. **Photon Image** - Builds Docker image with Photon JAR and Photon Data
-4. **Deploy** - Deploys to selected environments. Review required for staging & prod.
+4. **Deploy** - Deploys to selected environments (no review required)
 
-Data artifacts are stored as Docker images in GCR for efficient transfer and caching.
+Data artifacts are stored as Docker images in GCR to make it easy to fetch the `latest` data.
 
 
 ## Usage
