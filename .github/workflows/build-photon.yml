@@ -7,16 +7,16 @@ on:
   workflow_dispatch:
     inputs:
       build:
-        description: 'Import and convert data? (NB! Deploy does not require review!)'
+        description: 'Build and/or deploy (NB! Deploy does not require review!)'
         required: true
         type: choice
         options:
-          - 'build nominatim/photon, deploy to dev'
-          - 'build photon, deploy to dev'
-          - 'deploy specified tag to dev'
-          - 'deploy specified tag to tst'
-          - 'deploy specified tag to prd'
-        default: 'build nominatim/photon, deploy to dev'
+          - '🔨 Full import → Dev'
+          - '⚡ Photon only → Dev'
+          - '🚀 Deploy tag → Dev'
+          - '🚀 Deploy tag → Staging'
+          - '🚀 Deploy tag → Prod'
+        default: '🔨 Full import → Dev'
       photon_image_tag:
         description: 'Photon image tag (only used if not building nominatim/photon)'
         required: false
@@ -53,18 +53,18 @@ jobs:
             dev=true
             tst=true
             prd=true
-          elif [ "${{ inputs.build }}" = "build nominatim/photon, deploy to dev" ]; then
+          elif [ "${{ inputs.build }}" = "🔨 Full import → Dev" ]; then
             nominatim_data=true
             photon_data=true
             dev=true
-          elif [ "${{ inputs.build }}" = "build photon, deploy to dev" ]; then
+          elif [ "${{ inputs.build }}" = "⚡ Photon only → Dev" ]; then
             photon_data=true
             dev=true
-          elif [ "${{ inputs.build }}" = "deploy specified tag to dev" ]; then
+          elif [ "${{ inputs.build }}" = "🚀 Deploy tag → Dev" ]; then
             dev=true
-          elif [ "${{ inputs.build }}" = "deploy specified tag to tst" ]; then
+          elif [ "${{ inputs.build }}" = "🚀 Deploy tag → Staging" ]; then
             tst=true
-          elif [ "${{ inputs.build }}" = "deploy specified tag to prd" ]; then
+          elif [ "${{ inputs.build }}" = "🚀 Deploy tag → Prod" ]; then
             prd=true
           else
             echo "Error: Invalid or missing build input (received: '${{ inputs.build }}', event: ${{ github.event_name }})"

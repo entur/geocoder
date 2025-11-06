@@ -18,30 +18,64 @@ on:
   workflow_dispatch:
     inputs:
       deploy_env:
-        description: 'Deploy to env (NB! No review required!)'
+        description: 'Deploy to environment (NB! No review required!)'
         required: true
-        default: 'dev'
+        default: '🚀 Dev'
         type: choice
         options:
-          - dev
-          - tst
-          - prd
+          - '🚀 Dev'
+          - '🚀 Staging'
+          - '🚀 Prod'
       image_tag:
         description: 'Image tag to deploy'
         required: false
         default: 'latest'
         type: string
 
-run-name: "Proxy: ${{ github.event_name == 'workflow_dispatch' && format('Deploy to {0} (tag={1})', inputs.deploy_env, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}"
+run-name: "Proxy: ${{ github.event_name == 'workflow_dispatch' && format('{0} (tag={1})', inputs.deploy_env, inputs.image_tag) || (github.event_name == 'pull_request' && github.event.pull_request.title) || github.event.head_commit.message }}"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.vars.outputs.build }}
+      dev: ${{ steps.vars.outputs.dev }}
+      tst: ${{ steps.vars.outputs.tst }}
+      prd: ${{ steps.vars.outputs.prd }}
+    steps:
+      - id: vars
+        run: |
+          # Determine what to build and deploy based on trigger
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
+            build=true
+            if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              dev=true
+            fi
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.deploy_env }}" = "🚀 Dev" ]; then
+              dev=true
+            elif [ "${{ inputs.deploy_env }}" = "🚀 Staging" ]; then
+              tst=true
+            elif [ "${{ inputs.deploy_env }}" = "🚀 Prod" ]; then
+              prd=true
+            else
+              echo "Error: Invalid deploy_env input (received: '${{ inputs.deploy_env }}')"
+              exit 1
+            fi
+          fi
+          echo "build=${build:-false}" >> $GITHUB_OUTPUT
+          echo "dev=${dev:-false}" >> $GITHUB_OUTPUT
+          echo "tst=${tst:-false}" >> $GITHUB_OUTPUT
+          echo "prd=${prd:-false}" >> $GITHUB_OUTPUT
+
   lint:
     name: Lint
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: needs.setup.outputs.build == 'true'
+    needs: setup
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: proxy/Dockerfile
@@ -49,8 +83,8 @@ jobs:
 
   build-push:
     name: Proxy
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
-    needs: lint
+    if: needs.setup.outputs.build == 'true' && needs.lint.result == 'success'
+    needs: [setup, lint]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -85,10 +119,9 @@ jobs:
     name: Scan
     if: |
       !cancelled() &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
+      needs.setup.outputs.build == 'true' &&
       needs.build-push.result == 'success'
-    needs: [ build-push ]
+    needs: [setup, build-push]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -112,13 +145,14 @@ jobs:
     name: Dev
     if: |
       !cancelled() &&
-      ((github.event_name == 'push' && needs.build-push.result == 'success') || (github.event_name == 'workflow_dispatch' && inputs.deploy_env == 'dev')) &&
-      github.ref == 'refs/heads/main'
-    needs: build-push
+      github.ref == 'refs/heads/main' &&
+      needs.setup.outputs.dev == 'true' &&
+      (needs.build-push.result == 'success' || needs.setup.outputs.build == 'false')
+    needs: [setup, build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.setup.outputs.build == 'true' && needs.build-push.outputs.image_tag || inputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -136,9 +170,9 @@ jobs:
     name: Staging
     if: |
       !cancelled() &&
-      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      inputs.deploy_env == 'tst'
+      needs.setup.outputs.tst == 'true'
+    needs: setup
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
@@ -160,9 +194,9 @@ jobs:
     name: Prod
     if: |
       !cancelled() &&
-      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      inputs.deploy_env == 'prd'
+      needs.setup.outputs.prd == 'true'
+    needs: setup
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
