@@ -51,7 +51,7 @@ data class PeliasResult(
         val version: String = "0.2",
         val attribution: String = "http://pelias.mapzen.com/v1/attribution",
         val query: QueryMetadata? = null,
-        val engine: EngineMetadata? = null,
+        val engine: EngineMetadata = EngineMetadata(),
         val timestamp: Long = System.currentTimeMillis(),
     ) {
         data class QueryMetadata(
@@ -74,9 +74,9 @@ data class PeliasResult(
         )
 
         data class EngineMetadata(
-            val name: String = "Pelias",
-            val author: String = "Mapzen",
-            val version: String = "1.0",
+            val name: String = "Photon",
+            val author: String = "Komoot",
+            val version: String = "0.7.0",
         )
     }
 }
