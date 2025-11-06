@@ -74,7 +74,7 @@ class StopPlaceConverter : Converter {
             }
 
         val tags = listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE, LEGACY_SOURCE_OPENSTREETMAP)
-            .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it.lowercase() })
+            .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it })
 
         val categories = tags
             .plus(SOURCE_NSR)
