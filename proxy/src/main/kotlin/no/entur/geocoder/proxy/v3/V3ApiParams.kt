@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.v3
 
-import io.ktor.server.request.ApplicationRequest
+import io.ktor.server.request.*
+import java.math.BigDecimal
 
 data class V3AutocompleteParams(
     val query: String = "",
@@ -36,30 +37,25 @@ data class V3AutocompleteParams(
 }
 
 data class V3ReverseParams(
-    val latitude: String = "",
-    val longitude: String = "",
-    val radius: String? = null,
+    val lat: BigDecimal,
+    val lon: BigDecimal,
+    val radius: Int? = null,
     val limit: Int = 10,
     val language: String = "no",
 ) {
     init {
-        require(latitude.isNotBlank()) { "Parameter 'latitude' is required" }
-        require(longitude.isNotBlank()) { "Parameter 'longitude' is required" }
-        require(latitude.toDoubleOrNull() != null) { "Parameter 'latitude' must be a valid number" }
-        require(longitude.toDoubleOrNull() != null) { "Parameter 'longitude' must be a valid number" }
-        val lat = latitude.toDouble()
-        val lon = longitude.toDouble()
-        require(lat in -90.0..90.0) { "Parameter 'latitude' must be between -90 and 90" }
-        require(lon in -180.0..180.0) { "Parameter 'longitude' must be between -180 and 180" }
+        require(lat.toDouble() in -90.0..90.0) { "Parameter 'latitude' must be between -90 and 90" }
+        require(lon.toDouble() in -180.0..180.0) { "Parameter 'longitude' must be between -180 and 180" }
     }
 
     companion object {
         fun fromRequest(request: ApplicationRequest): V3ReverseParams {
             val params = request.queryParameters
             return V3ReverseParams(
-                latitude = params["latitude"] ?: params["lat"] ?: "",
-                longitude = params["longitude"] ?: params["lon"] ?: "",
-                radius = params["radius"],
+                lat = params["latitude"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'latitude' is required"),
+                lon = params["longitude"]?.toBigDecimalOrNull()
+                    ?: throw IllegalArgumentException("Parameter 'longitude' is required"),
+                radius = params["radius"]?.toIntOrNull() ?: 10,
                 limit = params["limit"]?.toIntOrNull() ?: 10,
                 language = params["language"] ?: params["lang"] ?: "no",
             )

@@ -37,7 +37,7 @@ object PeliasApi {
                 client
                     .get(url) {
                         parameter("q", photonRequest.query)
-                        parameter("limit", photonRequest.limit.toString())
+                        parameter("limit", photonRequest.limit)
                         parameter("lang", photonRequest.language)
 
                         if (photonRequest.zoom != null) {

@@ -2,19 +2,16 @@ package no.entur.geocoder.proxy.pelias
 
 import io.ktor.server.request.*
 import no.entur.geocoder.proxy.Text.safeVar
+import java.math.BigDecimal
 
 data class PeliasReverseParams(
-    val lat: String = "",
-    val lon: String = "",
-    val radius: String? = null,
+    val lat: BigDecimal,
+    val lon: BigDecimal,
+    val radius: Int? = null,
     val size: Int = 10,
     val lang: String = "no",
 ) {
     init {
-        require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
-        require(lon.isNotBlank()) { "Parameter 'point.lon' is required" }
-        require(lat.toDoubleOrNull() != null) { "Parameter 'point.lat' must be a valid number" }
-        require(lon.toDoubleOrNull() != null) { "Parameter 'point.lon' must be a valid number" }
         val latitude = lat.toDouble()
         val longitude = lon.toDouble()
         require(latitude in -90.0..90.0) { "Parameter 'point.lat' must be between -90 and 90" }
@@ -25,9 +22,9 @@ data class PeliasReverseParams(
         fun fromRequest(request: ApplicationRequest): PeliasReverseParams {
             val params = request.queryParameters
             return PeliasReverseParams(
-                lat = params["point.lat"] ?: "",
-                lon = params["point.lon"] ?: "",
-                radius = params["boundary.circle.radius"].safeVar(),
+                lat = params["point.lat"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lat' is required"),
+                lon = params["point.lon"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lon' is required"),
+                radius = params["boundary.circle.radius"]?.toIntOrNull(),
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"].safeVar() ?: "no",
             )

@@ -89,8 +89,8 @@ object V3ResultTransformer {
                         query =
                             QueryInfo(
                                 text = null,
-                                latitude = params.latitude.toBigDecimalOrNull(),
-                                longitude = params.longitude.toBigDecimalOrNull(),
+                                latitude = params.lat,
+                                longitude = params.lon,
                                 limit = params.limit,
                                 language = params.language,
                                 filters = null,
