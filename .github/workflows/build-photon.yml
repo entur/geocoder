@@ -273,6 +273,29 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
+  # Helm deploy fails to handle 'latest' properly
+  resolve-image-tag:
+    name: Resolve image tag
+    if: needs.setup.outputs.dev == 'true' || needs.setup.outputs.tst == 'true' ||needs.setup.outputs.prd == 'true'
+    runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      resolved_tag: ${{ steps.resolve.outputs.resolved_tag }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve image tag
+        id: resolve
+        uses: ./.github/actions/resolve-image-tag
+        with:
+          image_name: geocoder-photon
+          image_tag: ${{ inputs.photon_image_tag }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
   # Deploy jobs
   deploy-dev:
     name: Dev
@@ -282,11 +305,11 @@ jobs:
       needs.lint.result == 'success' &&
       needs.setup.outputs.dev == 'true' &&
       (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, lint, photon-data, build-push]
+    needs: [setup, lint, photon-data, build-push, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
+      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || needs.resolve-image-tag.outputs.resolved_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -309,11 +332,11 @@ jobs:
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.tst == 'true' &&
       (needs.deploy-dev.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, build-push, deploy-dev]
+    needs: [setup, build-push, deploy-dev, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
+      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || needs.resolve-image-tag.outputs.resolved_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -336,11 +359,11 @@ jobs:
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.prd == 'true' &&
       (needs.deploy-tst.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, build-push, deploy-tst]
+    needs: [setup, build-push, deploy-tst, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
-      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || inputs.photon_image_tag }}"
+      image: "geocoder-photon:${{ needs.setup.outputs.photon_data  == 'true' && needs.build-push.outputs.image_tag || needs.resolve-image-tag.outputs.resolved_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon

@@ -141,6 +141,29 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
+  # Helm deploy fails to handle 'latest' properly
+  resolve-image-tag:
+    name: Resolve image tag
+    if: needs.setup.outputs.dev == 'true' || needs.setup.outputs.tst == 'true' ||needs.setup.outputs.prd == 'true'
+    needs: setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      resolved_tag: ${{ steps.resolve.outputs.resolved_tag }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve image tag
+        id: resolve
+        uses: ./.github/actions/resolve-image-tag
+        with:
+          image_name: geocoder-proxy
+          image_tag: ${{ inputs.image_tag }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
   deploy-dev:
     name: Dev
     if: |
@@ -149,11 +172,11 @@ jobs:
       needs.lint.result == 'success' &&
       needs.setup.outputs.dev == 'true' &&
       (needs.build-push.result == 'success' || needs.setup.outputs.build == 'false')
-    needs: [setup, lint, build-push]
+    needs: [setup, lint, build-push, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
-      image: "geocoder-proxy:${{ needs.setup.outputs.build == 'true' && needs.build-push.outputs.image_tag || inputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.setup.outputs.build == 'true' && needs.build-push.outputs.image_tag || needs.resolve-image-tag.outputs.resolved_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -173,11 +196,11 @@ jobs:
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.tst == 'true'
-    needs: setup
+    needs: [setup, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-proxy:${{ inputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.resolve-image-tag.outputs.resolved_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -197,11 +220,11 @@ jobs:
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.prd == 'true'
-    needs: setup
+    needs: [setup, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
-      image: "geocoder-proxy:${{ inputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.resolve-image-tag.outputs.resolved_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
