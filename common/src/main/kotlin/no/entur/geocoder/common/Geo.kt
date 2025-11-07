@@ -8,11 +8,7 @@ import org.geotools.referencing.CRS
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.locationtech.jts.geom.Coordinate
 import java.math.BigDecimal
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.log2
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 object Geo {
     val utm33n: CoordinateReferenceSystem = CRS.decode("EPSG:25833")
@@ -66,8 +62,8 @@ object Geo {
      * @param radius The radius in kilometers
      * @return Zoom level as a string, clamped to the range [0, 18]
      */
-    fun radiusToZoom(radius: Double): String {
+    fun radiusToZoom(radius: Double): Int {
         val zoom = (18 - log2(radius * 4)).toInt()
-        return zoom.coerceIn(0, 18).toString()
+        return zoom.coerceIn(0, 18)
     }
 }
