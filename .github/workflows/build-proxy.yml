@@ -83,8 +83,8 @@ jobs:
 
   build-push:
     name: Proxy
-    if: needs.setup.outputs.build == 'true' && needs.lint.result == 'success'
-    needs: [setup, lint]
+    if: needs.setup.outputs.build == 'true'
+    needs: [setup]
     runs-on: ubuntu-latest
     permissions:
       contents: read
