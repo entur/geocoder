@@ -55,7 +55,7 @@ data class PeliasAutocompleteParams(
         val lat: String,
         val lon: String,
         val scale: String?,
-        val weight: String?
+        val weight: String?,
     ) {
         init {
             require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
@@ -69,9 +69,9 @@ data class PeliasAutocompleteParams(
             if (scale != null) {
                 val scaleValue = scale.split("km")[0]
                 require(
-                    scale.endsWith("km")
-                        && scaleValue.toIntOrNull() != null
-                        && scaleValue.toInt() > 0
+                    scale.endsWith("km") &&
+                        scaleValue.toIntOrNull() != null &&
+                        scaleValue.toInt() > 0,
                 ) { "Parameter 'scale' must be a number > 0 followed by 'km'" }
             }
             if (weight != null) {
@@ -81,4 +81,3 @@ data class PeliasAutocompleteParams(
         }
     }
 }
-

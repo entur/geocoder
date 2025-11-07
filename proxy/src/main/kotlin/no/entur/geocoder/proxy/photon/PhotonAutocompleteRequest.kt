@@ -16,7 +16,7 @@ data class PhotonAutocompleteRequest(
     val lat: String?,
     val lon: String?,
     val zoom: String?,
-    val weight: String?
+    val weight: String?,
 ) {
     companion object {
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
@@ -58,17 +58,19 @@ data class PhotonAutocompleteRequest(
                     }
                 }
 
-            val zoom = params.focus?.scale?.split("km")?.get(0)?.toDoubleOrNull().let {
-                Geo.radiusToZoom((it ?: 2500.0) / 5.0)
-            }
+            val zoom =
+                params.focus?.scale?.split("km")?.get(0)?.toDoubleOrNull().let {
+                    Geo.radiusToZoom((it ?: 2500.0) / 5.0)
+                }
 
-            val weight = params.focus?.weight?.toDoubleOrNull().let {
-                // Weight factor is flipped in Photon, so closer to 0 is more important
-                // We therefore subtract the normalized value from 1
-                // Considering this, we have a relatively low default focus weight in v1 (~0.8)
-                // compared to the default in Photon (0.2)
-                (1.0 - ImportanceCalculator.calculateImportance(it ?: 15.0)).toString()
-            }
+            val weight =
+                params.focus?.weight?.toDoubleOrNull().let {
+                    // Weight factor is flipped in Photon, so closer to 0 is more important
+                    // We therefore subtract the normalized value from 1
+                    // Considering this, we have a relatively low default focus weight in v1 (~0.8)
+                    // compared to the default in Photon (0.2)
+                    (1.0 - ImportanceCalculator.calculateImportance(it ?: 15.0)).toString()
+                }
 
             return PhotonAutocompleteRequest(
                 query = params.text,
@@ -79,12 +81,12 @@ data class PhotonAutocompleteRequest(
                 lat = params.focus?.lat,
                 lon = params.focus?.lon,
                 zoom = zoom,
-                weight = weight
+                weight = weight,
             )
         }
 
-        fun from(params: PeliasPlaceParams): List<PhotonAutocompleteRequest> {
-            return params.ids.map { id ->
+        fun from(params: PeliasPlaceParams): List<PhotonAutocompleteRequest> =
+            params.ids.map { id ->
                 PhotonAutocompleteRequest(
                     query = id,
                     limit = 1,
@@ -92,10 +94,9 @@ data class PhotonAutocompleteRequest(
                     lat = null,
                     lon = null,
                     zoom = null,
-                    weight = null
+                    weight = null,
                 )
             }
-        }
 
         fun from(params: V3AutocompleteParams): PhotonAutocompleteRequest {
             val includes =
@@ -131,7 +132,7 @@ data class PhotonAutocompleteRequest(
                 lat = null,
                 lon = null,
                 zoom = null,
-                weight = null
+                weight = null,
             )
         }
     }

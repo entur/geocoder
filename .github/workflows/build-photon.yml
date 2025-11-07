@@ -167,11 +167,11 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-      - name: Run create-photon-data.sh
+      - name: Create Photon Data
         working-directory: converter
         run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url || 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar' }}"
 
-      - name: Upload photon data
+      - name: Upload Photon Data
         id: upload-photon-data
         uses: ./.github/actions/upload-docker-artifact
         with:
@@ -230,7 +230,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Download photon data
+      - name: Download Photon Data
         uses: ./.github/actions/download-docker-artifact
         with:
           image: "geocoder-photon-data:${{ needs.setup.outputs.photon_data  == 'true' && needs.photon-data.outputs.image_tag || 'latest' }}"

@@ -142,18 +142,24 @@ object PeliasResultTransformer {
         }
 
     fun transformCategory(extra: Extra?): List<String> =
-        extra?.tags?.split(",")
+        extra
+            ?.tags
+            ?.split(",")
             ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
             ?.map { it.substringAfterLast(".") }
             ?: emptyList()
 
     fun transformSource(extra: Extra?): String? =
-        extra?.tags?.split(",")
+        extra
+            ?.tags
+            ?.split(",")
             ?.firstOrNull { it.startsWith(LEGACY_SOURCE_PREFIX) }
             ?.substringAfterLast(".")
 
     fun transformLayer(extra: Extra?): String? =
-        extra?.tags?.split(",")
+        extra
+            ?.tags
+            ?.split(",")
             ?.firstOrNull { it.startsWith(LEGACY_LAYER_PREFIX) }
             ?.substringAfterLast(".")
 

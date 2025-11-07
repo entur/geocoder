@@ -13,11 +13,12 @@ data class PeliasPlaceParams(val ids: List<String> = emptyList()) {
         fun fromRequest(request: ApplicationRequest): PeliasPlaceParams {
             val params = request.queryParameters
             return PeliasPlaceParams(
-                ids = params["ids"]
-                    ?.split(",")
-                    ?.map { it.split(":").takeLast(3).joinToString(":") }
-                    .safeVars()
-                    ?: emptyList(),
+                ids =
+                    params["ids"]
+                        ?.split(",")
+                        ?.map { it.split(":").takeLast(3).joinToString(":") }
+                        .safeVars()
+                        ?: emptyList(),
             )
         }
     }

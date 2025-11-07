@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.*
 import kotlin.test.Test
 
 class TextTest {
-
     @Test
     fun testAltNameVarargs() {
         val result1 = Text.altName("Hello", null, "World", "", "Kotlin")

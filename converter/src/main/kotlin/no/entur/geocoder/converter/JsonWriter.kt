@@ -2,10 +2,10 @@ package no.entur.geocoder.converter
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.entur.geocoder.converter.photon.NominatimHeader
-import no.entur.geocoder.converter.photon.NominatimHeader.Features
-import no.entur.geocoder.converter.photon.NominatimHeader.HeaderContent
-import no.entur.geocoder.converter.photon.NominatimPlace
+import no.entur.geocoder.converter.target.NominatimHeader
+import no.entur.geocoder.converter.target.NominatimHeader.Features
+import no.entur.geocoder.converter.target.NominatimHeader.HeaderContent
+import no.entur.geocoder.converter.target.NominatimPlace
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.APPEND

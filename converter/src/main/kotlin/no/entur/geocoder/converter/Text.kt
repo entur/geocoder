@@ -5,7 +5,8 @@ object Text {
         listOf(*text).altName(separator)
 
     fun List<String?>.altName(separator: String = ";"): String? =
-        this.filterNotNull()
+        this
+            .filterNotNull()
             .filter { it.isNotBlank() }
             .joinToString(separator)
             .ifBlank { null }
