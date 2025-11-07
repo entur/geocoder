@@ -217,7 +217,8 @@ jobs:
     name: Photon Image
     if: |
       !cancelled() &&
-      (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+      needs.photon-data.result == 'success' &&
+      needs.setup.outputs.photon_data  == 'true'
     needs: [setup, photon-data]
     runs-on: ubuntu-latest
     permissions:
