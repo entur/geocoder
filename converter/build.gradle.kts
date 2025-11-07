@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = "no.entur.geocoder.converter.CommandKt"
+    mainClass = "no.entur.geocoder.converter.cli.CommandKt"
 }
 
 dependencies {
