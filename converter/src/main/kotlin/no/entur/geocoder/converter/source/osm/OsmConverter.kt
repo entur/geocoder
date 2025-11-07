@@ -8,9 +8,15 @@ import java.io.File
 import java.nio.file.Paths
 
 /**
- * Converts OSM PBF files to Nominatim JSON in 5 passes:
- * 1. Collect admin boundaries, 2. Collect node IDs, 3. Fetch coordinates,
- * 4. Build spatial index, 5. Convert and export POIs
+ * Converts OSM PBF files to Nominatim JSON in 7 passes:
+ * 1. Collect admin boundaries
+ * 2. Collect node IDs (including from POI relation member ways)
+ * 3. Fetch node coordinates
+ * 4. Build spatial index
+ * 5. Process POI entities:
+ *    a. Calculate Way POI centroids and collect relation member way IDs
+ *    b. Calculate centroids for relation member ways
+ *    c. Convert all POI entities to Nominatim format
  */
 class OsmConverter : Converter {
     private val nodesCoords = CoordinateStore(500000)
@@ -45,11 +51,31 @@ class OsmConverter : Converter {
 
     private fun processEntities(inputFile: File): Sequence<NominatimPlace> =
         sequence {
+            // First pass: collect member way IDs from POI relations and calculate Way POI centroids
+            val relationMemberWayIds = hashSetOf<Long>()
+            parsePbf(inputFile, OsmIterator.POI_FILTER).forEach { entity ->
+                when (entity) {
+                    is Way -> nodeCollector.calculateAndStoreWayCentroid(entity)
+                    is Relation -> {
+                        entity.members
+                            .filter { it.memberType == EntityType.Way }
+                            .forEach { relationMemberWayIds.add(it.memberId) }
+                    }
+                }
+            }
+
+            // Second pass: calculate centroids for relation member ways
+            if (relationMemberWayIds.isNotEmpty()) {
+                parsePbf(inputFile, OsmIterator.WAY_FILTER).forEach { entity ->
+                    if (entity is Way && entity.id in relationMemberWayIds) {
+                        nodeCollector.calculateAndStoreWayCentroid(entity)
+                    }
+                }
+            }
+
+            // Third pass: convert all POI entities to Nominatim format
             var count = 0
             parsePbf(inputFile, OsmIterator.POI_FILTER).forEach { entity ->
-                if (entity is Way) {
-                    nodeCollector.calculateAndStoreWayCentroid(entity)
-                }
 
                 entityConverter.convert(entity)?.let {
                     yield(it)

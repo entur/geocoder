@@ -16,10 +16,23 @@ class NodeCoordinateCollector(
         val adminWayIds = adminRelations.flatMap { it.wayIds }.toSet()
         val nodeIds = hashSetOf<Long>()
 
+        // First pass: collect member way IDs from POI relations
+        val poiRelationMemberWayIds = hashSetOf<Long>()
+        parsePbf(inputFile, null).forEach { entity ->
+            if (entity is Relation && entityConverter.isPotentialPoi(entity)) {
+                entity.members
+                    .filter { it.memberType == EntityType.Way }
+                    .forEach { poiRelationMemberWayIds.add(it.memberId) }
+            }
+        }
+
+        // Second pass: collect node IDs from ways and relations
         parsePbf(inputFile, null).forEach { entity ->
             when (entity) {
                 is Way -> {
-                    if (entity.id in adminWayIds || entityConverter.isPotentialPoi(entity)) {
+                    if (entity.id in adminWayIds ||
+                        entity.id in poiRelationMemberWayIds ||
+                        entityConverter.isPotentialPoi(entity)) {
                         entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
                     }
                 }
