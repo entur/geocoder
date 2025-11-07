@@ -12,13 +12,13 @@ on:
         type: choice
         options:
           - '🔨 Full import → Dev'
-          - '⚡ Photon data only → Dev'
+          - '⚡ Photon Data only → Dev'
           - '🚀 Deploy tag → Dev'
           - '🚀 Deploy tag → Staging'
           - '🚀 Deploy tag → Prod'
         default: '🔨 Full import → Dev'
       photon_image_tag:
-        description: 'Photon image tag (only used if not building nominatim/photon)'
+        description: 'Photon image tag to deploy (if not building nominatim/photon)'
         required: false
         default: 'latest'
         type: string
@@ -57,7 +57,7 @@ jobs:
             nominatim_data=true
             photon_data=true
             dev=true
-          elif [ "${{ inputs.build }}" = "⚡ Photon data only → Dev" ]; then
+          elif [ "${{ inputs.build }}" = "⚡ Photon Data only → Dev" ]; then
             photon_data=true
             dev=true
           elif [ "${{ inputs.build }}" = "🚀 Deploy tag → Dev" ]; then
@@ -214,7 +214,7 @@ jobs:
       ignore: "DL3018,DL3059"
 
   build-push:
-    name: Photon
+    name: Photon Image
     if: |
       !cancelled() &&
       (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
