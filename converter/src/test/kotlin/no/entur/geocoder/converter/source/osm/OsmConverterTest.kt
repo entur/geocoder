@@ -6,9 +6,16 @@ import java.util.*
 import kotlin.test.*
 
 class OsmConverterTest {
+    private fun createConverter(): OsmEntityConverter {
+        val nodesCoords = CoordinateStore(100)
+        val wayCentroids = CoordinateStore(100)
+        val adminBoundaryIndex = AdministrativeBoundaryIndex()
+        return OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex)
+    }
+
     @Test
     fun testConvertOsmNodeToNominatim() {
-        val osmConverter = OsmConverter()
+        val converter = createConverter()
 
         val mockNode =
             createMockNode(
@@ -23,7 +30,7 @@ class OsmConverterTest {
                     ),
             )
 
-        val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockNode)
+        val nominatimPlace = converter.convert(mockNode)
 
         assertNotNull(nominatimPlace, "Should successfully convert the node")
         assertEquals(
@@ -37,7 +44,7 @@ class OsmConverterTest {
 
     @Test
     fun testConvertOsmWayWithoutCoordinates() {
-        val osmConverter = OsmConverter()
+        val converter = createConverter()
 
         val mockWay =
             createMockWay(
@@ -52,14 +59,14 @@ class OsmConverterTest {
             )
 
         // Without pre-loaded node coordinates, way conversion should return null
-        val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockWay)
+        val nominatimPlace = converter.convert(mockWay)
 
         assertNull(nominatimPlace, "Should return null when way node coordinates are not available")
     }
 
     @Test
     fun testConvertOsmWayWithMissingName() {
-        val osmConverter = OsmConverter()
+        val converter = createConverter()
 
         val mockWay =
             createMockWay(
@@ -72,14 +79,14 @@ class OsmConverterTest {
                 nodeIds = listOf(100L, 101L, 102L, 103L),
             )
 
-        val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockWay)
+        val nominatimPlace = converter.convert(mockWay)
 
         assertNull(nominatimPlace, "Should return null when way doesn't have a name")
     }
 
     @Test
     fun testConvertOsmWayWithoutMatchingTags() {
-        val osmConverter = OsmConverter()
+        val converter = createConverter()
 
         val mockWay =
             createMockWay(
@@ -93,14 +100,14 @@ class OsmConverterTest {
                 nodeIds = listOf(100L, 101L, 102L, 103L),
             )
 
-        val nominatimPlace = osmConverter.convertOsmEntityToNominatim(mockWay)
+        val nominatimPlace = converter.convert(mockWay)
 
         assertNull(nominatimPlace, "Should return null when way doesn't have any matching POI tags")
     }
 
     @Test
     fun testIsPotentialPoiCheck() {
-        val osmConverter = OsmConverter()
+        val converter = createConverter()
 
         // Create ways to test
         val cinemaWay =
@@ -138,20 +145,16 @@ class OsmConverterTest {
                 nodeIds = listOf(300L, 301L, 302L),
             )
 
-        // Test using reflection to access private method
-        val isPotentialPoiMethod = OsmConverter::class.java.getDeclaredMethod("isPotentialPoi", Entity::class.java)
-        isPotentialPoiMethod.isAccessible = true
-
         assertTrue(
-            isPotentialPoiMethod.invoke(osmConverter, cinemaWay) as Boolean,
+            converter.isPotentialPoi(cinemaWay),
             "Cinema with name should be potential POI",
         )
-        assertTrue(
-            !(isPotentialPoiMethod.invoke(osmConverter, noNameWay) as Boolean),
+        assertFalse(
+            converter.isPotentialPoi(noNameWay),
             "Cinema without name should not be potential POI",
         )
-        assertTrue(
-            !(isPotentialPoiMethod.invoke(osmConverter, noMatchingTagWay) as Boolean),
+        assertFalse(
+            converter.isPotentialPoi(noMatchingTagWay),
             "Building without matching tags should not be potential POI",
         )
     }
