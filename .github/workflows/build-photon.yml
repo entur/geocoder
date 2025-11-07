@@ -217,9 +217,8 @@ jobs:
     name: Photon
     if: |
       !cancelled() &&
-      needs.lint.result == 'success'  &&
       (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, lint, photon-data]
+    needs: [setup, photon-data]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -280,9 +279,10 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
+      needs.lint.result == 'success' &&
       needs.setup.outputs.dev == 'true' &&
       (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, photon-data, build-push]
+    needs: [setup, lint, photon-data, build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev

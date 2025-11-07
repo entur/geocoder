@@ -146,9 +146,10 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
+      needs.lint.result == 'success' &&
       needs.setup.outputs.dev == 'true' &&
       (needs.build-push.result == 'success' || needs.setup.outputs.build == 'false')
-    needs: [setup, build-push]
+    needs: [setup, lint, build-push]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
