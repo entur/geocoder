@@ -144,7 +144,7 @@ jobs:
   # Helm deploy fails to handle 'latest' properly
   resolve-image-tag:
     name: Resolve image tag
-    if: needs.setup.outputs.dev == 'true' || needs.setup.outputs.tst == 'true' ||needs.setup.outputs.prd == 'true'
+    if: needs.setup.outputs.build == 'false'
     needs: setup
     runs-on: ubuntu-latest
     permissions:

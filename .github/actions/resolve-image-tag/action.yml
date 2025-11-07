@@ -28,7 +28,6 @@ runs:
   using: 'composite'
   steps:
     - name: Authenticate with GCP
-      if: inputs.image_tag == 'latest'
       uses: google-github-actions/auth@v2
       with:
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
