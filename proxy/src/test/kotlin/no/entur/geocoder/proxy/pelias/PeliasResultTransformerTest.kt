@@ -24,8 +24,8 @@ class PeliasResultTransformerTest {
         // Bergen
         val focus =
             FocusParams(
-                lat = "60.39299",
-                lon = "5.32415",
+                lat = BigDecimal("60.39299"),
+                lon = BigDecimal("5.32415"),
                 null,
                 null,
             )

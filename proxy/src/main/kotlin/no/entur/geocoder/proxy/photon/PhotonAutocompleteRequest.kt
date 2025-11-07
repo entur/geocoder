@@ -59,18 +59,18 @@ data class PhotonAutocompleteRequest(
                 }
 
             val zoom =
-                params.focus?.scale?.split("km")?.get(0)?.toDoubleOrNull().let {
-                    Geo.radiusToZoom((it ?: 2500.0) / 5.0)
-                }
+                params.focus?.scale?.let {
+                    Geo.radiusToZoom(it.toDouble() / 5.0)
+                } ?: Geo.radiusToZoom(2500.0 / 5.0)
 
             val weight =
-                params.focus?.weight?.toDoubleOrNull().let {
+                params.focus?.weight?.let {
                     // Weight factor is flipped in Photon, so closer to 0 is more important
                     // We therefore subtract the normalized value from 1
                     // Considering this, we have a relatively low default focus weight in v1 (~0.8)
                     // compared to the default in Photon (0.2)
-                    (1.0 - ImportanceCalculator.calculateImportance(it ?: 15.0)).toString()
-                }
+                    (1.0 - ImportanceCalculator.calculateImportance(it)).toString()
+                } ?: (1.0 - ImportanceCalculator.calculateImportance(15.0)).toString()
 
             return PhotonAutocompleteRequest(
                 query = params.text,
@@ -78,8 +78,8 @@ data class PhotonAutocompleteRequest(
                 language = params.lang,
                 includes = includes,
                 excludes = excludes,
-                lat = params.focus?.lat,
-                lon = params.focus?.lon,
+                lat = params.focus?.lat?.toPlainString(),
+                lon = params.focus?.lon?.toPlainString(),
                 zoom = zoom,
                 weight = weight,
             )

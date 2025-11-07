@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.pelias
 import io.ktor.server.request.*
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
+import java.math.BigDecimal
 
 data class PeliasAutocompleteParams(
     val text: String = "",
@@ -35,9 +36,14 @@ data class PeliasAutocompleteParams(
                 layers = params["layers"]?.split(",").safeVars() ?: emptyList(),
                 categories = params["categories"]?.split(",").safeVars() ?: emptyList(),
                 focus =
-                    params["focus.point.lat"]?.let { lat ->
-                        params["focus.point.lon"]?.let { lon ->
-                            FocusParams(lat, lon, params["focus.scale"], params["focus.weight"])
+                    params["focus.point.lat"]?.let { latStr ->
+                        params["focus.point.lon"]?.let { lonStr ->
+                            FocusParams.from(
+                                lat = latStr,
+                                lon = lonStr,
+                                scale = params["focus.scale"],
+                                weight = params["focus.weight"]
+                            )
                         }
                     },
                 multiModal =
@@ -52,31 +58,41 @@ data class PeliasAutocompleteParams(
     }
 
     data class FocusParams(
-        val lat: String,
-        val lon: String,
-        val scale: String?,
-        val weight: String?,
+        val lat: BigDecimal,
+        val lon: BigDecimal,
+        val scale: Int?,
+        val weight: Double?,
     ) {
         init {
-            require(lat.isNotBlank()) { "Parameter 'point.lat' is required" }
-            require(lon.isNotBlank()) { "Parameter 'point.lon' is required" }
-            require(lat.toDoubleOrNull() != null) { "Parameter 'point.lat' must be a valid number" }
-            require(lon.toDoubleOrNull() != null) { "Parameter 'point.lon' must be a valid number" }
-            val latitude = lat.toDouble()
-            val longitude = lon.toDouble()
-            require(latitude in -90.0..90.0) { "Parameter 'point.lat' must be between -90 and 90" }
-            require(longitude in -180.0..180.0) { "Parameter 'point.lon' must be between -180 and 180" }
+            require(lat.toDouble() in -90.0..90.0) { "Parameter 'focus.point.lat' must be between -90 and 90" }
+            require(lon.toDouble() in -180.0..180.0) { "Parameter 'focus.point.lon' must be between -180 and 180" }
             if (scale != null) {
-                val scaleValue = scale.split("km")[0]
-                require(
-                    scale.endsWith("km") &&
-                        scaleValue.toIntOrNull() != null &&
-                        scaleValue.toInt() > 0,
-                ) { "Parameter 'scale' must be a number > 0 followed by 'km'" }
+                require(scale > 0) { "Parameter 'focus.scale' must be a number > 0" }
             }
             if (weight != null) {
-                val weightValue = weight.toDouble()
-                require(weightValue > 0) { "Parameter 'weight' must be a number > 0" }
+                require(weight > 0) { "Parameter 'focus.weight' must be a number > 0" }
+            }
+        }
+
+        companion object {
+            fun from(lat: String, lon: String, scale: String?, weight: String?): FocusParams {
+                val latValue = lat.toBigDecimalOrNull()
+                    ?: throw IllegalArgumentException("Parameter 'focus.point.lat' must be a valid number")
+                val lonValue = lon.toBigDecimalOrNull()
+                    ?: throw IllegalArgumentException("Parameter 'focus.point.lon' must be a valid number")
+
+                val scaleValue = scale?.let { scaleStr ->
+                    val scaleNumeric = scaleStr.removeSuffix("km")
+                    scaleNumeric.toIntOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'focus.scale' must be a number followed by 'km'")
+                }
+
+                val weightValue = weight?.let { weightStr ->
+                    weightStr.toDoubleOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'focus.weight' must be a valid number")
+                }
+
+                return FocusParams(latValue, lonValue, scaleValue, weightValue)
             }
         }
     }
