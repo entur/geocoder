@@ -1,13 +1,11 @@
 package no.entur.geocoder.proxy.v3
 
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.RoutingContext
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.entur.geocoder.proxy.ErrorHandler
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -30,7 +28,7 @@ object V3Api {
                 return
             }
 
-        val photonRequest = PhotonAutocompleteRequest.Companion.from(params)
+        val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
         logger.debug("V3 autocomplete request to $url with query='${photonRequest.query}'")
 
@@ -90,10 +88,16 @@ object V3Api {
                         parameter("lang", photonRequest.language)
                         photonRequest.radius?.let { parameter("radius", it) }
                         parameter("limit", photonRequest.limit.toString())
-                        parameter("exclude", photonRequest.exclude)
+
+                        if (photonRequest.includes.isNotEmpty()) {
+                            parameter("include", photonRequest.includes.joinToString(","))
+                        }
+                        if (photonRequest.excludes.isNotEmpty()) {
+                            parameter("exclude", photonRequest.excludes.joinToString(","))
+                        }
                     }.bodyAsText()
 
-            val photonResult = PhotonResult.Companion.parse(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse)
             val json = V3ResultTransformer.parseAndTransform(photonResult, params)
 
             call.respondText(json, contentType = ContentType.Application.Json)

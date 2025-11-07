@@ -97,7 +97,13 @@ object PeliasApi {
                         parameter("lang", photonRequest.language)
                         photonRequest.radius?.let { parameter("radius", it) }
                         parameter("limit", photonRequest.limit.toString())
-                        parameter("exclude", photonRequest.exclude)
+
+                        if (photonRequest.includes.isNotEmpty()) {
+                            parameter("include", photonRequest.includes.joinToString(","))
+                        }
+                        if (photonRequest.excludes.isNotEmpty()) {
+                            parameter("exclude", photonRequest.excludes.joinToString(","))
+                        }
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)

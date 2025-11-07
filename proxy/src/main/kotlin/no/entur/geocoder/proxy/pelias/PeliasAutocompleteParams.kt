@@ -50,7 +50,7 @@ data class PeliasAutocompleteParams(
                     when (params["multiModal"]) {
                         "child" -> "child"
                         "parent" -> "parent"
-                        "both" -> "both"
+                        "all" -> "all"
                         else -> "parent"
                     },
             )

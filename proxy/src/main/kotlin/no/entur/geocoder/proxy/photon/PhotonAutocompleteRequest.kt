@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
@@ -21,43 +20,17 @@ data class PhotonAutocompleteRequest(
 ) {
     companion object {
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
-            val includes: List<String> =
-                buildList {
-                    params.boundaryCountry?.let { add("country.$it") }
-                    if (params.boundaryCountyIds.isNotEmpty()) {
-                        addAll(params.boundaryCountyIds.map { "county_gid.$it" })
-                    }
-                    if (params.boundaryLocalityIds.isNotEmpty()) {
-                        addAll(params.boundaryLocalityIds.map { "locality_gid.$it" })
-                    }
-                    if (params.tariffZones.isNotEmpty()) {
-                        addAll(params.tariffZones.map { "tariff_zone_id.$it" })
-                    }
-                    if (params.tariffZoneAuthorities.isNotEmpty()) {
-                        addAll(params.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
-                    }
-                    if (params.sources.isNotEmpty()) {
-                        addAll(params.sources.map { "legacy.source.$it" })
-                    }
-                    if (params.layers.isNotEmpty()) {
-                        addAll(params.layers.map { "legacy.layer.$it" })
-                    }
-                    if (params.categories.isNotEmpty()) {
-                        if (params.categories.none { it == "NO_FILTER" }) {
-                            addAll(params.categories.map { LEGACY_CATEGORY_PREFIX + it })
-                        }
-                    }
-                }
-            val excludes =
-                buildList {
-                    when (params.multiModal) {
-                        "child" -> add("multimodal.parent")
-                        "parent" -> add("multimodal.child")
-                        "both" -> {
-                            // No exclusion
-                        }
-                    }
-                }
+            val includes = PhotonFilterBuilder.buildIncludes(
+                boundaryCountry = params.boundaryCountry,
+                boundaryCountyIds = params.boundaryCountyIds,
+                boundaryLocalityIds = params.boundaryLocalityIds,
+                tariffZones = params.tariffZones,
+                tariffZoneAuthorities = params.tariffZoneAuthorities,
+                sources = params.sources,
+                layers = params.layers,
+                categories = params.categories,
+            )
+            val excludes = PhotonFilterBuilder.buildMultiModalExcludes(params.multiModal)
 
             val zoom =
                 params.focus?.scale?.let {

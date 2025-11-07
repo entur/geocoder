@@ -11,9 +11,38 @@ data class PhotonReverseRequest(
     val language: String,
     val limit: Int,
     val radius: Int? = null,
-    val exclude: String = Category.OSM_ADDRESS, // Exclude addresses with house numbers in reverse requests
+    val includes: List<String> = emptyList(),
+    val excludes: List<String> = emptyList(),
 ) {
     companion object {
+        fun from(params: PeliasReverseParams): PhotonReverseRequest {
+            val includes = PhotonFilterBuilder.buildIncludes(
+                boundaryCountry = params.boundaryCountry,
+                boundaryCountyIds = params.boundaryCountyIds,
+                boundaryLocalityIds = params.boundaryLocalityIds,
+                tariffZones = params.tariffZones,
+                tariffZoneAuthorities = params.tariffZoneAuthorities,
+                sources = params.sources,
+                layers = params.layers,
+                categories = params.categories,
+            )
+            val excludes =
+                buildList {
+                    add(Category.OSM_ADDRESS) // Always exclude addresses with house numbers in reverse requests
+                    addAll(PhotonFilterBuilder.buildMultiModalExcludes(params.multiModal))
+                }
+
+            return PhotonReverseRequest(
+                latitude = params.lat,
+                longitude = params.lon,
+                language = params.lang,
+                limit = params.size,
+                radius = params.radius,
+                includes = includes,
+                excludes = excludes,
+            )
+        }
+
         fun from(params: V3ReverseParams): PhotonReverseRequest =
             PhotonReverseRequest(
                 latitude = params.lat,
@@ -21,15 +50,7 @@ data class PhotonReverseRequest(
                 language = params.language,
                 limit = params.limit,
                 radius = params.radius,
-            )
-
-        fun from(params: PeliasReverseParams): PhotonReverseRequest =
-            PhotonReverseRequest(
-                latitude = params.lat,
-                longitude = params.lon,
-                language = params.lang,
-                limit = params.size,
-                radius = params.radius,
+                excludes = listOf(Category.OSM_ADDRESS), // Exclude addresses with house numbers in reverse requests
             )
     }
 }
