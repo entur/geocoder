@@ -10,7 +10,6 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams.FocusParams
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasFeature
 import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -24,10 +23,10 @@ object PeliasResultTransformer {
             setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
         }
 
-    fun parseAndTransform(photonResult: PhotonResult, focus: FocusParams? = null): String {
+    fun parseAndTransform(photonResult: PhotonResult, lat: BigDecimal? = null, lon: BigDecimal? = null): String {
         val transformedFeatures =
             photonResult.features.map { feature ->
-                val distance = if (focus != null) calculateDistanceKm(feature.geometry, focus) else null
+                val distance = lat?.let { lon?.let { calculateDistanceKm(feature.geometry, lat, lon) } }
                 transformFeature(feature, distance)
             }
 
@@ -176,17 +175,16 @@ object PeliasResultTransformer {
 
     internal fun calculateDistanceKm(
         geometry: PhotonGeometry,
-        focus: FocusParams?,
+        lat: BigDecimal,
+        lon: BigDecimal,
     ): BigDecimal? {
-        if (focus == null) return null
-
         val featureCoords = geometry.coordinates
         if (featureCoords.size < 2) return null
 
         val lon1 = featureCoords[0].toDouble()
         val lat1 = featureCoords[1].toDouble()
-        val lon2 = focus.lon.toDouble()
-        val lat2 = focus.lat.toDouble()
+        val lon2 = lon.toDouble()
+        val lat2 = lat.toDouble()
         val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
 
         return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)

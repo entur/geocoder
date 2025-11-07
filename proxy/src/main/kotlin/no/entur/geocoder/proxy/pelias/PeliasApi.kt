@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.ContentType.Application.Json
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.entur.geocoder.proxy.ErrorHandler
@@ -22,7 +23,7 @@ object PeliasApi {
                 val error = ErrorHandler.handleError(e, "Autocomplete")
                 call.respondText(
                     ErrorHandler.toJson(error),
-                    contentType = ContentType.Application.Json,
+                    contentType = Json,
                     status = HttpStatusCode.fromValue(error.statusCode),
                 )
                 return
@@ -56,14 +57,14 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus)
-            call.respondText(json, contentType = ContentType.Application.Json)
+            val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus?.lat, peliasParams.focus?.lon)
+            call.respondText(json, contentType = Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
             call.respondText(
                 ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
+                contentType = Json,
                 status = HttpStatusCode.fromValue(error.statusCode),
             )
         }
@@ -78,7 +79,7 @@ object PeliasApi {
                 val error = ErrorHandler.handleError(e, "Reverse geocoding")
                 call.respondText(
                     ErrorHandler.toJson(error),
-                    contentType = ContentType.Application.Json,
+                    contentType = Json,
                     status = HttpStatusCode.fromValue(error.statusCode),
                 )
                 return
@@ -107,14 +108,14 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = PeliasResultTransformer.parseAndTransform(photonResult)
-            call.respondText(json, contentType = ContentType.Application.Json)
+            val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.lat, peliasParams.lon)
+            call.respondText(json, contentType = Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")
             call.respondText(
                 ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
+                contentType = Json,
                 status = HttpStatusCode.fromValue(error.statusCode),
             )
         }
@@ -129,7 +130,7 @@ object PeliasApi {
                 val error = ErrorHandler.handleError(e, "Place")
                 call.respondText(
                     ErrorHandler.toJson(error),
-                    contentType = ContentType.Application.Json,
+                    contentType = Json,
                     status = HttpStatusCode.fromValue(error.statusCode),
                 )
                 return
@@ -155,14 +156,14 @@ object PeliasApi {
                     type = "FeatureCollection",
                     features = photonResults.map { it.features.first() },
                 )
-            val json = PeliasResultTransformer.parseAndTransform(photonResult, null)
-            call.respondText(json, contentType = ContentType.Application.Json)
+            val json = PeliasResultTransformer.parseAndTransform(photonResult)
+            call.respondText(json, contentType = Json)
         } catch (e: Exception) {
             logger.error("Error proxying to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
             call.respondText(
                 ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
+                contentType = Json,
                 status = HttpStatusCode.fromValue(error.statusCode),
             )
         }

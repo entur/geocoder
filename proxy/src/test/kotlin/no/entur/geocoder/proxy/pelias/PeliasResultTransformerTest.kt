@@ -30,7 +30,7 @@ class PeliasResultTransformerTest {
                 null,
             )
 
-        val distance = PeliasResultTransformer.calculateDistanceKm(geometry, focus)
+        val distance = PeliasResultTransformer.calculateDistanceKm(geometry, focus.lat, focus.lon)
 
         if (distance != null) {
             assertEquals(305.322.toBigDecimal(), distance)
