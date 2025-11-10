@@ -30,7 +30,7 @@ data class PhotonAutocompleteRequest(
                 layers = params.layers,
                 categories = params.categories,
             )
-            val excludes = PhotonFilterBuilder.buildMultiModalExcludes(params.multiModal)
+            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(params.multiModal))
 
             val zoom =
                 params.focus?.scale?.let {

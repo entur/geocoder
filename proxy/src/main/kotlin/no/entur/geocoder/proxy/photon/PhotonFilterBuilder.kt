@@ -41,15 +41,12 @@ object PhotonFilterBuilder {
             }
         }
 
-    fun buildMultiModalExcludes(multiModal: String): List<String> =
-        buildList {
+    fun buildMultiModalExclude(multiModal: String): String? =
             when (multiModal) {
-                "child" -> add("multimodal.parent")
-                "parent" -> add("multimodal.child")
-                "all" -> {
-                    // No multimodal exclusion
-                }
+                "child" -> "multimodal.parent"
+                "parent" -> "multimodal.child"
+                else -> null
             }
-        }
+
 }
 

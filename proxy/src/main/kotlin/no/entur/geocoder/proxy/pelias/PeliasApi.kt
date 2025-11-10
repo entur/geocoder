@@ -102,8 +102,8 @@ object PeliasApi {
                         if (photonRequest.includes.isNotEmpty()) {
                             parameter("include", photonRequest.includes.joinToString(","))
                         }
-                        if (photonRequest.excludes.isNotEmpty()) {
-                            parameter("exclude", photonRequest.excludes.joinToString(","))
+                        photonRequest.excludes.forEach {
+                            parameter("exclude", it)
                         }
                     }.bodyAsText()
 

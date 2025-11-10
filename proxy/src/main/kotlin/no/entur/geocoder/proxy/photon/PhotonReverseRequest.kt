@@ -26,11 +26,10 @@ data class PhotonReverseRequest(
                 layers = params.layers,
                 categories = params.categories,
             )
-            val excludes =
-                buildList {
-                    add(Category.OSM_ADDRESS) // Always exclude addresses with house numbers in reverse requests
-                    addAll(PhotonFilterBuilder.buildMultiModalExcludes(params.multiModal))
-                }
+            val excludes = listOfNotNull(
+                Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
+                PhotonFilterBuilder.buildMultiModalExclude(params.multiModal)
+            )
 
             return PhotonReverseRequest(
                 latitude = params.lat,
