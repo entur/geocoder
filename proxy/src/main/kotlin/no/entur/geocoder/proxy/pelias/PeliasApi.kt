@@ -154,7 +154,7 @@ object PeliasApi {
             val photonResult =
                 PhotonResult(
                     type = "FeatureCollection",
-                    features = photonResults.map { it.features.first() },
+                    features = photonResults.mapNotNull { it.features.firstOrNull() },
                 )
             val json = PeliasResultTransformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = Json)
