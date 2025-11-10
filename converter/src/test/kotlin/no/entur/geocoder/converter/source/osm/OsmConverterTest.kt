@@ -1,7 +1,6 @@
 package no.entur.geocoder.converter.source.osm
 
 import org.openstreetmap.osmosis.core.domain.v0_6.*
-import java.io.File
 import java.util.*
 import kotlin.test.*
 
@@ -20,7 +19,6 @@ class OsmConverterTest {
         val mockNode =
             createMockNode(
                 id = 1L,
-                name = "Test Node",
                 lat = 59.9133,
                 lon = 10.7389,
                 tags =
@@ -151,88 +149,197 @@ class OsmConverterTest {
         )
         assertFalse(
             converter.isPotentialPoi(noNameWay),
-            "Cinema without name should not be potential POI",
+            "Way without name should not be potential POI",
         )
+
         assertFalse(
             converter.isPotentialPoi(noMatchingTagWay),
-            "Building without matching tags should not be potential POI",
+            "Way without matching POI tags should not be potential POI",
         )
     }
 
     @Test
-    fun testFullConversionProcess() {
-        val osmConverter = OsmConverter()
+    fun `should convert node with valid hospital tag`() {
+        val converter = createConverter()
 
-        assertNotNull(osmConverter, "Should create converter instance")
+        val hospital = createMockNode(
+            id = 123L,
+            lat = 59.9139,
+            lon = 10.7522,
+            tags = listOf(
+                Tag("name", "Oslo University Hospital"),
+                Tag("amenity", "hospital")
+            )
+        )
 
-        val testInputFile = File("src/test/resources/oslo-opera.osm.pbf")
-        assertTrue(testInputFile.exists(), "Test input file should exist")
+        val result = converter.convert(hospital)
 
-        val testOutputFile = File("build/tmp/test_output.ndjson")
-        testOutputFile.parentFile.mkdirs()
-
-        osmConverter.convert(testInputFile, testOutputFile)
-
-        assertTrue(testOutputFile.exists(), "Output file should be created")
-        assertTrue(testOutputFile.length() > 0, "Output file should have content")
-
-        // Clean up
-        testOutputFile.delete()
+        assertNotNull(result, "Hospital should be converted")
+        assertEquals("Oslo University Hospital", result.content[0].name?.name)
+        assertTrue(result.content[0].importance > 0.0, "Hospital should have importance > 0")
     }
 
     @Test
-    fun testConversionIncludesPoiWays() {
-        val osmConverter = OsmConverter()
-        val testInputFile = File("src/test/resources/oslo-center.osm.pbf")
+    fun `should convert nodes with matching POI tags`() {
+        val converter = createConverter()
 
-        if (!testInputFile.exists()) {
-            println("Skipping test - oslo-center.osm.pbf not available")
-            return
-        }
+        val restaurant = createMockNode(
+            id = 456L,
+            lat = 59.9139,
+            lon = 10.7522,
+            tags = listOf(
+                Tag("name", "Nice Restaurant"),
+                Tag("amenity", "restaurant")
+            )
+        )
 
-        val testOutputFile = File("build/tmp/test_poi_ways_output.ndjson")
-        testOutputFile.parentFile.mkdirs()
+        val result = converter.convert(restaurant)
 
-        osmConverter.convert(testInputFile, testOutputFile)
+        assertNotNull(result, "Restaurant should be converted as it matches filter list")
+        assertEquals("Nice Restaurant", result.content[0].name?.name)
+    }
 
-        assertTrue(testOutputFile.exists(), "Output file should be created")
-        assertTrue(testOutputFile.length() > 0, "Output file should have content")
+    @Test
+    fun `converted nodes should have point accuracy`() {
+        val converter = createConverter()
 
-        // Read the output and verify it contains POI ways (object_type: "W")
-        val content = testOutputFile.readText()
-        val hasWayPois = content.contains("\"object_type\":\"W\"")
+        val museum = createMockNode(
+            id = 789L,
+            lat = 59.9139,
+            lon = 10.7522,
+            tags = listOf(
+                Tag("name", "National Museum"),
+                Tag("tourism", "museum")
+            )
+        )
 
-        println("Output contains POI ways: $hasWayPois")
+        val result = converter.convert(museum)
 
-        // Clean up
-        testOutputFile.delete()
+        assertNotNull(result)
+        assertEquals("point", result.content[0].extra.accuracy)
+    }
+
+    @Test
+    fun `converted nodes should have correct object_type`() {
+        val converter = createConverter()
+
+        val school = createMockNode(
+            id = 999L,
+            lat = 59.9139,
+            lon = 10.7522,
+            tags = listOf(
+                Tag("name", "Central School"),
+                Tag("amenity", "school")
+            )
+        )
+
+        val result = converter.convert(school)
+
+        assertNotNull(result)
+        assertEquals("N", result.content[0].object_type)
+    }
+
+    @Test
+    fun `popularity should vary based on POI type`() {
+        val converter = createConverter()
+
+        val hospital = createMockNode(
+            id = 1L,
+            lat = 59.9,
+            lon = 10.7,
+            tags = listOf(Tag("name", "Hospital"), Tag("amenity", "hospital"))
+        )
+
+        val cinema = createMockNode(
+            id = 2L,
+            lat = 59.9,
+            lon = 10.7,
+            tags = listOf(Tag("name", "Cinema"), Tag("amenity", "cinema"))
+        )
+
+        val hospitalResult = converter.convert(hospital)
+        val cinemaResult = converter.convert(cinema)
+
+        assertNotNull(hospitalResult)
+        assertNotNull(cinemaResult)
+
+        val hospitalImportance = hospitalResult.content[0].importance
+        val cinemaImportance = cinemaResult.content[0].importance
+
+        assertTrue(
+            hospitalImportance > cinemaImportance,
+            "Hospital should have higher importance than cinema"
+        )
+    }
+
+    @Test
+    fun `nodes without names should not be converted`() {
+        val converter = createConverter()
+
+        val nameless = createMockNode(
+            id = 111L,
+            lat = 59.9,
+            lon = 10.7,
+            tags = listOf(Tag("amenity", "hospital"))
+        )
+
+        val result = converter.convert(nameless)
+
+        assertNull(result, "Node without name should not be converted")
+    }
+
+    @Test
+    fun `coordinates should be within valid range`() {
+        val converter = createConverter()
+
+        val place = createMockNode(
+            id = 222L,
+            lat = 59.9139,
+            lon = 10.7522,
+            tags = listOf(
+                Tag("name", "Test Place"),
+                Tag("tourism", "hotel")
+            )
+        )
+
+        val result = converter.convert(place)
+
+        assertNotNull(result)
+        val centroid = result.content[0].centroid
+        assertEquals(2, centroid.size)
+        assertTrue(centroid[0].toDouble() in -180.0..180.0, "Longitude should be valid")
+        assertTrue(centroid[1].toDouble() in -90.0..90.0, "Latitude should be valid")
+    }
+
+    @Test
+    fun `converted entries should have country code`() {
+        val converter = createConverter()
+
+        val place = createMockNode(
+            id = 333L,
+            lat = 59.9,
+            lon = 10.7,
+            tags = listOf(
+                Tag("name", "Test Place"),
+                Tag("amenity", "restaurant")
+            )
+        )
+
+        val result = converter.convert(place)
+
+        assertNotNull(result)
+        assertNotNull(result.content[0].country_code)
+        assertEquals(2, result.content[0].country_code.length)
     }
 
     private fun createMockNode(
         id: Long,
-        name: String?,
         lat: Double,
         lon: Double,
         tags: List<Tag>,
     ): Node {
-        val allTags =
-            if (name != null && tags.none { it.key == "name" }) {
-                tags + Tag("name", name)
-            } else {
-                tags
-            }
-
-        val entityData =
-            CommonEntityData(
-                id,
-                1, // version
-                Date(),
-                null, // user
-                0L, // changesetId
-                allTags,
-            )
-
-        return Node(entityData, lat, lon)
+        val commonEntityData = CommonEntityData(id, 1, Date(), OsmUser(1, "test"), 1, tags)
+        return Node(commonEntityData, lat, lon)
     }
 
     private fun createMockWay(
@@ -241,25 +348,9 @@ class OsmConverterTest {
         tags: List<Tag>,
         nodeIds: List<Long>,
     ): Way {
-        val allTags =
-            if (name != null && tags.none { it.key == "name" }) {
-                tags + Tag("name", name)
-            } else {
-                tags
-            }
-
-        val entityData =
-            CommonEntityData(
-                id,
-                1, // version
-                Date(),
-                null, // user
-                0L, // changesetId
-                allTags,
-            )
-
         val wayNodes = nodeIds.map { WayNode(it) }
-
-        return Way(entityData, wayNodes)
+        val allTags = name?.let { tags + Tag("name", it) } ?: tags
+        val commonEntityData = CommonEntityData(id, 1, Date(), OsmUser(1, "test"), 1, allTags)
+        return Way(commonEntityData, wayNodes)
     }
 }

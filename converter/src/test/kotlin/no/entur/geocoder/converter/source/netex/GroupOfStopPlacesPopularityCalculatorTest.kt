@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.netex
 
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -141,5 +143,29 @@ class GroupOfStopPlacesPopularityCalculatorTest {
         // Expected: popularity = 10 * (180^5) = 10 * 1,889,568,000,000 = 18,895,680,000,000
         // This exceeds Long.MAX_VALUE (9,223,372,036,854,775,807) but Double handles it
         assertEquals(1.889568e12, popularity, 1e9, "Should handle large products without overflow")
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "30, 300.0",
+        "60, 600.0",
+        "180, 1800.0",
+        "600, 6000.0"
+    )
+    fun `single member group applies boost factor correctly`(memberPop: Long, expected: Double) {
+        val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(listOf(memberPop))
+        assertEquals(expected, popularity)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "30, 30, 9000.0",
+        "60, 60, 36000.0",
+        "30, 60, 18000.0",
+        "60, 180, 108000.0"
+    )
+    fun `two member group multiplies popularities correctly`(pop1: Long, pop2: Long, expected: Double) {
+        val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(listOf(pop1, pop2))
+        assertEquals(expected, popularity)
     }
 }

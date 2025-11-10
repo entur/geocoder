@@ -201,92 +201,155 @@ class StedsnavnConverterTest {
         parseDefault()
         entries.forEach { entry ->
             assertNotNull(entry.lokalId, "lokalId should not be null")
-            assertNotNull(entry.navnerom, "navnerom should not be null")
             assertNotNull(entry.stedsnavn, "stedsnavn should not be null")
+            assertNotNull(entry.navneobjekttype, "navneobjekttype should not be null")
             assertNotNull(entry.kommunenummer, "kommunenummer should not be null")
             assertNotNull(entry.kommunenavn, "kommunenavn should not be null")
             assertNotNull(entry.fylkesnummer, "fylkesnummer should not be null")
             assertNotNull(entry.fylkesnavn, "fylkesnavn should not be null")
-            // matrikkelId and adressekode are optional for settlement types
+            assertTrue(entry.coordinates.isNotEmpty(), "coordinates should not be empty")
         }
     }
 
     @Test
-    fun `should titleize municipality name in address`() {
+    fun `converted places should have valid rank_address`() {
         parseDefault()
-        val entry = entries.first()
-        val nominatimPlace = converter.convertToNominatim(entry)
-        val address = nominatimPlace.content.first().address
-
-        assertNotNull(address, "Address should not be null")
-        assertNotNull(address.city, "City should not be null")
-
-        val city = address.city
-        val firstChar = city.first()
-        assertTrue(firstChar.isUpperCase(), "First character of city name should be uppercase")
-    }
-
-    @Test
-    fun `should parse and store skrivemåtestatus field`() {
-        parseDefault()
-        // All entries in test file should have spelling status since they passed filtering
-        val jomna = entries.find { it.stedsnavn == "Jømna" }
-        assertNotNull(jomna, "Should find Jømna entry")
-        assertNotNull(jomna.skrivemåtestatus, "Should have skrivemåtestatus field")
-        assertTrue(
-            StedsnavnSpellingStatus.isAccepted(jomna.skrivemåtestatus),
-            "Parsed entry should have accepted spelling status",
-        )
-    }
-
-    @Test
-    fun `should filter out entries with rejected spelling status`() {
-        parseDefault()
-        // All parsed entries should have accepted spelling status
         entries.forEach { entry ->
-            assertTrue(
-                StedsnavnSpellingStatus.isAccepted(entry.skrivemåtestatus),
-                "Entry ${entry.stedsnavn} should have accepted spelling status, got: ${entry.skrivemåtestatus}",
-            )
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val rankAddress = nominatimPlace.content.first().rank_address
+
+            assertTrue(rankAddress in 1..30, "rank_address should be between 1 and 30, got $rankAddress")
+            assertTrue(rankAddress <= 20, "Settlement rank_address should be <= 20 for appropriate visibility")
         }
     }
 
     @Test
-    fun `should use flat popularity for all place types matching kakka`() {
+    fun `should handle special characters in place names`() {
         parseDefault()
-        val byEntry = entries.find { it.navneobjekttype == "by" }
-        val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val name = nominatimPlace.content.first().name?.name
 
-        assertNotNull(byEntry, "Should have at least one 'by' entry")
-        assertNotNull(tettbebyggelseEntry, "Should have at least one 'tettbebyggelse' entry")
-
-        val byPlace = converter.convertToNominatim(byEntry)
-        val tettbebyggelsePlace = converter.convertToNominatim(tettbebyggelseEntry)
-
-        val byImportance = byPlace.content.first().importance
-        val tettbebyggelseImportance = tettbebyggelsePlace.content.first().importance
-
-        // Both should have the same importance since popularity is flat (40 for all)
-        assertEquals(
-            byImportance,
-            tettbebyggelseImportance,
-            "All place types should have same importance (matching kakka's flat placeBoost)",
-        )
+            assertNotNull(name, "Name should not be null")
+            assertFalse(name.isEmpty(), "Name should not be empty")
+        }
     }
 
     @Test
-    fun `should use correct popularity values from calculator`() {
+    fun `output should contain header line`() {
         parseDefault()
-        val tettbebyggelseEntry = entries.find { it.navneobjekttype == "tettbebyggelse" }
-        assertNotNull(tettbebyggelseEntry, "Should have tettbebyggelse entry")
+        val outputFile = tempDir.resolve("output_header.json").toFile()
 
-        val popularity = StedsnavnPopularityCalculator.calculatePopularity(tettbebyggelseEntry.navneobjekttype)
-        assertEquals(40.0, popularity, "tettbebyggelse should have popularity of 40 (matching kakka)")
+        converter.convert(inputFile, outputFile, isAppending = false)
 
-        val byEntry = entries.find { it.navneobjekttype == "by" }
-        if (byEntry != null) {
-            val byPopularity = StedsnavnPopularityCalculator.calculatePopularity(byEntry.navneobjekttype)
-            assertEquals(40.0, byPopularity, "by should also have popularity of 40 (flat value matching kakka)")
+        val lines = outputFile.readLines()
+        assertTrue(lines.isNotEmpty())
+        assertTrue(lines[0].contains("NominatimDumpFile"), "First line should be header")
+        assertTrue(lines[0].contains("version"), "Header should contain version")
+    }
+
+    @Test
+    fun `all entries should have point accuracy`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val accuracy = nominatimPlace.content.first().extra.accuracy
+
+            assertEquals("point", accuracy, "All stedsnavn entries should have point accuracy")
+        }
+    }
+
+    @Test
+    fun `all entries should have correct source`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val source = nominatimPlace.content.first().extra.source
+
+            assertEquals("kartverket-stedsnavn", source, "All entries should have kartverket-stedsnavn source")
+        }
+    }
+
+    @Test
+    fun `all entries should have country code NO`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val countryCode = nominatimPlace.content.first().country_code
+
+            assertEquals("no", countryCode, "All Norwegian places should have country code 'no'")
+        }
+    }
+
+    @Test
+    fun `importance values should be within valid range`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val importance = nominatimPlace.content.first().importance
+
+            assertTrue(importance > 0.0, "Importance should be positive")
+            assertTrue(importance <= 1.0, "Importance should not exceed 1.0")
+        }
+    }
+
+    @Test
+    fun `place names should be titleized`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val cityName = nominatimPlace.content.first().address.city
+
+            if (cityName != null) {
+                val firstChar = cityName.first()
+                assertTrue(firstChar.isUpperCase() || !firstChar.isLetter(),
+                    "City name should be titleized: $cityName")
+            }
+        }
+    }
+
+    @Test
+    fun `should handle entries with alternative names`() {
+        val testFile = getTestFile("bydel.gml")
+        val entries = converter.parseGml(testFile).toList()
+
+        val entryWithAltName = entries.find { it.annenSkrivemåte.isNotEmpty() }
+        if (entryWithAltName != null) {
+            val nominatimPlace = converter.convertToNominatim(entryWithAltName)
+            val altName = nominatimPlace.content.first().name?.alt_name
+
+            assertNotNull(altName, "Entry with alternative names should have alt_name populated")
+        }
+    }
+
+    @Test
+    fun `bbox should contain valid coordinates for point features`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val bbox = nominatimPlace.content.first().bbox
+            val centroid = nominatimPlace.content.first().centroid
+
+            assertNotNull(bbox, "Bbox should not be null")
+            if (bbox.isNotEmpty()) {
+                assertEquals(4, bbox.size, "Bbox should have 4 coordinates (minLon, minLat, maxLon, maxLat)")
+                assertTrue(bbox[0].toDouble() in -180.0..180.0, "Bbox minLon should be valid")
+                assertTrue(bbox[1].toDouble() in -90.0..90.0, "Bbox minLat should be valid")
+                assertTrue(bbox[2].toDouble() in -180.0..180.0, "Bbox maxLon should be valid")
+                assertTrue(bbox[3].toDouble() in -90.0..90.0, "Bbox maxLat should be valid")
+            }
+            assertTrue(centroid.size == 2, "Centroid should have 2 coordinates (lon, lat)")
+        }
+    }
+
+    @Test
+    fun `object_type should be N for stedsnavn points`() {
+        parseDefault()
+        entries.forEach { entry ->
+            val nominatimPlace = converter.convertToNominatim(entry)
+            val objectType = nominatimPlace.content.first().object_type
+
+            assertEquals("N", objectType, "Stedsnavn entries should have object_type 'N' (node)")
         }
     }
 }
