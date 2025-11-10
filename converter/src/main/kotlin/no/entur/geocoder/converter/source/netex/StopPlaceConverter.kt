@@ -9,12 +9,12 @@ import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.Text.altName
-import no.entur.geocoder.common.ImportanceCalculator
+import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
@@ -66,18 +66,21 @@ class StopPlaceConverter : Converter {
                 }?.toSet()
                 ?: emptySet()
 
+
+        val isParentStopPlace = childStopTypes.isNotEmpty()
         val multimodalityCategory =
             when {
-                childStopTypes.isNotEmpty() -> "multimodal.parent"
+                isParentStopPlace -> "multimodal.parent"
                 stopPlace.parentSiteRef?.ref != null -> "multimodal.child"
                 else -> null
             }
 
-        val tags =
-            listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE, LEGACY_SOURCE_OPENSTREETMAP)
+        val tags: List<String> =
+            listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE)
                 .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it })
+                .plus(if (isParentStopPlace) LEGACY_SOURCE_OPENSTREETMAP else LEGACY_SOURCE_WHOSONFIRST)
 
-        val categories =
+        val categories: List<String> =
             tags
                 .plus(SOURCE_NSR)
                 .plus(tariffZoneCategories)
@@ -107,7 +110,7 @@ class StopPlaceConverter : Converter {
                         ?.tariffZoneRef
                         ?.mapNotNull { it.ref }
                         ?.joinToString(",")
-                ),
+                    ),
                 alt_name = altName,
                 tags = tags.joinToString(","),
             )
