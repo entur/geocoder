@@ -7,6 +7,7 @@ import io.ktor.http.*
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import no.entur.geocoder.common.Category.OSM_ADDRESS
 import no.entur.geocoder.proxy.ErrorHandler
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -103,7 +104,9 @@ object PeliasApi {
                             parameter("include", photonRequest.includes.joinToString(","))
                         }
                         if (photonRequest.excludes.isNotEmpty()) {
-                            parameter("exclude", photonRequest.excludes.joinToString(","))
+                            parameter("exclude", photonRequest.excludes
+                                .plus(OSM_ADDRESS) // No addresses with house numbers
+                                .joinToString(","))
                         }
                     }.bodyAsText()
 
