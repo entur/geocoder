@@ -31,7 +31,7 @@ object PeliasApi {
 
         val photonRequest = PhotonAutocompleteRequest.from(peliasParams)
         val url = "$photonBaseUrl/api"
-        logger.debug("Proxying /v2/autocomplete to $url with request='${photonRequest}'")
+        logger.debug("Proxying /v2/autocomplete to $url with text='${photonRequest.query}'")
 
         try {
             val photonResponse =
@@ -60,7 +60,7 @@ object PeliasApi {
             val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus?.lat, peliasParams.focus?.lon)
             call.respondText(json, contentType = Json)
         } catch (e: Exception) {
-            logger.error("Error proxying " + call.request.queryParameters + " to Photon: $e", e)
+            logger.error("Error proxying $photonRequest to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
             call.respondText(
                 ErrorHandler.toJson(error),
@@ -87,7 +87,7 @@ object PeliasApi {
 
         val photonRequest = PhotonReverseRequest.from(peliasParams)
         val url = "$photonBaseUrl/reverse"
-        logger.debug("Proxying /v2/reverse to $url with request='${photonRequest}'")
+        logger.debug("Proxying /v2/reverse to $url with lat=${photonRequest.latitude}, lon=${photonRequest.longitude}")
 
         try {
             val photonResponse =
@@ -111,7 +111,7 @@ object PeliasApi {
             val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.lat, peliasParams.lon)
             call.respondText(json, contentType = Json)
         } catch (e: Exception) {
-            logger.error("Error proxying to Photon: $e", e)
+            logger.error("Error proxying $photonRequest to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")
             call.respondText(
                 ErrorHandler.toJson(error),
@@ -138,7 +138,7 @@ object PeliasApi {
 
         val photonRequests = PhotonAutocompleteRequest.from(peliasParams)
         val url = "$photonBaseUrl/api"
-        logger.debug("Proxying /v2/autocomplete to $url with request='${photonRequests}'")
+        logger.debug("Proxying /v2/autocomplete to $url with text='${peliasParams.ids.joinToString(",")}'")
 
         try {
             val photonResults =
@@ -159,7 +159,7 @@ object PeliasApi {
             val json = PeliasResultTransformer.parseAndTransform(photonResult)
             call.respondText(json, contentType = Json)
         } catch (e: Exception) {
-            logger.error("Error proxying to Photon: $e", e)
+            logger.error("Error proxying $photonRequests to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
             call.respondText(
                 ErrorHandler.toJson(error),
