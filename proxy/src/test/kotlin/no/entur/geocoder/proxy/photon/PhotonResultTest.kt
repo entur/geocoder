@@ -241,6 +241,20 @@ class PhotonResultTest {
     }
 
     @Test
+    fun `parse handles missing features field`() {
+        val json = """
+        {
+            "type": "FeatureCollection"
+        }
+        """.trimIndent()
+
+        val result = PhotonResult.parse(json)
+
+        assertEquals("FeatureCollection", result.type)
+        assertEquals(0, result.features.size)
+    }
+
+    @Test
     fun `parse handles addresses with full details`() {
         val json = """
         {

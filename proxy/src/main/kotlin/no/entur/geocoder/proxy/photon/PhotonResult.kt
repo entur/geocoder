@@ -8,7 +8,7 @@ import java.math.BigDecimal
 
 data class PhotonResult(
     val type: String = "FeatureCollection",
-    val features: List<PhotonFeature>,
+    val features: List<PhotonFeature> = emptyList(),
     val bbox: List<BigDecimal>? = null,
 ) {
     companion object {
