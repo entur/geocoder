@@ -255,6 +255,37 @@ class PhotonResultTest {
     }
 
     @Test
+    fun `parse ignores unknown properties`() {
+        val json = """
+        {
+            "type": "FeatureCollection",
+            "include": "some_value",
+            "unknown_field": "should_be_ignored",
+            "features": [
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [10.0, 60.0],
+                        "unknown_geo_field": "ignored"
+                    },
+                    "properties": {
+                        "name": "Test Place",
+                        "unknown_prop_field": "ignored"
+                    },
+                    "unknown_feature_field": "ignored"
+                }
+            ]
+        }
+        """.trimIndent()
+
+        val result = PhotonResult.parse(json)
+
+        assertEquals("FeatureCollection", result.type)
+        assertEquals(1, result.features.size)
+        assertEquals("Test Place", result.features[0].properties.name)
+    }
+
+    @Test
     fun `parse handles addresses with full details`() {
         val json = """
         {

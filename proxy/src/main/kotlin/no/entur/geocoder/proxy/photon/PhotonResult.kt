@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -12,7 +13,9 @@ data class PhotonResult(
     val bbox: List<BigDecimal>? = null,
 ) {
     companion object {
-        private val mapper: ObjectMapper = jacksonObjectMapper()
+        private val mapper: ObjectMapper = jacksonObjectMapper().apply {
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        }
 
         fun parse(json: String): PhotonResult = mapper.readValue(json)
     }
