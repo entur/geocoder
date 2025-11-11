@@ -44,7 +44,7 @@ class TextTest {
             ),
             ListTest(
                 listOf("Oslo<script>", "Bergen#test", "Trondheim"),
-                listOf("Oslo script ", "Bergen test", "Trondheim")
+                listOf("Oslo script", "Bergen test", "Trondheim")
             ),
             ListTest(
                 listOf("RUT:TariffZone:01", "ATB:TariffZone:A", "Kolumbus:TariffZone:1"),
