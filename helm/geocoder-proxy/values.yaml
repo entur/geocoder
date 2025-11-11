@@ -27,16 +27,15 @@ common:
           failureThreshold: 300
         readinessProbe:
           httpGet:
-            path: /v2/autocomplete?text=zzzzz
+            path: /actuator/health/readiness
             port: 8080
+          initialDelaySeconds: 5
           periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /actuator/health/liveness
             port: 8080
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
+          initialDelaySeconds: 30
+          periodSeconds: 10
   postgres: # sets up a postgres proxy so you can connect to your postgresql instance via localhost on the pod
     enabled: false

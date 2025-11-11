@@ -6,6 +6,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasPlaceRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
@@ -18,6 +19,8 @@ object Routing {
         photonBaseUrl: String,
         appMicrometerRegistry: PrometheusMeterRegistry,
     ) {
+        val healthCheck = HealthCheck(client, photonBaseUrl)
+
         routing {
             get("/v2/autocomplete") {
                 peliasAutocompleteRequest(photonBaseUrl, client)
@@ -52,11 +55,11 @@ object Routing {
             }
 
             get("/actuator/health/liveness") {
-                livenessRequest()
+                healthCheck.checkLiveness(call)
             }
 
             get("/actuator/health/readiness") {
-                readinessRequest()
+                healthCheck.checkReadiness(call)
             }
 
             get("/metrics") {
@@ -74,20 +77,5 @@ object Routing {
 
         call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
     }
-
-    private suspend fun RoutingContext.livenessRequest() {
-        call.respondText("""{"status":"UP"}""", contentType = ContentType.Application.Json)
-    }
-
-    private suspend fun RoutingContext.readinessRequest() {
-        try {
-            call.respondText("""{"status":"UP"}""", contentType = ContentType.Application.Json)
-        } catch (e: Exception) {
-            call.respondText(
-                """{"status":"DOWN","details":{"error":"${e.message}"}}""",
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.ServiceUnavailable,
-            )
-        }
-    }
 }
+

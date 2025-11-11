@@ -27,16 +27,20 @@ common:
           failureThreshold: 300
         readinessProbe:
           httpGet:
-            path: /api?q=zzzzz
+            path: /api?q=test&limit=1
             port: 2322
-          periodSeconds: 5
+          initialDelaySeconds: 45
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 3
           successThreshold: 1
-          timeoutSeconds: 1
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /status
             port: 2322
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
   postgres: # sets up a postgres proxy so you can connect to your postgresql instance via localhost on the pod
     enabled: false
