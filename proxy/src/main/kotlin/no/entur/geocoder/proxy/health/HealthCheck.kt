@@ -21,7 +21,7 @@ class HealthCheck(
 
     suspend fun checkReadiness(call: ApplicationCall) {
         try {
-            withTimeout(3000) {
+            withTimeout(5000) {
                 val response = client.get("$photonBaseUrl/api?q=Oslo&limit=1")
                 if (response.status.isSuccess()) {
                     call.respond(HttpStatusCode.OK, mapOf("status" to "UP"))

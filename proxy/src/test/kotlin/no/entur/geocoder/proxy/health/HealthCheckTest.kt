@@ -79,9 +79,9 @@ class HealthCheckTest {
         respond("Error", statusCode)
     }
 
-    /** Creates a timeout response handler (exceeds 3 second timeout). */
+    /** Creates a timeout response handler (exceeds 5 second timeout). */
     private fun createTimeoutResponse(): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = {
-        delay(4000)
+        delay(6000)  // Exceeds the 5 second timeout
         respond("OK", HttpStatusCode.OK)
     }
 
