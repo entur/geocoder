@@ -1,6 +1,6 @@
 common:
   app: geocoder-proxy
-  shortname: geocoder # This ID is defined in .entur/project.yml and is shared with geocoder-photon
+  shortname: geocoder # Defined in https://github.com/entur/ror-tf-gcp-common-infrastructure/blob/main/.entur/geocoder/app-geocoder.yml shared with geocoder-photon
   team: team-ror
   ingress:
     enabled: true

@@ -6,37 +6,46 @@ Geocoding service consisting of a Photon search engine and a proxy service.
 
 ### Proxy
 
-Builds and deploys on push to main branch.
+**Automatic Deployment:**
+- **Push to main** → Builds → Deploys to **dev** → Runs acceptance tests
+- **Pull requests** → Builds and lints (no deployment)
 
-- Deploys to **dev** automatically
-- Manual deployment to **tst** and **prd** via workflow dispatch (no review required)
-
-**Workflow options:**
-- `deploy_env`: Deployment target (`dev`, `tst`, `prd`)
-- `image_tag`: Tag to use when deploying (default: `latest`)
+**Manual Deployment via Workflow Dispatch:**
+- `🚀 Dev` - Deploy to development (builds if needed)
+- `🚀 Staging` - Deploy to staging (uses existing image)
+- `🚀 Prod` - Deploy to production (uses existing image)
+- `image_tag` - Specify image tag (default: `latest`)
 
 ### Photon
 
-Manual build and deploy via GitHub Actions workflow.
+**Scheduled Build:**
+- **Daily at 09:02 UTC** → Full data import → Build → Deploy to **all environments**
 
-**Workflow options:**
-- `build`: Controls data import and deployment
-    - `build nominatim/photon, deploy to dev` - Full import and deploy
-    - `build photon, deploy to dev` - Build Photon data only (uses latest Nominatim data)
-    - `deploy specified tag to dev` - Deploy existing image to dev
-    - `deploy specified tag to tst` - Deploy existing image to staging
-    - `deploy specified tag to prd` - Deploy existing image to prod
-    - `deploy specified tag to all` - Deploy existing image to all environments
-- `photon_image_tag`: Tag to use when deploying existing image (default: `latest`)
-- `photon_jar_url`: Custom Photon JAR URL
+**Manual Build/Deploy via Workflow Dispatch:**
+- `🔨 Download and convert data → build Photon → Dev` - Full data pipeline + deploy
+- `⚡ Use latest data → build Photon → Dev` - Build using latest Nominatim data + deploy
+- `🚀 Deploy existing Photon image → Dev` - Deploy pre-built image to dev
+- `🚀 Deploy existing Photon image → Staging` - Deploy pre-built image to staging
+- `🚀 Deploy existing Photon image → Prod` - Deploy pre-built image to production
 
-**Data pipeline:**
-1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace/etc data to Nominatim format
-2. **Photon Data** - Imports Nominatim data into Photon search index
-3. **Photon Image** - Builds Docker image with Photon JAR and Photon Data
+**Workflow Inputs:**
+- `photon_image_tag` - Image tag to deploy (default: `latest`)
+- `photon_jar_url` - Custom Photon JAR URL (optional)
+
+**Data Pipeline:**
+1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace data → `nominatim.ndjson.gz`
+2. **Photon Data** - Imports Nominatim data into Photon search index → `photon_data.tar.gz`
+3. **Photon Image** - Builds Docker image with Photon JAR + search data
 4. **Deploy** - Deploys to selected environments (no review required)
 
-Data artifacts are stored as Docker images in GCR to make it easy to fetch the `latest` data.
+💾 Data artifacts are stored as Docker images in GCR (e.g., `geocoder-nominatim-data:latest`, `geocoder-photon-data:latest`).
+
+### Acceptance Tests
+
+Can be triggered manually via workflow dispatch for any environment:
+- **Dev**, **Staging (tst)**, or **Prod**
+- Automatically runs after proxy deployments
+- Uses [geocoder-acceptance-tests](https://github.com/entur/geocoder-acceptance-tests) repository
 
 
 ## Usage
