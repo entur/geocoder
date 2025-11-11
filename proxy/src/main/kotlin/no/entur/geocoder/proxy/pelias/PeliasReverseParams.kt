@@ -9,7 +9,7 @@ data class PeliasReverseParams(
     val lat: BigDecimal,
     val lon: BigDecimal,
     val radius: Int? = null,
-    val size: Int = 100,
+    val size: Int = 10,
     val lang: String = "no",
     val boundaryCountry: String? = null,
     val boundaryCountyIds: List<String> = emptyList(),

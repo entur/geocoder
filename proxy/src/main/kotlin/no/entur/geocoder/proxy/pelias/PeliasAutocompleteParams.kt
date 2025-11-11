@@ -7,7 +7,7 @@ import java.math.BigDecimal
 
 data class PeliasAutocompleteParams(
     val text: String = "",
-    val size: Int = 100,
+    val size: Int = 10,
     val lang: String = "no",
     val boundaryCountry: String? = null,
     val boundaryCountyIds: List<String> = emptyList(),
