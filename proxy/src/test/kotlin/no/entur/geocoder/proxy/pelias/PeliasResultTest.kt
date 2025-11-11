@@ -6,12 +6,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class PeliasResultTest {
-
     @Test
     fun `PeliasResult creates with default values`() {
-        val result = PeliasResult(
-            features = emptyList()
-        )
+        val result =
+            PeliasResult(
+                features = emptyList(),
+            )
 
         assertEquals("FeatureCollection", result.type)
         assertEquals(emptyList(), result.features)
@@ -21,21 +21,25 @@ class PeliasResultTest {
 
     @Test
     fun `PeliasResult creates with features and bbox`() {
-        val feature = PeliasResult.PeliasFeature(
-            geometry = PeliasResult.PeliasGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PeliasResult.PeliasProperties(
-                id = "123",
-                name = "Test Place"
+        val feature =
+            PeliasResult.PeliasFeature(
+                geometry =
+                    PeliasResult.PeliasGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PeliasResult.PeliasProperties(
+                        id = "123",
+                        name = "Test Place",
+                    ),
             )
-        )
 
-        val result = PeliasResult(
-            features = listOf(feature),
-            bbox = listOf(BigDecimal("10.0"), BigDecimal("60.0"), BigDecimal("11.0"), BigDecimal("61.0"))
-        )
+        val result =
+            PeliasResult(
+                features = listOf(feature),
+                bbox = listOf(BigDecimal("10.0"), BigDecimal("60.0"), BigDecimal("11.0"), BigDecimal("61.0")),
+            )
 
         assertEquals(1, result.features.size)
         assertEquals(4, result.bbox?.size)
@@ -43,43 +47,46 @@ class PeliasResultTest {
 
     @Test
     fun `PeliasFeature has correct default type`() {
-        val feature = PeliasResult.PeliasFeature(
-            geometry = PeliasResult.PeliasGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PeliasResult.PeliasProperties()
-        )
+        val feature =
+            PeliasResult.PeliasFeature(
+                geometry =
+                    PeliasResult.PeliasGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties = PeliasResult.PeliasProperties(),
+            )
 
         assertEquals("PhotonFeature", feature.type)
     }
 
     @Test
     fun `PeliasProperties creates with all fields`() {
-        val props = PeliasResult.PeliasProperties(
-            id = "W123456789",
-            gid = "osm:venue:W123456789",
-            layer = "venue",
-            source = "osm",
-            source_id = "W123456789",
-            name = "Oslo Sentralstasjon",
-            popular_name = "Oslo S",
-            housenumber = "1",
-            street = "Jernbanetorget",
-            distance = BigDecimal("1.234"),
-            postalcode = "0154",
-            accuracy = "point",
-            country_a = "NOR",
-            county = "Oslo",
-            county_gid = "whosonfirst:county:03",
-            locality = "Oslo",
-            locality_gid = "whosonfirst:locality:0301",
-            borough = "Sentrum",
-            borough_gid = "whosonfirst:123",
-            label = "Oslo Sentralstasjon, Oslo",
-            category = listOf("transport", "station"),
-            tariff_zones = listOf("RUT:TariffZone:01", "RUT:TariffZone:02")
-        )
+        val props =
+            PeliasResult.PeliasProperties(
+                id = "W123456789",
+                gid = "osm:venue:W123456789",
+                layer = "venue",
+                source = "osm",
+                source_id = "W123456789",
+                name = "Oslo Sentralstasjon",
+                popular_name = "Oslo S",
+                housenumber = "1",
+                street = "Jernbanetorget",
+                distance = BigDecimal("1.234"),
+                postalcode = "0154",
+                accuracy = "point",
+                country_a = "NOR",
+                county = "Oslo",
+                county_gid = "whosonfirst:county:03",
+                locality = "Oslo",
+                locality_gid = "whosonfirst:locality:0301",
+                borough = "Sentrum",
+                borough_gid = "whosonfirst:123",
+                label = "Oslo Sentralstasjon, Oslo",
+                category = listOf("transport", "station"),
+                tariff_zones = listOf("RUT:TariffZone:01", "RUT:TariffZone:02"),
+            )
 
         assertEquals("W123456789", props.id)
         assertEquals("osm:venue:W123456789", props.gid)
@@ -127,17 +134,18 @@ class PeliasResultTest {
 
     @Test
     fun `QueryMetadata creates with all fields`() {
-        val query = PeliasResult.GeocodingMetadata.QueryMetadata(
-            text = "Oslo",
-            parser = "addressit",
-            tokens = listOf("oslo"),
-            size = 20,
-            layers = listOf("address", "venue"),
-            sources = listOf("osm", "kartverket"),
-            private = false,
-            lang = PeliasResult.GeocodingMetadata.LangMetadata(),
-            querySize = 50
-        )
+        val query =
+            PeliasResult.GeocodingMetadata.QueryMetadata(
+                text = "Oslo",
+                parser = "addressit",
+                tokens = listOf("oslo"),
+                size = 20,
+                layers = listOf("address", "venue"),
+                sources = listOf("osm", "kartverket"),
+                private = false,
+                lang = PeliasResult.GeocodingMetadata.LangMetadata(),
+                querySize = 50,
+            )
 
         assertEquals("Oslo", query.text)
         assertEquals("addressit", query.parser)
@@ -162,13 +170,15 @@ class PeliasResultTest {
 
     @Test
     fun `PeliasGeometry stores coordinates correctly`() {
-        val geometry = PeliasResult.PeliasGeometry(
-            type = "Point",
-            coordinates = listOf(
-                BigDecimal("10.757933"),
-                BigDecimal("59.911491")
+        val geometry =
+            PeliasResult.PeliasGeometry(
+                type = "Point",
+                coordinates =
+                    listOf(
+                        BigDecimal("10.757933"),
+                        BigDecimal("59.911491"),
+                    ),
             )
-        )
 
         assertEquals("Point", geometry.type)
         assertEquals(2, geometry.coordinates.size)
@@ -178,29 +188,33 @@ class PeliasResultTest {
 
     @Test
     fun `PeliasResult with multiple features`() {
-        val features = listOf(
-            PeliasResult.PeliasFeature(
-                geometry = PeliasResult.PeliasGeometry(
-                    type = "Point",
-                    coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
+        val features =
+            listOf(
+                PeliasResult.PeliasFeature(
+                    geometry =
+                        PeliasResult.PeliasGeometry(
+                            type = "Point",
+                            coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        ),
+                    properties = PeliasResult.PeliasProperties(name = "Place 1"),
                 ),
-                properties = PeliasResult.PeliasProperties(name = "Place 1")
-            ),
-            PeliasResult.PeliasFeature(
-                geometry = PeliasResult.PeliasGeometry(
-                    type = "Point",
-                    coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0"))
+                PeliasResult.PeliasFeature(
+                    geometry =
+                        PeliasResult.PeliasGeometry(
+                            type = "Point",
+                            coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0")),
+                        ),
+                    properties = PeliasResult.PeliasProperties(name = "Place 2"),
                 ),
-                properties = PeliasResult.PeliasProperties(name = "Place 2")
-            ),
-            PeliasResult.PeliasFeature(
-                geometry = PeliasResult.PeliasGeometry(
-                    type = "Point",
-                    coordinates = listOf(BigDecimal("12.0"), BigDecimal("62.0"))
+                PeliasResult.PeliasFeature(
+                    geometry =
+                        PeliasResult.PeliasGeometry(
+                            type = "Point",
+                            coordinates = listOf(BigDecimal("12.0"), BigDecimal("62.0")),
+                        ),
+                    properties = PeliasResult.PeliasProperties(name = "Place 3"),
                 ),
-                properties = PeliasResult.PeliasProperties(name = "Place 3")
             )
-        )
 
         val result = PeliasResult(features = features)
 
@@ -210,4 +224,3 @@ class PeliasResultTest {
         assertEquals("Place 3", result.features[2].properties.name)
     }
 }
-

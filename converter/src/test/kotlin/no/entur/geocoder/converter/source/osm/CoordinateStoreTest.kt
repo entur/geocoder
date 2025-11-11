@@ -34,7 +34,7 @@ class CoordinateStoreTest {
         "151.2093, -33.8688",
         "0.0, 0.0",
         "-180.0, -90.0",
-        "180.0, 90.0"
+        "180.0, 90.0",
     )
     fun `stores and retrieves coordinates with precision`(lon: Double, lat: Double) {
         val store = CoordinateStore(100)
@@ -51,12 +51,13 @@ class CoordinateStoreTest {
     @Test
     fun `stores multiple coordinates`() {
         val store = CoordinateStore(100)
-        val coordinates = mapOf(
-            1L to Pair(10.7522, 59.9139),
-            2L to Pair(5.3221, 60.3913),
-            3L to Pair(10.3951, 63.4305),
-            4L to Pair(18.9560, 69.6492)
-        )
+        val coordinates =
+            mapOf(
+                1L to Pair(10.7522, 59.9139),
+                2L to Pair(5.3221, 60.3913),
+                3L to Pair(10.3951, 63.4305),
+                4L to Pair(18.9560, 69.6492),
+            )
 
         coordinates.forEach { (id, coord) ->
             store.put(id, coord.first, coord.second)
@@ -171,7 +172,7 @@ class CoordinateStoreTest {
     @CsvSource(
         "10.7522, 59.9139",
         "10.75220001, 59.91390001",
-        "10.752199999, 59.913899999"
+        "10.752199999, 59.913899999",
     )
     fun `precision is approximately 1 meter`(lon: Double, lat: Double) {
         val store = CoordinateStore(100)
@@ -201,12 +202,13 @@ class CoordinateStoreTest {
     @Test
     fun `mixed positive and negative IDs work correctly`() {
         val store = CoordinateStore(100)
-        val testData = mapOf(
-            -100L to Pair(10.0, 60.0),
-            100L to Pair(11.0, 61.0),
-            -200L to Pair(12.0, 62.0),
-            200L to Pair(13.0, 63.0)
-        )
+        val testData =
+            mapOf(
+                -100L to Pair(10.0, 60.0),
+                100L to Pair(11.0, 61.0),
+                -200L to Pair(12.0, 62.0),
+                200L to Pair(13.0, 63.0),
+            )
 
         testData.forEach { (id, coord) ->
             store.put(id, coord.first, coord.second)
@@ -275,4 +277,3 @@ class CoordinateStoreTest {
         }
     }
 }
-

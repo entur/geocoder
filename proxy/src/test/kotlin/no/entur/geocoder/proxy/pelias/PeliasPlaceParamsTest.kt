@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class PeliasPlaceParamsTest {
-
     @Test
     fun `validates ids is not empty`() {
         assertFailsWith<IllegalArgumentException> {
@@ -32,13 +31,15 @@ class PeliasPlaceParamsTest {
 
     @Test
     fun `accepts multiple valid ids`() {
-        val params = PeliasPlaceParams(
-            ids = listOf(
-                "osm:venue:123456",
-                "kartverket:address:789012",
-                "whosonfirst:locality:345678"
+        val params =
+            PeliasPlaceParams(
+                ids =
+                    listOf(
+                        "osm:venue:123456",
+                        "kartverket:address:789012",
+                        "whosonfirst:locality:345678",
+                    ),
             )
-        )
 
         assertEquals(3, params.ids.size)
         assertEquals("osm:venue:123456", params.ids[0])
@@ -50,40 +51,41 @@ class PeliasPlaceParamsTest {
     fun `rejects list with mix of valid and invalid ids`() {
         assertFailsWith<IllegalArgumentException> {
             PeliasPlaceParams(
-                ids = listOf(
-                    "osm:venue:123456",
-                    "invalid"
-                )
+                ids =
+                    listOf(
+                        "osm:venue:123456",
+                        "invalid",
+                    ),
             )
         }
     }
-
-
 
     @Test
     fun `validates all ids in the list`() {
         assertFailsWith<IllegalArgumentException> {
             PeliasPlaceParams(
-                ids = listOf(
-                    "valid:format:here",
-                    "also:valid:format",
-                    "not-valid"
-                )
+                ids =
+                    listOf(
+                        "valid:format:here",
+                        "also:valid:format",
+                        "not-valid",
+                    ),
             )
         }
     }
 
     @Test
     fun `accepts real world example ids`() {
-        val params = PeliasPlaceParams(
-            ids = listOf(
-                "openstreetmap:venue:W123456789",
-                "kartverket:address:0301-12345",
-                "whosonfirst:locality:85922437"
+        val params =
+            PeliasPlaceParams(
+                ids =
+                    listOf(
+                        "openstreetmap:venue:W123456789",
+                        "kartverket:address:0301-12345",
+                        "whosonfirst:locality:85922437",
+                    ),
             )
-        )
 
         assertEquals(3, params.ids.size)
     }
 }
-

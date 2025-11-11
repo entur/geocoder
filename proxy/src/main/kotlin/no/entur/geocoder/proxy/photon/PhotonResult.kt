@@ -13,9 +13,10 @@ data class PhotonResult(
     val bbox: List<BigDecimal>? = null,
 ) {
     companion object {
-        private val mapper: ObjectMapper = jacksonObjectMapper().apply {
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
+        private val mapper: ObjectMapper =
+            jacksonObjectMapper().apply {
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
 
         fun parse(json: String): PhotonResult = mapper.readValue(json)
     }

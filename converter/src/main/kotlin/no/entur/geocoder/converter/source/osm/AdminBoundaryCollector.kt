@@ -130,5 +130,3 @@ class AdminBoundaryCollector(
         val countryCode: String,
     )
 }
-
-

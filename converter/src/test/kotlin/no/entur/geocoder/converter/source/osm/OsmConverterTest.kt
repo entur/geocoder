@@ -162,15 +162,17 @@ class OsmConverterTest {
     fun `should convert node with valid hospital tag`() {
         val converter = createConverter()
 
-        val hospital = createMockNode(
-            id = 123L,
-            lat = 59.9139,
-            lon = 10.7522,
-            tags = listOf(
-                Tag("name", "Oslo University Hospital"),
-                Tag("amenity", "hospital")
+        val hospital =
+            createMockNode(
+                id = 123L,
+                lat = 59.9139,
+                lon = 10.7522,
+                tags =
+                    listOf(
+                        Tag("name", "Oslo University Hospital"),
+                        Tag("amenity", "hospital"),
+                    ),
             )
-        )
 
         val result = converter.convert(hospital)
 
@@ -183,15 +185,17 @@ class OsmConverterTest {
     fun `should convert nodes with matching POI tags`() {
         val converter = createConverter()
 
-        val restaurant = createMockNode(
-            id = 456L,
-            lat = 59.9139,
-            lon = 10.7522,
-            tags = listOf(
-                Tag("name", "Nice Restaurant"),
-                Tag("amenity", "restaurant")
+        val restaurant =
+            createMockNode(
+                id = 456L,
+                lat = 59.9139,
+                lon = 10.7522,
+                tags =
+                    listOf(
+                        Tag("name", "Nice Restaurant"),
+                        Tag("amenity", "restaurant"),
+                    ),
             )
-        )
 
         val result = converter.convert(restaurant)
 
@@ -203,15 +207,17 @@ class OsmConverterTest {
     fun `converted nodes should have point accuracy`() {
         val converter = createConverter()
 
-        val museum = createMockNode(
-            id = 789L,
-            lat = 59.9139,
-            lon = 10.7522,
-            tags = listOf(
-                Tag("name", "National Museum"),
-                Tag("tourism", "museum")
+        val museum =
+            createMockNode(
+                id = 789L,
+                lat = 59.9139,
+                lon = 10.7522,
+                tags =
+                    listOf(
+                        Tag("name", "National Museum"),
+                        Tag("tourism", "museum"),
+                    ),
             )
-        )
 
         val result = converter.convert(museum)
 
@@ -223,15 +229,17 @@ class OsmConverterTest {
     fun `converted nodes should have correct object_type`() {
         val converter = createConverter()
 
-        val school = createMockNode(
-            id = 999L,
-            lat = 59.9139,
-            lon = 10.7522,
-            tags = listOf(
-                Tag("name", "Central School"),
-                Tag("amenity", "school")
+        val school =
+            createMockNode(
+                id = 999L,
+                lat = 59.9139,
+                lon = 10.7522,
+                tags =
+                    listOf(
+                        Tag("name", "Central School"),
+                        Tag("amenity", "school"),
+                    ),
             )
-        )
 
         val result = converter.convert(school)
 
@@ -243,19 +251,21 @@ class OsmConverterTest {
     fun `popularity should vary based on POI type`() {
         val converter = createConverter()
 
-        val hospital = createMockNode(
-            id = 1L,
-            lat = 59.9,
-            lon = 10.7,
-            tags = listOf(Tag("name", "Hospital"), Tag("amenity", "hospital"))
-        )
+        val hospital =
+            createMockNode(
+                id = 1L,
+                lat = 59.9,
+                lon = 10.7,
+                tags = listOf(Tag("name", "Hospital"), Tag("amenity", "hospital")),
+            )
 
-        val cinema = createMockNode(
-            id = 2L,
-            lat = 59.9,
-            lon = 10.7,
-            tags = listOf(Tag("name", "Cinema"), Tag("amenity", "cinema"))
-        )
+        val cinema =
+            createMockNode(
+                id = 2L,
+                lat = 59.9,
+                lon = 10.7,
+                tags = listOf(Tag("name", "Cinema"), Tag("amenity", "cinema")),
+            )
 
         val hospitalResult = converter.convert(hospital)
         val cinemaResult = converter.convert(cinema)
@@ -268,7 +278,7 @@ class OsmConverterTest {
 
         assertTrue(
             hospitalImportance > cinemaImportance,
-            "Hospital should have higher importance than cinema"
+            "Hospital should have higher importance than cinema",
         )
     }
 
@@ -276,12 +286,13 @@ class OsmConverterTest {
     fun `nodes without names should not be converted`() {
         val converter = createConverter()
 
-        val nameless = createMockNode(
-            id = 111L,
-            lat = 59.9,
-            lon = 10.7,
-            tags = listOf(Tag("amenity", "hospital"))
-        )
+        val nameless =
+            createMockNode(
+                id = 111L,
+                lat = 59.9,
+                lon = 10.7,
+                tags = listOf(Tag("amenity", "hospital")),
+            )
 
         val result = converter.convert(nameless)
 
@@ -292,15 +303,17 @@ class OsmConverterTest {
     fun `coordinates should be within valid range`() {
         val converter = createConverter()
 
-        val place = createMockNode(
-            id = 222L,
-            lat = 59.9139,
-            lon = 10.7522,
-            tags = listOf(
-                Tag("name", "Test Place"),
-                Tag("tourism", "hotel")
+        val place =
+            createMockNode(
+                id = 222L,
+                lat = 59.9139,
+                lon = 10.7522,
+                tags =
+                    listOf(
+                        Tag("name", "Test Place"),
+                        Tag("tourism", "hotel"),
+                    ),
             )
-        )
 
         val result = converter.convert(place)
 
@@ -315,15 +328,17 @@ class OsmConverterTest {
     fun `converted entries should have country code`() {
         val converter = createConverter()
 
-        val place = createMockNode(
-            id = 333L,
-            lat = 59.9,
-            lon = 10.7,
-            tags = listOf(
-                Tag("name", "Test Place"),
-                Tag("amenity", "restaurant")
+        val place =
+            createMockNode(
+                id = 333L,
+                lat = 59.9,
+                lon = 10.7,
+                tags =
+                    listOf(
+                        Tag("name", "Test Place"),
+                        Tag("amenity", "restaurant"),
+                    ),
             )
-        )
 
         val result = converter.convert(place)
 

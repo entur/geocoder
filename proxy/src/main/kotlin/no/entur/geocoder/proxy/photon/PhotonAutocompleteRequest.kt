@@ -20,16 +20,17 @@ data class PhotonAutocompleteRequest(
 ) {
     companion object {
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
-            val includes = PhotonFilterBuilder.buildIncludes(
-                boundaryCountry = params.boundaryCountry,
-                boundaryCountyIds = params.boundaryCountyIds,
-                boundaryLocalityIds = params.boundaryLocalityIds,
-                tariffZones = params.tariffZones,
-                tariffZoneAuthorities = params.tariffZoneAuthorities,
-                sources = params.sources,
-                layers = params.layers,
-                categories = params.categories,
-            )
+            val includes =
+                PhotonFilterBuilder.buildIncludes(
+                    boundaryCountry = params.boundaryCountry,
+                    boundaryCountyIds = params.boundaryCountyIds,
+                    boundaryLocalityIds = params.boundaryLocalityIds,
+                    tariffZones = params.tariffZones,
+                    tariffZoneAuthorities = params.tariffZoneAuthorities,
+                    sources = params.sources,
+                    layers = params.layers,
+                    categories = params.categories,
+                )
             val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(params.multiModal))
 
             val zoom =

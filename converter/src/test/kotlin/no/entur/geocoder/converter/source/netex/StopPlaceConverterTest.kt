@@ -95,8 +95,10 @@ class StopPlaceConverterTest {
         converter.convert(input, output)
 
         val content = output.readText()
-        assertTrue(content.contains("osm.public_transport"),
-            "Should contain public transport categories")
+        assertTrue(
+            content.contains("osm.public_transport"),
+            "Should contain public transport categories",
+        )
     }
 
     @Test
@@ -110,10 +112,14 @@ class StopPlaceConverterTest {
         converter.convert(input, output)
 
         val firstLine = output.readLines().first()
-        assertTrue(firstLine.contains("NominatimDumpFile"),
-            "First line should be NominatimDumpFile header")
-        assertTrue(firstLine.contains("\"version\""),
-            "Header should contain version")
+        assertTrue(
+            firstLine.contains("NominatimDumpFile"),
+            "First line should be NominatimDumpFile header",
+        )
+        assertTrue(
+            firstLine.contains("\"version\""),
+            "Header should contain version",
+        )
     }
 
     @Test

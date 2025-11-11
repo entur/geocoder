@@ -228,7 +228,11 @@ class StedsnavnConverterTest {
         parseDefault()
         entries.forEach { entry ->
             val nominatimPlace = converter.convertToNominatim(entry)
-            val name = nominatimPlace.content.first().name?.name
+            val name =
+                nominatimPlace.content
+                    .first()
+                    .name
+                    ?.name
 
             assertNotNull(name, "Name should not be null")
             assertFalse(name.isEmpty(), "Name should not be empty")
@@ -253,7 +257,10 @@ class StedsnavnConverterTest {
         parseDefault()
         entries.forEach { entry ->
             val nominatimPlace = converter.convertToNominatim(entry)
-            val accuracy = nominatimPlace.content.first().extra.accuracy
+            val accuracy =
+                nominatimPlace.content
+                    .first()
+                    .extra.accuracy
 
             assertEquals("point", accuracy, "All stedsnavn entries should have point accuracy")
         }
@@ -264,7 +271,10 @@ class StedsnavnConverterTest {
         parseDefault()
         entries.forEach { entry ->
             val nominatimPlace = converter.convertToNominatim(entry)
-            val source = nominatimPlace.content.first().extra.source
+            val source =
+                nominatimPlace.content
+                    .first()
+                    .extra.source
 
             assertEquals("kartverket-stedsnavn", source, "All entries should have kartverket-stedsnavn source")
         }
@@ -298,12 +308,17 @@ class StedsnavnConverterTest {
         parseDefault()
         entries.forEach { entry ->
             val nominatimPlace = converter.convertToNominatim(entry)
-            val cityName = nominatimPlace.content.first().address.city
+            val cityName =
+                nominatimPlace.content
+                    .first()
+                    .address.city
 
             if (cityName != null) {
                 val firstChar = cityName.first()
-                assertTrue(firstChar.isUpperCase() || !firstChar.isLetter(),
-                    "City name should be titleized: $cityName")
+                assertTrue(
+                    firstChar.isUpperCase() || !firstChar.isLetter(),
+                    "City name should be titleized: $cityName",
+                )
             }
         }
     }
@@ -316,7 +331,11 @@ class StedsnavnConverterTest {
         val entryWithAltName = entries.find { it.annenSkrivemåte.isNotEmpty() }
         if (entryWithAltName != null) {
             val nominatimPlace = converter.convertToNominatim(entryWithAltName)
-            val altName = nominatimPlace.content.first().name?.alt_name
+            val altName =
+                nominatimPlace.content
+                    .first()
+                    .name
+                    ?.alt_name
 
             assertNotNull(altName, "Entry with alternative names should have alt_name populated")
         }

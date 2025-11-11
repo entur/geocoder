@@ -8,14 +8,14 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PhotonReverseRequestTest {
-
     @Test
     fun `from PeliasReverseParams creates request with basic params`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -28,12 +28,13 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams includes radius when provided`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            radius = 1000,
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                radius = 1000,
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -42,13 +43,14 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams uses custom size and language`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            size = 20,
-            lang = "en",
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                size = 20,
+                lang = "en",
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -58,11 +60,12 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams always excludes OSM addresses`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "all"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "all",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -71,11 +74,12 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams excludes child for parent mode`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -86,11 +90,12 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams excludes parent for child mode`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "child"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "child",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -101,11 +106,12 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams excludes only addresses for all mode`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "all"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "all",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -115,17 +121,18 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams builds includes from filters`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            boundaryCountry = "NOR",
-            boundaryCountyIds = listOf("03"),
-            boundaryLocalityIds = listOf("0301"),
-            sources = listOf("osm", "kartverket"),
-            layers = listOf("venue"),
-            categories = listOf("transport"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                boundaryCountry = "NOR",
+                boundaryCountyIds = listOf("03"),
+                boundaryLocalityIds = listOf("0301"),
+                sources = listOf("osm", "kartverket"),
+                layers = listOf("venue"),
+                categories = listOf("transport"),
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -140,13 +147,14 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams includes tariff zones`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            tariffZones = listOf("RUT:TariffZone:01"),
-            tariffZoneAuthorities = listOf("RUT"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                tariffZones = listOf("RUT:TariffZone:01"),
+                tariffZoneAuthorities = listOf("RUT"),
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -156,11 +164,12 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams handles empty filters`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -169,14 +178,15 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams handles all boundary types`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            boundaryCountry = "NOR",
-            boundaryCountyIds = listOf("03", "18", "50"),
-            boundaryLocalityIds = listOf("0301", "1804", "5001"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                boundaryCountry = "NOR",
+                boundaryCountyIds = listOf("03", "18", "50"),
+                boundaryLocalityIds = listOf("0301", "1804", "5001"),
+                multiModal = "parent",
+            )
 
         val request = PhotonReverseRequest.from(params)
 
@@ -190,4 +200,3 @@ class PhotonReverseRequestTest {
         assertTrue(request.includes.contains("locality_gid.5001"))
     }
 }
-

@@ -78,4 +78,3 @@ object Routing {
         call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
     }
 }
-

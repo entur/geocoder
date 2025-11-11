@@ -10,4 +10,3 @@ class MatrikkelPopularityCalculatorTest {
         assertEquals(20.0, MatrikkelPopularityCalculator.calculateStreetPopularity())
     }
 }
-

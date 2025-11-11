@@ -53,8 +53,9 @@ data class V3ReverseParams(
             val params = request.queryParameters
             return V3ReverseParams(
                 lat = params["latitude"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'latitude' is required"),
-                lon = params["longitude"]?.toBigDecimalOrNull()
-                    ?: throw IllegalArgumentException("Parameter 'longitude' is required"),
+                lon =
+                    params["longitude"]?.toBigDecimalOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'longitude' is required"),
                 radius = params["radius"]?.toIntOrNull() ?: 10,
                 limit = params["limit"]?.toIntOrNull() ?: 10,
                 language = params["language"] ?: params["lang"] ?: "no",

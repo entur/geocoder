@@ -3,11 +3,10 @@ plugins {
     alias(libs.plugins.ktlint)
 }
 
-//subprojects {
-//    apply(plugin = "org.jlleitschuh.gradle.ktlint")
-//
-//    afterEvaluate {
-//        tasks.findByName("build")?.dependsOn("ktlintFormat")
-//    }
-//}
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        ignoreFailures.set(true)
+    }
+}

@@ -29,7 +29,7 @@ class HealthCheck(
                     logger.warn("Photon not ready: ${response.status}")
                     call.respond(
                         HttpStatusCode.ServiceUnavailable,
-                        mapOf("status" to "DOWN", "reason" to "Photon unavailable")
+                        mapOf("status" to "DOWN", "reason" to "Photon unavailable"),
                     )
                 }
             }
@@ -37,15 +37,14 @@ class HealthCheck(
             logger.warn("Photon readiness check timed out")
             call.respond(
                 HttpStatusCode.ServiceUnavailable,
-                mapOf("status" to "DOWN", "reason" to "Timeout")
+                mapOf("status" to "DOWN", "reason" to "Timeout"),
             )
         } catch (e: Exception) {
             logger.error("Readiness check failed", e)
             call.respond(
                 HttpStatusCode.ServiceUnavailable,
-                mapOf("status" to "DOWN", "reason" to "Error: ${e.message}")
+                mapOf("status" to "DOWN", "reason" to "Error: ${e.message}"),
             )
         }
     }
 }
-

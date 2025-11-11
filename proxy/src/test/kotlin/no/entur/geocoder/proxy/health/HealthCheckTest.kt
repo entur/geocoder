@@ -21,7 +21,6 @@ import kotlin.test.assertTrue
  * Tests for HealthCheck endpoints.
  */
 class HealthCheckTest {
-
     private val objectMapper = jacksonObjectMapper()
 
     companion object {
@@ -36,7 +35,7 @@ class HealthCheckTest {
     private fun ApplicationTestBuilder.setupHealthCheckEndpoint(
         endpoint: String,
         photonUrl: String = DEFAULT_PHOTON_URL,
-        mockEngineHandler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
+        mockEngineHandler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ) {
         application {
             install(ContentNegotiation) { jackson() }
@@ -57,7 +56,7 @@ class HealthCheckTest {
         endpoint: String,
         expectedStatus: HttpStatusCode,
         expectedHealthStatus: String,
-        expectedReason: String? = null
+        expectedReason: String? = null,
     ) {
         val response = client.get(endpoint)
         val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
@@ -69,7 +68,9 @@ class HealthCheckTest {
     }
 
     /** Creates a successful Photon response handler. */
-    private fun createSuccessfulPhotonResponse(validateUrl: Boolean = false): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = { request ->
+    private fun createSuccessfulPhotonResponse(
+        validateUrl: Boolean = false,
+    ): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = { request ->
         if (validateUrl) assertEquals("$DEFAULT_PHOTON_URL/api?q=Oslo&limit=1", request.url.toString())
         respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
     }
@@ -81,7 +82,7 @@ class HealthCheckTest {
 
     /** Creates a timeout response handler (exceeds 5 second timeout). */
     private fun createTimeoutResponse(): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = {
-        delay(6000)  // Exceeds the 5 second timeout
+        delay(6000) // Exceeds the 5 second timeout
         respond("OK", HttpStatusCode.OK)
     }
 
@@ -91,70 +92,78 @@ class HealthCheckTest {
     }
 
     @Test
-    fun `liveness check always returns UP`() = testApplication {
-        setupHealthCheckEndpoint(LIVENESS_ENDPOINT) {
-            respond("OK", HttpStatusCode.OK)
+    fun `liveness check always returns UP`() =
+        testApplication {
+            setupHealthCheckEndpoint(LIVENESS_ENDPOINT) {
+                respond("OK", HttpStatusCode.OK)
+            }
+            performHealthCheckAndValidate(LIVENESS_ENDPOINT, HttpStatusCode.OK, "UP")
         }
-        performHealthCheckAndValidate(LIVENESS_ENDPOINT, HttpStatusCode.OK, "UP")
-    }
 
     @Test
-    fun `liveness check with different photon base URLs`() = testApplication {
-        setupHealthCheckEndpoint(LIVENESS_ENDPOINT, CUSTOM_PHOTON_URL) {
-            respond("OK", HttpStatusCode.OK)
+    fun `liveness check with different photon base URLs`() =
+        testApplication {
+            setupHealthCheckEndpoint(LIVENESS_ENDPOINT, CUSTOM_PHOTON_URL) {
+                respond("OK", HttpStatusCode.OK)
+            }
+            performHealthCheckAndValidate(LIVENESS_ENDPOINT, HttpStatusCode.OK, "UP")
         }
-        performHealthCheckAndValidate(LIVENESS_ENDPOINT, HttpStatusCode.OK, "UP")
-    }
 
     @Test
-    fun `readiness check returns UP when Photon is available`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createSuccessfulPhotonResponse(validateUrl = true))
-        performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
-    }
-
-    @Test
-    fun `readiness check returns DOWN when Photon returns error`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.InternalServerError))
-        performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
-    }
-
-    @Test
-    fun `readiness check returns DOWN when Photon is not found`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.NotFound))
-        performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
-    }
-
-    @Test
-    fun `readiness check returns DOWN on timeout`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createTimeoutResponse())
-        performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Timeout")
-    }
-
-    @Test
-    fun `readiness check returns DOWN on network exception`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createExceptionResponse())
-
-        val response = client.get(READINESS_ENDPOINT)
-        val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
-
-        assertEquals(HttpStatusCode.ServiceUnavailable, response.status)
-        assertEquals("DOWN", result["status"])
-        assertTrue(result["reason"]?.contains("Error") == true)
-    }
-
-    @Test
-    fun `readiness check handles different HTTP error codes`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.BadGateway))
-        performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
-    }
-
-    @Test
-    fun `readiness check validates correct photon URL format`() = testApplication {
-        setupHealthCheckEndpoint(READINESS_ENDPOINT, CUSTOM_PHOTON_URL) { request ->
-            assertTrue(request.url.toString().startsWith("$CUSTOM_PHOTON_URL/api"))
-            respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+    fun `readiness check returns UP when Photon is available`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createSuccessfulPhotonResponse(validateUrl = true))
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
         }
-        performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
-    }
+
+    @Test
+    fun `readiness check returns DOWN when Photon returns error`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.InternalServerError))
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
+        }
+
+    @Test
+    fun `readiness check returns DOWN when Photon is not found`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.NotFound))
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
+        }
+
+    @Test
+    fun `readiness check returns DOWN on timeout`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createTimeoutResponse())
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Timeout")
+        }
+
+    @Test
+    fun `readiness check returns DOWN on network exception`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createExceptionResponse())
+
+            val response = client.get(READINESS_ENDPOINT)
+            val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
+
+            assertEquals(HttpStatusCode.ServiceUnavailable, response.status)
+            assertEquals("DOWN", result["status"])
+            assertTrue(result["reason"]?.contains("Error") == true)
+        }
+
+    @Test
+    fun `readiness check handles different HTTP error codes`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.BadGateway))
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
+        }
+
+    @Test
+    fun `readiness check validates correct photon URL format`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, CUSTOM_PHOTON_URL) { request ->
+                assertTrue(request.url.toString().startsWith("$CUSTOM_PHOTON_URL/api"))
+                respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
+        }
 }
-

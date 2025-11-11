@@ -10,7 +10,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PeliasResultTransformerTest {
-
     @Test
     fun `transformSource extracts source from tags`() {
         val extra = Extra(tags = "legacy.source.osm,legacy.layer.venue")
@@ -141,15 +140,17 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `calculateDistanceKm calculates distance between two points`() {
-        val geometry = PhotonResult.PhotonGeometry(
-            type = "Point",
-            coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491"))
-        )
-        val distance = PeliasResultTransformer.calculateDistanceKm(
-            geometry,
-            BigDecimal("59.912000"),
-            BigDecimal("10.758000")
-        )
+        val geometry =
+            PhotonResult.PhotonGeometry(
+                type = "Point",
+                coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
+            )
+        val distance =
+            PeliasResultTransformer.calculateDistanceKm(
+                geometry,
+                BigDecimal("59.912000"),
+                BigDecimal("10.758000"),
+            )
 
         assertNotNull(distance)
         assertTrue(distance > BigDecimal.ZERO)
@@ -158,64 +159,72 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `calculateDistanceKm returns null for invalid geometry with one coordinate`() {
-        val geometry = PhotonResult.PhotonGeometry(
-            type = "Point",
-            coordinates = listOf(BigDecimal("10.0"))
-        )
-        val distance = PeliasResultTransformer.calculateDistanceKm(
-            geometry,
-            BigDecimal("60.0"),
-            BigDecimal("10.0")
-        )
+        val geometry =
+            PhotonResult.PhotonGeometry(
+                type = "Point",
+                coordinates = listOf(BigDecimal("10.0")),
+            )
+        val distance =
+            PeliasResultTransformer.calculateDistanceKm(
+                geometry,
+                BigDecimal("60.0"),
+                BigDecimal("10.0"),
+            )
 
         assertNull(distance)
     }
 
     @Test
     fun `calculateDistanceKm returns null for empty coordinates`() {
-        val geometry = PhotonResult.PhotonGeometry(
-            type = "Point",
-            coordinates = emptyList()
-        )
-        val distance = PeliasResultTransformer.calculateDistanceKm(
-            geometry,
-            BigDecimal("60.0"),
-            BigDecimal("10.0")
-        )
+        val geometry =
+            PhotonResult.PhotonGeometry(
+                type = "Point",
+                coordinates = emptyList(),
+            )
+        val distance =
+            PeliasResultTransformer.calculateDistanceKm(
+                geometry,
+                BigDecimal("60.0"),
+                BigDecimal("10.0"),
+            )
 
         assertNull(distance)
     }
 
     @Test
     fun `transformFeature creates complete PeliasFeature`() {
-        val extra = Extra(
-            id = "W123456",
-            source = "osm",
-            tags = "legacy.source.osm,legacy.layer.venue,legacy.category.transport",
-            locality = "Oslo",
-            locality_gid = "0301",
-            county_gid = "03",
-            country_a = "NOR",
-            accuracy = "point",
-            tariff_zones = "RUT:TariffZone:01,RUT:TariffZone:02",
-            alt_name = "Oslo S;Oslo Central"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            type = "Feature",
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = "Oslo Sentralstasjon",
-                street = "Jernbanetorget",
-                housenumber = "1",
-                postcode = "0154",
-                county = "Oslo",
-                extra = extra
+        val extra =
+            Extra(
+                id = "W123456",
+                source = "osm",
+                tags = "legacy.source.osm,legacy.layer.venue,legacy.category.transport",
+                locality = "Oslo",
+                locality_gid = "0301",
+                county_gid = "03",
+                country_a = "NOR",
+                accuracy = "point",
+                tariff_zones = "RUT:TariffZone:01,RUT:TariffZone:02",
+                alt_name = "Oslo S;Oslo Central",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                type = "Feature",
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = "Oslo Sentralstasjon",
+                        street = "Jernbanetorget",
+                        housenumber = "1",
+                        postcode = "0154",
+                        county = "Oslo",
+                        extra = extra,
+                    ),
+            )
 
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -238,21 +247,25 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformFeature includes distance when provided`() {
-        val extra = Extra(
-            id = "123",
-            tags = "legacy.source.osm,legacy.layer.venue"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = "Test Location",
-                extra = extra
+        val extra =
+            Extra(
+                id = "123",
+                tags = "legacy.source.osm,legacy.layer.venue",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = "Test Location",
+                        extra = extra,
+                    ),
+            )
 
         val distance = BigDecimal("1.234")
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, distance)
@@ -262,22 +275,26 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformFeature creates label with locality when name differs`() {
-        val extra = Extra(
-            id = "123",
-            locality = "Oslo",
-            tags = "legacy.source.osm,legacy.layer.venue"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = "Central Station",
-                extra = extra
+        val extra =
+            Extra(
+                id = "123",
+                locality = "Oslo",
+                tags = "legacy.source.osm,legacy.layer.venue",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = "Central Station",
+                        extra = extra,
+                    ),
+            )
 
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -286,22 +303,26 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformFeature creates label without duplicate locality`() {
-        val extra = Extra(
-            id = "123",
-            locality = "Oslo",
-            tags = "legacy.source.osm,legacy.layer.venue"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = "Oslo",
-                extra = extra
+        val extra =
+            Extra(
+                id = "123",
+                locality = "Oslo",
+                tags = "legacy.source.osm,legacy.layer.venue",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = "Oslo",
+                        extra = extra,
+                    ),
+            )
 
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -310,22 +331,26 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformFeature uses locality as label when name is blank`() {
-        val extra = Extra(
-            id = "123",
-            locality = "Oslo",
-            tags = "legacy.source.osm,legacy.layer.venue"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = "",
-                extra = extra
+        val extra =
+            Extra(
+                id = "123",
+                locality = "Oslo",
+                tags = "legacy.source.osm,legacy.layer.venue",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = "",
+                        extra = extra,
+                    ),
+            )
 
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -334,24 +359,28 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformFeature combines street and housenumber when no name`() {
-        val extra = Extra(
-            id = "123",
-            source = "kartverket",
-            tags = "legacy.source.kartverket,legacy.layer.address"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = null,
-                street = "Karl Johans gate",
-                housenumber = "22",
-                extra = extra
+        val extra =
+            Extra(
+                id = "123",
+                source = "kartverket",
+                tags = "legacy.source.kartverket,legacy.layer.address",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = null,
+                        street = "Karl Johans gate",
+                        housenumber = "22",
+                        extra = extra,
+                    ),
+            )
 
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -360,23 +389,27 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformFeature uses street alone when no name and no housenumber`() {
-        val extra = Extra(
-            id = "123",
-            tags = "legacy.source.osm,legacy.layer.street"
-        )
-
-        val photonFeature = PhotonResult.PhotonFeature(
-            geometry = PhotonResult.PhotonGeometry(
-                type = "Point",
-                coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
-            ),
-            properties = PhotonResult.PhotonProperties(
-                name = null,
-                street = "Karl Johans gate",
-                housenumber = null,
-                extra = extra
+        val extra =
+            Extra(
+                id = "123",
+                tags = "legacy.source.osm,legacy.layer.street",
             )
-        )
+
+        val photonFeature =
+            PhotonResult.PhotonFeature(
+                geometry =
+                    PhotonResult.PhotonGeometry(
+                        type = "Point",
+                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                    ),
+                properties =
+                    PhotonResult.PhotonProperties(
+                        name = null,
+                        street = "Karl Johans gate",
+                        housenumber = null,
+                        extra = extra,
+                    ),
+            )
 
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -385,36 +418,44 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `parseAndTransform creates valid JSON with bbox`() {
-        val photonResult = PhotonResult(
-            features = listOf(
-                PhotonResult.PhotonFeature(
-                    geometry = PhotonResult.PhotonGeometry(
-                        type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0"))
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonResult.PhotonFeature(
+                            geometry =
+                                PhotonResult.PhotonGeometry(
+                                    type = "Point",
+                                    coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                                ),
+                            properties =
+                                PhotonResult.PhotonProperties(
+                                    name = "Place 1",
+                                    extra =
+                                        Extra(
+                                            id = "1",
+                                            tags = "legacy.source.osm,legacy.layer.venue",
+                                        ),
+                                ),
+                        ),
+                        PhotonResult.PhotonFeature(
+                            geometry =
+                                PhotonResult.PhotonGeometry(
+                                    type = "Point",
+                                    coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0")),
+                                ),
+                            properties =
+                                PhotonResult.PhotonProperties(
+                                    name = "Place 2",
+                                    extra =
+                                        Extra(
+                                            id = "2",
+                                            tags = "legacy.source.osm,legacy.layer.venue",
+                                        ),
+                                ),
+                        ),
                     ),
-                    properties = PhotonResult.PhotonProperties(
-                        name = "Place 1",
-                        extra = Extra(
-                            id = "1",
-                            tags = "legacy.source.osm,legacy.layer.venue"
-                        )
-                    )
-                ),
-                PhotonResult.PhotonFeature(
-                    geometry = PhotonResult.PhotonGeometry(
-                        type = "Point",
-                        coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0"))
-                    ),
-                    properties = PhotonResult.PhotonProperties(
-                        name = "Place 2",
-                        extra = Extra(
-                            id = "2",
-                            tags = "legacy.source.osm,legacy.layer.venue"
-                        )
-                    )
-                )
             )
-        )
 
         val json = PeliasResultTransformer.parseAndTransform(photonResult)
 
@@ -426,29 +467,35 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `parseAndTransform calculates distances when coordinates provided`() {
-        val photonResult = PhotonResult(
-            features = listOf(
-                PhotonResult.PhotonFeature(
-                    geometry = PhotonResult.PhotonGeometry(
-                        type = "Point",
-                        coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491"))
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonResult.PhotonFeature(
+                            geometry =
+                                PhotonResult.PhotonGeometry(
+                                    type = "Point",
+                                    coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
+                                ),
+                            properties =
+                                PhotonResult.PhotonProperties(
+                                    name = "Oslo",
+                                    extra =
+                                        Extra(
+                                            id = "1",
+                                            tags = "legacy.source.osm,legacy.layer.venue",
+                                        ),
+                                ),
+                        ),
                     ),
-                    properties = PhotonResult.PhotonProperties(
-                        name = "Oslo",
-                        extra = Extra(
-                            id = "1",
-                            tags = "legacy.source.osm,legacy.layer.venue"
-                        )
-                    )
-                )
             )
-        )
 
-        val json = PeliasResultTransformer.parseAndTransform(
-            photonResult,
-            BigDecimal("59.912000"),
-            BigDecimal("10.758000")
-        )
+        val json =
+            PeliasResultTransformer.parseAndTransform(
+                photonResult,
+                BigDecimal("59.912000"),
+                BigDecimal("10.758000"),
+            )
 
         assertTrue(json.contains("\"distance\""))
     }
@@ -463,4 +510,3 @@ class PeliasResultTransformerTest {
         assertTrue(!json.contains("\"bbox\""))
     }
 }
-

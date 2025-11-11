@@ -7,14 +7,13 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class PeliasReverseParamsTest {
-
     @Test
     fun `validates latitude in range`() {
         assertFailsWith<IllegalArgumentException> {
             PeliasReverseParams(
                 lat = BigDecimal("91.0"),
                 lon = BigDecimal("10.0"),
-                multiModal = "parent"
+                multiModal = "parent",
             )
         }
 
@@ -22,7 +21,7 @@ class PeliasReverseParamsTest {
             PeliasReverseParams(
                 lat = BigDecimal("-91.0"),
                 lon = BigDecimal("10.0"),
-                multiModal = "parent"
+                multiModal = "parent",
             )
         }
     }
@@ -33,7 +32,7 @@ class PeliasReverseParamsTest {
             PeliasReverseParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("181.0"),
-                multiModal = "parent"
+                multiModal = "parent",
             )
         }
 
@@ -41,18 +40,19 @@ class PeliasReverseParamsTest {
             PeliasReverseParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("-181.0"),
-                multiModal = "parent"
+                multiModal = "parent",
             )
         }
     }
 
     @Test
     fun `accepts valid coordinates`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                multiModal = "parent",
+            )
 
         assertEquals(BigDecimal("59.911491"), params.lat)
         assertEquals(BigDecimal("10.757933"), params.lon)
@@ -60,20 +60,22 @@ class PeliasReverseParamsTest {
 
     @Test
     fun `accepts extreme valid coordinates`() {
-        val params1 = PeliasReverseParams(
-            lat = BigDecimal("90.0"),
-            lon = BigDecimal("180.0"),
-            multiModal = "parent"
-        )
+        val params1 =
+            PeliasReverseParams(
+                lat = BigDecimal("90.0"),
+                lon = BigDecimal("180.0"),
+                multiModal = "parent",
+            )
 
         assertEquals(BigDecimal("90.0"), params1.lat)
         assertEquals(BigDecimal("180.0"), params1.lon)
 
-        val params2 = PeliasReverseParams(
-            lat = BigDecimal("-90.0"),
-            lon = BigDecimal("-180.0"),
-            multiModal = "parent"
-        )
+        val params2 =
+            PeliasReverseParams(
+                lat = BigDecimal("-90.0"),
+                lon = BigDecimal("-180.0"),
+                multiModal = "parent",
+            )
 
         assertEquals(BigDecimal("-90.0"), params2.lat)
         assertEquals(BigDecimal("-180.0"), params2.lon)
@@ -81,11 +83,12 @@ class PeliasReverseParamsTest {
 
     @Test
     fun `has correct defaults`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                multiModal = "parent",
+            )
 
         assertNull(params.radius)
         assertEquals(10, params.size)
@@ -103,22 +106,23 @@ class PeliasReverseParamsTest {
 
     @Test
     fun `accepts all parameters`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("59.911491"),
-            lon = BigDecimal("10.757933"),
-            radius = 1000,
-            size = 20,
-            lang = "en",
-            boundaryCountry = "NOR",
-            boundaryCountyIds = listOf("03", "18"),
-            boundaryLocalityIds = listOf("0301", "1804"),
-            tariffZones = listOf("RUT:TariffZone:01", "RUT:TariffZone:02"),
-            tariffZoneAuthorities = listOf("RUT", "ATB"),
-            sources = listOf("osm", "kartverket"),
-            layers = listOf("address", "venue"),
-            categories = listOf("transport", "education"),
-            multiModal = "child"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("59.911491"),
+                lon = BigDecimal("10.757933"),
+                radius = 1000,
+                size = 20,
+                lang = "en",
+                boundaryCountry = "NOR",
+                boundaryCountyIds = listOf("03", "18"),
+                boundaryLocalityIds = listOf("0301", "1804"),
+                tariffZones = listOf("RUT:TariffZone:01", "RUT:TariffZone:02"),
+                tariffZoneAuthorities = listOf("RUT", "ATB"),
+                sources = listOf("osm", "kartverket"),
+                layers = listOf("address", "venue"),
+                categories = listOf("transport", "education"),
+                multiModal = "child",
+            )
 
         assertEquals(BigDecimal("59.911491"), params.lat)
         assertEquals(BigDecimal("10.757933"), params.lon)
@@ -138,62 +142,67 @@ class PeliasReverseParamsTest {
 
     @Test
     fun `accepts null radius`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            radius = null,
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                radius = null,
+                multiModal = "parent",
+            )
 
         assertNull(params.radius)
     }
 
     @Test
     fun `accepts zero radius`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            radius = 0,
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                radius = 0,
+                multiModal = "parent",
+            )
 
         assertEquals(0, params.radius)
     }
 
     @Test
     fun `accepts large radius`() {
-        val params = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            radius = 100000,
-            multiModal = "parent"
-        )
+        val params =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                radius = 100000,
+                multiModal = "parent",
+            )
 
         assertEquals(100000, params.radius)
     }
 
     @Test
     fun `accepts different multiModal values`() {
-        val parent = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            multiModal = "parent"
-        )
+        val parent =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                multiModal = "parent",
+            )
         assertEquals("parent", parent.multiModal)
 
-        val child = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            multiModal = "child"
-        )
+        val child =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                multiModal = "child",
+            )
         assertEquals("child", child.multiModal)
 
-        val all = PeliasReverseParams(
-            lat = BigDecimal("60.0"),
-            lon = BigDecimal("10.0"),
-            multiModal = "all"
-        )
+        val all =
+            PeliasReverseParams(
+                lat = BigDecimal("60.0"),
+                lon = BigDecimal("10.0"),
+                multiModal = "all",
+            )
         assertEquals("all", all.multiModal)
     }
 }
-

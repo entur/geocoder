@@ -85,7 +85,6 @@ class OsmConverter : Converter {
             println("Finished processing $count entities")
         }
 
-
     private fun parsePbf(inputFile: File, filter: ((Entity) -> Boolean)?): Sequence<Entity> =
         OsmIterator(inputFile, filter).asSequence()
 }

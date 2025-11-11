@@ -66,7 +66,6 @@ class StopPlaceConverter : Converter {
                 }?.toSet()
                 ?: emptySet()
 
-
         val isParentStopPlace = childStopTypes.isNotEmpty()
         val multimodalityCategory =
             when {
@@ -110,7 +109,7 @@ class StopPlaceConverter : Converter {
                         ?.tariffZoneRef
                         ?.mapNotNull { it.ref }
                         ?.joinToString(",")
-                    ),
+                ),
                 alt_name = altName,
                 tags = tags.joinToString(","),
             )

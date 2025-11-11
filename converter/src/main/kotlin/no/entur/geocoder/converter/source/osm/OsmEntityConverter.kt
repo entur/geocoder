@@ -216,4 +216,3 @@ class OsmEntityConverter(
         return ImportanceCalculator.calculateImportance(popularity)
     }
 }
-

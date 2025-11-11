@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ErrorHandlerTest {
-
     @Test
     fun `handleError creates error for JsonParseException`() {
         val exception = JsonParseException(null, "Invalid JSON")
@@ -61,11 +60,12 @@ class ErrorHandlerTest {
 
     @Test
     fun `toJson serializes ApiError correctly`() {
-        val error = ApiError(
-            error = "Test error",
-            message = "Test message",
-            statusCode = 400
-        )
+        val error =
+            ApiError(
+                error = "Test error",
+                message = "Test message",
+                statusCode = 400,
+            )
 
         val json = ErrorHandler.toJson(error)
 
@@ -82,4 +82,3 @@ class ErrorHandlerTest {
         assertEquals("reverse geocoding failed", error.error)
     }
 }
-

@@ -150,7 +150,7 @@ class GroupOfStopPlacesPopularityCalculatorTest {
         "30, 300.0",
         "60, 600.0",
         "180, 1800.0",
-        "600, 6000.0"
+        "600, 6000.0",
     )
     fun `single member group applies boost factor correctly`(memberPop: Long, expected: Double) {
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(listOf(memberPop))
@@ -162,7 +162,7 @@ class GroupOfStopPlacesPopularityCalculatorTest {
         "30, 30, 9000.0",
         "60, 60, 36000.0",
         "30, 60, 18000.0",
-        "60, 180, 108000.0"
+        "60, 180, 108000.0",
     )
     fun `two member group multiplies popularities correctly`(pop1: Long, pop2: Long, expected: Double) {
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(listOf(pop1, pop2))

@@ -13,7 +13,7 @@ class PlaceIdTest {
         "street, 2000",
         "stedsnavn, 3000",
         "stopplace, 4000",
-        "osm, 5000"
+        "osm, 5000",
     )
     fun `all prefixes create correct IDs`(type: String, expectedPrefix: Int) {
         val placeId = PlaceId.valueOf(type)
@@ -43,4 +43,3 @@ class PlaceIdTest {
         assertNotEquals(id1, id3)
     }
 }
-

@@ -16,20 +16,22 @@ data class PhotonReverseRequest(
 ) {
     companion object {
         fun from(params: PeliasReverseParams): PhotonReverseRequest {
-            val includes = PhotonFilterBuilder.buildIncludes(
-                boundaryCountry = params.boundaryCountry,
-                boundaryCountyIds = params.boundaryCountyIds,
-                boundaryLocalityIds = params.boundaryLocalityIds,
-                tariffZones = params.tariffZones,
-                tariffZoneAuthorities = params.tariffZoneAuthorities,
-                sources = params.sources,
-                layers = params.layers,
-                categories = params.categories,
-            )
-            val excludes = listOfNotNull(
-                Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
-                PhotonFilterBuilder.buildMultiModalExclude(params.multiModal)
-            )
+            val includes =
+                PhotonFilterBuilder.buildIncludes(
+                    boundaryCountry = params.boundaryCountry,
+                    boundaryCountyIds = params.boundaryCountyIds,
+                    boundaryLocalityIds = params.boundaryLocalityIds,
+                    tariffZones = params.tariffZones,
+                    tariffZoneAuthorities = params.tariffZoneAuthorities,
+                    sources = params.sources,
+                    layers = params.layers,
+                    categories = params.categories,
+                )
+            val excludes =
+                listOfNotNull(
+                    Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
+                    PhotonFilterBuilder.buildMultiModalExclude(params.multiModal),
+                )
 
             return PhotonReverseRequest(
                 latitude = params.lat,

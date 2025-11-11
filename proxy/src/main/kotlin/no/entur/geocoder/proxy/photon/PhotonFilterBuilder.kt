@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy.photon
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 
 object PhotonFilterBuilder {
-
     fun buildIncludes(
         boundaryCountry: String?,
         boundaryCountyIds: List<String>,
@@ -42,11 +41,9 @@ object PhotonFilterBuilder {
         }
 
     fun buildMultiModalExclude(multiModal: String): String? =
-            when (multiModal) {
-                "child" -> "multimodal.parent"
-                "parent" -> "multimodal.child"
-                else -> null
-            }
-
+        when (multiModal) {
+            "child" -> "multimodal.parent"
+            "parent" -> "multimodal.child"
+            else -> null
+        }
 }
-

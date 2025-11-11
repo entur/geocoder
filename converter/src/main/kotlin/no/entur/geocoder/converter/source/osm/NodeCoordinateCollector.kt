@@ -32,7 +32,8 @@ class NodeCoordinateCollector(
                 is Way -> {
                     if (entity.id in adminWayIds ||
                         entity.id in poiRelationMemberWayIds ||
-                        entityConverter.isPotentialPoi(entity)) {
+                        entityConverter.isPotentialPoi(entity)
+                    ) {
                         entity.wayNodes.forEach { nodeIds.add(it.nodeId) }
                     }
                 }
@@ -70,4 +71,3 @@ class NodeCoordinateCollector(
     private fun parsePbf(inputFile: File, filter: ((Entity) -> Boolean)?): Sequence<Entity> =
         OsmIterator(inputFile, filter).asSequence()
 }
-

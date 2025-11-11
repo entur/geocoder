@@ -42,7 +42,7 @@ data class PeliasAutocompleteParams(
                                 lat = latStr,
                                 lon = lonStr,
                                 scale = params["focus.scale"],
-                                weight = params["focus.weight"]
+                                weight = params["focus.weight"],
                             )
                         }
                     },
@@ -76,21 +76,25 @@ data class PeliasAutocompleteParams(
 
         companion object {
             fun from(lat: String, lon: String, scale: String?, weight: String?): FocusParams {
-                val latValue = lat.toBigDecimalOrNull()
-                    ?: throw IllegalArgumentException("Parameter 'focus.point.lat' must be a valid number")
-                val lonValue = lon.toBigDecimalOrNull()
-                    ?: throw IllegalArgumentException("Parameter 'focus.point.lon' must be a valid number")
+                val latValue =
+                    lat.toBigDecimalOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'focus.point.lat' must be a valid number")
+                val lonValue =
+                    lon.toBigDecimalOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'focus.point.lon' must be a valid number")
 
-                val scaleValue = scale?.let { scaleStr ->
-                    val scaleNumeric = scaleStr.removeSuffix("km")
-                    scaleNumeric.toIntOrNull()
-                        ?: throw IllegalArgumentException("Parameter 'focus.scale' must be a number followed by 'km'")
-                }
+                val scaleValue =
+                    scale?.let { scaleStr ->
+                        val scaleNumeric = scaleStr.removeSuffix("km")
+                        scaleNumeric.toIntOrNull()
+                            ?: throw IllegalArgumentException("Parameter 'focus.scale' must be a number followed by 'km'")
+                    }
 
-                val weightValue = weight?.let { weightStr ->
-                    weightStr.toDoubleOrNull()
-                        ?: throw IllegalArgumentException("Parameter 'focus.weight' must be a valid number")
-                }
+                val weightValue =
+                    weight?.let { weightStr ->
+                        weightStr.toDoubleOrNull()
+                            ?: throw IllegalArgumentException("Parameter 'focus.weight' must be a valid number")
+                    }
 
                 return FocusParams(latValue, lonValue, scaleValue, weightValue)
             }

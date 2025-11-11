@@ -6,46 +6,46 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class PhotonResultTest {
-
     @Test
     fun `parse creates PhotonResult from valid JSON`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.757933, 59.911491]
-                    },
-                    "properties": {
-                        "name": "Oslo Sentralstasjon",
-                        "street": "Jernbanetorget",
-                        "housenumber": "1",
-                        "postcode": "0154",
-                        "city": "Oslo",
-                        "county": "Oslo",
-                        "countrycode": "NO",
-                        "osm_type": "W",
-                        "osm_id": 123456789,
-                        "osm_key": "railway",
-                        "osm_value": "station",
-                        "extra": {
-                            "id": "W123456789",
-                            "source": "osm",
-                            "locality": "Oslo",
-                            "locality_gid": "0301",
-                            "county_gid": "03",
-                            "country_a": "NOR",
-                            "accuracy": "point",
-                            "tags": "legacy.source.osm,legacy.layer.venue,legacy.category.transport"
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.757933, 59.911491]
+                        },
+                        "properties": {
+                            "name": "Oslo Sentralstasjon",
+                            "street": "Jernbanetorget",
+                            "housenumber": "1",
+                            "postcode": "0154",
+                            "city": "Oslo",
+                            "county": "Oslo",
+                            "countrycode": "NO",
+                            "osm_type": "W",
+                            "osm_id": 123456789,
+                            "osm_key": "railway",
+                            "osm_value": "station",
+                            "extra": {
+                                "id": "W123456789",
+                                "source": "osm",
+                                "locality": "Oslo",
+                                "locality_gid": "0301",
+                                "county_gid": "03",
+                                "country_a": "NOR",
+                                "accuracy": "point",
+                                "tags": "legacy.source.osm,legacy.layer.venue,legacy.category.transport"
+                            }
                         }
                     }
-                }
-            ]
-        }
-        """.trimIndent()
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -84,12 +84,13 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles empty features list`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": []
-        }
-        """.trimIndent()
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": []
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -99,40 +100,41 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles multiple features`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.0, 60.0]
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.0, 60.0]
+                        },
+                        "properties": {
+                            "name": "Place 1"
+                        }
                     },
-                    "properties": {
-                        "name": "Place 1"
-                    }
-                },
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [11.0, 61.0]
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [11.0, 61.0]
+                        },
+                        "properties": {
+                            "name": "Place 2"
+                        }
                     },
-                    "properties": {
-                        "name": "Place 2"
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [12.0, 62.0]
+                        },
+                        "properties": {
+                            "name": "Place 3"
+                        }
                     }
-                },
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [12.0, 62.0]
-                    },
-                    "properties": {
-                        "name": "Place 3"
-                    }
-                }
-            ]
-        }
-        """.trimIndent()
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -144,13 +146,14 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles bbox`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "bbox": [10.0, 59.0, 11.0, 60.0],
-            "features": []
-        }
-        """.trimIndent()
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "bbox": [10.0, 59.0, 11.0, 60.0],
+                "features": []
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -164,20 +167,21 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles minimal feature`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.0, 60.0]
-                    },
-                    "properties": {}
-                }
-            ]
-        }
-        """.trimIndent()
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.0, 60.0]
+                        },
+                        "properties": {}
+                    }
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -189,37 +193,38 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles extra with all fields`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.0, 60.0]
-                    },
-                    "properties": {
-                        "name": "Test",
-                        "extra": {
-                            "id": "123",
-                            "source": "osm",
-                            "locality": "Oslo",
-                            "locality_gid": "0301",
-                            "county_gid": "03",
-                            "borough": "Grünerløkka",
-                            "borough_gid": "030109",
-                            "country_a": "NOR",
-                            "accuracy": "point",
-                            "tariff_zones": "RUT:TariffZone:01,RUT:TariffZone:02",
-                            "transport_modes": "bus,tram",
-                            "alt_name": "Alternative Name",
-                            "tags": "legacy.source.osm,legacy.layer.venue"
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.0, 60.0]
+                        },
+                        "properties": {
+                            "name": "Test",
+                            "extra": {
+                                "id": "123",
+                                "source": "osm",
+                                "locality": "Oslo",
+                                "locality_gid": "0301",
+                                "county_gid": "03",
+                                "borough": "Grünerløkka",
+                                "borough_gid": "030109",
+                                "country_a": "NOR",
+                                "accuracy": "point",
+                                "tariff_zones": "RUT:TariffZone:01,RUT:TariffZone:02",
+                                "transport_modes": "bus,tram",
+                                "alt_name": "Alternative Name",
+                                "tags": "legacy.source.osm,legacy.layer.venue"
+                            }
                         }
                     }
-                }
-            ]
-        }
-        """.trimIndent()
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -242,11 +247,12 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles missing features field`() {
-        val json = """
-        {
-            "type": "FeatureCollection"
-        }
-        """.trimIndent()
+        val json =
+            """
+            {
+                "type": "FeatureCollection"
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -256,27 +262,28 @@ class PhotonResultTest {
 
     @Test
     fun `parse ignores unknown properties`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "include": "some_value",
-            "unknown_field": "should_be_ignored",
-            "features": [
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.0, 60.0],
-                        "unknown_geo_field": "ignored"
-                    },
-                    "properties": {
-                        "name": "Test Place",
-                        "unknown_prop_field": "ignored"
-                    },
-                    "unknown_feature_field": "ignored"
-                }
-            ]
-        }
-        """.trimIndent()
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "include": "some_value",
+                "unknown_field": "should_be_ignored",
+                "features": [
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.0, 60.0],
+                            "unknown_geo_field": "ignored"
+                        },
+                        "properties": {
+                            "name": "Test Place",
+                            "unknown_prop_field": "ignored"
+                        },
+                        "unknown_feature_field": "ignored"
+                    }
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -287,29 +294,30 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles addresses with full details`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.757933, 59.911491]
-                    },
-                    "properties": {
-                        "name": "Oslo Sentralstasjon",
-                        "street": "Jernbanetorget",
-                        "housenumber": "1",
-                        "postcode": "0154",
-                        "city": "Oslo",
-                        "county": "Oslo",
-                        "countrycode": "NO",
-                        "type": "house"
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.757933, 59.911491]
+                        },
+                        "properties": {
+                            "name": "Oslo Sentralstasjon",
+                            "street": "Jernbanetorget",
+                            "housenumber": "1",
+                            "postcode": "0154",
+                            "city": "Oslo",
+                            "county": "Oslo",
+                            "countrycode": "NO",
+                            "type": "house"
+                        }
                     }
-                }
-            ]
-        }
-        """.trimIndent()
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -326,24 +334,25 @@ class PhotonResultTest {
 
     @Test
     fun `parse handles norwegian characters correctly`() {
-        val json = """
-        {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [10.0, 60.0]
-                    },
-                    "properties": {
-                        "name": "Ålesund",
-                        "street": "Løkkeveien",
-                        "city": "Tromsø"
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.0, 60.0]
+                        },
+                        "properties": {
+                            "name": "Ålesund",
+                            "street": "Løkkeveien",
+                            "city": "Tromsø"
+                        }
                     }
-                }
-            ]
-        }
-        """.trimIndent()
+                ]
+            }
+            """.trimIndent()
 
         val result = PhotonResult.parse(json)
 
@@ -353,4 +362,3 @@ class PhotonResultTest {
         assertEquals("Tromsø", props.city)
     }
 }
-

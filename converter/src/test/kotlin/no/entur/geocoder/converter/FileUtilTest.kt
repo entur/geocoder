@@ -25,4 +25,3 @@ class FileUtilTest {
         file.delete()
     }
 }
-

@@ -53,11 +53,13 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType identifies XML with proper header`() {
-        val xmlContent = """<?xml version="1.0" encoding="UTF-8"?>
+        val xmlContent =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
             <root>
                 <element>test</element>
             </root>
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(xmlContent, ".xml")
 
         val type = detector.detectFileType(file)
@@ -67,11 +69,13 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType identifies GML from XML with gml namespace`() {
-        val gmlContent = """<?xml version="1.0" encoding="UTF-8"?>
+        val gmlContent =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
             <gml:FeatureCollection xmlns:gml="http://www.opengis.net/gml">
                 <gml:featureMember>test</gml:featureMember>
             </gml:FeatureCollection>
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(gmlContent, ".gml")
 
         val type = detector.detectFileType(file)
@@ -81,12 +85,13 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType identifies CSV with commas`() {
-        val csvContent = """
+        val csvContent =
+            """
             id,name,address,city
             1,Place A,Street 1,Oslo
             2,Place B,Street 2,Bergen
             3,Place C,Street 3,Trondheim
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(csvContent, ".csv")
 
         val type = detector.detectFileType(file)
@@ -96,12 +101,13 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType identifies CSV with semicolons`() {
-        val csvContent = """
+        val csvContent =
+            """
             id;name;address;city
             1;Place A;Street 1;Oslo
             2;Place B;Street 2;Bergen
             3;Place C;Street 3;Trondheim
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(csvContent, ".csv")
 
         val type = detector.detectFileType(file)
@@ -140,9 +146,10 @@ class FileTypeDetectorTest {
     fun `validateFileType throws for wrong file type`() {
         val csvFile = getTestResource("/Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv")
 
-        val exception = assertThrows<IllegalArgumentException> {
-            detector.validateFileType(csvFile, FileTypeDetector.FileType.XML, "--csv-file")
-        }
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                detector.validateFileType(csvFile, FileTypeDetector.FileType.XML, "--csv-file")
+            }
 
         assertTrue(exception.message?.contains("Expected: XML") == true)
         assertTrue(exception.message?.contains("detected: CSV") == true)
@@ -186,11 +193,12 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType handles XML with leading whitespace`() {
-        val xmlContent = """
+        val xmlContent =
+            """
             
             <?xml version="1.0"?>
             <root><element>test</element></root>
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(xmlContent, ".xml")
 
         val type = detector.detectFileType(file)
@@ -200,12 +208,13 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType handles malformed CSV with inconsistent columns`() {
-        val csvContent = """
+        val csvContent =
+            """
             col1,col2,col3
             a,b
             c,d,e,f
             g
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(csvContent, ".csv")
 
         val type = detector.detectFileType(file)
@@ -215,11 +224,12 @@ class FileTypeDetectorTest {
 
     @Test
     fun `detectFileType rejects file with no separators`() {
-        val content = """
+        val content =
+            """
             This is just plain text
             without any separators
             or structure
-        """.trimIndent()
+            """.trimIndent()
         val file = createTempFile(content, ".txt")
 
         val type = detector.detectFileType(file)
@@ -239,4 +249,3 @@ class FileTypeDetectorTest {
         return file
     }
 }
-

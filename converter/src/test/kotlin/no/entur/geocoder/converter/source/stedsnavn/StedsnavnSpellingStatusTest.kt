@@ -36,4 +36,3 @@ class StedsnavnSpellingStatusTest {
         assertEquals(4, StedsnavnSpellingStatus.entries.size)
     }
 }
-
