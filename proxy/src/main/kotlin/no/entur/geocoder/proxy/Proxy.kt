@@ -19,7 +19,6 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import java.time.Duration
 
 private val httpClient =
     HttpClient(CIO) {
@@ -30,6 +29,11 @@ private val httpClient =
 private val logger = LoggerFactory.getLogger("Proxy")
 
 private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+
+// milliseconds in nanoseconds
+private val Int.millis: Double get() = this * 1_000_000.0
+// seconds in nanoseconds
+private val Double.seconds: Double get() = this * 1_000_000_000.0
 
 fun main() {
     val photonBaseUrl = if (Environment.detect() == CONSOLE) "http://localhost:2322" else "http://geocoder-photon"
@@ -62,20 +66,9 @@ fun main() {
                     .Builder()
                     .percentilesHistogram(true)
                     .serviceLevelObjectives(
-                        Duration.ofMillis(5).toNanos().toDouble(),
-                        Duration.ofMillis(10).toNanos().toDouble(),
-                        Duration.ofMillis(25).toNanos().toDouble(),
-                        Duration.ofMillis(50).toNanos().toDouble(),
-                        Duration.ofMillis(75).toNanos().toDouble(),
-                        Duration.ofMillis(100).toNanos().toDouble(),
-                        Duration.ofMillis(250).toNanos().toDouble(),
-                        Duration.ofMillis(500).toNanos().toDouble(),
-                        Duration.ofMillis(750).toNanos().toDouble(),
-                        Duration.ofSeconds(1).toNanos().toDouble(),
-                        Duration.ofMillis(2500).toNanos().toDouble(),
-                        Duration.ofSeconds(5).toNanos().toDouble(),
-                        Duration.ofMillis(7500).toNanos().toDouble(),
-                        Duration.ofSeconds(10).toNanos().toDouble(),
+                        5.millis, 10.millis, 25.millis, 50.millis, 75.millis,
+                        100.millis, 250.millis, 500.millis, 750.millis,
+                        1.0.seconds, 2.5.seconds, 5.0.seconds, 7.5.seconds, 10.0.seconds,
                     ).build()
         }
         configureRouting(httpClient, photonBaseUrl, appMicrometerRegistry)
