@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.server.request.*
+import io.ktor.server.application.*
 import no.entur.geocoder.proxy.Text.safeVars
 
 data class PeliasPlaceParams(val ids: List<String> = emptyList()) {
@@ -10,7 +10,7 @@ data class PeliasPlaceParams(val ids: List<String> = emptyList()) {
     }
 
     companion object {
-        fun fromRequest(request: ApplicationRequest): PeliasPlaceParams {
+        fun ApplicationCall.peliasPlaceParams(): PeliasPlaceParams {
             val params = request.queryParameters
             return PeliasPlaceParams(
                 ids =

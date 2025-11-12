@@ -38,7 +38,11 @@ class HealthCheckTest {
         mockEngineHandler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ) {
         application {
-            install(ContentNegotiation) { jackson() }
+            install(ContentNegotiation) {
+                jackson {
+                    setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                }
+            }
             routing {
                 get(endpoint) {
                     val healthCheck = HealthCheck(HttpClient(MockEngine(mockEngineHandler)), photonUrl)

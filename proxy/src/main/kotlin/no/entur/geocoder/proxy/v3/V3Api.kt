@@ -13,21 +13,11 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object V3Api {
-    suspend fun RoutingContext.autocompleteRequest(photonBaseUrl: String, client: HttpClient) {
-        val params =
-            try {
-                V3AutocompleteParams.fromRequest(call.request)
-            } catch (e: Exception) {
-                logger.error("Invalid parameters for V3 autocomplete: ${e.message}")
-                val error = ErrorHandler.handleError(e, "Autocomplete")
-                call.respondText(
-                    ErrorHandler.toJson(error),
-                    contentType = ContentType.Application.Json,
-                    status = HttpStatusCode.fromValue(error.statusCode),
-                )
-                return
-            }
-
+    suspend fun RoutingContext.autocompleteRequest(
+        photonBaseUrl: String,
+        client: HttpClient,
+        params: V3AutocompleteParams,
+    ) {
         val photonRequest = PhotonAutocompleteRequest.from(params)
         val url = "$photonBaseUrl/api"
         logger.debug("V3 autocomplete request to $url with query='${photonRequest.query}'")
@@ -46,9 +36,9 @@ object V3Api {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = V3ResultTransformer.parseAndTransform(photonResult, params)
+            val v3Result = V3ResultTransformer.parseAndTransform(photonResult, params)
 
-            call.respondText(json, contentType = ContentType.Application.Json)
+            call.respond(v3Result)
         } catch (e: Exception) {
             logger.error("Error in V3 autocomplete: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
@@ -60,21 +50,11 @@ object V3Api {
         }
     }
 
-    suspend fun RoutingContext.reverseRequest(photonBaseUrl: String, client: HttpClient) {
-        val params =
-            try {
-                V3ReverseParams.fromRequest(call.request)
-            } catch (e: Exception) {
-                logger.error("Invalid parameters for V3 reverse: ${e.message}")
-                val error = ErrorHandler.handleError(e, "Reverse geocoding")
-                call.respondText(
-                    ErrorHandler.toJson(error),
-                    contentType = ContentType.Application.Json,
-                    status = HttpStatusCode.fromValue(error.statusCode),
-                )
-                return
-            }
-
+    suspend fun RoutingContext.reverseRequest(
+        photonBaseUrl: String,
+        client: HttpClient,
+        params: V3ReverseParams,
+    ) {
         val photonRequest = PhotonReverseRequest.from(params)
         val url = "$photonBaseUrl/reverse"
         logger.debug("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
@@ -98,9 +78,9 @@ object V3Api {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = V3ResultTransformer.parseAndTransform(photonResult, params)
+            val v3Result = V3ResultTransformer.parseAndTransform(photonResult, params)
 
-            call.respondText(json, contentType = ContentType.Application.Json)
+            call.respond(v3Result)
         } catch (e: Exception) {
             logger.error("Error in V3 reverse geocoding: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")

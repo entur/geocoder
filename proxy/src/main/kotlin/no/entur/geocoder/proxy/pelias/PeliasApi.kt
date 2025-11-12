@@ -14,21 +14,11 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object PeliasApi {
-    suspend fun RoutingContext.peliasAutocompleteRequest(photonBaseUrl: String, client: HttpClient) {
-        val peliasParams =
-            try {
-                PeliasAutocompleteParams.fromRequest(call.request)
-            } catch (e: Exception) {
-                logger.error("Invalid parameters for Pelias autocomplete: ${e.message}")
-                val error = ErrorHandler.handleError(e, "Autocomplete")
-                call.respondText(
-                    ErrorHandler.toJson(error),
-                    contentType = Json,
-                    status = HttpStatusCode.fromValue(error.statusCode),
-                )
-                return
-            }
-
+    suspend fun RoutingContext.peliasAutocompleteRequest(
+        photonBaseUrl: String,
+        client: HttpClient,
+        peliasParams: PeliasAutocompleteParams,
+    ) {
         val photonRequest = PhotonAutocompleteRequest.from(peliasParams)
         val url = "$photonBaseUrl/api"
         logger.debug("Proxying /v2/autocomplete to $url with text='${photonRequest.query}'")
@@ -57,8 +47,8 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus?.lat, peliasParams.focus?.lon)
-            call.respondText(json, contentType = Json)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus?.lat, peliasParams.focus?.lon)
+            call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequest to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
@@ -70,21 +60,11 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.peliasReverseRequest(photonBaseUrl: String, client: HttpClient) {
-        val peliasParams =
-            try {
-                PeliasReverseParams.fromRequest(call.request)
-            } catch (e: Exception) {
-                logger.error("Invalid parameters for Pelias reverse: ${e.message}")
-                val error = ErrorHandler.handleError(e, "Reverse geocoding")
-                call.respondText(
-                    ErrorHandler.toJson(error),
-                    contentType = Json,
-                    status = HttpStatusCode.fromValue(error.statusCode),
-                )
-                return
-            }
-
+    suspend fun RoutingContext.peliasReverseRequest(
+        photonBaseUrl: String,
+        client: HttpClient,
+        peliasParams: PeliasReverseParams,
+    ) {
         val photonRequest = PhotonReverseRequest.from(peliasParams)
         val url = "$photonBaseUrl/reverse"
         logger.debug("Proxying /v2/reverse to $url with lat=${photonRequest.latitude}, lon=${photonRequest.longitude}")
@@ -108,8 +88,8 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val json = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.lat, peliasParams.lon)
-            call.respondText(json, contentType = Json)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.lat, peliasParams.lon)
+            call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequest to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")
@@ -121,21 +101,11 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.peliasPlaceRequest(photonBaseUrl: String, client: HttpClient) {
-        val peliasParams =
-            try {
-                PeliasPlaceParams.fromRequest(call.request)
-            } catch (e: Exception) {
-                logger.error("Invalid parameters for Pelias place: ${e.message}")
-                val error = ErrorHandler.handleError(e, "Place")
-                call.respondText(
-                    ErrorHandler.toJson(error),
-                    contentType = Json,
-                    status = HttpStatusCode.fromValue(error.statusCode),
-                )
-                return
-            }
-
+    suspend fun RoutingContext.peliasPlaceRequest(
+        photonBaseUrl: String,
+        client: HttpClient,
+        peliasParams: PeliasPlaceParams,
+    ) {
         val photonRequests = PhotonAutocompleteRequest.from(peliasParams)
         val url = "$photonBaseUrl/api"
         logger.debug("Proxying /v2/autocomplete to $url with text='${peliasParams.ids.joinToString(",")}'")
@@ -156,8 +126,8 @@ object PeliasApi {
                     type = "FeatureCollection",
                     features = photonResults.mapNotNull { it.features.firstOrNull() },
                 )
-            val json = PeliasResultTransformer.parseAndTransform(photonResult)
-            call.respondText(json, contentType = Json)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult)
+            call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequests to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")

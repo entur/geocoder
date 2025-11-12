@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.server.request.*
+import io.ktor.server.application.*
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 import java.math.BigDecimal
@@ -21,7 +21,7 @@ data class PeliasAutocompleteParams(
     val multiModal: String,
 ) {
     companion object {
-        fun fromRequest(request: ApplicationRequest): PeliasAutocompleteParams {
+        fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
             val params = request.queryParameters
             return PeliasAutocompleteParams(
                 text = params["text"].safeVar() ?: "",

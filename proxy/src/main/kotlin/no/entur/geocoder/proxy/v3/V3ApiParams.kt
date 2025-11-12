@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.v3
 
-import io.ktor.server.request.*
+import io.ktor.server.application.*
 import java.math.BigDecimal
 
 data class V3AutocompleteParams(
@@ -17,7 +17,7 @@ data class V3AutocompleteParams(
     val transportModes: List<String> = emptyList(),
 ) {
     companion object {
-        fun fromRequest(request: ApplicationRequest): V3AutocompleteParams {
+        fun ApplicationCall.v3AutocompleteParams(): V3AutocompleteParams {
             val params = request.queryParameters
             return V3AutocompleteParams(
                 query = params["query"] ?: params["q"] ?: "",
@@ -49,7 +49,7 @@ data class V3ReverseParams(
     }
 
     companion object {
-        fun fromRequest(request: ApplicationRequest): V3ReverseParams {
+        fun ApplicationCall.v3ReverseParams(): V3ReverseParams {
             val params = request.queryParameters
             return V3ReverseParams(
                 lat = params["latitude"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'latitude' is required"),

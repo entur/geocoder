@@ -3,11 +3,7 @@ package no.entur.geocoder.proxy.pelias
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.proxy.photon.PhotonResult
 import java.math.BigDecimal
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class PeliasResultTransformerTest {
     @Test
@@ -457,12 +453,11 @@ class PeliasResultTransformerTest {
                     ),
             )
 
-        val json = PeliasResultTransformer.parseAndTransform(photonResult)
+        val result = PeliasResultTransformer.parseAndTransform(photonResult)
 
-        assertTrue(json.contains("\"features\""))
-        assertTrue(json.contains("\"bbox\""))
-        assertTrue(json.contains("Place 1"))
-        assertTrue(json.contains("Place 2"))
+        assertEquals(2, result.features.size)
+        assertTrue(result.features.any { it.properties.name == "Place 2" })
+        assertTrue(result.features.any { it.properties.name == "Place 1" })
     }
 
     @Test
@@ -490,23 +485,28 @@ class PeliasResultTransformerTest {
                     ),
             )
 
-        val json =
+        val result =
             PeliasResultTransformer.parseAndTransform(
                 photonResult,
                 BigDecimal("59.912000"),
                 BigDecimal("10.758000"),
             )
 
-        assertTrue(json.contains("\"distance\""))
+        assertEquals(
+            0.057.toBigDecimal(),
+            result.features
+                .first()
+                .properties.distance,
+        )
     }
 
     @Test
     fun `parseAndTransform handles empty features list`() {
         val photonResult = PhotonResult(features = emptyList())
 
-        val json = PeliasResultTransformer.parseAndTransform(photonResult)
+        val result = PeliasResultTransformer.parseAndTransform(photonResult)
 
-        assertTrue(json.contains("\"features\":[]"))
-        assertTrue(!json.contains("\"bbox\""))
+        assertTrue(result.features.isEmpty())
+        assertNull(result.bbox)
     }
 }

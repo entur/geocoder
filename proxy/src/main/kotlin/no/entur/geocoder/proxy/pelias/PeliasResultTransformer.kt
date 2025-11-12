@@ -1,8 +1,5 @@
 package no.entur.geocoder.proxy.pelias
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_PREFIX
@@ -18,12 +15,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 object PeliasResultTransformer {
-    private val mapper: ObjectMapper =
-        jacksonObjectMapper().apply {
-            setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-        }
-
-    fun parseAndTransform(photonResult: PhotonResult, lat: BigDecimal? = null, lon: BigDecimal? = null): String {
+    fun parseAndTransform(photonResult: PhotonResult, lat: BigDecimal? = null, lon: BigDecimal? = null): PeliasResult {
         val transformedFeatures =
             photonResult.features.map { feature ->
                 val distance = lat?.let { lon?.let { calculateDistanceKm(feature.geometry, lat, lon) } }
@@ -32,12 +24,10 @@ object PeliasResultTransformer {
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
-        val peliasCollection =
-            PeliasResult(
-                features = transformedFeatures,
-                bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
-            )
-        return mapper.writeValueAsString(peliasCollection)
+        return PeliasResult(
+            features = transformedFeatures,
+            bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
+        )
     }
 
     private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {

@@ -10,6 +10,12 @@ import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasPlaceRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams.Companion.peliasAutocompleteParams
+import no.entur.geocoder.proxy.pelias.PeliasPlaceParams.Companion.peliasPlaceParams
+import no.entur.geocoder.proxy.pelias.PeliasReverseParams.Companion.peliasReverseParams
+import no.entur.geocoder.proxy.v3.V3AutocompleteParams.Companion.v3AutocompleteParams
+import no.entur.geocoder.proxy.v3.V3ReverseParams.Companion.v3ReverseParams
+import org.slf4j.LoggerFactory
 import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteRequest
 import no.entur.geocoder.proxy.v3.V3Api.reverseRequest as v3ReverseRequest
 
@@ -23,31 +29,45 @@ object Routing {
 
         routing {
             get("/v2/autocomplete") {
-                peliasAutocompleteRequest(photonBaseUrl, client)
+                handleRequest {
+                    peliasAutocompleteRequest(photonBaseUrl, client, call.peliasAutocompleteParams())
+                }
             }
 
             get("/v2/search") {
-                peliasAutocompleteRequest(photonBaseUrl, client)
+                handleRequest {
+                    peliasAutocompleteRequest(photonBaseUrl, client, call.peliasAutocompleteParams())
+                }
             }
 
             get("/v2/reverse") {
-                peliasReverseRequest(photonBaseUrl, client)
+                handleRequest {
+                    peliasReverseRequest(photonBaseUrl, client, call.peliasReverseParams())
+                }
             }
 
             get("/v2/nearby") {
-                peliasReverseRequest(photonBaseUrl, client)
+                handleRequest {
+                    peliasReverseRequest(photonBaseUrl, client, call.peliasReverseParams())
+                }
             }
 
             get("/v2/place") {
-                peliasPlaceRequest(photonBaseUrl, client)
+                handleRequest {
+                    peliasPlaceRequest(photonBaseUrl, client, call.peliasPlaceParams())
+                }
             }
 
             get("/v3/autocomplete") {
-                v3AutocompleteRequest(photonBaseUrl, client)
+                handleRequest {
+                    v3AutocompleteRequest(photonBaseUrl, client, call.v3AutocompleteParams())
+                }
             }
 
             get("/v3/reverse") {
-                v3ReverseRequest(photonBaseUrl, client)
+                handleRequest {
+                    v3ReverseRequest(photonBaseUrl, client, call.v3ReverseParams())
+                }
             }
 
             get("/") {
@@ -68,6 +88,28 @@ object Routing {
         }
     }
 
+    private suspend fun RoutingContext.handleRequest(handler: suspend RoutingContext.() -> Unit) {
+        try {
+            handler()
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid request parameters: ${e.message}")
+            val error = ErrorHandler.handleError(e, "Invalid parameters")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode),
+            )
+        } catch (e: Exception) {
+            logger.error("Unexpected error: ${e.message}", e)
+            val error = ErrorHandler.handleError(e, "Request processing")
+            call.respondText(
+                ErrorHandler.toJson(error),
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.fromValue(error.statusCode),
+            )
+        }
+    }
+
     private suspend fun RoutingContext.rootRequest() {
         val indexHtml =
             this::class.java.classLoader
@@ -77,4 +119,6 @@ object Routing {
 
         call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
     }
+
+    private val logger = LoggerFactory.getLogger(Routing::class.java)
 }

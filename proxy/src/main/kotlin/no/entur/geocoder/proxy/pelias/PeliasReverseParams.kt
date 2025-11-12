@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.server.request.*
+import io.ktor.server.application.*
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 import java.math.BigDecimal
@@ -29,7 +29,7 @@ data class PeliasReverseParams(
     }
 
     companion object {
-        fun fromRequest(request: ApplicationRequest): PeliasReverseParams {
+        fun ApplicationCall.peliasReverseParams(): PeliasReverseParams {
             val params = request.queryParameters
             return PeliasReverseParams(
                 lat = params["point.lat"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lat' is required"),

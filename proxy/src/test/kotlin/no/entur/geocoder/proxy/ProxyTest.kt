@@ -7,6 +7,9 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
+import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -71,6 +74,11 @@ class ProxyTest {
                 }
 
             application {
+                install(ContentNegotiation) {
+                    jackson {
+                        setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                    }
+                }
                 configureRouting(
                     client = HttpClient(mockEngine),
                     photonBaseUrl = "http://photon-test",
@@ -85,6 +93,7 @@ class ProxyTest {
                     parameter("lang", "en")
                     parameter("focus.point.lat", "59")
                     parameter("focus.point.lon", "10")
+                    header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -122,6 +131,11 @@ class ProxyTest {
                 }
 
             application {
+                install(ContentNegotiation) {
+                    jackson {
+                        setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                    }
+                }
                 configureRouting(
                     client = HttpClient(mockEngine),
                     photonBaseUrl = "http://photon-test",
@@ -136,6 +150,7 @@ class ProxyTest {
                     parameter("boundary.circle.radius", "100")
                     parameter("size", "3")
                     parameter("lang", "no")
+                    header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)

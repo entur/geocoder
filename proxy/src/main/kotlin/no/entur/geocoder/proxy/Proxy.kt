@@ -45,7 +45,9 @@ fun main() {
             allowHeader("x-correlation-id")
         }
         install(ServerContentNegotiation) {
-            jackson()
+            jackson {
+                setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+            }
         }
         install(MicrometerMetrics) {
             registry = appMicrometerRegistry

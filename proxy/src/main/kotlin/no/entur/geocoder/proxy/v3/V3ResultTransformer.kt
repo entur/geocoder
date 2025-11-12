@@ -1,8 +1,5 @@
 package no.entur.geocoder.proxy.v3
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -13,15 +10,10 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 object V3ResultTransformer {
-    private val mapper: ObjectMapper =
-        jacksonObjectMapper().apply {
-            setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-        }
-
     fun parseAndTransform(
         photonResult: PhotonResult,
         params: V3AutocompleteParams,
-    ): String {
+    ): V3Result {
         val places = photonResult.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
@@ -50,58 +42,52 @@ object V3ResultTransformer {
                 null
             }
 
-        val result =
-            V3Result(
-                results = places,
-                metadata =
-                    Metadata(
-                        query =
-                            QueryInfo(
-                                text = params.query,
-                                latitude = null,
-                                longitude = null,
-                                limit = params.limit,
-                                language = params.language,
-                                filters = filters,
-                            ),
-                        resultCount = places.size,
-                        timestamp = System.currentTimeMillis(),
-                        boundingBox = boundingBox,
-                    ),
-            )
-
-        return mapper.writeValueAsString(result)
+        return V3Result(
+            results = places,
+            metadata =
+                Metadata(
+                    query =
+                        QueryInfo(
+                            text = params.query,
+                            latitude = null,
+                            longitude = null,
+                            limit = params.limit,
+                            language = params.language,
+                            filters = filters,
+                        ),
+                    resultCount = places.size,
+                    timestamp = System.currentTimeMillis(),
+                    boundingBox = boundingBox,
+                ),
+        )
     }
 
     fun parseAndTransform(
         photonResult: PhotonResult,
         params: V3ReverseParams,
-    ): String {
+    ): V3Result {
         val places = photonResult.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
 
-        val result =
-            V3Result(
-                results = places,
-                metadata =
-                    Metadata(
-                        query =
-                            QueryInfo(
-                                text = null,
-                                latitude = params.lat,
-                                longitude = params.lon,
-                                limit = params.limit,
-                                language = params.language,
-                                filters = null,
-                            ),
-                        resultCount = places.size,
-                        timestamp = System.currentTimeMillis(),
-                        boundingBox = boundingBox,
-                    ),
-            )
-
-        return mapper.writeValueAsString(result)
+        return V3Result(
+            results = places,
+            metadata =
+                Metadata(
+                    query =
+                        QueryInfo(
+                            text = null,
+                            latitude = params.lat,
+                            longitude = params.lon,
+                            limit = params.limit,
+                            language = params.language,
+                            filters = null,
+                        ),
+                    resultCount = places.size,
+                    timestamp = System.currentTimeMillis(),
+                    boundingBox = boundingBox,
+                ),
+        )
     }
 
     private fun transformFeature(feature: PhotonFeature): V3Result.Place {
