@@ -26,7 +26,7 @@ data class PeliasAutocompleteParams(
         fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
             val params = request.queryParameters
             return PeliasAutocompleteParams(
-                text = handleText(params), // Somehow titlelized query gives better results ("lille" vs "Lille")
+                text = handleText(params),
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"].safeVar() ?: "no",
                 boundaryCountry = params["boundary.country"]?.safeVar(),
@@ -58,9 +58,9 @@ data class PeliasAutocompleteParams(
             )
         }
 
-        // Photon handles short queries differently to longer ones
-        // The fuzzy search "Olso" doesn't resolve to "Oslo", while "olso" does
-        // The non-fuzzy search "Lille" gives better results than "lille". "Lill" and "lill" are equivalent
+        // Photon handles short (and fuzzy) queries differently to longer ones.
+        // The fuzzy search "Olso" doesn't resolve to "Oslo", while "olso" does.
+        // The non-fuzzy search "Lille" gives better results than "lille". "Lill" and "lill" are equivalent (and both good).
         private fun handleText(params: Parameters): String =
             params["text"]
                 .safeVar()
