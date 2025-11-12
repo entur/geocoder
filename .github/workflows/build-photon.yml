@@ -26,7 +26,7 @@ on:
         description: 'Photon JAR URL'
         required: false
         type: string
-        default: 'https://github.com/entur/photon/releases/download/case-insensitive/photon-0.7.0.jar'
+        default: 'https://github.com/entur/photon/releases/download/opensearch-metrics/photon-0.7.0.jar'
 
 run-name: "Photon: ${{ inputs.build || 'Scheduled full import' }}${{ startsWith(inputs.build, '🚀') && format(' (tag: {0})', inputs.photon_image_tag) || '' }}"
 
