@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.proxy.Text.safeVar
@@ -25,7 +26,7 @@ data class PeliasAutocompleteParams(
         fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
             val params = request.queryParameters
             return PeliasAutocompleteParams(
-                text = params["text"].safeVar()?.titleize() ?: "", // Somehow titlelized query gives better results ("lille" vs "Lille")
+                text = handleText(params), // Somehow titlelized query gives better results ("lille" vs "Lille")
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"].safeVar() ?: "no",
                 boundaryCountry = params["boundary.country"]?.safeVar(),
@@ -56,6 +57,16 @@ data class PeliasAutocompleteParams(
                     },
             )
         }
+
+        // Photon handles short queries differently to longer ones
+        // The fuzzy search "Olso" doesn't resolve to "Oslo", while "olso" does
+        // The non-fuzzy search "Lille" gives better results than "lille". "Lill" and "lill" are equivalent
+        private fun handleText(params: Parameters): String =
+            params["text"]
+                .safeVar()
+                ?.let {
+                    if (it.length <= 4) it.lowercase() else it.titleize()
+                } ?: ""
     }
 
     data class FocusParams(
