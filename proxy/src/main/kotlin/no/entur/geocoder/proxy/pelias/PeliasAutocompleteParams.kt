@@ -25,7 +25,7 @@ data class PeliasAutocompleteParams(
         fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
             val params = request.queryParameters
             return PeliasAutocompleteParams(
-                text = params["text"].safeVar()?.titleize()?: "", // Somehow titlelized query gives better results ("lille" vs "Lille")
+                text = params["text"].safeVar()?.titleize() ?: "", // Somehow titlelized query gives better results ("lille" vs "Lille")
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"].safeVar() ?: "no",
                 boundaryCountry = params["boundary.country"]?.safeVar(),

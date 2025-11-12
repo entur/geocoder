@@ -60,7 +60,7 @@ class ProxyTest {
         testApplication {
             val mockEngine =
                 MockEngine { request ->
-                    assertEquals("test_query", request.url.parameters["q"])
+                    assertEquals("Test_query", request.url.parameters["q"])
                     assertEquals("5", request.url.parameters["limit"])
                     assertEquals("en", request.url.parameters["lang"])
                     assertEquals("59", request.url.parameters["lat"])
