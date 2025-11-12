@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.server.application.*
+import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 import java.math.BigDecimal
@@ -24,7 +25,7 @@ data class PeliasAutocompleteParams(
         fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
             val params = request.queryParameters
             return PeliasAutocompleteParams(
-                text = params["text"].safeVar() ?: "",
+                text = params["text"].safeVar()?.titleize()?: "", // Somehow titlelized query gives better results ("lille" vs "Lille")
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"].safeVar() ?: "no",
                 boundaryCountry = params["boundary.country"]?.safeVar(),
