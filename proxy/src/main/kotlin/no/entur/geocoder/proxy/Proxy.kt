@@ -32,6 +32,7 @@ private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEF
 
 // milliseconds in nanoseconds
 private val Int.millis: Double get() = this * 1_000_000.0
+
 // seconds in nanoseconds
 private val Double.seconds: Double get() = this * 1_000_000_000.0
 

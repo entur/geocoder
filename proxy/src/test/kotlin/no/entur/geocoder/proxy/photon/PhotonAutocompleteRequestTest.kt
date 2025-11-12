@@ -26,7 +26,7 @@ class PhotonAutocompleteRequestTest {
         assertEquals(20, request.limit)
         assertEquals("en", request.language)
         assertEquals(emptyList(), request.includes)
-        assertEquals(listOf("multimodal.child"), request.excludes)
+        assertEquals(listOf("multimodal.child", "legacy.category.by"), request.excludes)
         assertNull(request.lat)
         assertNull(request.lon)
     }
@@ -87,21 +87,21 @@ class PhotonAutocompleteRequestTest {
                 text = "Oslo",
                 multiModal = "parent",
             )
-        assertEquals(listOf("multimodal.child"), PhotonAutocompleteRequest.from(paramsParent).excludes)
+        assertEquals(listOf("multimodal.child", "legacy.category.by"), PhotonAutocompleteRequest.from(paramsParent).excludes)
 
         val paramsChild =
             PeliasAutocompleteParams(
                 text = "Oslo",
                 multiModal = "child",
             )
-        assertEquals(listOf("multimodal.parent"), PhotonAutocompleteRequest.from(paramsChild).excludes)
+        assertEquals(listOf("multimodal.parent", "legacy.category.by"), PhotonAutocompleteRequest.from(paramsChild).excludes)
 
         val paramsAll =
             PeliasAutocompleteParams(
                 text = "Oslo",
                 multiModal = "all",
             )
-        assertEquals(emptyList(), PhotonAutocompleteRequest.from(paramsAll).excludes)
+        assertEquals(listOf("legacy.category.by"), PhotonAutocompleteRequest.from(paramsAll).excludes)
     }
 
     @Test

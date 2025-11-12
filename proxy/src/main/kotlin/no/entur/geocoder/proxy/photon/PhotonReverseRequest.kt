@@ -32,7 +32,7 @@ data class PhotonReverseRequest(
                 listOfNotNull(
                     Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
                     PhotonFilterBuilder.buildMultiModalExclude(params.multiModal),
-                    LEGACY_CATEGORY_PREFIX + "by" // There is no "by" category Pelias
+                    LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
                 )
 
             return PhotonReverseRequest(
