@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.proxy.pelias.PeliasReverseParams
 import no.entur.geocoder.proxy.v3.V3ReverseParams
 import java.math.BigDecimal
@@ -31,6 +32,7 @@ data class PhotonReverseRequest(
                 listOfNotNull(
                     Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
                     PhotonFilterBuilder.buildMultiModalExclude(params.multiModal),
+                    LEGACY_CATEGORY_PREFIX + "by" // There is no "by" category Pelias
                 )
 
             return PhotonReverseRequest(

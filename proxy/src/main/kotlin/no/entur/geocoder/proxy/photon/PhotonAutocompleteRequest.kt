@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
@@ -31,7 +32,10 @@ data class PhotonAutocompleteRequest(
                     layers = params.layers,
                     categories = params.categories,
                 )
-            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(params.multiModal))
+            val excludes = listOfNotNull(
+                PhotonFilterBuilder.buildMultiModalExclude(params.multiModal),
+                LEGACY_CATEGORY_PREFIX + "by" // There is no "by" category Pelias
+            )
 
             val zoom =
                 params.focus?.scale?.let {
