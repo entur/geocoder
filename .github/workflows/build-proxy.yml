@@ -184,7 +184,9 @@ jobs:
 
   acceptance-tests-dev:
     name: Dev Tests
-    if: needs.deploy-dev.result == 'success'
+    if: |
+      !cancelled() &&
+      needs.deploy-dev.result == 'success'
     needs: deploy-dev
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
@@ -208,7 +210,9 @@ jobs:
 
   acceptance-tests-tst:
     name: Staging Tests
-    if: needs.deploy-tst.result == 'success'
+    if: |
+      !cancelled() &&
+      needs.deploy-tst.result == 'success'
     needs: deploy-tst
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
@@ -232,7 +236,9 @@ jobs:
 
   acceptance-tests-prd:
     name: Prod Tests
-    if: needs.deploy-prd.result == 'success'
+    if: |
+      !cancelled() &&
+      needs.deploy-prd.result == 'success'
     needs: deploy-prd
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
