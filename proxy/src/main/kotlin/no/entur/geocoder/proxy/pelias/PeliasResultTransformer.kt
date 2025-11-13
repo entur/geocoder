@@ -105,12 +105,19 @@ object PeliasResultTransformer {
     }
 
     private fun createLabel(props: PhotonProperties): String? =
-        if (props.name.isNullOrBlank()) {
-            props.extra?.locality
-        } else if (!props.extra?.locality.isNullOrEmpty() && props.name != props.extra.locality) {
-            "${props.name}, ${props.extra.locality}"
-        } else {
-            props.name
+        when {
+            props.name.isNullOrBlank() && !props.housenumber.isNullOrEmpty() -> {
+                "${props.street} ${props.housenumber}, ${props.extra?.locality}"
+            }
+            props.name.isNullOrBlank() -> {
+                props.extra?.locality
+            }
+            !props.extra?.locality.isNullOrEmpty() && props.name != props.extra.locality -> {
+                "${props.name}, ${props.extra.locality}"
+            }
+            else -> {
+                props.name
+            }
         }
 
     private fun transformGid(source: String?, layer: String?, extraId: String?): String? =
