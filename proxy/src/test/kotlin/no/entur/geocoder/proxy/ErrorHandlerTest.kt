@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonParseException
 import io.ktor.http.*
 import java.io.IOException
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ErrorHandlerTest {
     @Test
@@ -13,9 +13,9 @@ class ErrorHandlerTest {
         val exception = JsonParseException(null, "Invalid JSON")
         val error = ErrorHandler.handleError(exception, "geocoding")
 
-        assertEquals("Invalid response from backend", error.error)
-        assertEquals(HttpStatusCode.BadGateway.value, error.statusCode)
-        assertTrue(error.message.contains("unexpected response"))
+        assertContains(msg(error), "Invalid response from backend")
+        assertEquals(HttpStatusCode.BadGateway, error.status)
+        assertContains(msg(error), "unexpected response")
     }
 
     @Test
@@ -23,9 +23,9 @@ class ErrorHandlerTest {
         val exception = IOException("Connection failed")
         val error = ErrorHandler.handleError(exception, "geocoding")
 
-        assertEquals("Connection failed", error.error)
-        assertEquals(HttpStatusCode.ServiceUnavailable.value, error.statusCode)
-        assertEquals("Unable to connect to geocoding service", error.message)
+        assertContains(msg(error), "Connection failed")
+        assertEquals(HttpStatusCode.ServiceUnavailable, error.status)
+        assertContains(msg(error), "Unable to connect to geocoding service")
     }
 
     @Test
@@ -33,9 +33,9 @@ class ErrorHandlerTest {
         val exception = IllegalArgumentException("Invalid latitude value")
         val error = ErrorHandler.handleError(exception, "geocoding")
 
-        assertEquals("Invalid parameters", error.error)
-        assertEquals("Invalid latitude value", error.message)
-        assertEquals(HttpStatusCode.BadRequest.value, error.statusCode)
+        assertContains(msg(error), "Invalid parameters")
+        assertContains(msg(error), "Invalid latitude value")
+        assertEquals(HttpStatusCode.BadRequest, error.status)
     }
 
     @Test
@@ -43,9 +43,9 @@ class ErrorHandlerTest {
         val exception = IllegalArgumentException()
         val error = ErrorHandler.handleError(exception, "geocoding")
 
-        assertEquals("Invalid parameters", error.error)
-        assertEquals("One or more parameters are invalid", error.message)
-        assertEquals(HttpStatusCode.BadRequest.value, error.statusCode)
+        assertContains(msg(error), "Invalid parameters")
+        assertContains(msg(error), "One or more parameters are invalid")
+        assertEquals(HttpStatusCode.BadRequest, error.status)
     }
 
     @Test
@@ -53,25 +53,9 @@ class ErrorHandlerTest {
         val exception = RuntimeException("Something went wrong")
         val error = ErrorHandler.handleError(exception, "geocoding")
 
-        assertEquals("geocoding failed", error.error)
-        assertEquals("An unexpected error occurred", error.message)
-        assertEquals(HttpStatusCode.InternalServerError.value, error.statusCode)
-    }
-
-    @Test
-    fun `toJson serializes ApiError correctly`() {
-        val error =
-            ApiError(
-                error = "Test error",
-                message = "Test message",
-                statusCode = 400,
-            )
-
-        val json = ErrorHandler.toJson(error)
-
-        assertTrue(json.contains("\"error\":\"Test error\""))
-        assertTrue(json.contains("\"message\":\"Test message\""))
-        assertTrue(json.contains("\"statusCode\":400"))
+        assertContains(msg(error), "geocoding failed")
+        assertContains(msg(error), "An unexpected error occurred")
+        assertEquals(HttpStatusCode.InternalServerError, error.status)
     }
 
     @Test
@@ -79,6 +63,11 @@ class ErrorHandlerTest {
         val exception = RuntimeException()
         val error = ErrorHandler.handleError(exception, "reverse geocoding")
 
-        assertEquals("reverse geocoding failed", error.error)
+        assertContains(msg(error), "reverse geocoding failed")
     }
+
+    private fun msg(error: ErrorHandler.PeliasError): String =
+        error.result.geocoding.errors
+            .orEmpty()
+            .first()
 }

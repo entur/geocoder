@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy.v3
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.entur.geocoder.proxy.ErrorHandler
@@ -42,11 +41,7 @@ object V3Api {
         } catch (e: Exception) {
             logger.error("Error in V3 autocomplete: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
-            call.respondText(
-                ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode),
-            )
+            call.respond(error.status, error.result)
         }
     }
 
@@ -84,11 +79,7 @@ object V3Api {
         } catch (e: Exception) {
             logger.error("Error in V3 reverse geocoding: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")
-            call.respondText(
-                ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode),
-            )
+            call.respond(error.status, error.result)
         }
     }
 

@@ -94,19 +94,11 @@ object Routing {
         } catch (e: IllegalArgumentException) {
             logger.error("Invalid request parameters: ${e.message}")
             val error = ErrorHandler.handleError(e, "Invalid parameters")
-            call.respondText(
-                ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode),
-            )
+            call.respond(error.status, error.result)
         } catch (e: Exception) {
             logger.error("Unexpected error: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Request processing")
-            call.respondText(
-                ErrorHandler.toJson(error),
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.fromValue(error.statusCode),
-            )
+            call.respond(error.status, error.result)
         }
     }
 

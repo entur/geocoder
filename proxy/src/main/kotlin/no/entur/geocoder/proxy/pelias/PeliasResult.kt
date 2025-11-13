@@ -5,7 +5,7 @@ import java.math.BigDecimal
 data class PeliasResult(
     val geocoding: GeocodingMetadata = GeocodingMetadata(),
     val type: String = "FeatureCollection",
-    val features: List<PeliasFeature>,
+    val features: List<PeliasFeature> = emptyList(),
     val bbox: List<BigDecimal>? = null,
 ) {
     data class PeliasFeature(
@@ -51,6 +51,7 @@ data class PeliasResult(
         val version: String = "0.2",
         val attribution: String = "http://pelias.mapzen.com/v1/attribution",
         val query: QueryMetadata? = null,
+        val errors: List<String>? = null,
         val engine: EngineMetadata = EngineMetadata(),
         val timestamp: Long = System.currentTimeMillis(),
     ) {

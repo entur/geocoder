@@ -2,67 +2,59 @@ package no.entur.geocoder.proxy
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.ServerResponseException
-import io.ktor.http.HttpStatusCode
+import io.ktor.client.plugins.*
+import io.ktor.http.*
+import io.ktor.http.HttpStatusCode.Companion.BadGateway
+import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
+import io.ktor.http.HttpStatusCode.Companion.ServiceUnavailable
+import no.entur.geocoder.proxy.pelias.PeliasResult
 import java.io.IOException
 
-data class ApiError(
-    val error: String,
-    val message: String,
-    val statusCode: Int,
-)
-
 object ErrorHandler {
-    private val mapper: ObjectMapper = jacksonObjectMapper()
-
-    fun handleError(e: Exception, operation: String): ApiError =
+    fun handleError(e: Exception, operation: String): PeliasError =
         when (e) {
             is JsonParseException, is JsonMappingException -> {
-                ApiError(
-                    error = "Invalid response from backend",
-                    message = "The geocoding service returned an unexpected response. Please check your parameters.",
-                    statusCode = HttpStatusCode.BadGateway.value,
+                toError(
+                    "Invalid response from backend. The geocoding service returned an unexpected response. Please check your parameters",
+                    BadGateway,
                 )
             }
+
             is ClientRequestException -> {
-                ApiError(
-                    error = "Invalid request",
-                    message = "Bad request: ${e.response.status.description}",
-                    statusCode = HttpStatusCode.BadRequest.value,
-                )
+                toError("Bad request: ${e.response.status.description}", BadRequest)
             }
+
             is ServerResponseException -> {
-                ApiError(
-                    error = "Backend service error",
-                    message = "The geocoding backend is experiencing issues",
-                    statusCode = HttpStatusCode.BadGateway.value,
-                )
+                toError("Backend service error. The geocoding backend is experiencing issues", BadGateway)
             }
+
             is IOException -> {
-                ApiError(
-                    error = "Connection failed",
-                    message = "Unable to connect to geocoding service",
-                    statusCode = HttpStatusCode.ServiceUnavailable.value,
-                )
+                toError("Connection failed. Unable to connect to geocoding service", ServiceUnavailable)
             }
+
             is IllegalArgumentException -> {
-                ApiError(
-                    error = "Invalid parameters",
-                    message = e.message ?: "One or more parameters are invalid",
-                    statusCode = HttpStatusCode.BadRequest.value,
-                )
+                toError("Invalid parameters. ${e.message ?: "One or more parameters are invalid"}", BadRequest)
             }
+
             else -> {
-                ApiError(
-                    error = "$operation failed",
-                    message = "An unexpected error occurred",
-                    statusCode = HttpStatusCode.InternalServerError.value,
-                )
+                toError("$operation failed. An unexpected error occurred", InternalServerError)
             }
         }
 
-    fun toJson(error: ApiError): String = mapper.writeValueAsString(error)
+    private fun toError(error: String, status: HttpStatusCode): PeliasError =
+        PeliasError(
+            PeliasResult(
+                geocoding =
+                    PeliasResult.GeocodingMetadata(
+                        errors = listOf(error),
+                    ),
+            ),
+            status,
+        )
+
+    data class PeliasError(
+        val result: PeliasResult,
+        val status: HttpStatusCode,
+    )
 }
