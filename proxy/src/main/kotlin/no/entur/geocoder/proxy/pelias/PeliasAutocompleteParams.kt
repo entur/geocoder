@@ -22,6 +22,10 @@ data class PeliasAutocompleteParams(
     val focus: FocusParams? = null,
     val multiModal: String,
 ) {
+    init {
+        require(text.isNotBlank()) { "text cannot be blank" }
+    }
+
     companion object {
         fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
             val params = request.queryParameters
