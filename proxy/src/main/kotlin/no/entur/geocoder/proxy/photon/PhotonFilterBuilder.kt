@@ -1,9 +1,36 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
+import no.entur.geocoder.proxy.pelias.PeliasReverseParams
 
 object PhotonFilterBuilder {
-    fun buildIncludes(
+    fun buildIncludes(params: PeliasAutocompleteParams): List<String> =
+        buildIncludes(
+            boundaryCountry = params.boundaryCountry,
+            boundaryCountyIds = params.boundaryCountyIds,
+            boundaryLocalityIds = params.boundaryLocalityIds,
+            tariffZones = params.tariffZones,
+            tariffZoneAuthorities = params.tariffZoneAuthorities,
+            sources = params.sources,
+            layers = params.layers,
+            categories = params.categories,
+        )
+
+    fun buildIncludes(params: PeliasReverseParams): List<String> =
+        buildIncludes(
+            boundaryCountry = params.boundaryCountry,
+            boundaryCountyIds = params.boundaryCountyIds,
+            boundaryLocalityIds = params.boundaryLocalityIds,
+            tariffZones = params.tariffZones,
+            tariffZoneAuthorities = params.tariffZoneAuthorities,
+            sources = params.sources,
+            layers = params.layers,
+            categories = params.categories,
+        )
+
+    private fun buildIncludes(
         boundaryCountry: String?,
         boundaryCountyIds: List<String>,
         boundaryLocalityIds: List<String>,
@@ -40,7 +67,23 @@ object PhotonFilterBuilder {
             }
         }
 
-    fun buildMultiModalExclude(multiModal: String): String? =
+    fun buildExcludes(params: PeliasAutocompleteParams): List<String> =
+        listOfNotNull(
+            buildMultiModalExclude(params.multiModal),
+            LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
+            params.text
+                .takeIf { !it.contains("\\s\\d".toRegex()) }
+                ?.let { Category.OSM_ADDRESS }, // Exclude addresses unless the query contains a house number
+        )
+
+    fun buildExcludes(params: PeliasReverseParams): List<String> =
+        listOfNotNull(
+            buildMultiModalExclude(params.multiModal),
+            LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
+            Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
+        )
+
+    internal fun buildMultiModalExclude(multiModal: String): String? =
         when (multiModal) {
             "child" -> "multimodal.parent"
             "parent" -> "multimodal.child"

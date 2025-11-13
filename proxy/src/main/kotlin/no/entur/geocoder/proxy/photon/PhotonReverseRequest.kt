@@ -1,7 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
-import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.proxy.pelias.PeliasReverseParams
 import no.entur.geocoder.proxy.v3.V3ReverseParams
 import java.math.BigDecimal
@@ -17,23 +16,8 @@ data class PhotonReverseRequest(
 ) {
     companion object {
         fun from(params: PeliasReverseParams): PhotonReverseRequest {
-            val includes =
-                PhotonFilterBuilder.buildIncludes(
-                    boundaryCountry = params.boundaryCountry,
-                    boundaryCountyIds = params.boundaryCountyIds,
-                    boundaryLocalityIds = params.boundaryLocalityIds,
-                    tariffZones = params.tariffZones,
-                    tariffZoneAuthorities = params.tariffZoneAuthorities,
-                    sources = params.sources,
-                    layers = params.layers,
-                    categories = params.categories,
-                )
-            val excludes =
-                listOfNotNull(
-                    Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
-                    PhotonFilterBuilder.buildMultiModalExclude(params.multiModal),
-                    LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
-                )
+            val includes = PhotonFilterBuilder.buildIncludes(params)
+            val excludes = PhotonFilterBuilder.buildExcludes(params)
 
             return PhotonReverseRequest(
                 latitude = params.lat,

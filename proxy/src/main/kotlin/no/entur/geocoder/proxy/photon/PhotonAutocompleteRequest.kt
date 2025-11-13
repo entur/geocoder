@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
@@ -21,22 +20,8 @@ data class PhotonAutocompleteRequest(
 ) {
     companion object {
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
-            val includes =
-                PhotonFilterBuilder.buildIncludes(
-                    boundaryCountry = params.boundaryCountry,
-                    boundaryCountyIds = params.boundaryCountyIds,
-                    boundaryLocalityIds = params.boundaryLocalityIds,
-                    tariffZones = params.tariffZones,
-                    tariffZoneAuthorities = params.tariffZoneAuthorities,
-                    sources = params.sources,
-                    layers = params.layers,
-                    categories = params.categories,
-                )
-            val excludes =
-                listOfNotNull(
-                    PhotonFilterBuilder.buildMultiModalExclude(params.multiModal),
-                    LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
-                )
+            val includes = PhotonFilterBuilder.buildIncludes(params)
+            val excludes = PhotonFilterBuilder.buildExcludes(params)
 
             val zoom =
                 params.focus?.scale?.let {

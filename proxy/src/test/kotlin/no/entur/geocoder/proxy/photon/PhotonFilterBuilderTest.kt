@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -7,66 +8,81 @@ import kotlin.test.assertTrue
 class PhotonFilterBuilderTest {
     @Test
     fun `buildIncludes creates filters for real Norwegian search scenarios`() {
-        data class FilterScenario(
-            val name: String,
-            val country: String?,
-            val countyIds: List<String>,
-            val localityIds: List<String>,
-            val tariffZones: List<String>,
-            val authorities: List<String>,
-            val sources: List<String>,
-            val layers: List<String>,
-            val categories: List<String>,
-            val expectedIncludes: List<String>,
-        )
-
         val scenarios =
             listOf(
-                FilterScenario(
-                    "Empty filters", null, emptyList(), emptyList(), emptyList(), emptyList(),
-                    emptyList(), emptyList(), emptyList(), emptyList(),
-                ),
-                FilterScenario(
-                    "Oslo only", "NOR", listOf("03"), emptyList(), emptyList(), emptyList(),
-                    emptyList(), emptyList(), emptyList(),
-                    listOf("country.NOR", "county_gid.03"),
-                ),
-                FilterScenario(
-                    "Bergen addresses", "NOR", listOf("46"), listOf("4601"), emptyList(), emptyList(),
-                    listOf("kartverket"), listOf("address"), emptyList(),
-                    listOf("country.NOR", "county_gid.46", "locality_gid.4601", "legacy.source.kartverket", "legacy.layer.address"),
-                ),
-                FilterScenario(
-                    "Trondheim transit", "NOR", listOf("50"), emptyList(),
-                    listOf("ATB:TariffZone:A", "ATB:TariffZone:B"), listOf("ATB"),
-                    listOf("osm"), listOf("venue"), listOf("transport"),
+                PeliasAutocompleteParams(
+                    text = "Empty filters",
+                    boundaryCountry = null,
+                    boundaryCountyIds = emptyList(),
+                    boundaryLocalityIds = emptyList(),
+                    tariffZones = emptyList(),
+                    tariffZoneAuthorities = emptyList(),
+                    sources = emptyList(),
+                    layers = emptyList(),
+                    categories = emptyList(),
+                    multiModal = "all",
+                ) to emptyList<String>(),
+                PeliasAutocompleteParams(
+                    text = "Oslo only",
+                    boundaryCountry = "NOR",
+                    boundaryCountyIds = listOf("03"),
+                    boundaryLocalityIds = emptyList(),
+                    tariffZones = emptyList(),
+                    tariffZoneAuthorities = emptyList(),
+                    sources = emptyList(),
+                    layers = emptyList(),
+                    categories = emptyList(),
+                    multiModal = "all",
+                ) to listOf("country.NOR", "county_gid.03"),
+                PeliasAutocompleteParams(
+                    text = "Bergen addresses",
+                    boundaryCountry = "NOR",
+                    boundaryCountyIds = listOf("46"),
+                    boundaryLocalityIds = listOf("4601"),
+                    tariffZones = emptyList(),
+                    tariffZoneAuthorities = emptyList(),
+                    sources = listOf("kartverket"),
+                    layers = listOf("address"),
+                    categories = emptyList(),
+                    multiModal = "all",
+                ) to listOf("country.NOR", "county_gid.46", "locality_gid.4601", "legacy.source.kartverket", "legacy.layer.address"),
+                PeliasAutocompleteParams(
+                    text = "Trondheim transit",
+                    boundaryCountry = "NOR",
+                    boundaryCountyIds = listOf("50"),
+                    boundaryLocalityIds = emptyList(),
+                    tariffZones = listOf("ATB:TariffZone:A", "ATB:TariffZone:B"),
+                    tariffZoneAuthorities = listOf("ATB"),
+                    sources = listOf("osm"),
+                    layers = listOf("venue"),
+                    categories = listOf("transport"),
+                    multiModal = "all",
+                )
+                    to
                     listOf(
                         "country.NOR", "county_gid.50", "tariff_zone_id.ATB:TariffZone:A", "tariff_zone_id.ATB:TariffZone:B",
                         "tariff_zone_authority.ATB", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
                     ),
-                ),
-                FilterScenario(
-                    "NO_FILTER bypass", null, emptyList(), emptyList(), emptyList(), emptyList(),
-                    emptyList(), emptyList(), listOf("transport", "NO_FILTER"), emptyList(),
-                ),
+                PeliasAutocompleteParams(
+                    text = "NO_FILTER bypass",
+                    boundaryCountry = null,
+                    boundaryCountyIds = emptyList(),
+                    boundaryLocalityIds = emptyList(),
+                    tariffZones = emptyList(),
+                    tariffZoneAuthorities = emptyList(),
+                    sources = emptyList(),
+                    layers = emptyList(),
+                    categories = listOf("transport", "NO_FILTER"),
+                    multiModal = "all",
+                ) to emptyList(),
             )
 
         scenarios.forEach { scenario ->
             val includes =
-                PhotonFilterBuilder.buildIncludes(
-                    boundaryCountry = scenario.country,
-                    boundaryCountyIds = scenario.countyIds,
-                    boundaryLocalityIds = scenario.localityIds,
-                    tariffZones = scenario.tariffZones,
-                    tariffZoneAuthorities = scenario.authorities,
-                    sources = scenario.sources,
-                    layers = scenario.layers,
-                    categories = scenario.categories,
-                )
-
-            assertEquals(scenario.expectedIncludes.size, includes.size, "Failed for scenario: ${scenario.name}")
-            scenario.expectedIncludes.forEach { expected ->
-                assertTrue(includes.contains(expected), "Missing '$expected' in scenario: ${scenario.name}")
+                PhotonFilterBuilder.buildIncludes(scenario.first)
+            assertEquals(scenario.second.size, includes.size, "Failed for scenario: ${scenario.first.text}")
+            scenario.second.forEach { expected ->
+                assertTrue(includes.contains(expected), "Missing '$expected' in scenario: ${scenario.first.text}")
             }
         }
     }
