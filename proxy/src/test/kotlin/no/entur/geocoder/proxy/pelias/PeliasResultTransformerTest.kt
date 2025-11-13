@@ -1,7 +1,9 @@
 package no.entur.geocoder.proxy.pelias
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.proxy.photon.PhotonResult
+import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
 import kotlin.test.*
 
@@ -137,7 +139,7 @@ class PeliasResultTransformerTest {
     @Test
     fun `calculateDistanceKm calculates distance between two points`() {
         val geometry =
-            PhotonResult.PhotonGeometry(
+            PhotonGeometry(
                 type = "Point",
                 coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
             )
@@ -156,7 +158,7 @@ class PeliasResultTransformerTest {
     @Test
     fun `calculateDistanceKm returns null for invalid geometry with one coordinate`() {
         val geometry =
-            PhotonResult.PhotonGeometry(
+            PhotonGeometry(
                 type = "Point",
                 coordinates = listOf(BigDecimal("10.0")),
             )
@@ -173,7 +175,7 @@ class PeliasResultTransformerTest {
     @Test
     fun `calculateDistanceKm returns null for empty coordinates`() {
         val geometry =
-            PhotonResult.PhotonGeometry(
+            PhotonGeometry(
                 type = "Point",
                 coordinates = emptyList(),
             )
@@ -204,15 +206,15 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 type = "Feature",
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = "Oslo Sentralstasjon",
                         street = "Jernbanetorget",
                         housenumber = "1",
@@ -250,14 +252,14 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = "Test Location",
                         extra = extra,
                     ),
@@ -279,14 +281,14 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = "Central Station",
                         extra = extra,
                     ),
@@ -307,14 +309,14 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = "Oslo",
                         extra = extra,
                     ),
@@ -335,14 +337,14 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = "",
                         extra = extra,
                     ),
@@ -363,14 +365,14 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = null,
                         street = "Karl Johans gate",
                         housenumber = "22",
@@ -392,14 +394,14 @@ class PeliasResultTransformerTest {
             )
 
         val photonFeature =
-            PhotonResult.PhotonFeature(
+            PhotonFeature(
                 geometry =
-                    PhotonResult.PhotonGeometry(
+                    PhotonGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PhotonResult.PhotonProperties(
+                    PhotonProperties(
                         name = null,
                         street = "Karl Johans gate",
                         housenumber = null,
@@ -418,30 +420,31 @@ class PeliasResultTransformerTest {
             PhotonResult(
                 features =
                     listOf(
-                        PhotonResult.PhotonFeature(
+                        PhotonFeature(
                             geometry =
-                                PhotonResult.PhotonGeometry(
+                                PhotonGeometry(
                                     type = "Point",
                                     coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                                 ),
                             properties =
-                                PhotonResult.PhotonProperties(
+                                PhotonProperties(
                                     name = "Place 1",
                                     extra =
                                         Extra(
                                             id = "1",
                                             tags = "legacy.source.osm,legacy.layer.venue",
+                                            description = "foo bar",
                                         ),
                                 ),
                         ),
-                        PhotonResult.PhotonFeature(
+                        PhotonFeature(
                             geometry =
-                                PhotonResult.PhotonGeometry(
+                                PhotonGeometry(
                                     type = "Point",
                                     coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0")),
                                 ),
                             properties =
-                                PhotonResult.PhotonProperties(
+                                PhotonProperties(
                                     name = "Place 2",
                                     extra =
                                         Extra(
@@ -458,6 +461,7 @@ class PeliasResultTransformerTest {
         assertEquals(2, result.features.size)
         assertTrue(result.features.any { it.properties.name == "Place 2" })
         assertTrue(result.features.any { it.properties.name == "Place 1" })
+        assertTrue { result.features.any { it.properties.description?.first() == mapOf("nor" to "foo bar") } }
     }
 
     @Test
@@ -466,14 +470,14 @@ class PeliasResultTransformerTest {
             PhotonResult(
                 features =
                     listOf(
-                        PhotonResult.PhotonFeature(
+                        PhotonFeature(
                             geometry =
-                                PhotonResult.PhotonGeometry(
+                                PhotonGeometry(
                                     type = "Point",
                                     coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
                                 ),
                             properties =
-                                PhotonResult.PhotonProperties(
+                                PhotonProperties(
                                     name = "Oslo",
                                     extra =
                                         Extra(
@@ -508,5 +512,39 @@ class PeliasResultTransformerTest {
 
         assertTrue(result.features.isEmpty())
         assertNull(result.bbox)
+    }
+
+    @Test
+    fun `parseAndTransform includes description and verifies JSON with Jackson`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonFeature(
+                            geometry =
+                                PhotonGeometry(
+                                    type = "Point",
+                                    coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                                ),
+                            properties =
+                                PhotonProperties(
+                                    name = "Oslo S",
+                                    extra =
+                                        Extra(
+                                            id = "1",
+                                            tags = "legacy.source.osm,legacy.layer.venue",
+                                            description = "foran Oslo S",
+                                        ),
+                                ),
+                        ),
+                    ),
+            )
+
+        val result = PeliasResultTransformer.parseAndTransform(photonResult)
+
+        val mapper = jacksonObjectMapper()
+        val json = mapper.writeValueAsString(result)
+
+        assertContains(json, """"description":[{"nor":"foran Oslo S"}]""")
     }
 }

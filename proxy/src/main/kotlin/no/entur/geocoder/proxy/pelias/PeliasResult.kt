@@ -45,6 +45,7 @@ data class PeliasResult(
         val category: List<String>? = null,
         val city: String? = null,
         val tariff_zones: List<String>? = null,
+        val description: List<Map<String, String>>? = null,
     )
 
     data class GeocodingMetadata(

@@ -111,6 +111,7 @@ class StopPlaceConverter : Converter {
                         ?.joinToString(",")
                 ),
                 alt_name = altName,
+                description = stopPlace.description?.text,
                 tags = tags.joinToString(","),
             )
 

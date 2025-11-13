@@ -100,6 +100,7 @@ object PeliasResultTransformer {
                     label = createLabel(props),
                     category = transformCategory(extra),
                     tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
+                    description = extra?.description?.let { listOf(mapOf("nor" to it)) },
                 ),
         )
     }
@@ -109,12 +110,15 @@ object PeliasResultTransformer {
             props.name.isNullOrBlank() && !props.housenumber.isNullOrEmpty() -> {
                 "${props.street} ${props.housenumber}, ${props.extra?.locality}"
             }
+
             props.name.isNullOrBlank() -> {
                 props.extra?.locality
             }
+
             !props.extra?.locality.isNullOrEmpty() && props.name != props.extra.locality -> {
                 "${props.name}, ${props.extra.locality}"
             }
+
             else -> {
                 props.name
             }
