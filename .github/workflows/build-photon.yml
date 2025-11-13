@@ -2,8 +2,8 @@ name: Photon - Import data and/or deploy
 
 on:
   schedule:
-    # Run full build every day (times are in UTC)
-    - cron: '02 9 * * *'
+    # Run full build every day (7:32 UTC is 8:32 CET / 9:32 CEST)
+    - cron: '32 7 * * *'
   workflow_dispatch:
     inputs:
       build:
