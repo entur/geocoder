@@ -5,6 +5,7 @@ ARG PHOTON_JAR_URL
 WORKDIR /srv
 RUN apk add --no-cache curl
 RUN curl -sfL --retry 2 -o photon.jar ${PHOTON_JAR_URL}
+RUN unzip -p photon.jar META-INF/MANIFEST.MF | grep Implementation-Version > version
 
 COPY photon-start.sh ./
 COPY photon_data.tar.gz ./
