@@ -32,13 +32,13 @@ class PhotonReverseRequestTest {
             PeliasReverseParams(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
-                radius = 1000,
+                radius = 1000.0,
                 multiModal = "parent",
             )
 
         val request = PhotonReverseRequest.from(params)
 
-        assertEquals(1000, request.radius)
+        assertEquals(1000.0, request.radius)
     }
 
     @Test

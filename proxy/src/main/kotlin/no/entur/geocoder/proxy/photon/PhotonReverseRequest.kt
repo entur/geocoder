@@ -10,7 +10,7 @@ data class PhotonReverseRequest(
     val longitude: BigDecimal,
     val language: String,
     val limit: Int,
-    val radius: Int? = null,
+    val radius: Double? = null,
     val includes: List<String> = emptyList(),
     val excludes: List<String> = emptyList(),
 ) {

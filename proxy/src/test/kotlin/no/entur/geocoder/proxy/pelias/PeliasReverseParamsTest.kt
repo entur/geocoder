@@ -110,7 +110,7 @@ class PeliasReverseParamsTest {
             PeliasReverseParams(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
-                radius = 1000,
+                radius = 1000.0,
                 size = 20,
                 lang = "en",
                 boundaryCountry = "NOR",
@@ -126,7 +126,7 @@ class PeliasReverseParamsTest {
 
         assertEquals(BigDecimal("59.911491"), params.lat)
         assertEquals(BigDecimal("10.757933"), params.lon)
-        assertEquals(1000, params.radius)
+        assertEquals(1000.0, params.radius)
         assertEquals(20, params.size)
         assertEquals("en", params.lang)
         assertEquals("NOR", params.boundaryCountry)
@@ -159,11 +159,11 @@ class PeliasReverseParamsTest {
             PeliasReverseParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("10.0"),
-                radius = 0,
+                radius = 0.0,
                 multiModal = "parent",
             )
 
-        assertEquals(0, params.radius)
+        assertEquals(0.0, params.radius)
     }
 
     @Test
@@ -172,11 +172,11 @@ class PeliasReverseParamsTest {
             PeliasReverseParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("10.0"),
-                radius = 100000,
+                radius = 100000.0,
                 multiModal = "parent",
             )
 
-        assertEquals(100000, params.radius)
+        assertEquals(100000.0, params.radius)
     }
 
     @Test

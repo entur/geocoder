@@ -119,7 +119,7 @@ class ProxyTest {
                 MockEngine { request ->
                     assertEquals("59.9139", request.url.parameters["lat"])
                     assertEquals("10.7522", request.url.parameters["lon"])
-                    assertEquals("100", request.url.parameters["radius"])
+                    assertEquals("100.0", request.url.parameters["radius"])
                     assertEquals("3", request.url.parameters["limit"])
                     assertEquals("no", request.url.parameters["lang"])
 

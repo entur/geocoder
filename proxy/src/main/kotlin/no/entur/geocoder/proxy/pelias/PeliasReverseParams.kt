@@ -8,7 +8,7 @@ import java.math.BigDecimal
 data class PeliasReverseParams(
     val lat: BigDecimal,
     val lon: BigDecimal,
-    val radius: Int? = null,
+    val radius: Double? = null,
     val size: Int = 10,
     val lang: String = "no",
     val boundaryCountry: String? = null,
@@ -34,7 +34,7 @@ data class PeliasReverseParams(
             return PeliasReverseParams(
                 lat = params["point.lat"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lat' is required"),
                 lon = params["point.lon"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lon' is required"),
-                radius = params["boundary.circle.radius"]?.toIntOrNull(),
+                radius = params["boundary.circle.radius"]?.toDoubleOrNull(),
                 size = params["size"]?.toIntOrNull() ?: 10,
                 lang = params["lang"].safeVar() ?: "no",
                 boundaryCountry = params["boundary.country"]?.safeVar(),

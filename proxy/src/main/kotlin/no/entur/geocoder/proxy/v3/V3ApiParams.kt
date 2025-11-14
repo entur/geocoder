@@ -39,7 +39,7 @@ data class V3AutocompleteParams(
 data class V3ReverseParams(
     val lat: BigDecimal,
     val lon: BigDecimal,
-    val radius: Int? = null,
+    val radius: Double? = null,
     val limit: Int = 10,
     val language: String = "no",
 ) {
@@ -56,7 +56,7 @@ data class V3ReverseParams(
                 lon =
                     params["longitude"]?.toBigDecimalOrNull()
                         ?: throw IllegalArgumentException("Parameter 'longitude' is required"),
-                radius = params["radius"]?.toIntOrNull() ?: 10,
+                radius = params["radius"]?.toDoubleOrNull() ?: 10.0,
                 limit = params["limit"]?.toIntOrNull() ?: 10,
                 language = params["language"] ?: params["lang"] ?: "no",
             )
