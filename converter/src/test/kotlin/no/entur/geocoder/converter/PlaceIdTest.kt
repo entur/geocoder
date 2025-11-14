@@ -9,11 +9,13 @@ import kotlin.test.Test
 class PlaceIdTest {
     @ParameterizedTest
     @CsvSource(
-        "address, 1000",
-        "street, 2000",
-        "stedsnavn, 3000",
-        "stopplace, 4000",
-        "osm, 5000",
+        "address, 100",
+        "street, 200",
+        "stedsnavn, 300",
+        "stopplace, 400",
+        "gosp, 450",
+        "osm, 500",
+        "poi, 600",
     )
     fun `all prefixes create correct IDs`(type: String, expectedPrefix: Int) {
         val placeId = PlaceId.valueOf(type)
@@ -25,7 +27,7 @@ class PlaceIdTest {
     @Test
     fun `different prefixes create different IDs`() {
         val ids = PlaceId.entries.map { it.create(100L) }.toSet()
-        assertEquals(5, ids.size)
+        assertEquals(7, ids.size)
     }
 
     @Test

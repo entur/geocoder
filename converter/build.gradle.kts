@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.xml)
+    implementation(libs.jackson.datatype.jsr310)
 
     implementation("org.openstreetmap.osmosis:osmosis-core:0.49.2")
     implementation("org.openstreetmap.osmosis:osmosis-pbf:0.49.2")

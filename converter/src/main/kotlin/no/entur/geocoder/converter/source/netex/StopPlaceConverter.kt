@@ -19,7 +19,6 @@ import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
 import java.nio.file.Paths
-import kotlin.math.abs
 
 class StopPlaceConverter : Converter {
     override fun convert(
@@ -203,11 +202,12 @@ class StopPlaceConverter : Converter {
                 .filterNotNull()
 
         val id = groupOfStopPlaces.id
+        val placeId = PlaceId.gosp.create(id)
         val placeContent =
             PlaceContent(
-                place_id = abs(groupOfStopPlaces.id.hashCode().toLong()),
+                place_id = placeId,
                 object_type = "N",
-                object_id = abs(groupOfStopPlaces.id.hashCode().toLong()),
+                object_id = placeId,
                 categories = categories,
                 rank_address = 30,
                 importance = importance,

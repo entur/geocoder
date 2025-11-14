@@ -3,16 +3,19 @@ package no.entur.geocoder.converter.source.netex
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @JacksonXmlRootElement(localName = "TopographicPlace")
 data class TopographicPlace(
     @JacksonXmlProperty(isAttribute = true) val created: String? = null,
-    @JacksonXmlProperty(isAttribute = true) val modification: String,
-    @JacksonXmlProperty(isAttribute = true) val version: String,
-    @JacksonXmlProperty(isAttribute = true) val id: String,
+    @JacksonXmlProperty(isAttribute = true) val modification: String? = null,
+    @JacksonXmlProperty(isAttribute = true) val version: String? = null,
+    @JacksonXmlProperty(isAttribute = true) val id: String? = null,
     val validBetween: ValidBetween? = null,
     @JacksonXmlProperty(localName = "Polygon", namespace = "ns2")
     val polygon: Polygon? = null,
+    val centroid: Centroid? = null,
     val isoCode: String? = null,
     val descriptor: Descriptor? = null,
     val topographicPlaceType: String? = null,
@@ -20,8 +23,11 @@ data class TopographicPlace(
     val parentTopographicPlaceRef: ParentTopographicPlaceRef? = null,
 ) {
     class ValidBetween {
-        var fromDate: String? = null
-        var toDate: String? = null
+        @JacksonXmlProperty(localName = "FromDate")
+        var fromDate: LocalDateTime? = null
+
+        @JacksonXmlProperty(localName = "ToDate")
+        var toDate: LocalDateTime? = null
     }
 
     data class Polygon(
@@ -63,5 +69,14 @@ data class TopographicPlace(
         val ref: String,
         @JacksonXmlProperty(isAttribute = true)
         val version: String,
+    )
+
+    data class Centroid(
+        val location: Location? = null,
+    )
+
+    data class Location(
+        val longitude: BigDecimal? = null,
+        val latitude: BigDecimal? = null,
     )
 }

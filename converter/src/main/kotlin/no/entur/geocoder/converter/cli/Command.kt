@@ -5,6 +5,7 @@ import no.entur.geocoder.converter.source.matrikkel.MatrikkelConverter
 import no.entur.geocoder.converter.source.netex.StopPlaceConverter
 import no.entur.geocoder.converter.source.osm.OsmConverter
 import no.entur.geocoder.converter.source.stedsnavn.StedsnavnConverter
+import no.entur.geocoder.converter.source.poi.PoiConverter
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -24,6 +25,7 @@ class Command(private val args: Array<String>) {
         var matrikkelInputPath: String? = null
         var osmInputPath: String? = null
         var stedsnavnInputPath: String? = null
+        var poiInputPath: String? = null
         var outputPath: String? = null
         var forceOverwrite = false
         var appendMode = false
@@ -65,6 +67,14 @@ class Command(private val args: Array<String>) {
                     i += 2
                 }
 
+                "-x" -> {
+                    if (i + 1 >= args.size) {
+                        exit("Error: -x flag requires <input-poi-xml-file> argument.")
+                    }
+                    poiInputPath = args[i + 1]
+                    i += 2
+                }
+
                 "-o" -> {
                     if (i + 1 >= args.size) {
                         exit("Error: -o flag requires <output-file> argument.")
@@ -100,8 +110,13 @@ class Command(private val args: Array<String>) {
             exit("Error: Output file must be specified with -o <output-file>.")
         }
 
-        if (stopplaceInputPath == null && matrikkelInputPath == null && osmInputPath == null && stedsnavnInputPath == null) {
-            exit("Error: No conversion specified. Use -s for stopplace, -m for matrikkel, -p for OSM PBF, and/or -g for Stedsnavn GML.")
+        if (stopplaceInputPath == null &&
+            matrikkelInputPath == null &&
+            osmInputPath == null &&
+            stedsnavnInputPath == null &&
+            poiInputPath == null
+        ) {
+            exit("Error: No conversion specified.")
         }
 
         if (matrikkelInputPath != null && stedsnavnInputPath == null && !noCounty) {
@@ -130,8 +145,6 @@ class Command(private val args: Array<String>) {
         var isFirstConversion = !appendMode
 
         val stedsnavnFile = stedsnavnInputPath?.let { File(it) }
-
-        // If --no-stedsnavn is specified, use the Stedsnavn file for mapping only, not for conversion
         val stedsnavnConversionPath = if (noStedsnavn) null else stedsnavnInputPath
 
         val conversionTasks =
@@ -140,6 +153,7 @@ class Command(private val args: Array<String>) {
                 ConversionTask("Matrikkel", matrikkelInputPath, MatrikkelConverter(stedsnavnFile), FileTypeDetector.FileType.CSV, "-m"),
                 ConversionTask("OSM PBF", osmInputPath, OsmConverter(), FileTypeDetector.FileType.PBF, "-p"),
                 ConversionTask("Stedsnavn GML", stedsnavnConversionPath, StedsnavnConverter(), FileTypeDetector.FileType.GML, "-g"),
+                ConversionTask("POI XML", poiInputPath, PoiConverter(), FileTypeDetector.FileType.XML, "-x"),
             )
 
         for (task in conversionTasks) {
@@ -208,6 +222,7 @@ class Command(private val args: Array<String>) {
               -m <input-csv-file>     Convert Matrikkel CSV data
               -p <input-pbf-file>     Convert OSM PBF data
               -g <input-gml-file>     Convert Stedsnavn GML data
+              -x <input-poi-file>     Convert POI NeTEx data
               -o <output-file>        Specify the output file (required)
               -f                      Force overwrite if output file exists
               -a                      Append to existing output file

@@ -4,11 +4,13 @@ import kotlin.math.abs
 
 // Prefix nominatim place IDs to avoid document collisions
 enum class PlaceId(val prefix: Int) {
-    address(1000),
-    street(2000),
-    stedsnavn(3000),
-    stopplace(4000),
-    osm(5000),
+    address(100),
+    street(200),
+    stedsnavn(300),
+    stopplace(400),
+    gosp(450),
+    osm(500),
+    poi(600),
     ;
 
     fun create(id: Long): Long = create("" + id)

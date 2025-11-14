@@ -73,7 +73,7 @@ class NetexParser {
         return seq
     }
 
-    private fun extractTopoPlaces(netexXml: File): MutableMap<String, TopographicPlace> {
+    internal fun extractTopoPlaces(netexXml: File): MutableMap<String, TopographicPlace> {
         val netexReader: XMLStreamReader = createReader(netexXml, xmlInputFactory)
 
         moveToStartElement(netexReader, "topographicPlaces")
@@ -84,7 +84,7 @@ class NetexParser {
             "TopographicPlace",
             "topographicPlaces",
         )) {
-            topoPlaces[topoPlace.id] = topoPlace
+            topoPlace.id?.let { topoPlaces[it] = topoPlace }
         }
         return topoPlaces
     }

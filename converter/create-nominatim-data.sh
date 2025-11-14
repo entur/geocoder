@@ -6,6 +6,7 @@ ADRESSE_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse
 STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip
 TIAMAT_URL=https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip
 OSM_URL=https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf
+POI_URL=gs://ror-kakka-dev/tiamat/geocoder/festival_poi_netex.zip
 
 SCRIPTDIR=$(cd $(dirname $0); pwd)
 CONVERT="$SCRIPTDIR/convert.sh"
@@ -53,6 +54,11 @@ download "$ADRESSE_URL" adresse.csv '*.csv'
 download "$STEDSNAVN_URL" stedsnavn.gml '*.gml'
 $CONVERT -m adresse.csv -g stedsnavn.gml -o nominatim.ndjson
 rm adresse.csv stedsnavn.gml
+
+gsutil cp "$POI_URL" poi.zip
+bsdtar -xOf poi.zip '*xml' > poi.xml
+$CONVERT -a -s poi.xml -o nominatim.ndjson
+rm poi.xml
 
 download "$TIAMAT_URL" tiamat.xml '*.xml'
 $CONVERT -a -s tiamat.xml -o nominatim.ndjson
