@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm")
     application
@@ -56,5 +58,18 @@ tasks.withType<Test> {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
+}
+
+val gitHashProvider =
+    providers
+        .exec {
+            commandLine("git", "rev-parse", "--short", "HEAD")
+        }.standardOutput.asText
+        .map { it.trim() }
+
+tasks.withType<ShadowJar> {
+    manifest {
+        attributes(mapOf("Implementation-Version" to gitHashProvider))
     }
 }

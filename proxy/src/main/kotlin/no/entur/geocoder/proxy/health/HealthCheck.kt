@@ -5,8 +5,10 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
+import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
 import org.slf4j.LoggerFactory
 
 class HealthCheck(
@@ -46,5 +48,14 @@ class HealthCheck(
                 mapOf("status" to "DOWN", "reason" to "Error: ${e.message}"),
             )
         }
+    }
+
+    data class Info(val build: Build) {
+        data class Build(val version: String?, val name: String)
+    }
+
+    suspend fun info(call: RoutingCall) {
+        val version = HealthCheck::class.java.getPackage().implementationVersion
+        call.respond(Info(Build(version ?: "unknown", "geocoder-proxy")))
     }
 }

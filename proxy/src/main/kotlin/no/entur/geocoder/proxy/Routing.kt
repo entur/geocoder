@@ -82,6 +82,10 @@ object Routing {
                 healthCheck.checkReadiness(call)
             }
 
+            get("/actuator/info") {
+                healthCheck.info(call)
+            }
+
             get("/metrics") {
                 call.respond(appMicrometerRegistry.scrape())
             }
