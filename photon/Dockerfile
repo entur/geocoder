@@ -4,7 +4,7 @@ ARG PHOTON_JAR_URL
 
 WORKDIR /srv
 
-SHELL ["/bin/sh", "-e", "-u", "-o", "pipefail", "-c"]
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 RUN apk add --no-cache curl
 RUN curl -sfL --retry 2 -o photon.jar "${PHOTON_JAR_URL}"
