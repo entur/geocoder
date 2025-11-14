@@ -88,11 +88,10 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 #### Build and release patched Photon
 
 * Fetch Photon from source (https://github.com/komoot/photon) and make your changes
-* Build your branch with `./gradlew build`
-* Push it to a branch on EnTur's fork (https://github.com/entur/photon)
+* Build with `./gradlew build`
+* Create a tag and push that (`git push --tags entur`) to EnTur's fork (https://github.com/entur/photon)
 * Draft a new release at https://github.com/entur/photon/releases/new
-* Click "Select tag" --> "Create new tag" and enter a tag name
-* Select Target: `<your branch name>`
+* Click "Select tag" --> and select the tag name
 * Fill in release title and description
 * Add `photon-<tag>.jar` from Photon's `target/` folder as a binary asset
 * Check "Set as a pre-release"
