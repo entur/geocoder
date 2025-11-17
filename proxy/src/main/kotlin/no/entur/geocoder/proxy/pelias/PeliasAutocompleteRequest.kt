@@ -5,7 +5,6 @@ import io.ktor.server.application.*
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
-import java.math.BigDecimal
 
 data class PeliasAutocompleteRequest(
     val text: String = "",
@@ -74,8 +73,8 @@ data class PeliasAutocompleteRequest(
     }
 
     data class FocusParams(
-        val lat: BigDecimal,
-        val lon: BigDecimal,
+        val lat: Double,
+        val lon: Double,
         val scale: Int? = null,
         val weight: Double? = null,
     ) {
@@ -93,10 +92,10 @@ data class PeliasAutocompleteRequest(
         companion object {
             fun from(lat: String, lon: String, scale: String?, weight: String?): FocusParams {
                 val latValue =
-                    lat.toBigDecimalOrNull()
+                    lat.toDoubleOrNull()
                         ?: throw IllegalArgumentException("Parameter 'focus.point.lat' must be a valid number")
                 val lonValue =
-                    lon.toBigDecimalOrNull()
+                    lon.toDoubleOrNull()
                         ?: throw IllegalArgumentException("Parameter 'focus.point.lon' must be a valid number")
 
                 val scaleValue =

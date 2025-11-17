@@ -12,5 +12,12 @@ class Coordinate(val lat: Double, val lon: Double) {
 
     companion object {
         val ZERO = Coordinate(0.0, 0.0)
+
+        fun coordOrNull(lat: Double?, lon: Double?): Coordinate? =
+            if (lat != null && lon != null) {
+                Coordinate(lat, lon)
+            } else {
+                null
+            }
     }
 }

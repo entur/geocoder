@@ -66,8 +66,8 @@ class ProxyTest {
                     assertEquals("Test_query", request.url.parameters["q"])
                     assertEquals("${5 + CITY_AND_GOSP_LIST_HEADROOM}", request.url.parameters["limit"])
                     assertEquals("en", request.url.parameters["lang"])
-                    assertEquals("59", request.url.parameters["lat"])
-                    assertEquals("10", request.url.parameters["lon"])
+                    assertEquals("59.0", request.url.parameters["lat"])
+                    assertEquals("10.0", request.url.parameters["lon"])
 
                     respond(
                         content = samplePhotonResponse,

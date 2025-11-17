@@ -1,11 +1,10 @@
 package no.entur.geocoder.proxy.v3
 
 import io.ktor.server.application.*
-import java.math.BigDecimal
 
 data class V3ReverseRequest(
-    val lat: BigDecimal,
-    val lon: BigDecimal,
+    val lat: Double,
+    val lon: Double,
     val radius: Double? = null,
     val limit: Int = 10,
     val language: String = "no",
@@ -19,9 +18,9 @@ data class V3ReverseRequest(
         fun ApplicationCall.v3ReverseRequest(): V3ReverseRequest {
             val params = request.queryParameters
             return V3ReverseRequest(
-                lat = params["latitude"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'latitude' is required"),
+                lat = params["latitude"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'latitude' is required"),
                 lon =
-                    params["longitude"]?.toBigDecimalOrNull()
+                    params["longitude"]?.toDoubleOrNull()
                         ?: throw IllegalArgumentException("Parameter 'longitude' is required"),
                 radius = params["radius"]?.toDoubleOrNull() ?: 10.0,
                 limit = params["limit"]?.toIntOrNull() ?: 10,

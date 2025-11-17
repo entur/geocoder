@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy.pelias
 
-import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -27,8 +26,8 @@ class PeliasAutocompleteRequestTest {
             if (test.shouldFail) {
                 assertFailsWith<IllegalArgumentException> {
                     PeliasAutocompleteRequest.FocusParams(
-                        lat = BigDecimal(test.lat),
-                        lon = BigDecimal(test.lon),
+                        lat = test.lat.toDouble(),
+                        lon = test.lon.toDouble(),
                         scale = null,
                         weight = null,
                     )
@@ -36,13 +35,13 @@ class PeliasAutocompleteRequestTest {
             } else {
                 val focus =
                     PeliasAutocompleteRequest.FocusParams(
-                        lat = BigDecimal(test.lat),
-                        lon = BigDecimal(test.lon),
+                        lat = test.lat.toDouble(),
+                        lon = test.lon.toDouble(),
                         scale = null,
                         weight = null,
                     )
-                assertEquals(BigDecimal(test.lat), focus.lat)
-                assertEquals(BigDecimal(test.lon), focus.lon)
+                assertEquals(test.lat.toDouble(), focus.lat)
+                assertEquals(test.lon.toDouble(), focus.lon)
             }
         }
     }
@@ -66,8 +65,8 @@ class PeliasAutocompleteRequestTest {
             if (test.shouldFail) {
                 assertFailsWith<IllegalArgumentException> {
                     PeliasAutocompleteRequest.FocusParams(
-                        lat = BigDecimal("59.911491"),
-                        lon = BigDecimal("10.757933"),
+                        lat = 59.911491,
+                        lon = 10.757933,
                         scale = test.scale,
                         weight = test.weight,
                     )
@@ -75,8 +74,8 @@ class PeliasAutocompleteRequestTest {
             } else {
                 val focus =
                     PeliasAutocompleteRequest.FocusParams(
-                        lat = BigDecimal("59.911491"),
-                        lon = BigDecimal("10.757933"),
+                        lat = 59.911491,
+                        lon = 10.757933,
                         scale = test.scale,
                         weight = test.weight,
                     )
@@ -119,8 +118,8 @@ class PeliasAutocompleteRequestTest {
                 }
             } else {
                 val focus = PeliasAutocompleteRequest.FocusParams.from(test.lat, test.lon, test.scale, test.weight)
-                assertEquals(BigDecimal(test.expectedLat), focus.lat)
-                assertEquals(BigDecimal(test.expectedLon), focus.lon)
+                assertEquals(test.expectedLat.toDouble(), focus.lat)
+                assertEquals(test.expectedLon.toDouble(), focus.lon)
                 assertEquals(test.expectedScale, focus.scale)
                 assertEquals(test.expectedWeight, focus.weight)
             }

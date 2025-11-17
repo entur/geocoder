@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy.photon
 
-import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -55,8 +54,8 @@ class PhotonResultTest {
         val feature = result.features[0]
         assertEquals("Point", feature.geometry.type)
         assertEquals(2, feature.geometry.coordinates.size)
-        assertEquals(BigDecimal("10.757933"), feature.geometry.coordinates[0])
-        assertEquals(BigDecimal("59.911491"), feature.geometry.coordinates[1])
+        assertEquals(10.757933, feature.geometry.coordinates[0])
+        assertEquals(59.911491, feature.geometry.coordinates[1])
 
         val props = feature.properties
         assertEquals("Oslo Sentralstasjon", props.name)
@@ -159,10 +158,10 @@ class PhotonResultTest {
 
         assertNotNull(result.bbox)
         assertEquals(4, result.bbox.size)
-        assertEquals(BigDecimal("10.0"), result.bbox[0])
-        assertEquals(BigDecimal("59.0"), result.bbox[1])
-        assertEquals(BigDecimal("11.0"), result.bbox[2])
-        assertEquals(BigDecimal("60.0"), result.bbox[3])
+        assertEquals(10.0, result.bbox[0])
+        assertEquals(59.0, result.bbox[1])
+        assertEquals(11.0, result.bbox[2])
+        assertEquals(60.0, result.bbox[3])
     }
 
     @Test
@@ -187,8 +186,8 @@ class PhotonResultTest {
 
         assertEquals(1, result.features.size)
         val feature = result.features[0]
-        assertEquals(BigDecimal("10.0"), feature.geometry.coordinates[0])
-        assertEquals(BigDecimal("60.0"), feature.geometry.coordinates[1])
+        assertEquals(10.0, feature.geometry.coordinates[0])
+        assertEquals(60.0, feature.geometry.coordinates[1])
     }
 
     @Test

@@ -3,11 +3,10 @@ package no.entur.geocoder.proxy.photon
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import no.entur.geocoder.proxy.v3.V3ReverseRequest
-import java.math.BigDecimal
 
 data class PhotonReverseRequest(
-    val latitude: BigDecimal,
-    val longitude: BigDecimal,
+    val latitude: Double,
+    val longitude: Double,
     val language: String,
     val limit: Int,
     val radius: Double? = null,

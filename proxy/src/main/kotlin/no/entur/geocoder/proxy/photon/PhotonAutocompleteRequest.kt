@@ -5,7 +5,6 @@ import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.v3.V3AutocompleteRequest
-import java.math.BigDecimal
 
 data class PhotonAutocompleteRequest(
     val query: String,
@@ -13,8 +12,8 @@ data class PhotonAutocompleteRequest(
     val language: String,
     val includes: List<String> = emptyList(),
     val excludes: List<String> = emptyList(),
-    val lat: BigDecimal?,
-    val lon: BigDecimal?,
+    val lat: Double?,
+    val lon: Double?,
     val zoom: Int?,
     val weight: Double?,
 ) {

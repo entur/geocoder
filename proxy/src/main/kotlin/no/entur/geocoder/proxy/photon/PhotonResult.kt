@@ -5,12 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.Extra
-import java.math.BigDecimal
 
 data class PhotonResult(
     val type: String = "FeatureCollection",
     val features: List<PhotonFeature> = emptyList(),
-    val bbox: List<BigDecimal>? = null,
+    val bbox: List<Double>? = null,
 ) {
     companion object {
         private val mapper: ObjectMapper =
@@ -29,7 +28,7 @@ data class PhotonResult(
 
     data class PhotonGeometry(
         val type: String,
-        val coordinates: List<BigDecimal>, // [lon, lat]
+        val coordinates: List<Double>, // [lon, lat]
     )
 
     data class PhotonProperties(

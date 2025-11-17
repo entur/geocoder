@@ -4,12 +4,12 @@ import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_PREFIX
 import no.entur.geocoder.common.Coordinate
+import no.entur.geocoder.common.Coordinate.Companion.coordOrNull
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasFeature
-import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
+import no.entur.geocoder.proxy.pelias.PeliasResult.*
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
@@ -20,16 +20,14 @@ object PeliasResultTransformer {
         parseAndTransform(
             photonResult = result,
             expectedSize = request.size,
-            lat = request.focus?.lat,
-            lon = request.focus?.lon,
+            coord = coordOrNull(request.focus?.lat, request.focus?.lon),
         )
 
     fun parseAndTransform(result: PhotonResult, request: PeliasReverseRequest): PeliasResult =
         parseAndTransform(
             photonResult = result,
             expectedSize = request.size,
-            lat = request.lat,
-            lon = request.lon,
+            coord = coordOrNull(request.lat, request.lon),
         )
 
     fun parseAndTransform(result: PhotonResult, request: PeliasPlaceRequest): PeliasResult =
@@ -41,12 +39,11 @@ object PeliasResultTransformer {
     internal fun parseAndTransform(
         photonResult: PhotonResult,
         expectedSize: Int,
-        lat: BigDecimal? = null,
-        lon: BigDecimal? = null,
+        coord: Coordinate? = null,
     ): PeliasResult {
         val transformedFeatures =
             photonResult.features.map { feature ->
-                val distance = lat?.let { lon?.let { calculateDistanceKm(feature.geometry, lat, lon) } }
+                val distance = coord?.let { calculateDistanceKm(feature.geometry, coord) }
                 transformFeature(feature, distance)
             }
 
@@ -98,7 +95,7 @@ object PeliasResultTransformer {
         }
     }
 
-    fun transformFeature(feature: PhotonFeature, distance: BigDecimal?): PeliasFeature {
+    fun transformFeature(feature: PhotonFeature, distance: Double?): PeliasFeature {
         val props = feature.properties
         val extra = props.extra
         val source = transformSource(extra)
@@ -107,9 +104,9 @@ object PeliasResultTransformer {
         return PeliasFeature(
             type = feature.type,
             geometry =
-                PeliasResult.PeliasGeometry(
+                PeliasGeometry(
                     type = feature.geometry.type,
-                    coordinates = feature.geometry.coordinates,
+                    coordinates = feature.geometry.coordinates.toBigDecimalList(),
                 ),
             properties =
                 PeliasProperties(
@@ -126,7 +123,7 @@ object PeliasResultTransformer {
                             ?.firstOrNull()
                             ?.ifBlank { null },
                     street = transformStreet(props),
-                    distance = distance,
+                    distance = distance?.toBigDecimalWithScale(3),
                     postalcode = props.postcode,
                     housenumber = props.housenumber,
                     accuracy = extra?.accuracy,
@@ -216,16 +213,16 @@ object PeliasResultTransformer {
 
     internal fun calculateDistanceKm(
         geometry: PhotonGeometry,
-        lat: BigDecimal,
-        lon: BigDecimal,
-    ): BigDecimal? {
+        coord: Coordinate,
+    ): Double? {
         val featureCoords = geometry.coordinates
         if (featureCoords.size < 2) return null
 
         val coord1 = Coordinate(featureCoords[1].toDouble(), featureCoords[0].toDouble())
-        val coord2 = Coordinate(lat.toDouble(), lon.toDouble())
-        val distance = Geo.haversineDistance(coord1, coord2)
+        val distance = Geo.haversineDistance(coord1, coord)
 
-        return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)
+        return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000)
     }
 }
+
+private fun List<Double>.toBigDecimalList(): List<BigDecimal> = this.map { it.toBigDecimalWithScale() }

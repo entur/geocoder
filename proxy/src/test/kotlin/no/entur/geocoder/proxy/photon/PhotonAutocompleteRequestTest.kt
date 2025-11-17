@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy.photon
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
-import java.math.BigDecimal
 import kotlin.test.*
 
 class PhotonAutocompleteRequestTest {
@@ -32,8 +31,8 @@ class PhotonAutocompleteRequestTest {
     fun `from PeliasAutocompleteParams includes focus parameters`() {
         val focus =
             PeliasAutocompleteRequest.FocusParams(
-                lat = BigDecimal("59.911491"),
-                lon = BigDecimal("10.757933"),
+                lat = 59.911491,
+                lon = 10.757933,
                 scale = 50,
                 weight = 15.0,
             )
@@ -47,8 +46,8 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertEquals(BigDecimal("59.911491"), request.lat)
-        assertEquals(BigDecimal("10.757933"), request.lon)
+        assertEquals(59.911491, request.lat)
+        assertEquals(10.757933, request.lon)
         assertTrue(request.zoom != null)
         assertTrue(request.weight != null)
         assertTrue(request.weight < 1.0)
@@ -146,8 +145,8 @@ class PhotonAutocompleteRequestTest {
     fun `from PeliasAutocompleteParams calculates zoom from scale`() {
         val focus =
             PeliasAutocompleteRequest.FocusParams(
-                lat = BigDecimal("60.0"),
-                lon = BigDecimal("10.0"),
+                lat = 60.0,
+                lon = 10.0,
                 scale = 100,
                 weight = null,
             )
@@ -169,8 +168,8 @@ class PhotonAutocompleteRequestTest {
     fun `from PeliasAutocompleteParams uses default zoom when no scale`() {
         val focus =
             PeliasAutocompleteRequest.FocusParams(
-                lat = BigDecimal("60.0"),
-                lon = BigDecimal("10.0"),
+                lat = 60.0,
+                lon = 10.0,
                 scale = null,
                 weight = null,
             )
@@ -191,8 +190,8 @@ class PhotonAutocompleteRequestTest {
     fun `from PeliasAutocompleteParams converts weight correctly`() {
         val focus1 =
             PeliasAutocompleteRequest.FocusParams(
-                lat = BigDecimal("60.0"),
-                lon = BigDecimal("10.0"),
+                lat = 60.0,
+                lon = 10.0,
                 scale = null,
                 weight = 0.1,
             )
@@ -210,8 +209,8 @@ class PhotonAutocompleteRequestTest {
 
         val focus2 =
             PeliasAutocompleteRequest.FocusParams(
-                lat = BigDecimal("60.0"),
-                lon = BigDecimal("10.0"),
+                lat = 60.0,
+                lon = 10.0,
                 scale = null,
                 weight = 100.0,
             )

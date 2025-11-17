@@ -75,8 +75,8 @@ data class V3Result(
 
     data class QueryInfo(
         val text: String? = null,
-        val latitude: BigDecimal? = null,
-        val longitude: BigDecimal? = null,
+        val latitude: Double? = null,
+        val longitude: Double? = null,
         val limit: Int,
         val language: String,
         val filters: Filters? = null,

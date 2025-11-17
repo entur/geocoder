@@ -1,11 +1,11 @@
 package no.entur.geocoder.proxy.pelias
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*
-import java.math.BigDecimal
 import kotlin.test.*
 
 class PeliasResultTransformerTest {
@@ -142,18 +142,17 @@ class PeliasResultTransformerTest {
         val geometry =
             PhotonGeometry(
                 type = "Point",
-                coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
+                coordinates = listOf(10.757933, 59.911491),
             )
         val distance =
             PeliasResultTransformer.calculateDistanceKm(
                 geometry,
-                BigDecimal("59.912000"),
-                BigDecimal("10.758000"),
+                Coordinate(59.912000, 10.758000),
             )
 
         assertNotNull(distance)
-        assertTrue(distance > BigDecimal.ZERO)
-        assertTrue(distance < BigDecimal("0.1"))
+        assertTrue(distance > 0.0)
+        assertTrue(distance < 0.1)
     }
 
     @Test
@@ -161,13 +160,12 @@ class PeliasResultTransformerTest {
         val geometry =
             PhotonGeometry(
                 type = "Point",
-                coordinates = listOf(BigDecimal("10.0")),
+                coordinates = listOf(10.0),
             )
         val distance =
             PeliasResultTransformer.calculateDistanceKm(
                 geometry,
-                BigDecimal("60.0"),
-                BigDecimal("10.0"),
+                Coordinate(60.0, 10.0),
             )
 
         assertNull(distance)
@@ -183,8 +181,7 @@ class PeliasResultTransformerTest {
         val distance =
             PeliasResultTransformer.calculateDistanceKm(
                 geometry,
-                BigDecimal("60.0"),
-                BigDecimal("10.0"),
+                Coordinate(60.0, 10.0),
             )
 
         assertNull(distance)
@@ -212,7 +209,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
+                        coordinates = listOf(10.757933, 59.911491),
                     ),
                 properties =
                     PhotonProperties(
@@ -257,7 +254,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        coordinates = listOf(10.0, 60.0),
                     ),
                 properties =
                     PhotonProperties(
@@ -266,10 +263,10 @@ class PeliasResultTransformerTest {
                     ),
             )
 
-        val distance = BigDecimal("1.234")
+        val distance = 1.234
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, distance)
 
-        assertEquals(distance, peliasFeature.properties.distance)
+        assertEquals(distance, peliasFeature.properties.distance?.toDouble())
     }
 
     @Test
@@ -286,7 +283,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        coordinates = listOf(10.0, 60.0),
                     ),
                 properties =
                     PhotonProperties(
@@ -314,7 +311,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        coordinates = listOf(10.0, 60.0),
                     ),
                 properties =
                     PhotonProperties(
@@ -342,7 +339,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        coordinates = listOf(10.0, 60.0),
                     ),
                 properties =
                     PhotonProperties(
@@ -370,7 +367,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        coordinates = listOf(10.0, 60.0),
                     ),
                 properties =
                     PhotonProperties(
@@ -399,7 +396,7 @@ class PeliasResultTransformerTest {
                 geometry =
                     PhotonGeometry(
                         type = "Point",
-                        coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                        coordinates = listOf(10.0, 60.0),
                     ),
                 properties =
                     PhotonProperties(
@@ -425,7 +422,7 @@ class PeliasResultTransformerTest {
                             geometry =
                                 PhotonGeometry(
                                     type = "Point",
-                                    coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                                    coordinates = listOf(10.0, 60.0),
                                 ),
                             properties =
                                 PhotonProperties(
@@ -442,7 +439,7 @@ class PeliasResultTransformerTest {
                             geometry =
                                 PhotonGeometry(
                                     type = "Point",
-                                    coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0")),
+                                    coordinates = listOf(11.0, 61.0),
                                 ),
                             properties =
                                 PhotonProperties(
@@ -476,7 +473,7 @@ class PeliasResultTransformerTest {
                             geometry =
                                 PhotonGeometry(
                                     type = "Point",
-                                    coordinates = listOf(BigDecimal("10.757933"), BigDecimal("59.911491")),
+                                    coordinates = listOf(10.757933, 59.911491),
                                 ),
                             properties =
                                 PhotonProperties(
@@ -496,8 +493,8 @@ class PeliasResultTransformerTest {
                 text = "foo",
                 focus =
                     FocusParams(
-                        lat = BigDecimal("59.912000"),
-                        lon = BigDecimal("10.758000"),
+                        lat = 59.912000,
+                        lon = 10.758000,
                     ),
             )
         val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
@@ -531,7 +528,7 @@ class PeliasResultTransformerTest {
                             geometry =
                                 PhotonGeometry(
                                     type = "Point",
-                                    coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
+                                    coordinates = listOf(10.0, 60.0),
                                 ),
                             properties =
                                 PhotonProperties(

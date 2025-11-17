@@ -2,12 +2,12 @@ package no.entur.geocoder.proxy.v3
 
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
 import no.entur.geocoder.proxy.v3.V3Result.Metadata
 import no.entur.geocoder.proxy.v3.V3Result.QueryInfo
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 object V3ResultTransformer {
     fun parseAndTransform(
@@ -108,8 +108,8 @@ object V3ResultTransformer {
             placeType = placeType,
             location =
                 V3Result.Location(
-                    latitude = coords.getOrElse(1) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
-                    longitude = coords.getOrElse(0) { BigDecimal.ZERO }.setScale(6, RoundingMode.HALF_UP),
+                    latitude = coords.getOrNull(1)?.toBigDecimalWithScale() ?: BigDecimal.ZERO,
+                    longitude = coords.getOrNull(0)?.toBigDecimalWithScale() ?: BigDecimal.ZERO,
                 ),
             address = buildAddress(props, extra),
             categories =

@@ -3,11 +3,10 @@ package no.entur.geocoder.proxy.pelias
 import io.ktor.server.application.*
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
-import java.math.BigDecimal
 
 data class PeliasReverseRequest(
-    val lat: BigDecimal,
-    val lon: BigDecimal,
+    val lat: Double,
+    val lon: Double,
     val radius: Double? = null,
     val size: Int = 10,
     val lang: String = "no",
@@ -32,8 +31,8 @@ data class PeliasReverseRequest(
         fun ApplicationCall.peliasReverseRequest(): PeliasReverseRequest {
             val req = request.queryParameters
             return PeliasReverseRequest(
-                lat = req["point.lat"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lat' is required"),
-                lon = req["point.lon"]?.toBigDecimalOrNull() ?: throw IllegalArgumentException("Parameter 'point.lon' is required"),
+                lat = req["point.lat"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'point.lat' is required"),
+                lon = req["point.lon"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'point.lon' is required"),
                 radius = req["boundary.circle.radius"]?.toDoubleOrNull(),
                 size = req["size"]?.toIntOrNull() ?: 10,
                 lang = req["lang"].safeVar() ?: "no",
