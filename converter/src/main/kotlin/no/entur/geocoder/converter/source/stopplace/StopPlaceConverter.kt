@@ -8,7 +8,9 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
@@ -48,7 +50,6 @@ class StopPlaceConverter : Converter {
         val locality = topoPlaces[localityGid]?.descriptor?.name?.text
         val countyGid = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.parentTopographicPlaceRef?.ref
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
-        val country = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.countryRef?.ref
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
         val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
@@ -78,11 +79,12 @@ class StopPlaceConverter : Converter {
                 .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it })
                 .plus(if (isParentStopPlace) LEGACY_SOURCE_OPENSTREETMAP else LEGACY_SOURCE_WHOSONFIRST)
 
+        val country = Geo.getCountry(lat, lon) ?: Country.no
         val categories: List<String> =
             tags
                 .plus(SOURCE_NSR)
                 .plus(tariffZoneCategories)
-                .plus(country?.let { "country.$it" })
+                .plus("country.${country.name}")
                 .plus(countyGid?.let { "county_gid.$it" })
                 .plus(localityGid?.let { "locality_gid.$it" })
                 .plus(multimodalityCategory)
@@ -98,7 +100,7 @@ class StopPlaceConverter : Converter {
                 id = id,
                 source = Source.NSR,
                 accuracy = "point",
-                country_a = Country.getThreeLetterCode(country),
+                country_a = country.threeLetterCode,
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
@@ -136,7 +138,7 @@ class StopPlaceConverter : Converter {
                         county = county,
                     ),
                 postcode = null,
-                country_code = (country ?: "no"),
+                country_code = country.name,
                 centroid = listOf(lon, lat),
                 bbox = listOf(lat, lon, lat, lon),
                 extra = extra,
@@ -161,7 +163,6 @@ class StopPlaceConverter : Converter {
         var localityGid: String? = null
         var county: String? = null
         var countyGid: String? = null
-        var country: String? = null
 
         groupOfStopPlaces.members?.stopPlaceRef?.any { stopPlaceRef ->
             val stopPlace = stopPlaces.find { it.id == stopPlaceRef.ref }
@@ -172,7 +173,6 @@ class StopPlaceConverter : Converter {
                 locality = topoPlace.descriptor?.name?.text
                 countyGid = topoPlace.parentTopographicPlaceRef?.ref
                 county = topoPlaces[countyGid]?.descriptor?.name?.text
-                country = topoPlace.countryRef?.ref
                 return@any true
             }
             return@any false
@@ -193,10 +193,11 @@ class StopPlaceConverter : Converter {
             listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
                 .plus(LEGACY_CATEGORY_PREFIX + "GroupOfStopPlaces")
 
+        val country = Geo.getCountry(lat, lon) ?: Country.no
         val categories =
             tags
                 .plus(SOURCE_NSR)
-                .plus(country?.let { "country.$it" })
+                .plus("country.${country.name}")
                 .plus(countyGid?.let { "county_gid.$it" })
                 .plus(localityGid?.let { "locality_gid.$it" })
                 .filterNotNull()
@@ -218,7 +219,7 @@ class StopPlaceConverter : Converter {
                         county = county,
                     ),
                 postcode = null,
-                country_code = (country ?: "no"),
+                country_code = country.name,
                 centroid = listOf(lon, lat),
                 bbox = listOf(lat, lon, lat, lon),
                 extra =
@@ -226,7 +227,7 @@ class StopPlaceConverter : Converter {
                         id = id,
                         source = Source.NSR,
                         accuracy = "point",
-                        country_a = Country.getThreeLetterCode(country),
+                        country_a = country.threeLetterCode,
                         county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,

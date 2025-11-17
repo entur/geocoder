@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.source.adresse
 
+import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
@@ -7,10 +8,6 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_ADDRESS
 import no.entur.geocoder.common.Category.OSM_STREET
 import no.entur.geocoder.common.Category.SOURCE_ADRESSE
-import no.entur.geocoder.common.Extra
-import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.ImportanceCalculator
-import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
@@ -83,7 +80,6 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             placeId = PlaceId.address.create(adresse.lokalid),
             id = adresse.lokalid, // This is the only numeric id type. All others are colon separated.
             tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
-            categories = listOf(SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
             displayName = null, // Addresses proper are considered to be "nameless" in Photon
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
@@ -103,7 +99,6 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             placeId = PlaceId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
-            categories = listOf(SOURCE_ADRESSE),
             popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,
@@ -118,13 +113,13 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
         placeId: Long,
         id: String,
         tags: List<String>,
-        categories: List<String>,
         popularity: Double,
         displayName: String?,
         housenumber: String?,
         postcode: String?,
     ): NominatimPlace {
         val (lat, lon) = Geo.convertUTM33ToLatLon(easting, northing)
+        val country = Geo.getCountry(lat, lon) ?: Country.no
 
         val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }
 
@@ -133,7 +128,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 id = id,
                 source = Source.KARTVERKET_ADRESSE,
                 accuracy = "point",
-                country_a = "NOR",
+                country_a = country.threeLetterCode,
                 county_gid = fylkesnummer?.let { "KVE:TopographicPlace:$it" },
                 locality = adresse.kommunenavn?.titleize(),
                 locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
@@ -142,6 +137,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 tags = tags.joinToString(","),
                 alt_name = adresse.adressetilleggsnavn,
             )
+        val categories = tags.plus(SOURCE_ADRESSE).plus("country.${country.name}")
 
         val fylkesnavn = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnavn }
 
@@ -169,7 +165,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                         county = fylkesnavn?.titleize(),
                     ),
                 postcode = postcode,
-                country_code = "no",
+                country_code = country.name,
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
                 extra = extra,

@@ -1,7 +1,9 @@
 package no.entur.geocoder.converter.source.poi
 
 import no.entur.geocoder.common.Category.OSM_CUSTOM_POI
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source.CUSTOM_POI
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
@@ -43,11 +45,13 @@ class PoiConverter : Converter {
                 val name = topoPlace.descriptor?.name?.text ?: ""
                 val lon = topoPlace.centroid?.location?.longitude ?: BigDecimal.ZERO
                 val lat = topoPlace.centroid?.location?.latitude ?: BigDecimal.ZERO
+                val country = Geo.getCountry(lat, lon) ?: Country.no
                 val extra =
                     Extra(
                         id = id,
                         source = CUSTOM_POI,
                         tags = OSM_CUSTOM_POI,
+                        country_a = country.threeLetterCode,
                     )
                 val placeId = PlaceId.poi.create(id)
                 val placeContent =
@@ -55,13 +59,13 @@ class PoiConverter : Converter {
                         place_id = placeId,
                         object_type = "N",
                         object_id = placeId,
-                        categories = listOf(OSM_CUSTOM_POI),
+                        categories = listOf(OSM_CUSTOM_POI, "country.${country.name}"),
                         rank_address = 30,
                         importance = 0.5,
                         name = Name(name = name),
                         address = Address(),
                         postcode = null,
-                        country_code = "no",
+                        country_code = country.name,
                         centroid = listOf(lon, lat),
                         bbox = listOf(lon, lat, lon, lat),
                         extra = extra,

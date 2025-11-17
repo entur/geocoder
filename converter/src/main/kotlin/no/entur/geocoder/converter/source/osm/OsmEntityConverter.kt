@@ -4,7 +4,9 @@ import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.titleize
@@ -125,10 +127,10 @@ class OsmEntityConverter(
         address: Address = Address(),
     ): NominatimPlace {
         val (lon, lat) = centroid
+        val country = Geo.getCountry(lat, lon) ?: Country.no
 
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
 
-        val country = determineCountry(county, municipality, tags)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
         val tagList: List<String> =
             listOf(LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
@@ -143,7 +145,7 @@ class OsmEntityConverter(
                 id = id,
                 source = Source.OSM,
                 accuracy = accuracy,
-                country_a = if (country.equals(DEFAULT_COUNTRY, ignoreCase = true)) NORWAY_COUNTRY_CODE else country,
+                country_a = country.threeLetterCode,
                 county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
                 locality = municipality?.name?.titleize(),
                 locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
@@ -167,7 +169,7 @@ class OsmEntityConverter(
                 housenumber = null,
                 address = updatedAddress,
                 postcode = null,
-                country_code = country.lowercase(),
+                country_code = country.name,
                 centroid = listOf(lon, lat),
                 bbox = listOf(lon, lat, lon, lat),
                 extra = extra,
@@ -176,25 +178,15 @@ class OsmEntityConverter(
         return NominatimPlace("Place", listOf(content))
     }
 
-    private fun determineCountry(
-        county: AdministrativeBoundary?,
-        municipality: AdministrativeBoundary?,
-        tags: Map<String, String>,
-    ): String =
-        county?.countryCode?.lowercase()
-            ?: municipality?.countryCode?.lowercase()
-            ?: tags["addr:country"]
-            ?: DEFAULT_COUNTRY
-
     private fun buildCategories(
         tags: List<String>,
-        country: String,
+        country: Country,
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
     ): List<String> =
         buildList {
             addAll(tags)
-            add("country.$country")
+            add("country.${country.name}")
             county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
             municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
         }

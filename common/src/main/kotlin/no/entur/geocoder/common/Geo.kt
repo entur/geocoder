@@ -79,8 +79,11 @@ object Geo {
         source?.let { CountryBoundaries.deserializeFrom(source) }
     }
 
-    fun getCountryCode(lat: Double, lon: Double): String? =
+    fun getCountry(lat: BigDecimal, lon: BigDecimal): Country? = getCountry(lat.toDouble(), lon.toDouble())
+
+    fun getCountry(lat: Double, lon: Double): Country? =
         boundaries
             ?.getIds(lon, lat)
             ?.firstOrNull { it.length == 2 }
+            ?.let { Country.parse(it) }
 }
