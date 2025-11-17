@@ -45,7 +45,7 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.focus?.lat, peliasParams.focus?.lon)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams)
             call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequest to Photon: $e", e)
@@ -82,7 +82,7 @@ object PeliasApi {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams.lat, peliasParams.lon)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams)
             call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequest to Photon: $e", e)
@@ -116,7 +116,7 @@ object PeliasApi {
                     type = "FeatureCollection",
                     features = photonResults.mapNotNull { it.features.firstOrNull() },
                 )
-            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams)
             call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequests to Photon: $e", e)

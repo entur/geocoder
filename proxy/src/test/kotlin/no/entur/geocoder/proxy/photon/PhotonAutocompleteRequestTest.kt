@@ -2,13 +2,9 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
-import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
 import java.math.BigDecimal
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class PhotonAutocompleteRequestTest {
     @Test

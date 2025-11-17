@@ -20,7 +20,7 @@ import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.proxy.Routing.configureRouting
 import no.entur.geocoder.proxy.pelias.PeliasResult
-import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals

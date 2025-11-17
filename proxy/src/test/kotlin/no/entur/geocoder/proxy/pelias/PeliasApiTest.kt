@@ -11,7 +11,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.Routing.configureRouting
-import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach

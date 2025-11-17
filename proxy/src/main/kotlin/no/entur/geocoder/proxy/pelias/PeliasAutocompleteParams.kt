@@ -20,7 +20,7 @@ data class PeliasAutocompleteParams(
     val layers: List<String> = emptyList(),
     val categories: List<String> = emptyList(),
     val focus: FocusParams? = null,
-    val multiModal: String,
+    val multiModal: String = "parent",
 ) {
     init {
         require(text.isNotBlank()) { "text cannot be blank" }
@@ -76,8 +76,8 @@ data class PeliasAutocompleteParams(
     data class FocusParams(
         val lat: BigDecimal,
         val lon: BigDecimal,
-        val scale: Int?,
-        val weight: Double?,
+        val scale: Int? = null,
+        val weight: Double? = null,
     ) {
         init {
             require(lat.toDouble() in -90.0..90.0) { "Parameter 'focus.point.lat' must be between -90 and 90" }

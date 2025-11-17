@@ -4,7 +4,6 @@ import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
-import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
 import no.entur.geocoder.proxy.v3.V3AutocompleteParams
 import java.math.BigDecimal
 
@@ -20,6 +19,12 @@ data class PhotonAutocompleteRequest(
     val weight: Double?,
 ) {
     companion object {
+        /**
+         * We drop the "by" if a GOSP exists with the same name. This can only be done after fetching,
+         * so we fetch one extra and drop the last result if there is a match.
+         */
+        const val CITY_AND_GOSP_LIST_HEADROOM = 1
+
         fun from(params: PeliasAutocompleteParams): PhotonAutocompleteRequest {
             val includes = PhotonFilterBuilder.buildIncludes(params)
             val excludes = PhotonFilterBuilder.buildExcludes(params)
