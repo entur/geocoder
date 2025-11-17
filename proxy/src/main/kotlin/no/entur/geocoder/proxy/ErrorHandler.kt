@@ -8,7 +8,7 @@ import io.ktor.http.HttpStatusCode.Companion.BadGateway
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.ServiceUnavailable
-import no.entur.geocoder.proxy.pelias.PeliasResponse
+import no.entur.geocoder.proxy.pelias.PeliasResult
 import java.io.IOException
 
 object ErrorHandler {
@@ -44,9 +44,9 @@ object ErrorHandler {
 
     private fun toError(error: String, status: HttpStatusCode): PeliasError =
         PeliasError(
-            PeliasResponse(
+            PeliasResult(
                 geocoding =
-                    PeliasResponse.GeocodingMetadata(
+                    PeliasResult.GeocodingMetadata(
                         errors = listOf(error),
                     ),
             ),
@@ -54,7 +54,7 @@ object ErrorHandler {
         )
 
     data class PeliasError(
-        val result: PeliasResponse,
+        val result: PeliasResult,
         val status: HttpStatusCode,
     )
 }

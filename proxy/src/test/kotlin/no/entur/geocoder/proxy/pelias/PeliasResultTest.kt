@@ -9,7 +9,7 @@ class PeliasResultTest {
     @Test
     fun `PeliasResult creates with default values`() {
         val result =
-            PeliasResponse(
+            PeliasResult(
                 features = emptyList(),
             )
 
@@ -22,21 +22,21 @@ class PeliasResultTest {
     @Test
     fun `PeliasResult creates with features and bbox`() {
         val feature =
-            PeliasResponse.PeliasFeature(
+            PeliasResult.PeliasFeature(
                 geometry =
-                    PeliasResponse.PeliasGeometry(
+                    PeliasResult.PeliasGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
                 properties =
-                    PeliasResponse.PeliasProperties(
+                    PeliasResult.PeliasProperties(
                         id = "123",
                         name = "Test Place",
                     ),
             )
 
         val result =
-            PeliasResponse(
+            PeliasResult(
                 features = listOf(feature),
                 bbox = listOf(BigDecimal("10.0"), BigDecimal("60.0"), BigDecimal("11.0"), BigDecimal("61.0")),
             )
@@ -48,13 +48,13 @@ class PeliasResultTest {
     @Test
     fun `PeliasFeature has correct default type`() {
         val feature =
-            PeliasResponse.PeliasFeature(
+            PeliasResult.PeliasFeature(
                 geometry =
-                    PeliasResponse.PeliasGeometry(
+                    PeliasResult.PeliasGeometry(
                         type = "Point",
                         coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                     ),
-                properties = PeliasResponse.PeliasProperties(),
+                properties = PeliasResult.PeliasProperties(),
             )
 
         assertEquals("PhotonFeature", feature.type)
@@ -63,7 +63,7 @@ class PeliasResultTest {
     @Test
     fun `PeliasProperties creates with all fields`() {
         val props =
-            PeliasResponse.PeliasProperties(
+            PeliasResult.PeliasProperties(
                 id = "W123456789",
                 gid = "osm:venue:W123456789",
                 layer = "venue",
@@ -114,7 +114,7 @@ class PeliasResultTest {
 
     @Test
     fun `GeocodingMetadata has correct defaults`() {
-        val metadata = PeliasResponse.GeocodingMetadata()
+        val metadata = PeliasResult.GeocodingMetadata()
 
         assertEquals("0.2", metadata.version)
         assertEquals("http://pelias.mapzen.com/v1/attribution", metadata.attribution)
@@ -125,7 +125,7 @@ class PeliasResultTest {
 
     @Test
     fun `EngineMetadata has correct defaults`() {
-        val engine = PeliasResponse.GeocodingMetadata.EngineMetadata()
+        val engine = PeliasResult.GeocodingMetadata.EngineMetadata()
 
         assertEquals("Photon", engine.name)
         assertEquals("Komoot", engine.author)
@@ -135,7 +135,7 @@ class PeliasResultTest {
     @Test
     fun `QueryMetadata creates with all fields`() {
         val query =
-            PeliasResponse.GeocodingMetadata.QueryMetadata(
+            PeliasResult.GeocodingMetadata.QueryMetadata(
                 text = "Oslo",
                 parser = "addressit",
                 tokens = listOf("oslo"),
@@ -143,7 +143,7 @@ class PeliasResultTest {
                 layers = listOf("address", "venue"),
                 sources = listOf("osm", "kartverket"),
                 private = false,
-                lang = PeliasResponse.GeocodingMetadata.LangMetadata(),
+                lang = PeliasResult.GeocodingMetadata.LangMetadata(),
                 querySize = 50,
             )
 
@@ -160,7 +160,7 @@ class PeliasResultTest {
 
     @Test
     fun `LangMetadata has correct defaults`() {
-        val lang = PeliasResponse.GeocodingMetadata.LangMetadata()
+        val lang = PeliasResult.GeocodingMetadata.LangMetadata()
 
         assertEquals("Norwegian Bokmål", lang.name)
         assertEquals("nb", lang.iso6391)
@@ -171,7 +171,7 @@ class PeliasResultTest {
     @Test
     fun `PeliasGeometry stores coordinates correctly`() {
         val geometry =
-            PeliasResponse.PeliasGeometry(
+            PeliasResult.PeliasGeometry(
                 type = "Point",
                 coordinates =
                     listOf(
@@ -190,33 +190,33 @@ class PeliasResultTest {
     fun `PeliasResult with multiple features`() {
         val features =
             listOf(
-                PeliasResponse.PeliasFeature(
+                PeliasResult.PeliasFeature(
                     geometry =
-                        PeliasResponse.PeliasGeometry(
+                        PeliasResult.PeliasGeometry(
                             type = "Point",
                             coordinates = listOf(BigDecimal("10.0"), BigDecimal("60.0")),
                         ),
-                    properties = PeliasResponse.PeliasProperties(name = "Place 1"),
+                    properties = PeliasResult.PeliasProperties(name = "Place 1"),
                 ),
-                PeliasResponse.PeliasFeature(
+                PeliasResult.PeliasFeature(
                     geometry =
-                        PeliasResponse.PeliasGeometry(
+                        PeliasResult.PeliasGeometry(
                             type = "Point",
                             coordinates = listOf(BigDecimal("11.0"), BigDecimal("61.0")),
                         ),
-                    properties = PeliasResponse.PeliasProperties(name = "Place 2"),
+                    properties = PeliasResult.PeliasProperties(name = "Place 2"),
                 ),
-                PeliasResponse.PeliasFeature(
+                PeliasResult.PeliasFeature(
                     geometry =
-                        PeliasResponse.PeliasGeometry(
+                        PeliasResult.PeliasGeometry(
                             type = "Point",
                             coordinates = listOf(BigDecimal("12.0"), BigDecimal("62.0")),
                         ),
-                    properties = PeliasResponse.PeliasProperties(name = "Place 3"),
+                    properties = PeliasResult.PeliasProperties(name = "Place 3"),
                 ),
             )
 
-        val result = PeliasResponse(features = features)
+        val result = PeliasResult(features = features)
 
         assertEquals(3, result.features.size)
         assertEquals("Place 1", result.features[0].properties.name)

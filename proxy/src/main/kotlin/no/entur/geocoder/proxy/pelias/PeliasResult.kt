@@ -2,7 +2,7 @@ package no.entur.geocoder.proxy.pelias
 
 import java.math.BigDecimal
 
-data class PeliasResponse(
+data class PeliasResult(
     val geocoding: GeocodingMetadata = GeocodingMetadata(),
     val type: String = "FeatureCollection",
     val features: List<PeliasFeature> = emptyList(),
