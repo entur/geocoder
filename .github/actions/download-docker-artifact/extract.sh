@@ -34,5 +34,7 @@ tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "$DESTINATION" || { echo "ERROR: 
 rm -rf "$TEMP_DIR"
 
 # Set output
-echo "artifact_file=${DESTINATION}/${ARTIFACT_FILENAME}" >> "$GITHUB_OUTPUT"
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+  echo "artifact_file=${DESTINATION}/${ARTIFACT_FILENAME}" >> "$GITHUB_OUTPUT"
+fi
 ls -lh "${DESTINATION}/${ARTIFACT_FILENAME}"

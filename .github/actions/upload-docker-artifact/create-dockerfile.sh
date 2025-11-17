@@ -12,6 +12,9 @@ FROM scratch
 COPY ${FILE_NAME} /${FILE_NAME}
 EOF
 
-echo "temp_dir=$TEMP_DIR" >> "$GITHUB_OUTPUT"
+# Set output
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+  echo "temp_dir=$TEMP_DIR" >> "$GITHUB_OUTPUT"
+fi
 echo "Created Dockerfile for ${FILE_NAME}"
 cat "$TEMP_DIR/Dockerfile"
