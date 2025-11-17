@@ -1,7 +1,5 @@
 package no.entur.geocoder.converter.source.stedsnavn
 
-import no.entur.geocoder.common.Utm33Coordinate
-
 /**
  * Data class representing a place name entry from Kartverket's stedsnavn GML file.
  *
@@ -27,6 +25,6 @@ data class StedsnavnEntry(
     val adressekode: String?,
     val navneobjekttype: String?,
     val skrivemåtestatus: String?, // Spelling status (e.g., "vedtatt", "godkjent")
-    val coordinates: List<Utm33Coordinate>, // UTM33 coordinates (east, north)
+    val coordinates: List<UtmCoordinate>, // UTM33 coordinates (east, north)
     val annenSkrivemåte: List<String> = emptyList(), // Alternative spellings
 )

@@ -85,7 +85,7 @@ class StedsnavnConverter : Converter {
         var adressekode: String? = null
         var navneobjekttype: String? = null
         var skrivemåtestatus: String? = null
-        val coordinates = mutableListOf<Utm33Coordinate>()
+        val coordinates = mutableListOf<UtmCoordinate>()
         val annenSkrivemåte = mutableListOf<String>()
         var insideAnnenSkrivemåte = false
 
@@ -136,7 +136,7 @@ class StedsnavnConverter : Converter {
                                 val east = coords[i].toDoubleOrNull()
                                 val north = coords[i + 1].toDoubleOrNull()
                                 if (east != null && north != null) {
-                                    coordinates.add(Utm33Coordinate(east, north))
+                                    coordinates.add(UtmCoordinate(east, north))
                                 }
                             }
                         }
@@ -149,7 +149,7 @@ class StedsnavnConverter : Converter {
                             val east = coords[0].toDoubleOrNull()
                             val north = coords[1].toDoubleOrNull()
                             if (east != null && north != null) {
-                                coordinates.add(Utm33Coordinate(east, north))
+                                coordinates.add(UtmCoordinate(east, north))
                             }
                         }
                     }
