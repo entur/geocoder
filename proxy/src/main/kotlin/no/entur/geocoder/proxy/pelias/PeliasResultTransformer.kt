@@ -25,9 +25,27 @@ object PeliasResultTransformer {
         val bbox = calculateBoundingBox(transformedFeatures)
 
         return PeliasResult(
-            features = transformedFeatures,
+            features = filterCityIfGospIsPresent(transformedFeatures),
             bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )
+    }
+
+    /**
+     * We drop the "by" if a GOSP exists with the same name. This can only be done after fetching,
+     * so we fetch one extra and drop the last result if there is a match.
+     */
+    const val CITY_AND_GOSP_LIST_HEADROOM = 1
+
+    private fun filterCityIfGospIsPresent(features: List<PeliasFeature>): List<PeliasFeature> {
+        val gospList =
+            features
+                .filter { it.properties.category?.contains("GroupOfStopPlaces") == true }
+                .map { it.properties.name }
+        val filtered =
+            features.filter {
+                !(it.properties.category?.contains("by") == true && gospList.contains(it.properties.name))
+            }
+        return if (filtered.size != features.size) filtered.dropLast(CITY_AND_GOSP_LIST_HEADROOM) else filtered
     }
 
     private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {

@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
@@ -7,6 +8,7 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.http.ContentType.Application.Json
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -18,6 +20,7 @@ import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.proxy.Routing.configureRouting
 import no.entur.geocoder.proxy.pelias.PeliasResult
+import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals
@@ -61,7 +64,7 @@ class ProxyTest {
             val mockEngine =
                 MockEngine { request ->
                     assertEquals("Test_query", request.url.parameters["q"])
-                    assertEquals("5", request.url.parameters["limit"])
+                    assertEquals("${5 + CITY_AND_GOSP_LIST_HEADROOM}", request.url.parameters["limit"])
                     assertEquals("en", request.url.parameters["lang"])
                     assertEquals("59", request.url.parameters["lat"])
                     assertEquals("10", request.url.parameters["lon"])
@@ -69,14 +72,14 @@ class ProxyTest {
                     respond(
                         content = samplePhotonResponse,
                         status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        headers = headersOf(HttpHeaders.ContentType, Json.toString()),
                     )
                 }
 
             application {
                 install(ContentNegotiation) {
                     jackson {
-                        setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
                     }
                 }
                 configureRouting(
@@ -93,7 +96,7 @@ class ProxyTest {
                     parameter("lang", "en")
                     parameter("focus.point.lat", "59")
                     parameter("focus.point.lon", "10")
-                    header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+                    header(HttpHeaders.Accept, Json.toString())
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -126,14 +129,14 @@ class ProxyTest {
                     respond(
                         content = samplePhotonResponse,
                         status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        headers = headersOf(HttpHeaders.ContentType, Json.toString()),
                     )
                 }
 
             application {
                 install(ContentNegotiation) {
                     jackson {
-                        setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
                     }
                 }
                 configureRouting(
@@ -150,7 +153,7 @@ class ProxyTest {
                     parameter("boundary.circle.radius", "100")
                     parameter("size", "3")
                     parameter("lang", "no")
-                    header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+                    header(HttpHeaders.Accept, Json.toString())
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)

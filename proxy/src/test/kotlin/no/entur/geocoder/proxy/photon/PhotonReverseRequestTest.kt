@@ -85,7 +85,7 @@ class PhotonReverseRequestTest {
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
         assertTrue(request.excludes.contains("multimodal.child"))
-        assertEquals(3, request.excludes.size)
+        assertEquals(2, request.excludes.size)
     }
 
     @Test
@@ -101,7 +101,7 @@ class PhotonReverseRequestTest {
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
         assertTrue(request.excludes.contains("multimodal.parent"))
-        assertEquals(3, request.excludes.size)
+        assertEquals(2, request.excludes.size)
     }
 
     @Test
@@ -116,7 +116,7 @@ class PhotonReverseRequestTest {
         val request = PhotonReverseRequest.from(params)
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
-        assertEquals(2, request.excludes.size)
+        assertEquals(1, request.excludes.size)
     }
 
     @Test

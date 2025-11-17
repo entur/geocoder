@@ -4,6 +4,7 @@ import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
+import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
 import no.entur.geocoder.proxy.v3.V3AutocompleteParams
 import java.math.BigDecimal
 
@@ -36,7 +37,7 @@ data class PhotonAutocompleteRequest(
 
             return PhotonAutocompleteRequest(
                 query = params.text,
-                limit = params.size,
+                limit = params.size + CITY_AND_GOSP_LIST_HEADROOM, // Hack when we filter 'by' when there's already a matching GOSP
                 language = params.lang,
                 includes = includes,
                 excludes = excludes,

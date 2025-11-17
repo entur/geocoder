@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
 import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
+import no.entur.geocoder.proxy.pelias.PeliasResultTransformer.CITY_AND_GOSP_LIST_HEADROOM
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,10 +24,10 @@ class PhotonAutocompleteRequestTest {
         val request = PhotonAutocompleteRequest.from(params)
 
         assertEquals("Oslo", request.query)
-        assertEquals(20, request.limit)
+        assertEquals(20 + CITY_AND_GOSP_LIST_HEADROOM, request.limit)
         assertEquals("en", request.language)
         assertEquals(emptyList(), request.includes)
-        assertEquals(listOf("multimodal.child", "legacy.category.by", "osm.public_transport.address"), request.excludes)
+        assertEquals(listOf("multimodal.child", "osm.public_transport.address"), request.excludes)
         assertNull(request.lat)
         assertNull(request.lon)
     }
@@ -87,21 +88,21 @@ class PhotonAutocompleteRequestTest {
                 text = "Oslo gate 1",
                 multiModal = "parent",
             )
-        assertEquals(listOf("multimodal.child", "legacy.category.by"), PhotonAutocompleteRequest.from(paramsParent).excludes)
+        assertEquals(listOf("multimodal.child"), PhotonAutocompleteRequest.from(paramsParent).excludes)
 
         val paramsChild =
             PeliasAutocompleteParams(
                 text = "Oslo gate 1",
                 multiModal = "child",
             )
-        assertEquals(listOf("multimodal.parent", "legacy.category.by"), PhotonAutocompleteRequest.from(paramsChild).excludes)
+        assertEquals(listOf("multimodal.parent"), PhotonAutocompleteRequest.from(paramsChild).excludes)
 
         val paramsAll =
             PeliasAutocompleteParams(
                 text = "Oslo gate 1",
                 multiModal = "all",
             )
-        assertEquals(listOf("legacy.category.by"), PhotonAutocompleteRequest.from(paramsAll).excludes)
+        assertEquals(listOf(), PhotonAutocompleteRequest.from(paramsAll).excludes)
     }
 
     @Test
