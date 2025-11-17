@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -10,7 +10,7 @@ class PhotonFilterBuilderTest {
     fun `buildIncludes creates filters for real Norwegian search scenarios`() {
         val scenarios =
             listOf(
-                PeliasAutocompleteParams(
+                PeliasAutocompleteRequest(
                     text = "Empty filters",
                     boundaryCountry = null,
                     boundaryCountyIds = emptyList(),
@@ -22,7 +22,7 @@ class PhotonFilterBuilderTest {
                     categories = emptyList(),
                     multiModal = "all",
                 ) to emptyList<String>(),
-                PeliasAutocompleteParams(
+                PeliasAutocompleteRequest(
                     text = "Oslo only",
                     boundaryCountry = "NOR",
                     boundaryCountyIds = listOf("03"),
@@ -34,7 +34,7 @@ class PhotonFilterBuilderTest {
                     categories = emptyList(),
                     multiModal = "all",
                 ) to listOf("country.NOR", "county_gid.03"),
-                PeliasAutocompleteParams(
+                PeliasAutocompleteRequest(
                     text = "Bergen addresses",
                     boundaryCountry = "NOR",
                     boundaryCountyIds = listOf("46"),
@@ -46,7 +46,7 @@ class PhotonFilterBuilderTest {
                     categories = emptyList(),
                     multiModal = "all",
                 ) to listOf("country.NOR", "county_gid.46", "locality_gid.4601", "legacy.source.kartverket", "legacy.layer.address"),
-                PeliasAutocompleteParams(
+                PeliasAutocompleteRequest(
                     text = "Trondheim transit",
                     boundaryCountry = "NOR",
                     boundaryCountyIds = listOf("50"),
@@ -63,7 +63,7 @@ class PhotonFilterBuilderTest {
                         "country.NOR", "county_gid.50", "tariff_zone_id.ATB:TariffZone:A", "tariff_zone_id.ATB:TariffZone:B",
                         "tariff_zone_authority.ATB", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
                     ),
-                PeliasAutocompleteParams(
+                PeliasAutocompleteRequest(
                     text = "NO_FILTER bypass",
                     boundaryCountry = null,
                     boundaryCountyIds = emptyList(),

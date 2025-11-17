@@ -19,7 +19,7 @@ import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.proxy.Routing.configureRouting
-import no.entur.geocoder.proxy.pelias.PeliasResult
+import no.entur.geocoder.proxy.pelias.PeliasResponse
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -101,7 +101,7 @@ class ProxyTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val collection: PeliasResult = jacksonObjectMapper().readValue(response.bodyAsText())
+            val collection: PeliasResponse = jacksonObjectMapper().readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)
 
             val feature = collection.features[0]
@@ -158,7 +158,7 @@ class ProxyTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val collection: PeliasResult = jacksonObjectMapper().readValue(response.bodyAsText())
+            val collection: PeliasResponse = jacksonObjectMapper().readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)
             assertEquals(
                 listOf(BigDecimal("10.752200"), BigDecimal("59.913900")),

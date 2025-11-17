@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.proxy.pelias.PeliasReverseParams
+import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,15 +9,15 @@ import kotlin.test.assertTrue
 
 class PhotonReverseRequestTest {
     @Test
-    fun `from PeliasReverseParams creates request with basic params`() {
-        val params =
-            PeliasReverseParams(
+    fun `from PeliasReverseParams creates request with basic req`() {
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertEquals(BigDecimal("59.911491"), request.latitude)
         assertEquals(BigDecimal("10.757933"), request.longitude)
@@ -28,23 +28,23 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams includes radius when provided`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 radius = 1000.0,
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertEquals(1000.0, request.radius)
     }
 
     @Test
     fun `from PeliasReverseParams uses custom size and language`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 size = 20,
@@ -52,7 +52,7 @@ class PhotonReverseRequestTest {
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertEquals(20, request.limit)
         assertEquals("en", request.language)
@@ -60,28 +60,28 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams always excludes OSM addresses`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 multiModal = "all",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
     }
 
     @Test
     fun `from PeliasReverseParams excludes child for parent mode`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
         assertTrue(request.excludes.contains("multimodal.child"))
@@ -90,14 +90,14 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams excludes parent for child mode`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 multiModal = "child",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
         assertTrue(request.excludes.contains("multimodal.parent"))
@@ -106,14 +106,14 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams excludes only addresses for all mode`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 multiModal = "all",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.excludes.contains("osm.public_transport.address"))
         assertEquals(1, request.excludes.size)
@@ -121,8 +121,8 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams builds includes from filters`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 boundaryCountry = "NOR",
@@ -134,7 +134,7 @@ class PhotonReverseRequestTest {
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.includes.contains("country.NOR"))
         assertTrue(request.includes.contains("county_gid.03"))
@@ -147,8 +147,8 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams includes tariff zones`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 tariffZones = listOf("RUT:TariffZone:01"),
@@ -156,7 +156,7 @@ class PhotonReverseRequestTest {
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.includes.contains("tariff_zone_id.RUT:TariffZone:01"))
         assertTrue(request.includes.contains("tariff_zone_authority.RUT"))
@@ -164,22 +164,22 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from PeliasReverseParams handles empty filters`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertEquals(emptyList(), request.includes)
     }
 
     @Test
     fun `from PeliasReverseParams handles all boundary types`() {
-        val params =
-            PeliasReverseParams(
+        val req =
+            PeliasReverseRequest(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 boundaryCountry = "NOR",
@@ -188,7 +188,7 @@ class PhotonReverseRequestTest {
                 multiModal = "parent",
             )
 
-        val request = PhotonReverseRequest.from(params)
+        val request = PhotonReverseRequest.from(req)
 
         assertEquals(7, request.includes.size)
         assertTrue(request.includes.contains("country.NOR"))

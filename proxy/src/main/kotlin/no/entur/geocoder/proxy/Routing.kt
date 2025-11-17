@@ -10,11 +10,11 @@ import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasPlaceRequest
 import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
-import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams.Companion.peliasAutocompleteParams
-import no.entur.geocoder.proxy.pelias.PeliasPlaceParams.Companion.peliasPlaceParams
-import no.entur.geocoder.proxy.pelias.PeliasReverseParams.Companion.peliasReverseParams
-import no.entur.geocoder.proxy.v3.V3AutocompleteParams.Companion.v3AutocompleteParams
-import no.entur.geocoder.proxy.v3.V3ReverseParams.Companion.v3ReverseParams
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.Companion.peliasAutocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest.Companion.peliasPlaceRequest
+import no.entur.geocoder.proxy.pelias.PeliasReverseRequest.Companion.peliasReverseRequest
+import no.entur.geocoder.proxy.v3.V3AutocompleteRequest.Companion.v3AutocompleteRequest
+import no.entur.geocoder.proxy.v3.V3ReverseRequest.Companion.v3ReverseRequest
 import org.slf4j.LoggerFactory
 import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteRequest
 import no.entur.geocoder.proxy.v3.V3Api.reverseRequest as v3ReverseRequest
@@ -30,43 +30,43 @@ object Routing {
         routing {
             get("/v2/autocomplete") {
                 handleRequest {
-                    peliasAutocompleteRequest(photonBaseUrl, client, call.peliasAutocompleteParams())
+                    peliasAutocompleteRequest(photonBaseUrl, client, call.peliasAutocompleteRequest())
                 }
             }
 
             get("/v2/search") {
                 handleRequest {
-                    peliasAutocompleteRequest(photonBaseUrl, client, call.peliasAutocompleteParams())
+                    peliasAutocompleteRequest(photonBaseUrl, client, call.peliasAutocompleteRequest())
                 }
             }
 
             get("/v2/reverse") {
                 handleRequest {
-                    peliasReverseRequest(photonBaseUrl, client, call.peliasReverseParams())
+                    peliasReverseRequest(photonBaseUrl, client, call.peliasReverseRequest())
                 }
             }
 
             get("/v2/nearby") {
                 handleRequest {
-                    peliasReverseRequest(photonBaseUrl, client, call.peliasReverseParams())
+                    peliasReverseRequest(photonBaseUrl, client, call.peliasReverseRequest())
                 }
             }
 
             get("/v2/place") {
                 handleRequest {
-                    peliasPlaceRequest(photonBaseUrl, client, call.peliasPlaceParams())
+                    peliasPlaceRequest(photonBaseUrl, client, call.peliasPlaceRequest())
                 }
             }
 
             get("/v3/autocomplete") {
                 handleRequest {
-                    v3AutocompleteRequest(photonBaseUrl, client, call.v3AutocompleteParams())
+                    v3AutocompleteRequest(photonBaseUrl, client, call.v3AutocompleteRequest())
                 }
             }
 
             get("/v3/reverse") {
                 handleRequest {
-                    v3ReverseRequest(photonBaseUrl, client, call.v3ReverseParams())
+                    v3ReverseRequest(photonBaseUrl, client, call.v3ReverseRequest())
                 }
             }
 

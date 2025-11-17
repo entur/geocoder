@@ -4,35 +4,35 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class PeliasPlaceParamsTest {
+class PeliasPlaceRequestTest {
     @Test
     fun `validates ids is not empty`() {
         assertFailsWith<IllegalArgumentException> {
-            PeliasPlaceParams(ids = emptyList())
+            PeliasPlaceRequest(ids = emptyList())
         }
     }
 
     @Test
     fun `validates ids have correct format with three colon-separated parts`() {
         assertFailsWith<IllegalArgumentException> {
-            PeliasPlaceParams(ids = listOf("invalid"))
+            PeliasPlaceRequest(ids = listOf("invalid"))
         }
 
         assertFailsWith<IllegalArgumentException> {
-            PeliasPlaceParams(ids = listOf("one:two"))
+            PeliasPlaceRequest(ids = listOf("one:two"))
         }
     }
 
     @Test
     fun `accepts valid ids with three colon-separated parts`() {
-        val params = PeliasPlaceParams(ids = listOf("source:layer:id"))
-        assertEquals(listOf("source:layer:id"), params.ids)
+        val req = PeliasPlaceRequest(ids = listOf("source:layer:id"))
+        assertEquals(listOf("source:layer:id"), req.ids)
     }
 
     @Test
     fun `accepts multiple valid ids`() {
-        val params =
-            PeliasPlaceParams(
+        val req =
+            PeliasPlaceRequest(
                 ids =
                     listOf(
                         "osm:venue:123456",
@@ -41,16 +41,16 @@ class PeliasPlaceParamsTest {
                     ),
             )
 
-        assertEquals(3, params.ids.size)
-        assertEquals("osm:venue:123456", params.ids[0])
-        assertEquals("kartverket:address:789012", params.ids[1])
-        assertEquals("whosonfirst:locality:345678", params.ids[2])
+        assertEquals(3, req.ids.size)
+        assertEquals("osm:venue:123456", req.ids[0])
+        assertEquals("kartverket:address:789012", req.ids[1])
+        assertEquals("whosonfirst:locality:345678", req.ids[2])
     }
 
     @Test
     fun `rejects list with mix of valid and invalid ids`() {
         assertFailsWith<IllegalArgumentException> {
-            PeliasPlaceParams(
+            PeliasPlaceRequest(
                 ids =
                     listOf(
                         "osm:venue:123456",
@@ -63,7 +63,7 @@ class PeliasPlaceParamsTest {
     @Test
     fun `validates all ids in the list`() {
         assertFailsWith<IllegalArgumentException> {
-            PeliasPlaceParams(
+            PeliasPlaceRequest(
                 ids =
                     listOf(
                         "valid:format:here",
@@ -76,8 +76,8 @@ class PeliasPlaceParamsTest {
 
     @Test
     fun `accepts real world example ids`() {
-        val params =
-            PeliasPlaceParams(
+        val req =
+            PeliasPlaceRequest(
                 ids =
                     listOf(
                         "openstreetmap:venue:W123456789",
@@ -86,6 +86,6 @@ class PeliasPlaceParamsTest {
                     ),
             )
 
-        assertEquals(3, params.ids.size)
+        assertEquals(3, req.ids.size)
     }
 }

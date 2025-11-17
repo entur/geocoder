@@ -2,32 +2,32 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
-import no.entur.geocoder.proxy.pelias.PeliasReverseParams
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 
 object PhotonFilterBuilder {
-    fun buildIncludes(params: PeliasAutocompleteParams): List<String> =
+    fun buildIncludes(req: PeliasAutocompleteRequest): List<String> =
         buildIncludes(
-            boundaryCountry = params.boundaryCountry,
-            boundaryCountyIds = params.boundaryCountyIds,
-            boundaryLocalityIds = params.boundaryLocalityIds,
-            tariffZones = params.tariffZones,
-            tariffZoneAuthorities = params.tariffZoneAuthorities,
-            sources = params.sources,
-            layers = params.layers,
-            categories = params.categories,
+            boundaryCountry = req.boundaryCountry,
+            boundaryCountyIds = req.boundaryCountyIds,
+            boundaryLocalityIds = req.boundaryLocalityIds,
+            tariffZones = req.tariffZones,
+            tariffZoneAuthorities = req.tariffZoneAuthorities,
+            sources = req.sources,
+            layers = req.layers,
+            categories = req.categories,
         )
 
-    fun buildIncludes(params: PeliasReverseParams): List<String> =
+    fun buildIncludes(req: PeliasReverseRequest): List<String> =
         buildIncludes(
-            boundaryCountry = params.boundaryCountry,
-            boundaryCountyIds = params.boundaryCountyIds,
-            boundaryLocalityIds = params.boundaryLocalityIds,
-            tariffZones = params.tariffZones,
-            tariffZoneAuthorities = params.tariffZoneAuthorities,
-            sources = params.sources,
-            layers = params.layers,
-            categories = params.categories,
+            boundaryCountry = req.boundaryCountry,
+            boundaryCountyIds = req.boundaryCountyIds,
+            boundaryLocalityIds = req.boundaryLocalityIds,
+            tariffZones = req.tariffZones,
+            tariffZoneAuthorities = req.tariffZoneAuthorities,
+            sources = req.sources,
+            layers = req.layers,
+            categories = req.categories,
         )
 
     private fun buildIncludes(
@@ -67,18 +67,18 @@ object PhotonFilterBuilder {
             }
         }
 
-    fun buildExcludes(params: PeliasAutocompleteParams): List<String> =
+    fun buildExcludes(req: PeliasAutocompleteRequest): List<String> =
         listOfNotNull(
-            buildMultiModalExclude(params.multiModal),
+            buildMultiModalExclude(req.multiModal),
             // LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
-            params.text
+            req.text
                 .takeIf { !it.contains("\\s\\d".toRegex()) }
                 ?.let { Category.OSM_ADDRESS }, // Exclude addresses unless the query contains a house number
         )
 
-    fun buildExcludes(params: PeliasReverseParams): List<String> =
+    fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(
-            buildMultiModalExclude(params.multiModal),
+            buildMultiModalExclude(req.multiModal),
             // LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
             Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
         )

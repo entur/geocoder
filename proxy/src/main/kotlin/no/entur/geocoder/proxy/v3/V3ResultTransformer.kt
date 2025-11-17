@@ -11,32 +11,32 @@ import java.math.RoundingMode
 
 object V3ResultTransformer {
     fun parseAndTransform(
-        photonResult: PhotonResult,
-        params: V3AutocompleteParams,
+        result: PhotonResult,
+        req: V3AutocompleteRequest,
     ): V3Result {
-        val places = photonResult.features.map { transformFeature(it) }
+        val places = result.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
 
         val filters =
-            if (params.placeTypes.isNotEmpty() ||
-                params.sources.isNotEmpty() ||
-                params.countries.isNotEmpty() ||
-                params.countyIds.isNotEmpty() ||
-                params.localityIds.isNotEmpty() ||
-                params.tariffZones.isNotEmpty() ||
-                params.tariffZoneAuthorities.isNotEmpty() ||
-                params.transportModes.isNotEmpty()
+            if (req.placeTypes.isNotEmpty() ||
+                req.sources.isNotEmpty() ||
+                req.countries.isNotEmpty() ||
+                req.countyIds.isNotEmpty() ||
+                req.localityIds.isNotEmpty() ||
+                req.tariffZones.isNotEmpty() ||
+                req.tariffZoneAuthorities.isNotEmpty() ||
+                req.transportModes.isNotEmpty()
             ) {
                 V3Result.Filters(
-                    placeTypes = params.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
-                    sources = params.sources.takeIf { it.isNotEmpty() },
-                    countries = params.countries.takeIf { it.isNotEmpty() },
-                    countyIds = params.countyIds.takeIf { it.isNotEmpty() },
-                    localityIds = params.localityIds.takeIf { it.isNotEmpty() },
-                    tariffZones = params.tariffZones.takeIf { it.isNotEmpty() },
-                    tariffZoneAuthorities = params.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
-                    transportModes = params.transportModes.takeIf { it.isNotEmpty() },
+                    placeTypes = req.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
+                    sources = req.sources.takeIf { it.isNotEmpty() },
+                    countries = req.countries.takeIf { it.isNotEmpty() },
+                    countyIds = req.countyIds.takeIf { it.isNotEmpty() },
+                    localityIds = req.localityIds.takeIf { it.isNotEmpty() },
+                    tariffZones = req.tariffZones.takeIf { it.isNotEmpty() },
+                    tariffZoneAuthorities = req.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
+                    transportModes = req.transportModes.takeIf { it.isNotEmpty() },
                 )
             } else {
                 null
@@ -48,11 +48,11 @@ object V3ResultTransformer {
                 Metadata(
                     query =
                         QueryInfo(
-                            text = params.query,
+                            text = req.query,
                             latitude = null,
                             longitude = null,
-                            limit = params.limit,
-                            language = params.language,
+                            limit = req.limit,
+                            language = req.language,
                             filters = filters,
                         ),
                     resultCount = places.size,
@@ -63,10 +63,10 @@ object V3ResultTransformer {
     }
 
     fun parseAndTransform(
-        photonResult: PhotonResult,
-        params: V3ReverseParams,
+        result: PhotonResult,
+        req: V3ReverseRequest,
     ): V3Result {
-        val places = photonResult.features.map { transformFeature(it) }
+        val places = result.features.map { transformFeature(it) }
 
         val boundingBox = calculateBoundingBox(places)
 
@@ -77,10 +77,10 @@ object V3ResultTransformer {
                     query =
                         QueryInfo(
                             text = null,
-                            latitude = params.lat,
-                            longitude = params.lon,
-                            limit = params.limit,
-                            language = params.language,
+                            latitude = req.lat,
+                            longitude = req.lon,
+                            limit = req.limit,
+                            language = req.language,
                             filters = null,
                         ),
                     resultCount = places.size,

@@ -1,23 +1,23 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams
-import no.entur.geocoder.proxy.pelias.PeliasPlaceParams
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
 import java.math.BigDecimal
 import kotlin.test.*
 
 class PhotonAutocompleteRequestTest {
     @Test
-    fun `from PeliasAutocompleteParams creates request with basic params`() {
-        val params =
-            PeliasAutocompleteParams(
+    fun `from PeliasAutocompleteParams creates request with basic req`() {
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 size = 20,
                 lang = "en",
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertEquals("Oslo", request.query)
         assertEquals(20 + CITY_AND_GOSP_LIST_HEADROOM, request.limit)
@@ -31,21 +31,21 @@ class PhotonAutocompleteRequestTest {
     @Test
     fun `from PeliasAutocompleteParams includes focus parameters`() {
         val focus =
-            PeliasAutocompleteParams.FocusParams(
+            PeliasAutocompleteRequest.FocusParams(
                 lat = BigDecimal("59.911491"),
                 lon = BigDecimal("10.757933"),
                 scale = 50,
                 weight = 15.0,
             )
 
-        val params =
-            PeliasAutocompleteParams(
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 focus = focus,
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertEquals(BigDecimal("59.911491"), request.lat)
         assertEquals(BigDecimal("10.757933"), request.lon)
@@ -57,8 +57,8 @@ class PhotonAutocompleteRequestTest {
 
     @Test
     fun `from PeliasAutocompleteParams builds includes from filters`() {
-        val params =
-            PeliasAutocompleteParams(
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 boundaryCountry = "NOR",
                 boundaryCountyIds = listOf("03"),
@@ -68,7 +68,7 @@ class PhotonAutocompleteRequestTest {
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertTrue(request.includes.contains("country.NOR"))
         assertTrue(request.includes.contains("county_gid.03"))
@@ -79,39 +79,39 @@ class PhotonAutocompleteRequestTest {
 
     @Test
     fun `from PeliasAutocompleteParams builds excludes based on multiModal`() {
-        val paramsParent =
-            PeliasAutocompleteParams(
+        val reqParent =
+            PeliasAutocompleteRequest(
                 text = "Oslo gate 1",
                 multiModal = "parent",
             )
-        assertEquals(listOf("multimodal.child"), PhotonAutocompleteRequest.from(paramsParent).excludes)
+        assertEquals(listOf("multimodal.child"), PhotonAutocompleteRequest.from(reqParent).excludes)
 
-        val paramsChild =
-            PeliasAutocompleteParams(
+        val reqChild =
+            PeliasAutocompleteRequest(
                 text = "Oslo gate 1",
                 multiModal = "child",
             )
-        assertEquals(listOf("multimodal.parent"), PhotonAutocompleteRequest.from(paramsChild).excludes)
+        assertEquals(listOf("multimodal.parent"), PhotonAutocompleteRequest.from(reqChild).excludes)
 
-        val paramsAll =
-            PeliasAutocompleteParams(
+        val reqAll =
+            PeliasAutocompleteRequest(
                 text = "Oslo gate 1",
                 multiModal = "all",
             )
-        assertEquals(listOf(), PhotonAutocompleteRequest.from(paramsAll).excludes)
+        assertEquals(listOf(), PhotonAutocompleteRequest.from(reqAll).excludes)
     }
 
     @Test
     fun `from PeliasAutocompleteParams includes tariff zones`() {
-        val params =
-            PeliasAutocompleteParams(
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 tariffZones = listOf("RUT:TariffZone:01", "RUT:TariffZone:02"),
                 tariffZoneAuthorities = listOf("RUT"),
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertTrue(request.includes.contains("tariff_zone_id.RUT:TariffZone:01"))
         assertTrue(request.includes.contains("tariff_zone_id.RUT:TariffZone:02"))
@@ -120,12 +120,12 @@ class PhotonAutocompleteRequestTest {
 
     @Test
     fun `from PeliasPlaceParams creates requests for each id`() {
-        val params =
-            PeliasPlaceParams(
+        val req =
+            PeliasPlaceRequest(
                 ids = listOf("osm:venue:123", "kartverket:address:456", "whosonfirst:locality:789"),
             )
 
-        val requests = PhotonAutocompleteRequest.from(params)
+        val requests = PhotonAutocompleteRequest.from(req)
 
         assertEquals(3, requests.size)
         assertEquals("osm:venue:123", requests[0].query)
@@ -145,21 +145,21 @@ class PhotonAutocompleteRequestTest {
     @Test
     fun `from PeliasAutocompleteParams calculates zoom from scale`() {
         val focus =
-            PeliasAutocompleteParams.FocusParams(
+            PeliasAutocompleteRequest.FocusParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("10.0"),
                 scale = 100,
                 weight = null,
             )
 
-        val params =
-            PeliasAutocompleteParams(
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 focus = focus,
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertTrue(request.zoom != null)
         assertTrue(request.zoom > 0)
@@ -168,21 +168,21 @@ class PhotonAutocompleteRequestTest {
     @Test
     fun `from PeliasAutocompleteParams uses default zoom when no scale`() {
         val focus =
-            PeliasAutocompleteParams.FocusParams(
+            PeliasAutocompleteRequest.FocusParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("10.0"),
                 scale = null,
                 weight = null,
             )
 
-        val params =
-            PeliasAutocompleteParams(
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 focus = focus,
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertTrue(request.zoom != null)
     }
@@ -190,48 +190,48 @@ class PhotonAutocompleteRequestTest {
     @Test
     fun `from PeliasAutocompleteParams converts weight correctly`() {
         val focus1 =
-            PeliasAutocompleteParams.FocusParams(
+            PeliasAutocompleteRequest.FocusParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("10.0"),
                 scale = null,
                 weight = 0.1,
             )
 
-        val params1 =
-            PeliasAutocompleteParams(
+        val req1 =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 focus = focus1,
                 multiModal = "parent",
             )
 
-        val request1 = PhotonAutocompleteRequest.from(params1)
+        val request1 = PhotonAutocompleteRequest.from(req1)
         assertNotNull(request1.weight)
         assertTrue(request1.weight <= 1.0)
 
         val focus2 =
-            PeliasAutocompleteParams.FocusParams(
+            PeliasAutocompleteRequest.FocusParams(
                 lat = BigDecimal("60.0"),
                 lon = BigDecimal("10.0"),
                 scale = null,
                 weight = 100.0,
             )
 
-        val params2 =
-            PeliasAutocompleteParams(
+        val req2 =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 focus = focus2,
                 multiModal = "parent",
             )
 
-        val request2 = PhotonAutocompleteRequest.from(params2)
+        val request2 = PhotonAutocompleteRequest.from(req2)
         assertNotNull(request2.weight)
         assertTrue(request2.weight >= 0.0)
     }
 
     @Test
     fun `from PeliasAutocompleteParams includes all boundary filters`() {
-        val params =
-            PeliasAutocompleteParams(
+        val req =
+            PeliasAutocompleteRequest(
                 text = "Oslo",
                 boundaryCountry = "NOR",
                 boundaryCountyIds = listOf("03", "18"),
@@ -239,7 +239,7 @@ class PhotonAutocompleteRequestTest {
                 multiModal = "parent",
             )
 
-        val request = PhotonAutocompleteRequest.from(params)
+        val request = PhotonAutocompleteRequest.from(req)
 
         assertTrue(request.includes.contains("country.NOR"))
         assertTrue(request.includes.contains("county_gid.03"))

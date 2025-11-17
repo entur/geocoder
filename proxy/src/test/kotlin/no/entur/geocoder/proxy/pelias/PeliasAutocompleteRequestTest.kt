@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class PeliasAutocompleteParamsTest {
+class PeliasAutocompleteRequestTest {
     @Test
     fun `FocusParams validates coordinate boundaries`() {
         data class CoordinateTest(val lat: String, val lon: String, val shouldFail: Boolean)
@@ -26,7 +26,7 @@ class PeliasAutocompleteParamsTest {
         testCases.forEach { test ->
             if (test.shouldFail) {
                 assertFailsWith<IllegalArgumentException> {
-                    PeliasAutocompleteParams.FocusParams(
+                    PeliasAutocompleteRequest.FocusParams(
                         lat = BigDecimal(test.lat),
                         lon = BigDecimal(test.lon),
                         scale = null,
@@ -35,7 +35,7 @@ class PeliasAutocompleteParamsTest {
                 }
             } else {
                 val focus =
-                    PeliasAutocompleteParams.FocusParams(
+                    PeliasAutocompleteRequest.FocusParams(
                         lat = BigDecimal(test.lat),
                         lon = BigDecimal(test.lon),
                         scale = null,
@@ -65,7 +65,7 @@ class PeliasAutocompleteParamsTest {
         testCases.forEach { test ->
             if (test.shouldFail) {
                 assertFailsWith<IllegalArgumentException> {
-                    PeliasAutocompleteParams.FocusParams(
+                    PeliasAutocompleteRequest.FocusParams(
                         lat = BigDecimal("59.911491"),
                         lon = BigDecimal("10.757933"),
                         scale = test.scale,
@@ -74,7 +74,7 @@ class PeliasAutocompleteParamsTest {
                 }
             } else {
                 val focus =
-                    PeliasAutocompleteParams.FocusParams(
+                    PeliasAutocompleteRequest.FocusParams(
                         lat = BigDecimal("59.911491"),
                         lon = BigDecimal("10.757933"),
                         scale = test.scale,
@@ -115,10 +115,10 @@ class PeliasAutocompleteParamsTest {
         testCases.forEach { test ->
             if (test.shouldFail) {
                 assertFailsWith<IllegalArgumentException> {
-                    PeliasAutocompleteParams.FocusParams.from(test.lat, test.lon, test.scale, test.weight)
+                    PeliasAutocompleteRequest.FocusParams.from(test.lat, test.lon, test.scale, test.weight)
                 }
             } else {
-                val focus = PeliasAutocompleteParams.FocusParams.from(test.lat, test.lon, test.scale, test.weight)
+                val focus = PeliasAutocompleteRequest.FocusParams.from(test.lat, test.lon, test.scale, test.weight)
                 assertEquals(BigDecimal(test.expectedLat), focus.lat)
                 assertEquals(BigDecimal(test.expectedLon), focus.lon)
                 assertEquals(test.expectedScale, focus.scale)
@@ -146,8 +146,8 @@ class PeliasAutocompleteParamsTest {
             )
 
         scenarios.forEach { scenario ->
-            val params =
-                PeliasAutocompleteParams(
+            val req =
+                PeliasAutocompleteRequest(
                     text = scenario.text,
                     boundaryCountry = scenario.country,
                     boundaryCountyIds = scenario.countyIds,
@@ -155,11 +155,11 @@ class PeliasAutocompleteParamsTest {
                     multiModal = scenario.multiModal,
                 )
 
-            assertEquals(scenario.text, params.text)
-            assertEquals(scenario.country, params.boundaryCountry)
-            assertEquals(scenario.countyIds, params.boundaryCountyIds)
-            assertEquals(scenario.sources, params.sources)
-            assertEquals(scenario.multiModal, params.multiModal)
+            assertEquals(scenario.text, req.text)
+            assertEquals(scenario.country, req.boundaryCountry)
+            assertEquals(scenario.countyIds, req.boundaryCountyIds)
+            assertEquals(scenario.sources, req.sources)
+            assertEquals(scenario.multiModal, req.multiModal)
         }
     }
 }

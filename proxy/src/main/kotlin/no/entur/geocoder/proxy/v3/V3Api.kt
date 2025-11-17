@@ -15,9 +15,9 @@ object V3Api {
     suspend fun RoutingContext.autocompleteRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        params: V3AutocompleteParams,
+        req: V3AutocompleteRequest,
     ) {
-        val photonRequest = PhotonAutocompleteRequest.from(params)
+        val photonRequest = PhotonAutocompleteRequest.from(req)
         val url = "$photonBaseUrl/api"
         logger.debug("V3 autocomplete request to $url with query='${photonRequest.query}'")
 
@@ -35,9 +35,9 @@ object V3Api {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val v3Result = V3ResultTransformer.parseAndTransform(photonResult, params)
+            val result = V3ResultTransformer.parseAndTransform(photonResult, req)
 
-            call.respond(v3Result)
+            call.respond(result)
         } catch (e: Exception) {
             logger.error("Error in V3 autocomplete: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")
@@ -48,9 +48,9 @@ object V3Api {
     suspend fun RoutingContext.reverseRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        params: V3ReverseParams,
+        req: V3ReverseRequest,
     ) {
-        val photonRequest = PhotonReverseRequest.from(params)
+        val photonRequest = PhotonReverseRequest.from(req)
         val url = "$photonBaseUrl/reverse"
         logger.debug("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
@@ -73,9 +73,9 @@ object V3Api {
                     }.bodyAsText()
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val v3Result = V3ResultTransformer.parseAndTransform(photonResult, params)
+            val result = V3ResultTransformer.parseAndTransform(photonResult, req)
 
-            call.respond(v3Result)
+            call.respond(result)
         } catch (e: Exception) {
             logger.error("Error in V3 reverse geocoding: ${e.message}", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")

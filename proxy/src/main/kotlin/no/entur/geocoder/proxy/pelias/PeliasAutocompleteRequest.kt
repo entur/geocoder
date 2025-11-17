@@ -7,7 +7,7 @@ import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 import java.math.BigDecimal
 
-data class PeliasAutocompleteParams(
+data class PeliasAutocompleteRequest(
     val text: String = "",
     val size: Int = 10,
     val lang: String = "no",
@@ -27,33 +27,33 @@ data class PeliasAutocompleteParams(
     }
 
     companion object {
-        fun ApplicationCall.peliasAutocompleteParams(): PeliasAutocompleteParams {
-            val params = request.queryParameters
-            return PeliasAutocompleteParams(
-                text = handleText(params),
-                size = params["size"]?.toIntOrNull() ?: 10,
-                lang = params["lang"].safeVar() ?: "no",
-                boundaryCountry = params["boundary.country"]?.safeVar(),
-                boundaryCountyIds = params["boundary.county.ids"]?.split(",").safeVars() ?: emptyList(),
-                boundaryLocalityIds = params["boundary.locality.ids"]?.split(",").safeVars() ?: emptyList(),
-                tariffZones = params["tariff_zone_ids"]?.split(",")?.safeVars() ?: emptyList(),
-                tariffZoneAuthorities = params["tariff_zone_authorities"]?.split(",").safeVars() ?: emptyList(),
-                sources = params["sources"]?.split(",").safeVars() ?: emptyList(),
-                layers = params["layers"]?.split(",").safeVars() ?: emptyList(),
-                categories = params["categories"]?.split(",").safeVars() ?: emptyList(),
+        fun ApplicationCall.peliasAutocompleteRequest(): PeliasAutocompleteRequest {
+            val req = request.queryParameters
+            return PeliasAutocompleteRequest(
+                text = handleText(req),
+                size = req["size"]?.toIntOrNull() ?: 10,
+                lang = req["lang"].safeVar() ?: "no",
+                boundaryCountry = req["boundary.country"]?.safeVar(),
+                boundaryCountyIds = req["boundary.county.ids"]?.split(",").safeVars() ?: emptyList(),
+                boundaryLocalityIds = req["boundary.locality.ids"]?.split(",").safeVars() ?: emptyList(),
+                tariffZones = req["tariff_zone_ids"]?.split(",")?.safeVars() ?: emptyList(),
+                tariffZoneAuthorities = req["tariff_zone_authorities"]?.split(",").safeVars() ?: emptyList(),
+                sources = req["sources"]?.split(",").safeVars() ?: emptyList(),
+                layers = req["layers"]?.split(",").safeVars() ?: emptyList(),
+                categories = req["categories"]?.split(",").safeVars() ?: emptyList(),
                 focus =
-                    params["focus.point.lat"]?.let { latStr ->
-                        params["focus.point.lon"]?.let { lonStr ->
+                    req["focus.point.lat"]?.let { latStr ->
+                        req["focus.point.lon"]?.let { lonStr ->
                             FocusParams.from(
                                 lat = latStr,
                                 lon = lonStr,
-                                scale = params["focus.scale"],
-                                weight = params["focus.weight"],
+                                scale = req["focus.scale"],
+                                weight = req["focus.weight"],
                             )
                         }
                     },
                 multiModal =
-                    when (params["multiModal"]) {
+                    when (req["multiModal"]) {
                         "child" -> "child"
                         "parent" -> "parent"
                         "all" -> "all"

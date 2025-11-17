@@ -7,15 +7,15 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasFeature
-import no.entur.geocoder.proxy.pelias.PeliasResult.PeliasProperties
+import no.entur.geocoder.proxy.pelias.PeliasResponse.PeliasFeature
+import no.entur.geocoder.proxy.pelias.PeliasResponse.PeliasProperties
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 object PeliasResultTransformer {
-    fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteParams): PeliasResult =
+    fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteRequest): PeliasResponse =
         parseAndTransform(
             photonResult = result,
             expectedSize = request.size,
@@ -23,7 +23,7 @@ object PeliasResultTransformer {
             lon = request.focus?.lon,
         )
 
-    fun parseAndTransform(result: PhotonResult, request: PeliasReverseParams): PeliasResult =
+    fun parseAndTransform(result: PhotonResult, request: PeliasReverseRequest): PeliasResponse =
         parseAndTransform(
             photonResult = result,
             expectedSize = request.size,
@@ -31,7 +31,7 @@ object PeliasResultTransformer {
             lon = request.lon,
         )
 
-    fun parseAndTransform(result: PhotonResult, request: PeliasPlaceParams): PeliasResult =
+    fun parseAndTransform(result: PhotonResult, request: PeliasPlaceRequest): PeliasResponse =
         parseAndTransform(
             photonResult = result,
             expectedSize = request.ids.size,
@@ -42,7 +42,7 @@ object PeliasResultTransformer {
         expectedSize: Int,
         lat: BigDecimal? = null,
         lon: BigDecimal? = null,
-    ): PeliasResult {
+    ): PeliasResponse {
         val transformedFeatures =
             photonResult.features.map { feature ->
                 val distance = lat?.let { lon?.let { calculateDistanceKm(feature.geometry, lat, lon) } }
@@ -51,7 +51,7 @@ object PeliasResultTransformer {
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
-        return PeliasResult(
+        return PeliasResponse(
             features = filterCityIfGospIsPresent(transformedFeatures, expectedSize),
             bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )
@@ -106,7 +106,7 @@ object PeliasResultTransformer {
         return PeliasFeature(
             type = feature.type,
             geometry =
-                PeliasResult.PeliasGeometry(
+                PeliasResponse.PeliasGeometry(
                     type = feature.geometry.type,
                     coordinates = feature.geometry.coordinates,
                 ),

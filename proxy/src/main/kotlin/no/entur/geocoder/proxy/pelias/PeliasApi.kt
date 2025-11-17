@@ -1,11 +1,10 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.entur.geocoder.proxy.ErrorHandler
+import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonReverseRequest
@@ -15,37 +14,17 @@ object PeliasApi {
     suspend fun RoutingContext.peliasAutocompleteRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        peliasParams: PeliasAutocompleteParams,
+        req: PeliasAutocompleteRequest,
     ) {
-        val photonRequest = PhotonAutocompleteRequest.from(peliasParams)
+        val photonRequest = PhotonAutocompleteRequest.from(req)
         val url = "$photonBaseUrl/api"
         logger.debug("Proxying /v2/autocomplete to $url with text='${photonRequest.query}'")
 
         try {
-            val photonResponse =
-                client
-                    .get(url) {
-                        parameter("q", photonRequest.query)
-                        parameter("limit", photonRequest.limit)
-                        parameter("lang", photonRequest.language)
-
-                        if (photonRequest.zoom != null) {
-                            parameter("zoom", photonRequest.zoom)
-                        }
-                        if (photonRequest.includes.isNotEmpty()) {
-                            parameter("include", photonRequest.includes.joinToString(","))
-                        }
-                        photonRequest.excludes.forEach {
-                            parameter("exclude", it)
-                        }
-                        if (photonRequest.lat != null && photonRequest.lon != null) {
-                            parameter("lat", photonRequest.lat)
-                            parameter("lon", photonRequest.lon)
-                        }
-                    }.bodyAsText()
+            val photonResponse = PhotonApi.request(photonRequest, client, url)
 
             val photonResult = PhotonResult.parse(photonResponse)
-            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams)
+            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, req)
             call.respond(peliasResult)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequest to Photon: $e", e)
@@ -57,33 +36,17 @@ object PeliasApi {
     suspend fun RoutingContext.peliasReverseRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        peliasParams: PeliasReverseParams,
+        req: PeliasReverseRequest,
     ) {
-        val photonRequest = PhotonReverseRequest.from(peliasParams)
+        val photonRequest = PhotonReverseRequest.from(req)
         val url = "$photonBaseUrl/reverse"
         logger.debug("Proxying /v2/reverse to $url with lat=${photonRequest.latitude}, lon=${photonRequest.longitude}")
 
         try {
-            val photonResponse =
-                client
-                    .get(url) {
-                        parameter("lat", photonRequest.latitude)
-                        parameter("lon", photonRequest.longitude)
-                        parameter("lang", photonRequest.language)
-                        photonRequest.radius?.let { parameter("radius", it) }
-                        parameter("limit", photonRequest.limit.toString())
-
-                        if (photonRequest.includes.isNotEmpty()) {
-                            parameter("include", photonRequest.includes.joinToString(","))
-                        }
-                        photonRequest.excludes.forEach {
-                            parameter("exclude", it)
-                        }
-                    }.bodyAsText()
-
+            val photonResponse = PhotonApi.request(photonRequest, client, url)
             val photonResult = PhotonResult.parse(photonResponse)
-            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams)
-            call.respond(peliasResult)
+            val result = PeliasResultTransformer.parseAndTransform(photonResult, req)
+            call.respond(result)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequest to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Reverse geocoding")
@@ -94,21 +57,16 @@ object PeliasApi {
     suspend fun RoutingContext.peliasPlaceRequest(
         photonBaseUrl: String,
         client: HttpClient,
-        peliasParams: PeliasPlaceParams,
+        req: PeliasPlaceRequest,
     ) {
-        val photonRequests = PhotonAutocompleteRequest.from(peliasParams)
+        val photonRequests = PhotonAutocompleteRequest.from(req)
         val url = "$photonBaseUrl/api"
-        logger.debug("Proxying /v2/autocomplete to $url with text='${peliasParams.ids.joinToString(",")}'")
+        logger.debug("Proxying /v2/autocomplete to $url with text='${req.ids.joinToString(",")}'")
 
         try {
             val photonResults =
                 photonRequests.map { photonRequest ->
-                    val res =
-                        client
-                            .get(url) {
-                                parameter("q", photonRequest.query)
-                                parameter("limit", "1")
-                            }.bodyAsText()
+                    val res = PhotonApi.request(photonRequest, client, url)
                     PhotonResult.parse(res)
                 }
             val photonResult =
@@ -116,8 +74,8 @@ object PeliasApi {
                     type = "FeatureCollection",
                     features = photonResults.mapNotNull { it.features.firstOrNull() },
                 )
-            val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, peliasParams)
-            call.respond(peliasResult)
+            val result = PeliasResultTransformer.parseAndTransform(photonResult, req)
+            call.respond(result)
         } catch (e: Exception) {
             logger.error("Error proxying $photonRequests to Photon: $e", e)
             val error = ErrorHandler.handleError(e, "Autocomplete")

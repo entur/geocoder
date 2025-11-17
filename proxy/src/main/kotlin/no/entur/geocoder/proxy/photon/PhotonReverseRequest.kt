@@ -1,8 +1,8 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
-import no.entur.geocoder.proxy.pelias.PeliasReverseParams
-import no.entur.geocoder.proxy.v3.V3ReverseParams
+import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
+import no.entur.geocoder.proxy.v3.V3ReverseRequest
 import java.math.BigDecimal
 
 data class PhotonReverseRequest(
@@ -15,28 +15,28 @@ data class PhotonReverseRequest(
     val excludes: List<String> = emptyList(),
 ) {
     companion object {
-        fun from(params: PeliasReverseParams): PhotonReverseRequest {
-            val includes = PhotonFilterBuilder.buildIncludes(params)
-            val excludes = PhotonFilterBuilder.buildExcludes(params)
+        fun from(req: PeliasReverseRequest): PhotonReverseRequest {
+            val includes = PhotonFilterBuilder.buildIncludes(req)
+            val excludes = PhotonFilterBuilder.buildExcludes(req)
 
             return PhotonReverseRequest(
-                latitude = params.lat,
-                longitude = params.lon,
-                language = params.lang,
-                limit = params.size,
-                radius = params.radius,
+                latitude = req.lat,
+                longitude = req.lon,
+                language = req.lang,
+                limit = req.size,
+                radius = req.radius,
                 includes = includes,
                 excludes = excludes,
             )
         }
 
-        fun from(params: V3ReverseParams): PhotonReverseRequest =
+        fun from(req: V3ReverseRequest): PhotonReverseRequest =
             PhotonReverseRequest(
-                latitude = params.lat,
-                longitude = params.lon,
-                language = params.language,
-                limit = params.limit,
-                radius = params.radius,
+                latitude = req.lat,
+                longitude = req.lon,
+                language = req.language,
+                limit = req.limit,
+                radius = req.radius,
                 excludes = listOf(Category.OSM_ADDRESS), // Exclude addresses with house numbers in reverse requests
             )
     }

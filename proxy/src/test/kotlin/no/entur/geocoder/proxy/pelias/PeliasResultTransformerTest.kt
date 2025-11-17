@@ -2,7 +2,7 @@ package no.entur.geocoder.proxy.pelias
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Extra
-import no.entur.geocoder.proxy.pelias.PeliasAutocompleteParams.FocusParams
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
@@ -456,7 +456,7 @@ class PeliasResultTransformerTest {
                         ),
                     ),
             )
-        val request = PeliasAutocompleteParams("foo")
+        val request = PeliasAutocompleteRequest("foo")
 
         val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
 
@@ -492,7 +492,7 @@ class PeliasResultTransformerTest {
             )
 
         val request =
-            PeliasAutocompleteParams(
+            PeliasAutocompleteRequest(
                 text = "foo",
                 focus =
                     FocusParams(
@@ -514,7 +514,7 @@ class PeliasResultTransformerTest {
     fun `parseAndTransform handles empty features list`() {
         val photonResult = PhotonResult(features = emptyList())
 
-        val request = PeliasAutocompleteParams("foo")
+        val request = PeliasAutocompleteRequest("foo")
         val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
 
         assertTrue(result.features.isEmpty())
@@ -547,7 +547,7 @@ class PeliasResultTransformerTest {
                     ),
             )
 
-        val request = PeliasAutocompleteParams("foo")
+        val request = PeliasAutocompleteRequest("foo")
         val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
 
         val mapper = jacksonObjectMapper()
