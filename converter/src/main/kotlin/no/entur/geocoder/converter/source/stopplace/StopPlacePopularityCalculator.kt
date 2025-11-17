@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.netex
+package no.entur.geocoder.converter.source.stopplace
 
 /**
  * Calculates popularity (boost) values for stop places based on legacy kakka boost configuration.

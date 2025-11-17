@@ -2,7 +2,7 @@ package no.entur.geocoder.converter.cli
 
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.source.matrikkel.MatrikkelConverter
-import no.entur.geocoder.converter.source.netex.StopPlaceConverter
+import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter
 import no.entur.geocoder.converter.source.osm.OsmConverter
 import no.entur.geocoder.converter.source.stedsnavn.StedsnavnConverter
 import no.entur.geocoder.converter.source.poi.PoiConverter

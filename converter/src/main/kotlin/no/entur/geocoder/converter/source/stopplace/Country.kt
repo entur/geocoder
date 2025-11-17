@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.netex
+package no.entur.geocoder.converter.source.stopplace
 
 enum class Country(
     val threeLetterCode: String,

@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.netex
+package no.entur.geocoder.converter.source.stopplace
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource

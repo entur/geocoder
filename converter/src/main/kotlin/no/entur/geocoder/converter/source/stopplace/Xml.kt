@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.netex
+package no.entur.geocoder.converter.source.stopplace
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature

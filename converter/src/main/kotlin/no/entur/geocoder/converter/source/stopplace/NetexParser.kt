@@ -1,10 +1,10 @@
-package no.entur.geocoder.converter.source.netex
+package no.entur.geocoder.converter.source.stopplace
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import no.entur.geocoder.converter.FileUtil.streamToFile
-import no.entur.geocoder.converter.source.netex.Xml.createReader
-import no.entur.geocoder.converter.source.netex.Xml.elementSequence
-import no.entur.geocoder.converter.source.netex.Xml.moveToStartElement
+import no.entur.geocoder.converter.source.stopplace.Xml.createReader
+import no.entur.geocoder.converter.source.stopplace.Xml.elementSequence
+import no.entur.geocoder.converter.source.stopplace.Xml.moveToStartElement
 import java.io.File
 import java.io.InputStream
 import javax.xml.stream.XMLInputFactory
