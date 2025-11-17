@@ -125,6 +125,8 @@ class GeoTest {
                 // Denmark–Germany near Kruså/Padborg
                 Triple(54.8205, 9.3980, Country.de),
                 Triple(54.8675, 9.4175, Country.dk),
+                // Oscar Torp-heimen (resolves wrongly to Sweden)
+                // Triple(59.09735, 11.25770, Country.no),
             )
     }
 }

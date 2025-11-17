@@ -1,18 +1,14 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
-import no.entur.geocoder.common.Country
-import no.entur.geocoder.common.Extra
-import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.ImportanceCalculator
-import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import org.openstreetmap.osmosis.core.domain.v0_6.*
@@ -30,8 +26,6 @@ class OsmEntityConverter(
         private const val OBJECT_TYPE_RELATION = "R"
         private const val ACCURACY_POINT = "point"
         private const val ACCURACY_POLYGON = "polygon"
-        private const val DEFAULT_COUNTRY = "no"
-        private const val NORWAY_COUNTRY_CODE = "NOR"
         private const val RANK_BOUNDARY = 10
         private const val RANK_PLACE = 20
         private const val RANK_ROAD = 26
@@ -127,10 +121,9 @@ class OsmEntityConverter(
         address: Address = Address(),
     ): NominatimPlace {
         val (lon, lat) = centroid
-        val country = Geo.getCountry(lat, lon) ?: Country.no
-
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
 
+        val country = determineCountry(county, municipality, tags, lat, lon)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
         val tagList: List<String> =
             listOf(LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
@@ -177,6 +170,21 @@ class OsmEntityConverter(
 
         return NominatimPlace("Place", listOf(content))
     }
+
+    private fun determineCountry(
+        county: AdministrativeBoundary?,
+        municipality: AdministrativeBoundary?,
+        tags: Map<String, String>,
+        lat: BigDecimal,
+        lon: BigDecimal,
+    ): Country =
+        Country.parse(
+            county?.countryCode?.lowercase()
+                ?: municipality?.countryCode?.lowercase()
+                ?: tags["addr:country"],
+        )
+            ?: Geo.getCountry(lat, lon)
+            ?: Country.no
 
     private fun buildCategories(
         tags: List<String>,

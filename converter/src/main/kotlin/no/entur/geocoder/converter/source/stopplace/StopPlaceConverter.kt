@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.source.stopplace
 
+import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
@@ -8,11 +9,6 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
-import no.entur.geocoder.common.Country
-import no.entur.geocoder.common.Extra
-import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.ImportanceCalculator
-import no.entur.geocoder.common.Source
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
@@ -20,6 +16,7 @@ import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
+import java.math.BigDecimal
 import java.nio.file.Paths
 
 class StopPlaceConverter : Converter {
@@ -50,6 +47,7 @@ class StopPlaceConverter : Converter {
         val locality = topoPlaces[localityGid]?.descriptor?.name?.text
         val countyGid = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.parentTopographicPlaceRef?.ref
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
+        val country = determineCountry(topoPlaces, stopPlace, lat, lon)
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
         val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
@@ -79,7 +77,6 @@ class StopPlaceConverter : Converter {
                 .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it })
                 .plus(if (isParentStopPlace) LEGACY_SOURCE_OPENSTREETMAP else LEGACY_SOURCE_WHOSONFIRST)
 
-        val country = Geo.getCountry(lat, lon) ?: Country.no
         val categories: List<String> =
             tags
                 .plus(SOURCE_NSR)
@@ -147,6 +144,16 @@ class StopPlaceConverter : Converter {
 
         return entries
     }
+
+    private fun determineCountry(
+        topoPlaces: Map<String, TopographicPlace>,
+        stopPlace: StopPlace,
+        lat: BigDecimal,
+        lon: BigDecimal,
+    ): Country = (
+        Country.parse(topoPlaces[stopPlace.topographicPlaceRef?.ref]?.countryRef?.ref)
+            ?: Geo.getCountry(lat, lon) ?: Country.no
+    )
 
     fun convertGroupOfStopPlacesToNominatim(
         groupOfStopPlaces: GroupOfStopPlaces,

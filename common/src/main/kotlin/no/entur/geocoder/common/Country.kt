@@ -59,8 +59,5 @@ enum class Country(
     companion object {
         fun parse(twoLetterCode: String?): Country? =
             entries.firstOrNull { it.name == twoLetterCode?.lowercase() }
-
-        fun getThreeLetterCode(twoLetterCode: String?): String? =
-            entries.firstOrNull { it.name == twoLetterCode?.lowercase() }?.threeLetterCode
     }
 }
