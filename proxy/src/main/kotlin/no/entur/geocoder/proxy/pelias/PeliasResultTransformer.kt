@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.pelias
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_PREFIX
+import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
@@ -221,11 +222,9 @@ object PeliasResultTransformer {
         val featureCoords = geometry.coordinates
         if (featureCoords.size < 2) return null
 
-        val lon1 = featureCoords[0].toDouble()
-        val lat1 = featureCoords[1].toDouble()
-        val lon2 = lon.toDouble()
-        val lat2 = lat.toDouble()
-        val distance = Geo.haversineDistance(lat1, lon1, lat2, lon2)
+        val coord1 = Coordinate(featureCoords[1].toDouble(), featureCoords[0].toDouble())
+        val coord2 = Coordinate(lat.toDouble(), lon.toDouble())
+        val distance = Geo.haversineDistance(coord1, coord2)
 
         return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000).toBigDecimalWithScale(3)
     }

@@ -3,14 +3,11 @@ package no.entur.geocoder.common
 import de.westnordost.countryboundaries.CountryBoundaries
 import kotlinx.io.asSource
 import kotlinx.io.buffered
-import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.api.referencing.operation.MathTransform
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.geotools.referencing.crs.DefaultGeographicCRS
-import org.locationtech.jts.geom.Coordinate
-import java.math.BigDecimal
 import kotlin.math.*
 
 object Geo {
@@ -21,14 +18,16 @@ object Geo {
     fun convertUTM33ToLatLon(
         easting: Double,
         northing: Double,
-    ): Pair<BigDecimal, BigDecimal> {
-        val srcCoord = Coordinate(easting, northing)
+    ): Coordinate {
+        val srcCoord =
+            org.locationtech.jts.geom
+                .Coordinate(easting, northing)
         val dstCoord = JTS.transform(srcCoord, null, transform)
 
-        val lat = dstCoord.y.toBigDecimalWithScale()
-        val lon = dstCoord.x.toBigDecimalWithScale()
+        val lat = dstCoord.y
+        val lon = dstCoord.x
 
-        return Pair(lat, lon)
+        return Coordinate(lat, lon)
     }
 
     /**
@@ -40,13 +39,13 @@ object Geo {
      * @param lon2 Longitude of point 2 in degrees
      * @return Distance in meters
      */
-    fun haversineDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    fun haversineDistance(coord1: Coordinate, coord2: Coordinate): Double {
         val earthRadius = 6371008.8 // Mean Earth radius (WGS84 authalic/mean ≈ 6371.0088)
 
-        val φ1 = Math.toRadians(lat1)
-        val φ2 = Math.toRadians(lat2)
-        val Δφ = Math.toRadians(lat2 - lat1)
-        val Δλ = Math.toRadians(lon2 - lon1)
+        val φ1 = Math.toRadians(coord1.lat)
+        val φ2 = Math.toRadians(coord2.lat)
+        val Δφ = Math.toRadians(coord2.lat - coord1.lat)
+        val Δλ = Math.toRadians(coord2.lon - coord1.lon)
 
         val sinDLat = sin(Δφ / 2)
         val sinDLon = sin(Δλ / 2)
@@ -79,11 +78,9 @@ object Geo {
         source?.let { CountryBoundaries.deserializeFrom(source) }
     }
 
-    fun getCountry(lat: BigDecimal, lon: BigDecimal): Country? = getCountry(lat.toDouble(), lon.toDouble())
-
-    fun getCountry(lat: Double, lon: Double): Country? =
+    fun getCountry(coord: Coordinate): Country? =
         boundaries
-            ?.getIds(lon, lat)
+            ?.getIds(coord.lon, coord.lat)
             ?.firstOrNull { it.length == 2 }
             ?.let { Country.parse(it) }
 }

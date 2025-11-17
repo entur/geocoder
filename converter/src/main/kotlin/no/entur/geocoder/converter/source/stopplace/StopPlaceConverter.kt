@@ -16,7 +16,6 @@ import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
-import java.math.BigDecimal
 import java.nio.file.Paths
 
 class StopPlaceConverter : Converter {
@@ -40,14 +39,17 @@ class StopPlaceConverter : Converter {
         popularity: Long,
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
-        val lat = stopPlace.centroid.location.latitude
-        val lon = stopPlace.centroid.location.longitude
+        val coord =
+            Coordinate(
+                stopPlace.centroid.location.latitude,
+                stopPlace.centroid.location.longitude,
+            )
 
         val localityGid = stopPlace.topographicPlaceRef?.ref
         val locality = topoPlaces[localityGid]?.descriptor?.name?.text
         val countyGid = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.parentTopographicPlaceRef?.ref
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
-        val country = determineCountry(topoPlaces, stopPlace, lat, lon)
+        val country = determineCountry(topoPlaces, stopPlace, coord)
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
         val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
@@ -136,8 +138,8 @@ class StopPlaceConverter : Converter {
                     ),
                 postcode = null,
                 country_code = country.name,
-                centroid = listOf(lon, lat),
-                bbox = listOf(lat, lon, lat, lon),
+                centroid = coord.centroid(),
+                bbox = coord.bbox(),
                 extra = extra,
             )
         entries.add(NominatimPlace("Place", listOf(stopPlaceContent)))
@@ -148,11 +150,10 @@ class StopPlaceConverter : Converter {
     private fun determineCountry(
         topoPlaces: Map<String, TopographicPlace>,
         stopPlace: StopPlace,
-        lat: BigDecimal,
-        lon: BigDecimal,
+        coord: Coordinate,
     ): Country = (
         Country.parse(topoPlaces[stopPlace.topographicPlaceRef?.ref]?.countryRef?.ref)
-            ?: Geo.getCountry(lat, lon) ?: Country.no
+            ?: Geo.getCountry(coord) ?: Country.no
     )
 
     fun convertGroupOfStopPlacesToNominatim(
@@ -161,8 +162,11 @@ class StopPlaceConverter : Converter {
         stopPlacePopularities: Map<String, Long>,
         stopPlaces: List<StopPlace>,
     ): NominatimPlace {
-        val lat = groupOfStopPlaces.centroid.location.latitude
-        val lon = groupOfStopPlaces.centroid.location.longitude
+        val coord =
+            Coordinate(
+                groupOfStopPlaces.centroid.location.latitude,
+                groupOfStopPlaces.centroid.location.longitude,
+            )
 
         val groupName = groupOfStopPlaces.name.text
 
@@ -200,7 +204,7 @@ class StopPlaceConverter : Converter {
             listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
                 .plus(LEGACY_CATEGORY_PREFIX + "GroupOfStopPlaces")
 
-        val country = Geo.getCountry(lat, lon) ?: Country.no
+        val country = Geo.getCountry(coord) ?: Country.no
         val categories =
             tags
                 .plus(SOURCE_NSR)
@@ -227,8 +231,8 @@ class StopPlaceConverter : Converter {
                     ),
                 postcode = null,
                 country_code = country.name,
-                centroid = listOf(lon, lat),
-                bbox = listOf(lat, lon, lat, lon),
+                centroid = coord.centroid(),
+                bbox = coord.bbox(),
                 extra =
                     Extra(
                         id = id,

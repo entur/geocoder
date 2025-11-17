@@ -1,6 +1,10 @@
 package no.entur.geocoder.converter.source.osm
 
-import org.openstreetmap.osmosis.core.domain.v0_6.*
+import no.entur.geocoder.common.Coordinate
+import org.openstreetmap.osmosis.core.domain.v0_6.Entity
+import org.openstreetmap.osmosis.core.domain.v0_6.EntityType
+import org.openstreetmap.osmosis.core.domain.v0_6.Relation
+import org.openstreetmap.osmosis.core.domain.v0_6.Way
 import java.io.File
 
 /** Collects Norwegian admin boundaries and builds spatial index */
@@ -58,14 +62,14 @@ class AdminBoundaryCollector(
             }
         }
 
-        val wayIdToNodeCoords = mutableMapOf<Long, List<Pair<Double, Double>>>()
+        val wayIdToNodeCoords = mutableMapOf<Long, List<Coordinate>>()
         parsePbf(inputFile, OsmIterator.WAY_FILTER).forEach { entity ->
             if (entity is Way && entity.id in wayIdToRelations) {
                 val wayNodeCoords = entity.wayNodes.mapNotNull { nodesCoords.get(it.nodeId) }
                 if (wayNodeCoords.isNotEmpty()) {
                     wayIdToNodeCoords[entity.id] = wayNodeCoords
-                    GeometryCalculator.calculateCentroid(wayNodeCoords)?.let { (lon, lat) ->
-                        wayCentroids.put(entity.id, lon.toDouble(), lat.toDouble())
+                    GeometryCalculator.calculateCentroid(wayNodeCoords)?.let { coord ->
+                        wayCentroids.put(entity.id, coord)
                     }
                 }
             }
@@ -78,15 +82,16 @@ class AdminBoundaryCollector(
                 }
 
             if (allNodeCoords.isNotEmpty()) {
-                val centroidLon = allNodeCoords.map { it.first }.average()
-                val centroidLat = allNodeCoords.map { it.second }.average()
-
-                val bbox =
-                    BoundingBox.fromCoordinates(
-                        allNodeCoords.map { (lon, lat) -> lat to lon },
+                val centroid =
+                    Coordinate(
+                        allNodeCoords.map { it.lat }.average(),
+                        allNodeCoords.map { it.lon }.average(),
                     )
 
-                val boundaryNodes = allNodeCoords.map { (lon, lat) -> lat to lon }
+                val bbox =
+                    BoundingBox.fromCoordinates(allNodeCoords)
+
+                val boundaryNodes = allNodeCoords.map { Coordinate(it.lat, it.lon) }
 
                 val boundary =
                     AdministrativeBoundary(
@@ -95,7 +100,7 @@ class AdminBoundaryCollector(
                         adminLevel = relation.adminLevel,
                         refCode = relation.ref,
                         countryCode = relation.countryCode,
-                        centroid = centroidLat to centroidLon,
+                        centroid = centroid,
                         bbox = bbox,
                         boundaryNodes = boundaryNodes,
                     )

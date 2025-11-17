@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.common.Coordinate
+
 /**
  * Represents an administrative boundary (county or municipality) with polygon geometry.
  *
@@ -18,23 +20,23 @@ data class AdministrativeBoundary(
     val adminLevel: Int,
     val refCode: String?,
     val countryCode: String,
-    val centroid: Pair<Double, Double>, // lat, lon
+    val centroid: Coordinate,
     val bbox: BoundingBox?,
-    val boundaryNodes: List<Pair<Double, Double>> = emptyList(),
+    val boundaryNodes: List<Coordinate> = emptyList(),
 ) {
     /**
      * Checks if the given point is within the bounding box.
      * This is a fast preliminary check before doing more expensive polygon containment tests.
      */
-    fun isInBoundingBox(lat: Double, lon: Double): Boolean = bbox?.contains(lat, lon) ?: false
+    fun isInBoundingBox(coord: Coordinate): Boolean = bbox?.contains(coord) ?: false
 
     /**
      * Calculates the Euclidean distance from the given point to this boundary's centroid.
      * Used as a fallback when polygon containment tests are inconclusive.
      */
-    fun distanceToPoint(lat: Double, lon: Double): Double {
-        val dLat = lat - centroid.first
-        val dLon = lon - centroid.second
+    fun distanceToPoint(coord: Coordinate): Double {
+        val dLat = coord.lat - centroid.lat
+        val dLon = coord.lon - centroid.lon
         return kotlin.math.sqrt(dLat * dLat + dLon * dLon)
     }
 
@@ -48,18 +50,18 @@ data class AdministrativeBoundary(
      * Note: This is a simplified implementation that works for most cases but may fail for
      * complex multi-polygons with holes or self-intersections.
      */
-    fun containsPoint(lat: Double, lon: Double): Boolean {
+    fun containsPoint(coord: Coordinate): Boolean {
         if (boundaryNodes.size < 3) return false
 
         var inside = false
         var j = boundaryNodes.size - 1
 
         for (i in boundaryNodes.indices) {
-            val (lat1, lon1) = boundaryNodes[i]
-            val (lat2, lon2) = boundaryNodes[j]
+            val coord1 = boundaryNodes[i]
+            val coord2 = boundaryNodes[j]
 
-            if ((lon1 > lon) != (lon2 > lon) &&
-                lat < (lat2 - lat1) * (lon - lon1) / (lon2 - lon1) + lat1
+            if ((coord1.lon > coord.lon) != (coord2.lon > coord.lon) &&
+                coord.lat < (coord2.lat - coord1.lat) * (coord.lon - coord1.lon) / (coord2.lon - coord1.lon) + coord1.lat
             ) {
                 inside = !inside
             }
@@ -85,7 +87,7 @@ data class BoundingBox(
     val maxLon: Double,
 ) {
     /** Checks if the given point is within this bounding box. */
-    fun contains(lat: Double, lon: Double): Boolean = lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon
+    fun contains(coord: Coordinate): Boolean = coord.lat >= minLat && coord.lat <= maxLat && coord.lon >= minLon && coord.lon <= maxLon
 
     /** Calculate the area of the bounding box (used to prioritize smaller, more specific boundaries). */
     fun area(): Double = (maxLat - minLat) * (maxLon - minLon)
@@ -95,13 +97,13 @@ data class BoundingBox(
          * Creates a bounding box from a list of coordinates.
          * Returns null if the coordinate list is empty.
          */
-        fun fromCoordinates(coords: List<Pair<Double, Double>>): BoundingBox? {
+        fun fromCoordinates(coords: List<Coordinate>): BoundingBox? {
             if (coords.isEmpty()) return null
             return BoundingBox(
-                minLat = coords.minOf { it.first },
-                maxLat = coords.maxOf { it.first },
-                minLon = coords.minOf { it.second },
-                maxLon = coords.maxOf { it.second },
+                minLat = coords.minOf { it.lat },
+                maxLat = coords.maxOf { it.lat },
+                minLon = coords.minOf { it.lon },
+                maxLon = coords.maxOf { it.lon },
             )
         }
     }
@@ -118,7 +120,7 @@ class AdministrativeBoundaryIndex {
     private val municipalities = mutableListOf<AdministrativeBoundary>()
 
     // Cache for lookups to improve performance - store both county and municipality together
-    private val lookupCache = mutableMapOf<Pair<Double, Double>, Pair<AdministrativeBoundary?, AdministrativeBoundary?>>()
+    private val lookupCache = mutableMapOf<Coordinate, Pair<AdministrativeBoundary?, AdministrativeBoundary?>>()
 
     companion object {
         /** Norwegian county administrative level in OSM */
@@ -142,21 +144,21 @@ class AdministrativeBoundaryIndex {
      * Finds both the county and municipality for the given coordinates in a single lookup.
      * Results are cached to improve performance for nearby lookups.
      */
-    fun findCountyAndMunicipality(lat: Double, lon: Double): Pair<AdministrativeBoundary?, AdministrativeBoundary?> {
-        val key = roundCoordinate(lat) to roundCoordinate(lon)
+    fun findCountyAndMunicipality(coord: Coordinate): Pair<AdministrativeBoundary?, AdministrativeBoundary?> {
+        val key = Coordinate(roundCoordinate(coord.lat), roundCoordinate(coord.lon))
 
         return lookupCache.getOrPut(key) {
-            val county = findBestMatch(counties, lat, lon)
-            val municipality = findBestMatch(municipalities, lat, lon)
+            val county = findBestMatch(counties, coord)
+            val municipality = findBestMatch(municipalities, coord)
             county to municipality
         }
     }
 
-    fun findCounty(lat: Double, lon: Double): AdministrativeBoundary? =
-        findCountyAndMunicipality(lat, lon).first
+    fun findCounty(coord: Coordinate): AdministrativeBoundary? =
+        findCountyAndMunicipality(coord).first
 
-    fun findMunicipality(lat: Double, lon: Double): AdministrativeBoundary? =
-        findCountyAndMunicipality(lat, lon).second
+    fun findMunicipality(coord: Coordinate): AdministrativeBoundary? =
+        findCountyAndMunicipality(coord).second
 
     /**
      * Finds the best matching administrative boundary for the given coordinates.
@@ -168,11 +170,10 @@ class AdministrativeBoundaryIndex {
      */
     private fun findBestMatch(
         boundaries: List<AdministrativeBoundary>,
-        lat: Double,
-        lon: Double,
+        coord: Coordinate,
     ): AdministrativeBoundary? {
         // First, try ray-casting for boundaries that have polygon data
-        val candidatesContainingPoint = boundaries.filter { it.containsPoint(lat, lon) }
+        val candidatesContainingPoint = boundaries.filter { it.containsPoint(coord) }
 
         if (candidatesContainingPoint.isNotEmpty()) {
             // If multiple boundaries contain the point (shouldn't happen, but just in case),
@@ -183,15 +184,15 @@ class AdministrativeBoundaryIndex {
         }
 
         // Fallback: find boundaries whose bounding box contains the point
-        val candidatesInBbox = boundaries.filter { it.isInBoundingBox(lat, lon) }
+        val candidatesInBbox = boundaries.filter { it.isInBoundingBox(coord) }
 
         if (candidatesInBbox.isNotEmpty()) {
             // Choose the one with the closest centroid
-            return candidatesInBbox.minByOrNull { it.distanceToPoint(lat, lon) }
+            return candidatesInBbox.minByOrNull { it.distanceToPoint(coord) }
         }
 
         // Last resort: find the closest boundary by centroid distance
-        return boundaries.minByOrNull { it.distanceToPoint(lat, lon) }
+        return boundaries.minByOrNull { it.distanceToPoint(coord) }
     }
 
     private fun roundCoordinate(coord: Double): Double =

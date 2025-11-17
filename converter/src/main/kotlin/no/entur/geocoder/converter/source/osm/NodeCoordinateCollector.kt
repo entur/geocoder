@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.common.Coordinate
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.io.File
 
@@ -54,7 +55,7 @@ class NodeCoordinateCollector(
     fun collectNodeCoordinates(inputFile: File, neededNodeIds: Set<Long>) {
         parsePbf(inputFile, OsmIterator.NODE_FILTER).forEach { entity ->
             if (entity is Node && entity.id in neededNodeIds) {
-                nodesCoords.put(entity.id, entity.longitude, entity.latitude)
+                nodesCoords.put(entity.id, Coordinate(entity.latitude, entity.longitude))
             }
         }
     }
@@ -62,8 +63,8 @@ class NodeCoordinateCollector(
     fun calculateAndStoreWayCentroid(way: Way) {
         val wayNodeCoords = way.wayNodes.mapNotNull { nodesCoords.get(it.nodeId) }
         if (wayNodeCoords.isNotEmpty()) {
-            GeometryCalculator.calculateCentroid(wayNodeCoords)?.let { (lon, lat) ->
-                wayCentroids.put(way.id, lon.toDouble(), lat.toDouble())
+            GeometryCalculator.calculateCentroid(wayNodeCoords)?.let { coord ->
+                wayCentroids.put(way.id, coord)
             }
         }
     }

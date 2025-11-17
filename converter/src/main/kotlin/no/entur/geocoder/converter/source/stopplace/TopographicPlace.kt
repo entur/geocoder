@@ -3,7 +3,6 @@ package no.entur.geocoder.converter.source.stopplace
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @JacksonXmlRootElement(localName = "TopographicPlace")
@@ -76,7 +75,7 @@ data class TopographicPlace(
     )
 
     data class Location(
-        val longitude: BigDecimal? = null,
-        val latitude: BigDecimal? = null,
+        val longitude: Double? = null,
+        val latitude: Double? = null,
     )
 }

@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.poi
 
 import no.entur.geocoder.common.Category.OSM_CUSTOM_POI
+import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
@@ -12,7 +13,6 @@ import no.entur.geocoder.converter.source.stopplace.NetexParser
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
-import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.LocalDateTime
 
@@ -43,9 +43,12 @@ class PoiConverter : Converter {
             }.map { topoPlace ->
                 val id = topoPlace.id ?: ""
                 val name = topoPlace.descriptor?.name?.text ?: ""
-                val lon = topoPlace.centroid?.location?.longitude ?: BigDecimal.ZERO
-                val lat = topoPlace.centroid?.location?.latitude ?: BigDecimal.ZERO
-                val country = Geo.getCountry(lat, lon) ?: Country.no
+                val coord =
+                    Coordinate(
+                        topoPlace.centroid?.location?.longitude ?: 0.0,
+                        topoPlace.centroid?.location?.latitude ?: 0.0,
+                    )
+                val country = Geo.getCountry(coord) ?: Country.no
                 val extra =
                     Extra(
                         id = id,
@@ -66,8 +69,8 @@ class PoiConverter : Converter {
                         address = Address(),
                         postcode = null,
                         country_code = country.name,
-                        centroid = listOf(lon, lat),
-                        bbox = listOf(lon, lat, lon, lat),
+                        centroid = coord.centroid(),
+                        bbox = coord.bbox(),
                         extra = extra,
                     )
                 NominatimPlace("Place", listOf(placeContent))

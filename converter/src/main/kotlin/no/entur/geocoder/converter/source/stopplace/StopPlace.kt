@@ -4,7 +4,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
-import java.math.BigDecimal
 
 @JacksonXmlRootElement(localName = "StopPlace")
 class StopPlace(
@@ -56,8 +55,8 @@ class StopPlace(
     )
 
     data class Location(
-        val longitude: BigDecimal,
-        val latitude: BigDecimal,
+        val longitude: Double,
+        val latitude: Double,
     )
 
     class AccessibilityAssessment {

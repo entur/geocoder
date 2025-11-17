@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.stopplace
 
+import no.entur.geocoder.converter.source.stopplace.StopPlace.Centroid
+import no.entur.geocoder.converter.source.stopplace.StopPlace.Location
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -209,11 +211,11 @@ class StopPlacePopularityCalculatorTest {
                     text = "Test Stop"
                 },
             centroid =
-                StopPlace.Centroid(
+                Centroid(
                     location =
-                        StopPlace.Location(
-                            longitude = 10.746.toBigDecimal(),
-                            latitude = 59.911.toBigDecimal(),
+                        Location(
+                            longitude = 10.746,
+                            latitude = 59.911,
                         ),
                 ),
             stopPlaceType = stopPlaceType,

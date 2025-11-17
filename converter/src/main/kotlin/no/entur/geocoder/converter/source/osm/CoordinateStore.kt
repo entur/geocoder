@@ -1,9 +1,11 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.common.Coordinate
+
 class CoordinateStore(initialCapacity: Int = 500_000) {
     companion object {
-        private val baseLon = -180.0
         private val baseLat = -90.0
+        private val baseLon = -180.0
         private val scale = 1e5 // ~1.1m precision
         private val loadFactor = 0.7
     }
@@ -13,7 +15,7 @@ class CoordinateStore(initialCapacity: Int = 500_000) {
     private var deltaLats = IntArray(initialCapacity)
     private var size = 0
 
-    fun put(id: Long, lon: Double, lat: Double) {
+    fun put(id: Long, coord: Coordinate) {
         if (size >= ids.size * loadFactor) {
             resize()
         }
@@ -25,17 +27,17 @@ class CoordinateStore(initialCapacity: Int = 500_000) {
 
         if (ids[index] == 0L) size++
         ids[index] = id
-        deltaLons[index] = ((lon - baseLon) * scale).toInt()
-        deltaLats[index] = ((lat - baseLat) * scale).toInt()
+        deltaLons[index] = ((coord.lon - baseLon) * scale).toInt()
+        deltaLats[index] = ((coord.lat - baseLat) * scale).toInt()
     }
 
-    fun get(id: Long): Pair<Double, Double>? {
+    fun get(id: Long): Coordinate? {
         var index = hash(id)
         while (ids[index] != 0L) {
             if (ids[index] == id) {
-                val lon = baseLon + deltaLons[index] / scale
                 val lat = baseLat + deltaLats[index] / scale
-                return Pair(lon, lat)
+                val lon = baseLon + deltaLons[index] / scale
+                return Coordinate(lat, lon)
             }
             index = (index + 1) % ids.size
         }
@@ -59,7 +61,7 @@ class CoordinateStore(initialCapacity: Int = 500_000) {
             if (oldIds[i] != 0L) {
                 val lon = baseLon + oldDeltaLons[i] / scale
                 val lat = baseLat + oldDeltaLats[i] / scale
-                put(oldIds[i], lon, lat)
+                put(oldIds[i], Coordinate(lat, lon))
             }
         }
     }

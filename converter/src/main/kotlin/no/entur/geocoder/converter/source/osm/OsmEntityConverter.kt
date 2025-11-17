@@ -6,13 +6,11 @@ import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Util.titleize
-import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import org.openstreetmap.osmosis.core.domain.v0_6.*
-import java.math.BigDecimal
 
 /** Converts OSM entities to Nominatim format with admin boundary enrichment */
 class OsmEntityConverter(
@@ -65,11 +63,11 @@ class OsmEntityConverter(
             name = name,
             objectType = OBJECT_TYPE_NODE,
             accuracy = ACCURACY_POINT,
-            centroid = node.longitude.toBigDecimalWithScale() to node.latitude.toBigDecimalWithScale(),
+            centroid = Coordinate(node.latitude, node.longitude),
         )
 
     private fun convertWay(way: Way, tags: Map<String, String>, name: String): NominatimPlace? {
-        val (lon, lat) = wayCentroids.get(way.id) ?: return null
+        val coord = wayCentroids.get(way.id) ?: return null
 
         return createPlaceContent(
             entity = way,
@@ -77,7 +75,7 @@ class OsmEntityConverter(
             name = name,
             objectType = OBJECT_TYPE_WAY,
             accuracy = ACCURACY_POLYGON,
-            centroid = lon.toBigDecimalWithScale() to lat.toBigDecimalWithScale(),
+            centroid = coord,
         )
     }
 
@@ -117,13 +115,12 @@ class OsmEntityConverter(
         name: String,
         objectType: String,
         accuracy: String,
-        centroid: Pair<BigDecimal, BigDecimal>,
+        centroid: Coordinate,
         address: Address = Address(),
     ): NominatimPlace {
-        val (lon, lat) = centroid
-        val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(lat.toDouble(), lon.toDouble())
+        val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(centroid)
 
-        val country = determineCountry(county, municipality, tags, lat, lon)
+        val country = determineCountry(county, municipality, tags, centroid)
         val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
         val tagList: List<String> =
             listOf(LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
@@ -163,8 +160,8 @@ class OsmEntityConverter(
                 address = updatedAddress,
                 postcode = null,
                 country_code = country.name,
-                centroid = listOf(lon, lat),
-                bbox = listOf(lon, lat, lon, lat),
+                centroid = centroid.centroid(),
+                bbox = centroid.bbox(),
                 extra = extra,
             )
 
@@ -175,15 +172,14 @@ class OsmEntityConverter(
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
         tags: Map<String, String>,
-        lat: BigDecimal,
-        lon: BigDecimal,
+        coord: Coordinate,
     ): Country =
         Country.parse(
             county?.countryCode?.lowercase()
                 ?: municipality?.countryCode?.lowercase()
                 ?: tags["addr:country"],
         )
-            ?: Geo.getCountry(lat, lon)
+            ?: Geo.getCountry(coord)
             ?: Country.no
 
     private fun buildCategories(

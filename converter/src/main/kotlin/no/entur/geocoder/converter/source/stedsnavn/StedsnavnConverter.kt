@@ -201,15 +201,15 @@ class StedsnavnConverter : Converter {
     }
 
     fun convertToNominatim(entry: StedsnavnEntry): NominatimPlace {
-        val (lat, lon) =
+        val coord =
             if (entry.coordinates.isNotEmpty()) {
                 val centerEast = entry.coordinates.map { it.first }.average()
                 val centerNorth = entry.coordinates.map { it.second }.average()
                 Geo.convertUTM33ToLatLon(centerEast, centerNorth)
             } else {
-                Pair(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO)
+                Coordinate.ZERO
             }
-        val country = Geo.getCountry(lat, lon) ?: Country.no
+        val country = Geo.getCountry(coord) ?: Country.no
 
         val tags =
             listOf(
@@ -259,8 +259,8 @@ class StedsnavnConverter : Converter {
                     ),
                 postcode = null,
                 country_code = country.name,
-                centroid = listOf(lon, lat),
-                bbox = listOf(lon, lat, lon, lat),
+                centroid = coord.centroid(),
+                bbox = coord.bbox(),
                 extra = extra,
             )
 
