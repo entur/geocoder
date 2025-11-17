@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.matrikkel
+package no.entur.geocoder.converter.source.adresse
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue

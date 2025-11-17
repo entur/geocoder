@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.matrikkel
+package no.entur.geocoder.converter.source.adresse
 
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS

@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.matrikkel
+package no.entur.geocoder.converter.source.adresse
 
 import org.junit.jupiter.api.Assertions.*
 import kotlin.test.Test

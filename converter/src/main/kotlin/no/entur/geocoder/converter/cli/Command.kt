@@ -1,7 +1,7 @@
 package no.entur.geocoder.converter.cli
 
 import no.entur.geocoder.converter.Converter
-import no.entur.geocoder.converter.source.matrikkel.MatrikkelConverter
+import no.entur.geocoder.converter.source.adresse.MatrikkelConverter
 import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter
 import no.entur.geocoder.converter.source.osm.OsmConverter
 import no.entur.geocoder.converter.source.stedsnavn.StedsnavnConverter

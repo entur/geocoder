@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.matrikkel
+package no.entur.geocoder.converter.source.adresse
 
 object MatrikkelPopularityCalculator {
     private const val DEFAULT_VALUE = 20.0

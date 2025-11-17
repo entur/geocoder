@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter.source.matrikkel
+package no.entur.geocoder.converter.source.adresse
 
 data class MatrikkelAdresse(
     val lokalid: String,
