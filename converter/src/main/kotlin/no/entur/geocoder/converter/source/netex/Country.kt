@@ -58,6 +58,6 @@ enum class Country(
 
     companion object {
         fun getThreeLetterCode(twoLetterCode: String?): String? =
-            entries.toTypedArray().firstOrNull { it.name == twoLetterCode?.uppercase() }?.threeLetterCode
+            entries.firstOrNull { it.name == twoLetterCode?.uppercase() }?.threeLetterCode
     }
 }

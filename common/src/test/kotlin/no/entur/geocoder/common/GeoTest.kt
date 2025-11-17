@@ -3,6 +3,8 @@ package no.entur.geocoder.common
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
 class GeoTest {
     @Test
@@ -96,5 +98,33 @@ class GeoTest {
         assertEquals(0, Geo.radiusToZoom(65536.0))
         assertEquals(10, Geo.radiusToZoom(64.0))
         assertEquals(18, Geo.radiusToZoom(0.25))
+    }
+
+    @ParameterizedTest
+    @MethodSource("borderCountryCoordinates")
+    fun `getCountryCode returns correct country for border coordinates`(testCase: Triple<Double, Double, String>) {
+        val (lat, lon, expectedCode) = testCase
+        val actualCode = Geo.getCountryCode(lat, lon)
+        assertEquals(expectedCode, actualCode, "Expected $expectedCode for ($lat, $lon), got $actualCode")
+    }
+
+    companion object {
+        @JvmStatic
+        fun borderCountryCoordinates() =
+            listOf(
+                Triple(59.91386, 10.75224, "NO"),
+                // Norway–Sweden
+                Triple(59.47787, 11.71967, "NO"),
+                Triple(59.49251, 11.78009, "SE"),
+                // Sweden–Finland
+                Triple(65.8481, 24.1466, "FI"),
+                Triple(65.8350, 24.1300, "SE"),
+                // Denmark–Sweden near Øresund Bridge
+                Triple(55.6210, 12.6500, "DK"),
+                Triple(55.5700, 12.9800, "SE"),
+                // Denmark–Germany near Kruså/Padborg
+                Triple(54.8205, 9.3980, "DE"),
+                Triple(54.8675, 9.4175, "DK"),
+            )
     }
 }

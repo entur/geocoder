@@ -1,5 +1,8 @@
 package no.entur.geocoder.common
 
+import de.westnordost.countryboundaries.CountryBoundaries
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.api.referencing.operation.MathTransform
@@ -66,4 +69,18 @@ object Geo {
         val zoom = (18 - log2(radius * 4)).toInt()
         return zoom.coerceIn(0, 18)
     }
+
+    private val boundaries: CountryBoundaries? by lazy {
+        val source =
+            Geo.javaClass
+                .getResourceAsStream("/countryboundaries/boundaries60x30.ser")
+                ?.asSource()
+                ?.buffered()
+        source?.let { CountryBoundaries.deserializeFrom(source) }
+    }
+
+    fun getCountryCode(lat: Double, lon: Double): String? =
+        boundaries
+            ?.getIds(lon, lat)
+            ?.firstOrNull { it.length == 2 }
 }

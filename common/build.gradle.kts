@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.geotools.referencing)
     implementation(libs.geotools.main)
     implementation(libs.geotools.epsg.wkt)
+    implementation(libs.country.boundaries)
     testImplementation(libs.kotlin.test)
 }
 
