@@ -85,7 +85,7 @@ class StedsnavnConverter : Converter {
         var adressekode: String? = null
         var navneobjekttype: String? = null
         var skrivemåtestatus: String? = null
-        val coordinates = mutableListOf<Pair<Double, Double>>()
+        val coordinates = mutableListOf<Utm33Coordinate>()
         val annenSkrivemåte = mutableListOf<String>()
         var insideAnnenSkrivemåte = false
 
@@ -136,7 +136,7 @@ class StedsnavnConverter : Converter {
                                 val east = coords[i].toDoubleOrNull()
                                 val north = coords[i + 1].toDoubleOrNull()
                                 if (east != null && north != null) {
-                                    coordinates.add(Pair(east, north))
+                                    coordinates.add(Utm33Coordinate(east, north))
                                 }
                             }
                         }
@@ -149,7 +149,7 @@ class StedsnavnConverter : Converter {
                             val east = coords[0].toDoubleOrNull()
                             val north = coords[1].toDoubleOrNull()
                             if (east != null && north != null) {
-                                coordinates.add(Pair(east, north))
+                                coordinates.add(Utm33Coordinate(east, north))
                             }
                         }
                     }
@@ -203,8 +203,8 @@ class StedsnavnConverter : Converter {
     fun convertToNominatim(entry: StedsnavnEntry): NominatimPlace {
         val coord =
             if (entry.coordinates.isNotEmpty()) {
-                val centerEast = entry.coordinates.map { it.first }.average()
-                val centerNorth = entry.coordinates.map { it.second }.average()
+                val centerEast = entry.coordinates.map { it.easting }.average()
+                val centerNorth = entry.coordinates.map { it.northing }.average()
                 Geo.convertUTM33ToLatLon(centerEast, centerNorth)
             } else {
                 Coordinate.ZERO

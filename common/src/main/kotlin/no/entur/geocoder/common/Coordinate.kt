@@ -2,7 +2,7 @@ package no.entur.geocoder.common
 
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 
-class Coordinate(val lat: Double, val lon: Double) {
+data class Coordinate(val lat: Double, val lon: Double) {
     val bigLat by lazy { lat.toBigDecimalWithScale() }
     val bigLon by lazy { lon.toBigDecimalWithScale() }
 
