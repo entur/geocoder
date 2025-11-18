@@ -82,6 +82,14 @@ Or use the opensearch endpoint to debug queries:
 curl -s http://localhost:9201/photon/_mapping | jq .       # Available fields
 curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 ```
+Accessing the opensearch queries in k8s:
+```bash
+kubectl --context tst port-forward geocoder-photon-85994c94dd-6lqhv -n geocoder 9201
+curl -s 'https://geocoder-photon.staging.entur.io/api?q=ullerud' |jq  '.features[].properties.osm_id' |head -1
+200127208213
+curl -s 'http://localhost:9201/photon/_doc/200127208213' |jq -c "[._source.importance, ._source.name.default]"
+[0.23010299956639815,"Ullerud terrasse"]
+```
 
 ### Using a patched Photon version
 
