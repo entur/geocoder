@@ -15,13 +15,10 @@ object Geo {
     val wgs84: CoordinateReferenceSystem = DefaultGeographicCRS.WGS84
     val transform: MathTransform = CRS.findMathTransform(utm33n, wgs84, true)
 
-    fun convertUTM33ToLatLon(
-        easting: Double,
-        northing: Double,
-    ): Coordinate {
+    fun convertUTM33ToLatLon(coord: UtmCoordinate): Coordinate {
         val srcCoord =
             org.locationtech.jts.geom
-                .Coordinate(easting, northing)
+                .Coordinate(coord.easting, coord.northing)
         val dstCoord = JTS.transform(srcCoord, null, transform)
 
         val lat = dstCoord.y
@@ -33,10 +30,6 @@ object Geo {
     /**
      * Great-circle distance between two points on a sphere using the Haversine formula.
      *
-     * @param lat1 Latitude of point 1 in degrees
-     * @param lon1 Longitude of point 1 in degrees
-     * @param lat2 Latitude of point 2 in degrees
-     * @param lon2 Longitude of point 2 in degrees
      * @return Distance in meters
      */
     fun haversineDistance(coord1: Coordinate, coord2: Coordinate): Double {

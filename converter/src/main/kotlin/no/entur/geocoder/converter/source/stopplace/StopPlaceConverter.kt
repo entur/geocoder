@@ -198,7 +198,7 @@ class StopPlaceConverter : Converter {
                 ?: emptyList()
 
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
-        val importance = ImportanceCalculator.calculateImportance(popularity.toLong())
+        val importance = ImportanceCalculator.calculateImportance(popularity)
 
         val tags =
             listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)

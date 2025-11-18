@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.stedsnavn
 
+import no.entur.geocoder.common.UtmCoordinate
+
 /**
  * Data class representing a place name entry from Kartverket's stedsnavn GML file.
  *

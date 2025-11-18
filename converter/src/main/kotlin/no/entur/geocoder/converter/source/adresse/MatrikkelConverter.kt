@@ -45,13 +45,13 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                     streetData.getOrPut(key) {
                         StreetAggregator(adresse)
                     }
-                aggregator.add(adresse.nord, adresse.ost)
+                aggregator.add(UtmCoordinate(adresse.ost, adresse.nord))
             }
         }
 
         val streetNominatim =
             streetData.values.asSequence().map { agg ->
-                convertStreetToNominatim(agg.representative, agg.getAvgNord(), agg.getAvgOst())
+                convertStreetToNominatim(agg.representative, agg.getAvgCoord())
             }
         JsonWriter().export(streetNominatim, outputPath, true)
     }
@@ -61,22 +61,19 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
         private var sumOst = 0.0
         private var count = 0
 
-        fun add(nord: Double, ost: Double) {
-            sumNord += nord
-            sumOst += ost
+        fun add(coord: UtmCoordinate) {
+            sumNord += coord.northing
+            sumOst += coord.easting
             count++
         }
 
-        fun getAvgNord() = sumNord / count
-
-        fun getAvgOst() = sumOst / count
+        fun getAvgCoord() = UtmCoordinate(sumOst / count, sumNord / count)
     }
 
     private fun convertAddressToNominatim(adresse: MatrikkelAdresse): NominatimPlace =
         convertToNominatim(
             adresse = adresse,
-            northing = adresse.nord,
-            easting = adresse.ost,
+            utm = UtmCoordinate(adresse.ost, adresse.nord),
             placeId = PlaceId.address.create(adresse.lokalid),
             id = adresse.lokalid, // This is the only numeric id type. All others are colon separated.
             tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
@@ -88,14 +85,12 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
 
     private fun convertStreetToNominatim(
         adresse: MatrikkelAdresse,
-        northing: Double,
-        easting: Double,
+        coord: UtmCoordinate,
     ): NominatimPlace {
         val streetName = adresse.adressenavn ?: ""
         return convertToNominatim(
             adresse = adresse,
-            northing = northing,
-            easting = easting,
+            utm = coord,
             placeId = PlaceId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
@@ -108,8 +103,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
 
     private fun convertToNominatim(
         adresse: MatrikkelAdresse,
-        northing: Double,
-        easting: Double,
+        utm: UtmCoordinate,
         placeId: Long,
         id: String,
         tags: List<String>,
@@ -118,7 +112,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
         housenumber: String?,
         postcode: String?,
     ): NominatimPlace {
-        val coord = Geo.convertUTM33ToLatLon(easting, northing)
+        val coord = Geo.convertUTM33ToLatLon(utm)
         val country = Geo.getCountry(coord) ?: Country.no
 
         val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }

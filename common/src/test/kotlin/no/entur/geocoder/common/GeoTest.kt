@@ -8,10 +8,9 @@ import kotlin.test.assertEquals
 class GeoTest {
     @Test
     fun `convert UTM33 to LatLon`() {
-        val eastingValue = 310012.98
-        val northingValue = 6770754.69
+        val utm = UtmCoordinate(310012.98, 6770754.69)
 
-        val coord = Geo.convertUTM33ToLatLon(eastingValue, northingValue)
+        val coord = Geo.convertUTM33ToLatLon(utm)
 
         assertEquals(61.025715, coord.lat, 0.00001)
         assertEquals(11.483291, coord.lon, 0.00001)
