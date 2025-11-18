@@ -9,6 +9,7 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
@@ -53,7 +54,7 @@ class StopPlaceConverter : Converter {
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
         val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance = ImportanceCalculator.calculateImportance(popularity)
+        val importance = ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tariffZoneCategories =
             stopPlace.tariffZones
@@ -198,7 +199,7 @@ class StopPlaceConverter : Converter {
                 ?: emptyList()
 
         val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
-        val importance = ImportanceCalculator.calculateImportance(popularity)
+        val importance = ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tags =
             listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)

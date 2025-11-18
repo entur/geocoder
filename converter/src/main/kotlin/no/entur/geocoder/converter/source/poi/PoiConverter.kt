@@ -64,7 +64,7 @@ class PoiConverter : Converter {
                         object_id = placeId,
                         categories = listOf(OSM_CUSTOM_POI, "country.${country.name}"),
                         rank_address = 30,
-                        importance = 0.5,
+                        importance = 0.5.toBigDecimal(),
                         name = Name(name = name),
                         address = Address(),
                         postcode = null,

@@ -7,6 +7,7 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Category.SOURCE_STEDSNAVN
 import no.entur.geocoder.common.Util.titleize
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
@@ -241,9 +242,10 @@ class StedsnavnConverter : Converter {
                 categories = categories,
                 rank_address = 16,
                 importance =
-                    ImportanceCalculator.calculateImportance(
-                        StedsnavnPopularityCalculator.calculatePopularity(entry.navneobjekttype),
-                    ),
+                    ImportanceCalculator
+                        .calculateImportance(
+                            StedsnavnPopularityCalculator.calculatePopularity(entry.navneobjekttype),
+                        ).toBigDecimalWithScale(),
                 parent_place_id = 0,
                 name =
                     Name(

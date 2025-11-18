@@ -13,7 +13,7 @@ data class NominatimPlace(
         val object_id: Long,
         val categories: List<String>,
         val rank_address: Int,
-        val importance: Double,
+        val importance: BigDecimal,
         val parent_place_id: Long? = null,
         val name: Name? = null,
         val address: Address,

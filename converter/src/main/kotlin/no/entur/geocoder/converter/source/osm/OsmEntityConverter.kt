@@ -6,11 +6,13 @@ import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Util.titleize
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import org.openstreetmap.osmosis.core.domain.v0_6.*
+import java.math.BigDecimal
 
 /** Converts OSM entities to Nominatim format with admin boundary enrichment */
 class OsmEntityConverter(
@@ -207,8 +209,8 @@ class OsmEntityConverter(
             else -> RANK_POI
         }
 
-    private fun calculateImportance(tags: Map<String, String>): Double {
+    private fun calculateImportance(tags: Map<String, String>): BigDecimal {
         val popularity = OSMPopularityCalculator.calculatePopularity(tags)
-        return ImportanceCalculator.calculateImportance(popularity)
+        return ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
     }
 }

@@ -296,7 +296,11 @@ class StedsnavnConverterTest {
         parseDefault()
         entries.forEach { entry ->
             val nominatimPlace = converter.convertToNominatim(entry)
-            val importance = nominatimPlace.content.first().importance
+            val importance =
+                nominatimPlace.content
+                    .first()
+                    .importance
+                    .toDouble()
 
             assertTrue(importance > 0.0, "Importance should be positive")
             assertTrue(importance <= 1.0, "Importance should not exceed 1.0")

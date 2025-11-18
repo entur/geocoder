@@ -263,7 +263,7 @@ class JsonWriterTest {
                         object_id = id,
                         categories = listOf("place", "city"),
                         rank_address = 16,
-                        importance = 0.5,
+                        importance = 0.5.toBigDecimal(),
                         parent_place_id = if (includeOptional) 999L else null,
                         name = if (includeOptional) NominatimPlace.Name("Test Place", "Alt Name") else null,
                         address =

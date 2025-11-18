@@ -178,7 +178,7 @@ class OsmConverterTest {
 
         assertNotNull(result, "Hospital should be converted")
         assertEquals("Oslo University Hospital", result.content[0].name?.name)
-        assertTrue(result.content[0].importance > 0.0, "Hospital should have importance > 0")
+        assertTrue(result.content[0].importance.toDouble() > 0.0, "Hospital should have importance > 0")
     }
 
     @Test

@@ -9,6 +9,7 @@ import no.entur.geocoder.common.Category.OSM_ADDRESS
 import no.entur.geocoder.common.Category.OSM_STREET
 import no.entur.geocoder.common.Category.SOURCE_ADRESSE
 import no.entur.geocoder.common.Util.titleize
+import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
@@ -142,7 +143,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 object_id = placeId,
                 categories = categories.plus(tags),
                 rank_address = 26,
-                importance = ImportanceCalculator.calculateImportance(popularity),
+                importance = ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale(),
                 parent_place_id = 0,
                 name =
                     displayName?.let {
