@@ -206,7 +206,7 @@ class StedsnavnConverter : Converter {
             if (entry.coordinates.isNotEmpty()) {
                 val centerEast = entry.coordinates.map { it.easting }.average()
                 val centerNorth = entry.coordinates.map { it.northing }.average()
-                Geo.convertUTM33ToLatLon(UtmCoordinate(centerEast, centerNorth))
+                Geo.convertUtm33ToLatLon(UtmCoordinate(centerEast, centerNorth))
             } else {
                 Coordinate.ZERO
             }

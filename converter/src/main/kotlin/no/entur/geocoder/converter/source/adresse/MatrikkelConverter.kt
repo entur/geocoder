@@ -113,7 +113,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
         housenumber: String?,
         postcode: String?,
     ): NominatimPlace {
-        val coord = Geo.convertUTM33ToLatLon(utm)
+        val coord = Geo.convertUtm33ToLatLon(utm)
         val country = Geo.getCountry(coord) ?: Country.no
 
         val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }

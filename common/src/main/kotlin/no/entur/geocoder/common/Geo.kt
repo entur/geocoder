@@ -11,15 +11,15 @@ import org.geotools.referencing.crs.DefaultGeographicCRS
 import kotlin.math.*
 
 object Geo {
-    val utm33n: CoordinateReferenceSystem = CRS.decode("EPSG:25833")
-    val wgs84: CoordinateReferenceSystem = DefaultGeographicCRS.WGS84
-    val transform: MathTransform = CRS.findMathTransform(utm33n, wgs84, true)
+    private val utm33n: CoordinateReferenceSystem = CRS.decode("EPSG:25833") // https://epsg.io/25833
+    private val wgs84: CoordinateReferenceSystem = DefaultGeographicCRS.WGS84 // https://epsg.io/3857
+    private val utm33nToWgs84: MathTransform = CRS.findMathTransform(utm33n, wgs84, true)
 
-    fun convertUTM33ToLatLon(coord: UtmCoordinate): Coordinate {
+    fun convertUtm33ToLatLon(coord: UtmCoordinate): Coordinate {
         val srcCoord =
             org.locationtech.jts.geom
                 .Coordinate(coord.easting, coord.northing)
-        val dstCoord = JTS.transform(srcCoord, null, transform)
+        val dstCoord = JTS.transform(srcCoord, null, utm33nToWgs84)
 
         val lat = dstCoord.y
         val lon = dstCoord.x
