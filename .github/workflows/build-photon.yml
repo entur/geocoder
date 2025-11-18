@@ -11,11 +11,11 @@ on:
         required: true
         type: choice
         options:
-          - '🔨 Download and convert data → build Photon → Dev'
+          - '🔨 Download data → build Photon → Dev'
           - '⚡ Use latest data → build Photon → Dev'
-          - '🚀 Deploy existing Photon image → Dev'
-          - '🚀 Deploy existing Photon image → Staging'
-          - '🚀 Deploy existing Photon image → Prod'
+          - '🚀 Deploy → Dev'
+          - '🚀 Deploy → Staging'
+          - '🚀 Deploy → Prod'
         default: '🔨 Full import → Dev'
       photon_image_tag:
         description: 'Photon image tag (deploy-only)'
@@ -53,18 +53,18 @@ jobs:
             dev=true
             tst=true
             prd=true
-          elif [ "${{ inputs.build }}" = "🔨 Download and convert data → build Photon → Dev" ]; then
+          elif [ "${{ inputs.build }}" = "🔨 Download data → build Photon → Dev" ]; then
             nominatim_data=true
             photon_data=true
             dev=true
           elif [ "${{ inputs.build }}" = "⚡ Use latest data → build Photon → Dev" ]; then
             photon_data=true
             dev=true
-          elif [ "${{ inputs.build }}" = "🚀 Deploy existing Photon image → Dev" ]; then
+          elif [ "${{ inputs.build }}" = "🚀 Deploy → Dev" ]; then
             dev=true
-          elif [ "${{ inputs.build }}" = "🚀 Deploy existing Photon image → Staging" ]; then
+          elif [ "${{ inputs.build }}" = "🚀 Deploy → Staging" ]; then
             tst=true
-          elif [ "${{ inputs.build }}" = "🚀 Deploy existing Photon image → Prod" ]; then
+          elif [ "${{ inputs.build }}" = "🚀 Deploy → Prod" ]; then
             prd=true
           else
             echo "Error: Invalid or missing build input (received: '${{ inputs.build }}', event: ${{ github.event_name }})"
