@@ -1,1 +1,4 @@
-Fetched from https://github.com/westnordost/countryboundaries/tree/master/data
+Converted to .ser from https://github.com/entur/geocoder-data/country-boundaries.osm. 
+
+See its [README.md](https://github.com/entur/geocoder-data/blob/main/README.md) for
+instructions on how to convert.
