@@ -14,7 +14,6 @@ on:
           # NB! These values are used in the 'setup' job, so if you change them, update the job as well
           - '🔨 Download data → build Photon → Dev'
           - '⚡ Use latest data → build Photon → Dev'
-          - '🚀 Deploy → Dev'
           - '🚀 Deploy → Staging'
           - '🚀 Deploy → Prod'
         default: '🔨 Full import → Dev'
@@ -60,8 +59,6 @@ jobs:
             dev=true
           elif [ "${{ inputs.build }}" = "⚡ Use latest data → build Photon → Dev" ]; then
             photon_data=true
-            dev=true
-          elif [ "${{ inputs.build }}" = "🚀 Deploy → Dev" ]; then
             dev=true
           elif [ "${{ inputs.build }}" = "🚀 Deploy → Staging" ]; then
             tst=true

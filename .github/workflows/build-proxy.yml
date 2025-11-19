@@ -57,9 +57,7 @@ jobs:
               dev=true
             fi
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Dev" ]; then
-              dev=true
-            elif [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Staging" ]; then
+            if [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Staging" ]; then
               tst=true
             elif [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Prod" ]; then
               prd=true
