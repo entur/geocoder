@@ -19,7 +19,7 @@ data class NominatimPlace(
         val address: Address,
         val housenumber: String? = null,
         val postcode: String?,
-        val country_code: String,
+        val country_code: String?,
         val centroid: List<BigDecimal>,
         val bbox: List<BigDecimal> = emptyList(),
         val extra: Extra,
@@ -37,11 +37,6 @@ data class NominatimPlace(
         val alt_name: String? = null,
     )
 }
-
-data class CountryInfoEntry(
-    val country_code: String,
-    val name: Map<String, String> = emptyMap(),
-)
 
 data class NominatimHeader(
     val type: String,

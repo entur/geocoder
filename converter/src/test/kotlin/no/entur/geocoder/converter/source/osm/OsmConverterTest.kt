@@ -344,7 +344,7 @@ class OsmConverterTest {
 
         assertNotNull(result)
         assertNotNull(result.content[0].country_code)
-        assertEquals(2, result.content[0].country_code.length)
+        assertEquals(2, result.content[0].country_code?.length)
     }
 
     private fun createMockNode(

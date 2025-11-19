@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.osm
 
 import no.entur.geocoder.common.Coordinate
+import no.entur.geocoder.common.Country
 import org.openstreetmap.osmosis.core.domain.v0_6.Entity
 import org.openstreetmap.osmosis.core.domain.v0_6.EntityType
 import org.openstreetmap.osmosis.core.domain.v0_6.Relation
@@ -12,10 +13,6 @@ class AdminBoundaryCollector(
     private val nodesCoords: CoordinateStore,
     private val wayCentroids: CoordinateStore,
 ) {
-    companion object {
-        private const val COUNTRY_CODE_NORWAY = "NO"
-    }
-
     fun collectAdminRelations(inputFile: File): List<AdminRelationData> {
         val adminRelations = mutableListOf<AdminRelationData>()
 
@@ -33,15 +30,15 @@ class AdminBoundaryCollector(
                     val adminLevel = adminLevelStr?.toIntOrNull()
                     val name = tags["name"]
                     val ref = tags["ref"]
-                    val countryCode = extractCountryCode(tags)
+                    val country = extractCountryCode(tags)
 
-                    if (adminLevel != null && name != null && ref != null && countryCode == COUNTRY_CODE_NORWAY) {
+                    if (adminLevel != null && name != null && ref != null && country != null) {
                         val wayIds =
                             entity.members
                                 .filter { it.memberType == EntityType.Way }
                                 .map { it.memberId }
 
-                        adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds, countryCode))
+                        adminRelations.add(AdminRelationData(entity.id, name, adminLevel, ref, wayIds, country))
                     }
                 }
             }
@@ -99,7 +96,7 @@ class AdminBoundaryCollector(
                         name = relation.name,
                         adminLevel = relation.adminLevel,
                         refCode = relation.ref,
-                        countryCode = relation.countryCode,
+                        country = relation.country,
                         centroid = centroid,
                         bbox = bbox,
                         boundaryNodes = boundaryNodes,
@@ -110,17 +107,18 @@ class AdminBoundaryCollector(
         }
     }
 
-    private fun extractCountryCode(tags: Map<String, String>): String? {
-        val ref = tags["ref"]
-        val iso3166 = tags["ISO3166-2"] ?: tags["ISO3166-2-lvl4"] ?: tags["ISO3166-2:lvl4"]
+    private fun extractCountryCode(tags: Map<String, String>): Country? {
+        val iso3166 =
+            tags["ISO3166-2"] ?: tags["ISO3166-2-lvl4"] ?: tags["ISO3166-2:lvl4"] ?: tags["is_in:country_code"] ?: tags["country_code"]
 
-        return when {
-            iso3166?.startsWith("$COUNTRY_CODE_NORWAY-") == true -> COUNTRY_CODE_NORWAY
-            tags["is_in:country_code"] == COUNTRY_CODE_NORWAY -> COUNTRY_CODE_NORWAY
-            tags["country_code"] == COUNTRY_CODE_NORWAY -> COUNTRY_CODE_NORWAY
-            ref?.all { it.isDigit() } == true -> COUNTRY_CODE_NORWAY
-            else -> null
+        val country = Country.parse(iso3166?.take(2))
+        if (country != null) {
+            return country
         }
+        if (tags["ref"]?.all { it.isDigit() } == true) {
+            return Country.no
+        }
+        return null
     }
 
     private fun parsePbf(inputFile: File, filter: ((Entity) -> Boolean)?): Sequence<Entity> =
@@ -132,6 +130,6 @@ class AdminBoundaryCollector(
         val adminLevel: Int,
         val ref: String,
         val wayIds: List<Long>,
-        val countryCode: String,
+        val country: Country,
     )
 }

@@ -137,7 +137,7 @@ class OsmEntityConverter(
                 id = id,
                 source = Source.OSM,
                 accuracy = accuracy,
-                country_a = country.threeLetterCode,
+                country_a = country?.threeLetterCode,
                 county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
                 locality = municipality?.name?.titleize(),
                 locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
@@ -161,7 +161,7 @@ class OsmEntityConverter(
                 housenumber = null,
                 address = updatedAddress,
                 postcode = null,
-                country_code = country.name,
+                country_code = country?.name,
                 centroid = centroid.centroid(),
                 bbox = centroid.bbox(),
                 extra = extra,
@@ -175,24 +175,21 @@ class OsmEntityConverter(
         municipality: AdministrativeBoundary?,
         tags: Map<String, String>,
         coord: Coordinate,
-    ): Country =
-        Country.parse(
-            county?.countryCode?.lowercase()
-                ?: municipality?.countryCode?.lowercase()
-                ?: tags["addr:country"],
+    ): Country? =
+        county?.country ?: municipality?.country ?: Country.parse(
+            tags["addr:country"],
         )
             ?: Geo.getCountry(coord)
-            ?: Country.no
 
     private fun buildCategories(
         tags: List<String>,
-        country: Country,
+        country: Country?,
         county: AdministrativeBoundary?,
         municipality: AdministrativeBoundary?,
     ): List<String> =
         buildList {
             addAll(tags)
-            add("country.${country.name}")
+            country?.let { add("country.${it.name}") }
             county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
             municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
         }
