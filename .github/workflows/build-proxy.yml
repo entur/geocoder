@@ -24,7 +24,6 @@ on:
         type: choice
         options:
           # NB! These values are used in the 'setup' job, so if you change them, update the job as well
-          - '🚀 Deploy → Dev'
           - '🚀 Deploy → Staging'
           - '🚀 Deploy → Prod'
       image_tag:
