@@ -19,6 +19,7 @@ data class PeliasReverseRequest(
     val layers: List<String> = emptyList(),
     val categories: List<String> = emptyList(),
     val multiModal: String,
+    val debug: Boolean = false,
 ) {
     init {
         val latitude = lat.toDouble()
@@ -51,6 +52,7 @@ data class PeliasReverseRequest(
                         "all" -> "all"
                         else -> "parent"
                     },
+                debug = req["debug"].toBoolean(),
             )
         }
     }

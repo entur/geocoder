@@ -96,7 +96,7 @@ curl -s 'http://localhost:9201/photon/_doc/200127208213' |jq -c "[._source.impor
 We set the `importance` field in the Nominatim data, while `score` is calculated by Photon.
 
 ```
-$ curl -s 'https://geocoder-photon.dev.entur.io/api?q=Ullerud&debug=true&limit=4' | jq -r '
+$ curl -s 'http://localhost:2322/api?q=Ullerud&debug=true&limit=4' | jq -r '
   [ [ .properties.raw_data[] ], [ .features[] ] ]
   | transpose[]
   | "\(.[0].score) \(.[0].infos.importance) \(.[1].properties.name)"

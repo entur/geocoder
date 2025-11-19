@@ -12,6 +12,7 @@ data class PhotonReverseRequest(
     val radius: Double? = null,
     val includes: List<String> = emptyList(),
     val excludes: List<String> = emptyList(),
+    val debug: Boolean = false,
 ) {
     companion object {
         fun from(req: PeliasReverseRequest): PhotonReverseRequest {
@@ -26,6 +27,7 @@ data class PhotonReverseRequest(
                 radius = req.radius,
                 includes = includes,
                 excludes = excludes,
+                debug = req.debug,
             )
         }
 
@@ -37,6 +39,7 @@ data class PhotonReverseRequest(
                 limit = req.limit,
                 radius = req.radius,
                 excludes = listOf(Category.OSM_ADDRESS), // Exclude addresses with house numbers in reverse requests
+                debug = false,
             )
     }
 }

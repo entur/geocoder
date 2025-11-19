@@ -11,7 +11,9 @@ object PhotonApi {
                 parameter("q", req.query)
                 parameter("limit", req.limit)
                 parameter("lang", req.language)
-
+                if (req.location_bias_scale.between(0.0, 1.0)) {
+                    parameter("location_bias_scale", req.location_bias_scale)
+                }
                 if (req.zoom != null) {
                     parameter("zoom", req.zoom)
                 }
@@ -25,6 +27,7 @@ object PhotonApi {
                     parameter("lat", req.lat)
                     parameter("lon", req.lon)
                 }
+                parameter("debug", req.debug)
             }.bodyAsText()
 
     suspend fun request(req: PhotonReverseRequest, client: HttpClient, url: String) =
@@ -42,5 +45,9 @@ object PhotonApi {
                 req.excludes.forEach {
                     parameter("exclude", it)
                 }
+                parameter("debug", req.debug)
             }.bodyAsText()
+
+    private fun Double?.between(d: Double, d2: Double): Boolean =
+        this != null && this >= d && this <= d2
 }

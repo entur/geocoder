@@ -20,6 +20,7 @@ data class PeliasAutocompleteRequest(
     val categories: List<String> = emptyList(),
     val focus: FocusParams? = null,
     val multiModal: String = "parent",
+    val debug: Boolean = false,
 ) {
     init {
         require(text.isNotBlank()) { "text cannot be blank" }
@@ -58,6 +59,7 @@ data class PeliasAutocompleteRequest(
                         "all" -> "all"
                         else -> "parent"
                     },
+                debug = req["debug"].toBoolean(),
             )
         }
 

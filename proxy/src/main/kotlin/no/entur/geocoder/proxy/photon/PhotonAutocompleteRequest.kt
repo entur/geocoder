@@ -15,14 +15,15 @@ data class PhotonAutocompleteRequest(
     val lat: Double?,
     val lon: Double?,
     val zoom: Int?,
-    val weight: Double?,
+    val location_bias_scale: Double?,
+    val debug: Boolean = false,
 ) {
     companion object {
         /**
          * We drop the "by" if a GOSP exists with the same name. This can only be done after fetching,
          * so we fetch one extra and drop the last result if there is a match.
          */
-        const val CITY_AND_GOSP_LIST_HEADROOM = 1
+        const val CITY_AND_GOSP_LIST_HEADROOM = 3
 
         fun from(req: PeliasAutocompleteRequest): PhotonAutocompleteRequest {
             val includes = PhotonFilterBuilder.buildIncludes(req)
@@ -33,12 +34,7 @@ data class PhotonAutocompleteRequest(
                     Geo.radiusToZoom(it.toDouble() / 5.0)
                 } ?: Geo.radiusToZoom(2500.0 / 5.0)
 
-            // Weight factor is flipped in Photon, so closer to 0 is more important
-            // We therefore subtract the normalized value from 1
-            // Considering this, we have a relatively low default focus weight in v1 (~0.8)
-            // compared to the default in Photon (0.2)
-            val weight = (1.0 - ImportanceCalculator.calculateImportance(req.focus?.weight ?: 15.0))
-
+            val locationBiasScale = ImportanceCalculator.locationBiasCalculator(req.focus?.weight ?: 15.0)
             return PhotonAutocompleteRequest(
                 query = req.text,
                 limit = req.size + CITY_AND_GOSP_LIST_HEADROOM, // Hack when we filter 'by' when there's already a matching GOSP
@@ -48,7 +44,8 @@ data class PhotonAutocompleteRequest(
                 lat = req.focus?.lat,
                 lon = req.focus?.lon,
                 zoom = zoom,
-                weight = weight,
+                location_bias_scale = locationBiasScale,
+                debug = req.debug,
             )
         }
 
@@ -61,7 +58,8 @@ data class PhotonAutocompleteRequest(
                     lat = null,
                     lon = null,
                     zoom = null,
-                    weight = null,
+                    location_bias_scale = null,
+                    debug = req.debug,
                 )
             }
 
@@ -99,7 +97,8 @@ data class PhotonAutocompleteRequest(
                 lat = null,
                 lon = null,
                 zoom = null,
-                weight = null,
+                location_bias_scale = null,
+                debug = false,
             )
         }
     }

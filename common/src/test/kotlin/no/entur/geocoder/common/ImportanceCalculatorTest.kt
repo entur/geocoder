@@ -27,6 +27,14 @@ class ImportanceCalculatorTest {
     }
 
     @Test
+    fun `verify Photon default location bias scale`() {
+        val bias = ImportanceCalculator.locationBiasCalculator(15.0)
+
+        // Photon default location bias scale is approximately 0.2 for this popularity
+        assertEquals(0.2, bias, 0.001)
+    }
+
+    @Test
     fun `minimum value gives floor`() {
         val result = ImportanceCalculator.calculateImportance(1)
         assertEquals(0.1, result, 0.001)
