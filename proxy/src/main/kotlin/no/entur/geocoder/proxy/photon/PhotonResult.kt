@@ -9,6 +9,7 @@ import no.entur.geocoder.common.Extra
 data class PhotonResult(
     val type: String = "FeatureCollection",
     val features: List<PhotonFeature> = emptyList(),
+    val properties: Map<String, Any> = emptyMap(),
     val bbox: List<Double>? = null,
 ) {
     companion object {

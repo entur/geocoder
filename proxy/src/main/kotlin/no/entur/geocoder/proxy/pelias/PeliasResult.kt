@@ -55,6 +55,7 @@ data class PeliasResult(
         val errors: List<String>? = null,
         val engine: EngineMetadata = EngineMetadata(),
         val timestamp: Long = System.currentTimeMillis(),
+        val debug: Map<String, Any>? = null,
     ) {
         data class QueryMetadata(
             val text: String? = null,

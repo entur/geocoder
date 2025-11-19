@@ -21,6 +21,7 @@ object PeliasResultTransformer {
             photonResult = result,
             expectedSize = request.size,
             coord = coordOrNull(request.focus?.lat, request.focus?.lon),
+            debug = request.debug,
         )
 
     fun parseAndTransform(result: PhotonResult, request: PeliasReverseRequest): PeliasResult =
@@ -28,18 +29,21 @@ object PeliasResultTransformer {
             photonResult = result,
             expectedSize = request.size,
             coord = coordOrNull(request.lat, request.lon),
+            debug = request.debug,
         )
 
     fun parseAndTransform(result: PhotonResult, request: PeliasPlaceRequest): PeliasResult =
         parseAndTransform(
             photonResult = result,
             expectedSize = request.ids.size,
+            debug = request.debug,
         )
 
     internal fun parseAndTransform(
         photonResult: PhotonResult,
         expectedSize: Int,
         coord: Coordinate? = null,
+        debug: Boolean = false,
     ): PeliasResult {
         val transformedFeatures =
             photonResult.features.map { feature ->
@@ -49,7 +53,14 @@ object PeliasResultTransformer {
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
+        val debugInfo = if (debug && photonResult.properties.isNotEmpty()) {
+            photonResult.properties
+        } else {
+            null
+        }
+
         return PeliasResult(
+            geocoding = GeocodingMetadata(debug = debugInfo),
             features = filterCityIfGospIsPresent(transformedFeatures, expectedSize),
             bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )
