@@ -84,11 +84,28 @@ curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 ```
 Accessing the opensearch queries in k8s:
 ```bash
-kubectl --context tst port-forward geocoder-photon-85994c94dd-6lqhv -n geocoder 9201
-curl -s 'https://geocoder-photon.staging.entur.io/api?q=ullerud' |jq  '.features[].properties.osm_id' |head -1
+kubectl --context dev port-forward geocoder-photon-85994c94dd-6lqhv -n geocoder 9201
+curl -s 'https://geocoder-photon.dev.entur.io/api?q=ullerud' |jq  '.features[].properties.osm_id' |head -1
 200127208213
 curl -s 'http://localhost:9201/photon/_doc/200127208213' |jq -c "[._source.importance, ._source.name.default]"
 [0.23010299956639815,"Ullerud terrasse"]
+```
+
+### Verifying score and importance
+
+We set the `importance` field in the Nominatim data, while `score` is calculated by Photon.
+
+```
+$ curl -s 'https://geocoder-photon.dev.entur.io/api?q=Ullerud&debug=true&limit=4' | jq -r '
+  [ [ .properties.raw_data[] ], [ .features[] ] ]
+  | transpose[]
+  | "\(.[0].score) \(.[0].infos.importance) \(.[1].properties.name)"
+'
+
+18.888372 0.269897 Ullerud
+18.624405 0.269897 Ullerudsletta
+18.418268 0.230103 Ullerudkroken
+17.695122 0.230103 Ullerudskogen
 ```
 
 ### Using a patched Photon version
