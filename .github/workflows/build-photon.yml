@@ -99,7 +99,7 @@ jobs:
           cache: gradle
 
       - name: Build converter JAR
-        run: ./gradlew :converter:shadowJar
+        run: ./gradlew :converter:build
 
       - name: Install dependencies
         run: |
