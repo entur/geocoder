@@ -23,9 +23,10 @@ on:
         default: '🚀 Dev'
         type: choice
         options:
-          - '🚀 Dev'
-          - '🚀 Staging'
-          - '🚀 Prod'
+          # NB! These values are used in the 'setup' job, so if you change them, update the job as well
+          - '🚀 Deploy → Dev'
+          - '🚀 Deploy → Staging'
+          - '🚀 Deploy → Prod'
       image_tag:
         description: 'Image tag to deploy'
         required: false
@@ -56,11 +57,11 @@ jobs:
               dev=true
             fi
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ inputs.deploy_env }}" = "🚀 Dev" ]; then
+            if [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Dev" ]; then
               dev=true
-            elif [ "${{ inputs.deploy_env }}" = "🚀 Staging" ]; then
+            elif [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Staging" ]; then
               tst=true
-            elif [ "${{ inputs.deploy_env }}" = "🚀 Prod" ]; then
+            elif [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Prod" ]; then
               prd=true
             else
               echo "Error: Invalid deploy_env input (received: '${{ inputs.deploy_env }}')"
