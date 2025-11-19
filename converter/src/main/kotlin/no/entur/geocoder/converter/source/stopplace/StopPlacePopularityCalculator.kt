@@ -11,7 +11,7 @@ package no.entur.geocoder.converter.source.stopplace
  * For multimodal parents: factors from all child stop types are summed.
  */
 object StopPlacePopularityCalculator {
-    private const val DEFAULT_VALUE = 50
+    internal const val DEFAULT_VALUE = 50
 
     private val STOP_TYPE_FACTORS =
         mapOf(

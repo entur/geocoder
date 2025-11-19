@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.source.stopplace
 
 import no.entur.geocoder.converter.source.stopplace.StopPlace.Centroid
 import no.entur.geocoder.converter.source.stopplace.StopPlace.Location
+import no.entur.geocoder.converter.source.stopplace.StopPlacePopularityCalculator.DEFAULT_VALUE
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -13,7 +14,7 @@ class StopPlacePopularityCalculatorTest {
         val stopPlace = createStopPlace(stopPlaceType = null)
         val popularity = StopPlacePopularityCalculator.calculatePopularity(stopPlace)
 
-        assertEquals(30L, popularity, "Basic stop should have popularity 30")
+        assertEquals(DEFAULT_VALUE * 1L, popularity, "Basic stop should have popularity 30")
     }
 
     @Test
@@ -35,8 +36,8 @@ class StopPlacePopularityCalculatorTest {
         val metroStation = createStopPlace(stopPlaceType = "metroStation")
         val popularity = StopPlacePopularityCalculator.calculatePopularity(metroStation)
 
-        // Expected: popularity = 30 * 2 = 60
-        assertEquals(60L, popularity, "Metro station should have popularity 60")
+        // Expected: popularity = 50 * 2 = 60
+        assertEquals(DEFAULT_VALUE * 2L, popularity, "Metro station should have popularity 60")
     }
 
     @Test
@@ -44,8 +45,8 @@ class StopPlacePopularityCalculatorTest {
         val railStation = createStopPlace(stopPlaceType = "railStation")
         val popularity = StopPlacePopularityCalculator.calculatePopularity(railStation)
 
-        // Expected: popularity = 30 * 2 = 60
-        assertEquals(60L, popularity, "Rail station should have popularity 60")
+        // Expected: popularity = 50 * 2 = 60
+        assertEquals(DEFAULT_VALUE * 2L, popularity, "Rail station should have popularity 60")
     }
 
     @Test
@@ -57,9 +58,9 @@ class StopPlacePopularityCalculatorTest {
             )
         val popularity = StopPlacePopularityCalculator.calculatePopularity(stopWithInterchange)
 
-        // Expected: popularity = 30 * 2 (rail) * 3 (interchange) = 180
+        // Expected: popularity = 50 * 2 (rail) * 3 (interchange)
         assertEquals(
-            180L, popularity,
+            DEFAULT_VALUE * 2L * 3L, popularity,
             "Rail station with recommended interchange should have popularity 180",
         )
     }
@@ -73,9 +74,9 @@ class StopPlacePopularityCalculatorTest {
             )
         val popularity = StopPlacePopularityCalculator.calculatePopularity(stopWithInterchange)
 
-        // Expected: popularity = 30 * 2 (rail) * 10 (interchange) = 600
+        // Expected: popularity = 30 * 2 (rail) * 10 (interchange)
         assertEquals(
-            600L, popularity,
+            DEFAULT_VALUE * 2 * 10L, popularity,
             "Rail station with preferred interchange should have popularity 600",
         )
     }
@@ -112,8 +113,8 @@ class StopPlacePopularityCalculatorTest {
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        // Expected: popularity = 30 * (2 + 2) = 120
-        assertEquals(120L, popularity, "Multimodal parent (rail+metro) should have popularity 120")
+        // Expected: popularity = 30 * (2 + 2)
+        assertEquals(DEFAULT_VALUE * (2 + 2L), popularity, "Multimodal parent (rail+metro) should have popularity 120")
     }
 
     @Test
@@ -123,19 +124,19 @@ class StopPlacePopularityCalculatorTest {
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        // Expected: popularity = 30 * (2 + 2 + 2) = 180
-        assertEquals(180L, popularity, "Multimodal parent (rail+metro+bus) should sum all child factors")
+        // Expected: popularity = 30 * (2 + 2 + 2)
+        assertEquals(DEFAULT_VALUE * (2 + 2 + 2L), popularity, "Multimodal parent (rail+metro+bus) should sum all child factors")
     }
 
     @Test
     fun `multimodal parent sums factors not multiplies them`() {
-        // rail + metro + bus = 30 * (2 + 2 + 2) = 180, not 30 * 2 * 2 * 2 = 240
+        // rail + metro + bus = 50 * (2 + 2 + 2), not 50 * 2 * 2 * 2
         val parentStop = createStopPlace(stopPlaceType = null)
         val childTypes = listOf("railStation", "metroStation", "busStation")
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        assertEquals(180L, popularity, "Should sum factors (2+2+2=6), not multiply (2*2*2=8)")
+        assertEquals(DEFAULT_VALUE * (2 + 2 + 2L), popularity, "Should sum factors (2+2+2=6), not multiply (2*2*2=8)")
     }
 
     @Test
@@ -145,8 +146,8 @@ class StopPlacePopularityCalculatorTest {
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        // Expected: popularity = 30 * (1 + 1) = 60
-        assertEquals(60L, popularity, "Unconfigured stop types should default to factor 1.0")
+        // Expected: popularity = 50 * (1 + 1)
+        assertEquals(DEFAULT_VALUE * (1 + 1L), popularity, "Unconfigured stop types should default to factor 1.0")
     }
 
     @Test
@@ -160,9 +161,9 @@ class StopPlacePopularityCalculatorTest {
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        // Expected: popularity = 30 * (2 + 2) * 10 = 1200
+        // Expected: popularity = 50 * (2 + 2) * 10
         assertEquals(
-            1200L, popularity,
+            DEFAULT_VALUE * (2 + 2) * 10L, popularity,
             "Interchange factor should apply after summing stop type factors",
         )
     }
@@ -175,9 +176,8 @@ class StopPlacePopularityCalculatorTest {
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        // Expected: popularity = 30 * (2 + 2 + 2) = 180
-        // NOT: 30 * 2 = 60 (if deduplicated)
-        assertEquals(180L, popularity, "Duplicate types should be summed, not deduplicated (3 × 2 = 6)")
+        // NOT: 50 * 2 (if deduplicated)
+        assertEquals(DEFAULT_VALUE * (2 + 2 + 2L), popularity, "Duplicate types should be summed, not deduplicated (3 × 2 = 6)")
     }
 
     @Test
@@ -188,8 +188,8 @@ class StopPlacePopularityCalculatorTest {
 
         val popularity = StopPlacePopularityCalculator.calculatePopularity(parentStop, childTypes)
 
-        // Expected: popularity = 30 * (2+2+2+2+2) = 300
-        assertEquals(300L, popularity, "5 bus stations should contribute 5 × 2 = 10 to factor")
+        // Expected: popularity = 50 * (2+2+2+2+2)
+        assertEquals(DEFAULT_VALUE * (2 + 2 + 2 + 2 + 2L), popularity, "5 bus stations should contribute 5 × 2 = 10 to factor")
     }
 
     // Helper function to create test StopPlace instances
