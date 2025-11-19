@@ -11,9 +11,9 @@ Geocoding service consisting of a Photon search engine and a proxy service.
 - **Pull requests** → Builds and lints (no deployment)
 
 **Manual Deployment via Workflow Dispatch:**
-- `🚀 Dev` - Deploy to development (builds if needed)
-- `🚀 Staging` - Deploy to staging (uses existing image)
-- `🚀 Prod` - Deploy to production (uses existing image)
+- `🚀 Deploy → Dev` - Deploy to development (builds if needed)
+- `🚀 Deploy → Staging` - Deploy to staging (uses existing image)
+- `🚀 Deploy → Prod` - Deploy to production (uses existing image)
 - `image_tag` - Specify image tag (default: `latest`)
 
 ### Photon
@@ -24,9 +24,9 @@ Geocoding service consisting of a Photon search engine and a proxy service.
 **Manual Build/Deploy via Workflow Dispatch:**
 - `🔨 Download and convert data → build Photon → Dev` - Full data pipeline + deploy
 - `⚡ Use latest data → build Photon → Dev` - Build using latest Nominatim data + deploy
-- `🚀 Deploy existing Photon image → Dev` - Deploy pre-built image to dev
-- `🚀 Deploy existing Photon image → Staging` - Deploy pre-built image to staging
-- `🚀 Deploy existing Photon image → Prod` - Deploy pre-built image to production
+- `🚀 Deploy → Dev` - Deploy pre-built image to dev
+- `🚀 Deploy → Staging` - Deploy pre-built image to staging
+- `🚀 Deploy → Prod` - Deploy pre-built image to production
 
 **Workflow Inputs:**
 - `photon_image_tag` - Image tag to deploy (default: `latest`)
