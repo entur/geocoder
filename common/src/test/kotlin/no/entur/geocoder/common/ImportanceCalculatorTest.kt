@@ -27,11 +27,18 @@ class ImportanceCalculatorTest {
     }
 
     @Test
-    fun `verify Photon default location bias scale`() {
-        val bias = ImportanceCalculator.locationBiasCalculator(15.0)
+    fun `locationBiasCalculator maps weight to scale correctly`() {
+        assertEquals(1.0, ImportanceCalculator.locationBiasCalculator(0.0), 0.001)
+        assertEquals(0.2, ImportanceCalculator.locationBiasCalculator(15.0), 0.001)
+        assertEquals(0.0, ImportanceCalculator.locationBiasCalculator(50.0), 0.001)
+        assertEquals(0.0, ImportanceCalculator.locationBiasCalculator(1000.0), 0.001)
+        assertEquals(1.0, ImportanceCalculator.locationBiasCalculator(-10.0), 0.001)
+    }
 
-        // Photon default location bias scale is approximately 0.2 for this popularity
-        assertEquals(0.2, bias, 0.001)
+    @Test
+    fun `locationBiasCalculator is monotonically decreasing`() {
+        val scales = listOf(0, 10, 20, 30, 40, 50).map { ImportanceCalculator.locationBiasCalculator(it.toDouble()) }
+        scales.zipWithNext().forEach { (curr, next) -> assertTrue(curr >= next) }
     }
 
     @Test

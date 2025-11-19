@@ -36,20 +36,18 @@ object ImportanceCalculator {
         return max(floor, min(1.0, scaled))
     }
 
-    const val peliasDefault: Double = 15.0
-    const val photonDefault: Double = 0.2
-    const val peliasMax: Double = 40.0
-    const val curveStrength: Double = 0.8
-
+    private const val PELIAS_MAX_WEIGHT: Double = 50.0
+    private const val CURVE_EXPONENT: Double = 0.185
 
     /**
-     * Calculate location bias scale for Photon (default 0.2) based on Pelias weight (default 15).
+     * Maps Pelias focus.weight to Photon location_bias_scale with inverted semantics.
+     * Higher Pelias weight = more location bias = lower Photon scale.
+     * Preserves: weight=0 → scale=1.0, weight=15 → scale=0.2, weight=50 → scale=0.0.
      */
     fun locationBiasCalculator(peliasWeight: Double): Double {
-        val exponent = 1.0 - (curveStrength * 0.5)
-        val normalizedDefault = (peliasDefault / peliasMax).pow(exponent)
-        val scaleFactor = photonDefault / normalizedDefault
-        val normalizedInput = (peliasWeight / peliasMax).pow(exponent)
-        return min(1.0, normalizedInput * scaleFactor)
+        val weight = max(0.0, peliasWeight)
+        val normalized = weight / PELIAS_MAX_WEIGHT
+        val curved = normalized.pow(CURVE_EXPONENT)
+        return max(0.0, 1.0 - curved)
     }
 }

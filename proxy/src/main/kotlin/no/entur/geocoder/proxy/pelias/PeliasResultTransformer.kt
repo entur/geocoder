@@ -53,11 +53,12 @@ object PeliasResultTransformer {
 
         val bbox = calculateBoundingBox(transformedFeatures)
 
-        val debugInfo = if (debug && photonResult.properties.isNotEmpty()) {
-            photonResult.properties
-        } else {
-            null
-        }
+        val debugInfo =
+            if (debug && photonResult.properties.isNotEmpty()) {
+                photonResult.properties
+            } else {
+                null
+            }
 
         return PeliasResult(
             geocoding = GeocodingMetadata(debug = debugInfo),
