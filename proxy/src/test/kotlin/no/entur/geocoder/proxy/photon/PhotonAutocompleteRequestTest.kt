@@ -49,9 +49,9 @@ class PhotonAutocompleteRequestTest {
         assertEquals(59.911491, request.lat)
         assertEquals(10.757933, request.lon)
         assertTrue(request.zoom != null)
-        assertTrue(request.location_bias_scale != null)
-        assertTrue(request.location_bias_scale < 1.0)
-        assertTrue(request.location_bias_scale > 0.0)
+        assertTrue(request.locationBiasScale != null)
+        assertTrue(request.locationBiasScale < 1.0)
+        assertTrue(request.locationBiasScale > 0.0)
     }
 
     @Test
@@ -137,7 +137,7 @@ class PhotonAutocompleteRequestTest {
             assertNull(request.lat)
             assertNull(request.lon)
             assertNull(request.zoom)
-            assertNull(request.location_bias_scale)
+            assertNull(request.locationBiasScale)
         }
     }
 
@@ -204,8 +204,8 @@ class PhotonAutocompleteRequestTest {
             )
 
         val request1 = PhotonAutocompleteRequest.from(req1)
-        assertNotNull(request1.location_bias_scale)
-        assertTrue(request1.location_bias_scale <= 1.0)
+        assertNotNull(request1.locationBiasScale)
+        assertTrue(request1.locationBiasScale <= 1.0)
 
         val focus2 =
             PeliasAutocompleteRequest.FocusParams(
@@ -223,8 +223,8 @@ class PhotonAutocompleteRequestTest {
             )
 
         val request2 = PhotonAutocompleteRequest.from(req2)
-        assertNotNull(request2.location_bias_scale)
-        assertTrue(request2.location_bias_scale >= 0.0)
+        assertNotNull(request2.locationBiasScale)
+        assertTrue(request2.locationBiasScale >= 0.0)
     }
 
     @Test

@@ -1,9 +1,8 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.converter.source
 
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 
 object ImportanceCalculator {
     private const val MIN_POPULARITY = 1.0
@@ -34,20 +33,5 @@ object ImportanceCalculator {
         val scaled = floor + (normalized * (1.0 - floor))
 
         return max(floor, min(1.0, scaled))
-    }
-
-    private const val PELIAS_MAX_WEIGHT: Double = 50.0
-    private const val CURVE_EXPONENT: Double = 0.185
-
-    /**
-     * Maps Pelias focus.weight to Photon location_bias_scale with inverted semantics.
-     * Higher Pelias weight = more location bias = lower Photon scale.
-     * Preserves: weight=0 → scale=1.0, weight=15 → scale=0.2, weight=50 → scale=0.0.
-     */
-    fun locationBiasCalculator(peliasWeight: Double): Double {
-        val weight = max(0.0, peliasWeight)
-        val normalized = weight / PELIAS_MAX_WEIGHT
-        val curved = normalized.pow(CURVE_EXPONENT)
-        return max(0.0, 1.0 - curved)
     }
 }

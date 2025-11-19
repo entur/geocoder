@@ -1,26 +1,26 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.ImportanceCalculator
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
+import no.entur.geocoder.proxy.photon.LocationBiasCalculator.calculateLocationBias
 import no.entur.geocoder.proxy.v3.V3AutocompleteRequest
 
 data class PhotonAutocompleteRequest(
     val query: String,
     val limit: Int,
-    val language: String,
+    val language: String = "no",
     val includes: List<String> = emptyList(),
     val excludes: List<String> = emptyList(),
-    val lat: Double?,
-    val lon: Double?,
-    val zoom: Int?,
-    val location_bias_scale: Double?,
+    val lat: Double? = null,
+    val lon: Double? = null,
+    val zoom: Int? = null,
+    val locationBiasScale: Double? = null,
     val debug: Boolean = false,
 ) {
     companion object {
         /**
-         * We drop the "by" if a GOSP exists with the same name. This can only be done after fetching,
+         * We drop the city (by) if a GOSP exists with the same name. This can only be done after fetching,
          * so we fetch one extra and drop the last result if there is a match.
          */
         const val CITY_AND_GOSP_LIST_HEADROOM = 3
@@ -29,12 +29,9 @@ data class PhotonAutocompleteRequest(
             val includes = PhotonFilterBuilder.buildIncludes(req)
             val excludes = PhotonFilterBuilder.buildExcludes(req)
 
-            val zoom =
-                req.focus?.scale?.let {
-                    Geo.radiusToZoom(it.toDouble() / 5.0)
-                } ?: Geo.radiusToZoom(2500.0 / 5.0)
+            val zoom = Geo.radiusToZoom((req.focus?.scale?.toDouble() ?: 2500.0) / 5.0)
+            val locationBiasScale = calculateLocationBias(req.focus?.weight ?: 15.0)
 
-            val locationBiasScale = ImportanceCalculator.locationBiasCalculator(req.focus?.weight ?: 15.0)
             return PhotonAutocompleteRequest(
                 query = req.text,
                 limit = req.size + CITY_AND_GOSP_LIST_HEADROOM, // Hack when we filter 'by' when there's already a matching GOSP
@@ -44,7 +41,7 @@ data class PhotonAutocompleteRequest(
                 lat = req.focus?.lat,
                 lon = req.focus?.lon,
                 zoom = zoom,
-                location_bias_scale = locationBiasScale,
+                locationBiasScale = locationBiasScale,
                 debug = req.debug,
             )
         }
@@ -54,11 +51,6 @@ data class PhotonAutocompleteRequest(
                 PhotonAutocompleteRequest(
                     query = id,
                     limit = 1,
-                    language = "no",
-                    lat = null,
-                    lon = null,
-                    zoom = null,
-                    location_bias_scale = null,
                     debug = req.debug,
                 )
             }
@@ -97,7 +89,7 @@ data class PhotonAutocompleteRequest(
                 lat = null,
                 lon = null,
                 zoom = null,
-                location_bias_scale = null,
+                locationBiasScale = null,
                 debug = false,
             )
         }

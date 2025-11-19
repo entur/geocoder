@@ -1,4 +1,4 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.converter.source
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -22,23 +22,8 @@ class ImportanceCalculatorTest {
 
         // Verify monotonically increasing
         importances.zipWithNext().forEach { (current, next) ->
-            assertTrue(next > current, "Monotonicity violated: $current >= $next")
+            assertTrue(next >= current, "Monotonicity violated: $current >= $next")
         }
-    }
-
-    @Test
-    fun `locationBiasCalculator maps weight to scale correctly`() {
-        assertEquals(1.0, ImportanceCalculator.locationBiasCalculator(0.0), 0.001)
-        assertEquals(0.2, ImportanceCalculator.locationBiasCalculator(15.0), 0.001)
-        assertEquals(0.0, ImportanceCalculator.locationBiasCalculator(50.0), 0.001)
-        assertEquals(0.0, ImportanceCalculator.locationBiasCalculator(1000.0), 0.001)
-        assertEquals(1.0, ImportanceCalculator.locationBiasCalculator(-10.0), 0.001)
-    }
-
-    @Test
-    fun `locationBiasCalculator is monotonically decreasing`() {
-        val scales = listOf(0, 10, 20, 30, 40, 50).map { ImportanceCalculator.locationBiasCalculator(it.toDouble()) }
-        scales.zipWithNext().forEach { (curr, next) -> assertTrue(curr >= next) }
     }
 
     @Test

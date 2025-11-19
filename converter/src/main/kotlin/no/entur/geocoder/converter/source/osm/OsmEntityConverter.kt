@@ -8,6 +8,7 @@ import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*

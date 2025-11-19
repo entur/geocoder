@@ -11,8 +11,8 @@ object PhotonApi {
                 parameter("q", req.query)
                 parameter("limit", req.limit)
                 parameter("lang", req.language)
-                if (req.location_bias_scale.between(0.0, 1.0)) {
-                    parameter("location_bias_scale", req.location_bias_scale)
+                if (req.locationBiasScale.between(0.0, 1.0)) {
+                    parameter("location_bias_scale", req.locationBiasScale)
                 }
                 if (req.zoom != null) {
                     parameter("zoom", req.zoom)
