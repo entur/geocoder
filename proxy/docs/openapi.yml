@@ -14,9 +14,8 @@ servers:
   - url: https://api.entur.io/geocoder
 
 tags:
-  - name: Search
+  - name: Autocomplete
   - name: Reverse
-  - name: Place
 
 security:
   - {}
@@ -25,10 +24,10 @@ paths:
   /v1/autocomplete:
     get:
       tags:
-        - Search
+        - Autocomplete
       summary: Autocomplete search
       description: Search for places by text query
-      operationId: autocompleteV2
+      operationId: autocompleteV1
       parameters:
         - $ref: '#/components/parameters/Text'
         - $ref: '#/components/parameters/Size'
@@ -56,46 +55,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PeliasResult'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad request
         '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /v1/search:
-    get:
-      tags:
-        - Search
-      summary: Search (alias for autocomplete)
-      operationId: searchV2
-      parameters:
-        - $ref: '#/components/parameters/Text'
-        - $ref: '#/components/parameters/Size'
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/BoundaryCountry'
-        - $ref: '#/components/parameters/BoundaryCountyIds'
-        - $ref: '#/components/parameters/BoundaryLocalityIds'
-        - $ref: '#/components/parameters/TariffZoneIds'
-        - $ref: '#/components/parameters/TariffZoneAuthorities'
-        - $ref: '#/components/parameters/Sources'
-        - $ref: '#/components/parameters/Layers'
-        - $ref: '#/components/parameters/Categories'
-        - $ref: '#/components/parameters/FocusPointLat'
-        - $ref: '#/components/parameters/FocusPointLon'
-        - $ref: '#/components/parameters/FocusScale'
-        - $ref: '#/components/parameters/FocusWeight'
-        - $ref: '#/components/parameters/MultiModal'
-        - $ref: '#/components/parameters/Debug'
-        - $ref: '#/components/parameters/ETClientName'
-      responses:
-        '200':
-          description: Matching places
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PeliasResult'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Internal server error
 
   /v1/reverse:
     get:
@@ -103,7 +65,7 @@ paths:
         - Reverse
       summary: Reverse geocode
       description: Convert coordinates to places
-      operationId: reverseV2
+      operationId: reverseV1
       parameters:
         - $ref: '#/components/parameters/PointLat'
         - $ref: '#/components/parameters/PointLon'
@@ -129,75 +91,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PeliasResult'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Bad request
         '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /v1/nearby:
-    get:
-      tags:
-        - Reverse
-      summary: Nearby places (alias for reverse)
-      operationId: nearbyV2
-      parameters:
-        - $ref: '#/components/parameters/PointLat'
-        - $ref: '#/components/parameters/PointLon'
-        - $ref: '#/components/parameters/BoundaryCircleRadius'
-        - $ref: '#/components/parameters/Size'
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/BoundaryCountry'
-        - $ref: '#/components/parameters/BoundaryCountyIds'
-        - $ref: '#/components/parameters/BoundaryLocalityIds'
-        - $ref: '#/components/parameters/TariffZoneIds'
-        - $ref: '#/components/parameters/TariffZoneAuthorities'
-        - $ref: '#/components/parameters/Sources'
-        - $ref: '#/components/parameters/Layers'
-        - $ref: '#/components/parameters/Categories'
-        - $ref: '#/components/parameters/MultiModal'
-        - $ref: '#/components/parameters/Debug'
-        - $ref: '#/components/parameters/ETClientName'
-      responses:
-        '200':
-          description: Nearby places
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PeliasResult'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /v1/place:
-    get:
-      tags:
-        - Place
-      summary: Get places by IDs
-      description: Fetch places by ID (format "layer:source:id")
-      operationId: placeV2
-      parameters:
-        - name: ids
-          in: query
-          required: true
-          description: Comma-separated place IDs
-          schema:
-            type: string
-          example: "venue:entur:NSR:StopPlace:59872"
-        - $ref: '#/components/parameters/Debug'
-        - $ref: '#/components/parameters/ETClientName'
-      responses:
-        '200':
-          description: Requested places
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PeliasResult'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+          description: Internal server error
 
 components:
   parameters:
@@ -549,66 +445,3 @@ components:
               type: number
               format: double
               example: 123.45
-
-    ProblemDetail:
-      type: object
-      required:
-        - title
-        - status
-      properties:
-        type:
-          type: string
-          format: uri
-          example: "https://api.entur.io/problems/validation-error"
-        title:
-          type: string
-          example: "Validation Error"
-        status:
-          type: integer
-          example: 400
-        detail:
-          type: string
-          example: "The 'text' parameter is required for autocomplete requests"
-        instance:
-          type: string
-          format: uri
-          example: "/v1/autocomplete"
-
-  responses:
-    BadRequest:
-      description: Invalid request parameters
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-          example:
-            type: "https://api.entur.io/problems/validation-error"
-            title: "Validation Error"
-            status: 400
-            detail: "The 'text' parameter is required"
-            instance: "/v1/autocomplete"
-
-    NotFound:
-      description: Resource not found
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-          example:
-            type: "https://api.entur.io/problems/not-found"
-            title: "Not Found"
-            status: 404
-            detail: "No places found with the given IDs"
-            instance: "/v1/place"
-
-    InternalServerError:
-      description: Internal server error
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
-          example:
-            type: "https://api.entur.io/problems/internal-error"
-            title: "Internal Server Error"
-            status: 500
-            detail: "An unexpected error occurred while processing the request"
