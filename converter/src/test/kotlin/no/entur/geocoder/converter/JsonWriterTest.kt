@@ -2,6 +2,7 @@ package no.entur.geocoder.converter
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.converter.target.NominatimHeader
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -274,7 +275,7 @@ class JsonWriterTest {
                             ),
                         housenumber = if (includeOptional) "42" else null,
                         postcode = "0001",
-                        country_code = "NO",
+                        country_code = Country.no.name,
                         centroid = listOf(BigDecimal("10.7522"), BigDecimal("59.9139")),
                         bbox = emptyList(),
                         extra =
