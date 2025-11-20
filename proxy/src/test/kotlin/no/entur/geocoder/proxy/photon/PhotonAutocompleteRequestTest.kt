@@ -165,28 +165,6 @@ class PhotonAutocompleteRequestTest {
     }
 
     @Test
-    fun `from PeliasAutocompleteParams uses default zoom when no scale`() {
-        val focus =
-            PeliasAutocompleteRequest.FocusParams(
-                lat = 60.0,
-                lon = 10.0,
-                scale = null,
-                weight = null,
-            )
-
-        val req =
-            PeliasAutocompleteRequest(
-                text = "Oslo",
-                focus = focus,
-                multiModal = "parent",
-            )
-
-        val request = PhotonAutocompleteRequest.from(req)
-
-        assertTrue(request.zoom != null)
-    }
-
-    @Test
     fun `from PeliasAutocompleteParams converts weight correctly`() {
         val focus1 =
             PeliasAutocompleteRequest.FocusParams(
