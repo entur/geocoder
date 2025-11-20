@@ -3,15 +3,20 @@ package no.entur.geocoder.proxy.photon
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import no.entur.geocoder.common.Util.within
 
 object PhotonApi {
+    /**
+     * Allowed parameters are:
+     * [include, location_bias_scale, debug, dedupe, bbox, lon, zoom, layer, q, limit, osm_tag, exclude, geometry, lang, lat]
+     */
     suspend fun request(req: PhotonAutocompleteRequest, client: HttpClient, url: String) =
         client
             .get(url) {
                 parameter("q", req.query)
                 parameter("limit", req.limit)
                 parameter("lang", req.language)
-                if (req.locationBiasScale.between(0.0, 1.0)) {
+                if (req.locationBiasScale.within(0.0, 1.0)) {
                     parameter("location_bias_scale", req.locationBiasScale)
                 }
                 if (req.zoom != null) {
@@ -30,6 +35,10 @@ object PhotonApi {
                 parameter("debug", req.debug)
             }.bodyAsText()
 
+    /**
+     * Allowed parameters are:
+     * [include, debug, dedupe, query_string_filter, lon, layer, limit, osm_tag, distance_sort, exclude, geometry, lang, radius, lat]
+     */
     suspend fun request(req: PhotonReverseRequest, client: HttpClient, url: String) =
         client
             .get(url) {
@@ -47,7 +56,4 @@ object PhotonApi {
                 }
                 parameter("debug", req.debug)
             }.bodyAsText()
-
-    private fun Double?.between(d: Double, d2: Double): Boolean =
-        this != null && this >= d && this <= d2
 }

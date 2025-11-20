@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.source.osm
 
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Country
+import no.entur.geocoder.common.Util.within
 
 /**
  * Represents an administrative boundary (county or municipality) with polygon geometry.
@@ -88,7 +89,7 @@ data class BoundingBox(
     val maxLon: Double,
 ) {
     /** Checks if the given point is within this bounding box. */
-    fun contains(coord: Coordinate): Boolean = coord.lat >= minLat && coord.lat <= maxLat && coord.lon >= minLon && coord.lon <= maxLon
+    fun contains(coord: Coordinate): Boolean = coord.lat.within(minLat, maxLat) && coord.lon.within(minLon, maxLon)
 
     /** Calculate the area of the bounding box (used to prioritize smaller, more specific boundaries). */
     fun area(): Double = (maxLat - minLat) * (maxLon - minLon)

@@ -11,4 +11,7 @@ object Util {
 
     fun Double.toBigDecimalWithScale(scale: Int = 6): BigDecimal =
         BigDecimal(this).setScale(scale, HALF_UP)
+
+    fun Double?.within(d: Double, d2: Double): Boolean =
+        this != null && this >= d && this <= d2
 }
