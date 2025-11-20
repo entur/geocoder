@@ -30,7 +30,7 @@ data class PhotonAutocompleteRequest(
             val excludes = PhotonFilterBuilder.buildExcludes(req)
 
             // Convert Pelias focus to Photon parameters (null focus → no location bias)
-            val zoom = req.focus?.let { Geo.peliasScaleToPhotonZoom(it.scale) }
+            val zoom = Geo.peliasScaleToPhotonZoom(req.focus?.scale)
             val locationBiasScale = req.focus?.let { calculateLocationBias(it.weight ?: 15.0) }
 
             return PhotonAutocompleteRequest(

@@ -58,14 +58,11 @@ object Geo {
      * (score never reaches 0). Formula: `(scale + 1) / 2.5` accounts for Pelias's 1km offset and
      * balances the different decay curves to provide similar user experience.
      *
-     * Default: When scale is null, uses Entur's Pelias default of 2500km (minimal location bias).
-     * See: https://developer.entur.org/pages-geocoder-api/
-     *
-     * @param peliasScale The Pelias focus.scale in km, or null for Entur default (2500km)
+     * @param peliasScale The Pelias focus.scale in km, or null for 100km
      * @return Photon zoom level [0-18]
      */
     fun peliasScaleToPhotonZoom(peliasScale: Int?): Int {
-        val effectiveScale = peliasScale ?: 2500 // Entur default: minimal location bias
+        val effectiveScale = peliasScale ?: 100
         val targetRadius = (effectiveScale + 1.0) / 2.5
         val zoom = (18 - log2(targetRadius * 4)).toInt()
         return zoom.coerceIn(0, 18)
