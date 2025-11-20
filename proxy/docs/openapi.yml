@@ -1,0 +1,614 @@
+openapi: 3.0.3
+info:
+  title: Geocoder Proxy
+  version: 1.0.0
+  description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
+  contact:
+    name: Entur Platform Team
+    url: https://developer.entur.org
+  license:
+    name: EUPL-1.2
+    url: https://opensource.org/licenses/EUPL-1.2
+
+servers:
+  - url: https://api.entur.io/geocoder
+
+tags:
+  - name: Search
+  - name: Reverse
+  - name: Place
+
+security:
+  - {}
+
+paths:
+  /v2/autocomplete:
+    get:
+      tags:
+        - Search
+      summary: Autocomplete search
+      description: Search for places by text query
+      operationId: autocompleteV2
+      parameters:
+        - $ref: '#/components/parameters/Text'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/BoundaryCountry'
+        - $ref: '#/components/parameters/BoundaryCountyIds'
+        - $ref: '#/components/parameters/BoundaryLocalityIds'
+        - $ref: '#/components/parameters/TariffZoneIds'
+        - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/Sources'
+        - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/Categories'
+        - $ref: '#/components/parameters/FocusPointLat'
+        - $ref: '#/components/parameters/FocusPointLon'
+        - $ref: '#/components/parameters/FocusScale'
+        - $ref: '#/components/parameters/FocusWeight'
+        - $ref: '#/components/parameters/MultiModal'
+        - $ref: '#/components/parameters/Debug'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Matching places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeliasResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v2/search:
+    get:
+      tags:
+        - Search
+      summary: Search (alias for autocomplete)
+      operationId: searchV2
+      parameters:
+        - $ref: '#/components/parameters/Text'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/BoundaryCountry'
+        - $ref: '#/components/parameters/BoundaryCountyIds'
+        - $ref: '#/components/parameters/BoundaryLocalityIds'
+        - $ref: '#/components/parameters/TariffZoneIds'
+        - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/Sources'
+        - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/Categories'
+        - $ref: '#/components/parameters/FocusPointLat'
+        - $ref: '#/components/parameters/FocusPointLon'
+        - $ref: '#/components/parameters/FocusScale'
+        - $ref: '#/components/parameters/FocusWeight'
+        - $ref: '#/components/parameters/MultiModal'
+        - $ref: '#/components/parameters/Debug'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Matching places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeliasResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v2/reverse:
+    get:
+      tags:
+        - Reverse
+      summary: Reverse geocode
+      description: Convert coordinates to places
+      operationId: reverseV2
+      parameters:
+        - $ref: '#/components/parameters/PointLat'
+        - $ref: '#/components/parameters/PointLon'
+        - $ref: '#/components/parameters/BoundaryCircleRadius'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/BoundaryCountry'
+        - $ref: '#/components/parameters/BoundaryCountyIds'
+        - $ref: '#/components/parameters/BoundaryLocalityIds'
+        - $ref: '#/components/parameters/TariffZoneIds'
+        - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/Sources'
+        - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/Categories'
+        - $ref: '#/components/parameters/MultiModal'
+        - $ref: '#/components/parameters/Debug'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Nearby places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeliasResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v2/nearby:
+    get:
+      tags:
+        - Reverse
+      summary: Nearby places (alias for reverse)
+      operationId: nearbyV2
+      parameters:
+        - $ref: '#/components/parameters/PointLat'
+        - $ref: '#/components/parameters/PointLon'
+        - $ref: '#/components/parameters/BoundaryCircleRadius'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/BoundaryCountry'
+        - $ref: '#/components/parameters/BoundaryCountyIds'
+        - $ref: '#/components/parameters/BoundaryLocalityIds'
+        - $ref: '#/components/parameters/TariffZoneIds'
+        - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/Sources'
+        - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/Categories'
+        - $ref: '#/components/parameters/MultiModal'
+        - $ref: '#/components/parameters/Debug'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Nearby places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeliasResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v2/place:
+    get:
+      tags:
+        - Place
+      summary: Get places by IDs
+      description: Fetch places by ID (format "layer:source:id")
+      operationId: placeV2
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Comma-separated place IDs
+          schema:
+            type: string
+          example: "venue:entur:NSR:StopPlace:59872"
+        - $ref: '#/components/parameters/Debug'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Requested places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeliasResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    ETClientName:
+      name: ET-Client-Name
+      in: header
+      description: Client identifier
+      schema:
+        type: string
+      example: "entur-reiseplanlegger"
+
+    Text:
+      name: text
+      in: query
+      required: true
+      description: Search query
+      schema:
+        type: string
+        minLength: 1
+      example: "Oslo S"
+
+    Size:
+      name: size
+      in: query
+      description: Maximum results
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      example: 10
+
+    Lang:
+      name: lang
+      in: query
+      description: Language code
+      schema:
+        type: string
+        default: "no"
+      example: "no"
+
+    BoundaryCountry:
+      name: boundary.country
+      in: query
+      description: Country code filter
+      schema:
+        type: string
+      example: "NO"
+
+    BoundaryCountyIds:
+      name: boundary.county.ids
+      in: query
+      description: County IDs filter
+      schema:
+        type: string
+      example: "KVE:County:03"
+
+    BoundaryLocalityIds:
+      name: boundary.locality.ids
+      in: query
+      description: Locality IDs filter
+      schema:
+        type: string
+      example: "KVE:Locality:0301"
+
+    TariffZoneIds:
+      name: tariff_zone_ids
+      in: query
+      description: Tariff zone IDs filter
+      schema:
+        type: string
+      example: "RUT:TariffZone:1"
+
+    TariffZoneAuthorities:
+      name: tariff_zone_authorities
+      in: query
+      description: Tariff zone authorities filter
+      schema:
+        type: string
+      example: "RUT"
+
+    Sources:
+      name: sources
+      in: query
+      description: Data sources filter
+      schema:
+        type: string
+      example: "entur"
+
+    Layers:
+      name: layers
+      in: query
+      description: Layer types filter
+      schema:
+        type: string
+      example: "venue"
+
+    Categories:
+      name: categories
+      in: query
+      description: POI categories filter
+      schema:
+        type: string
+      example: "restaurant"
+
+    FocusPointLat:
+      name: focus.point.lat
+      in: query
+      description: Focus latitude
+      schema:
+        type: number
+        format: double
+        minimum: -90
+        maximum: 90
+      example: 59.9139
+
+    FocusPointLon:
+      name: focus.point.lon
+      in: query
+      description: Focus longitude
+      schema:
+        type: number
+        format: double
+        minimum: -180
+        maximum: 180
+      example: 10.7522
+
+    FocusScale:
+      name: focus.scale
+      in: query
+      description: Focus scale (km)
+      schema:
+        type: integer
+        minimum: 1
+      example: 50
+
+    FocusWeight:
+      name: focus.weight
+      in: query
+      description: Focus weight
+      schema:
+        type: number
+        format: double
+        minimum: 0
+      example: 15.0
+
+    MultiModal:
+      name: multiModal
+      in: query
+      description: Multi-modal mode
+      schema:
+        type: string
+        enum: [parent, child, all]
+        default: parent
+      example: "parent"
+
+    Debug:
+      name: debug
+      in: query
+      description: Enable debug mode
+      schema:
+        type: boolean
+        default: false
+      example: false
+
+    PointLat:
+      name: point.lat
+      in: query
+      required: true
+      description: Latitude
+      schema:
+        type: number
+        format: double
+        minimum: -90
+        maximum: 90
+      example: 59.9110
+
+    PointLon:
+      name: point.lon
+      in: query
+      required: true
+      description: Longitude
+      schema:
+        type: number
+        format: double
+        minimum: -180
+        maximum: 180
+      example: 10.7522
+
+    BoundaryCircleRadius:
+      name: boundary.circle.radius
+      in: query
+      description: Search radius (km)
+      schema:
+        type: number
+        format: double
+        minimum: 0
+      example: 1.0
+
+  schemas:
+    PeliasResult:
+      type: object
+      required:
+        - geocoding
+        - type
+        - features
+      properties:
+        geocoding:
+          type: object
+          required:
+            - version
+            - timestamp
+          properties:
+            version:
+              type: string
+              example: "0.2"
+            query:
+              type: object
+              additionalProperties: true
+            timestamp:
+              type: integer
+              format: int64
+              example: 1732104123
+            engine:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Photon"
+                version:
+                  type: string
+                  example: "0.7.0"
+            debug:
+              type: object
+              additionalProperties: true
+        type:
+          type: string
+          enum: [FeatureCollection]
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/PeliasFeature'
+        bbox:
+          type: array
+          items:
+            type: number
+          minItems: 4
+          maxItems: 4
+
+    PeliasFeature:
+      type: object
+      required:
+        - type
+        - geometry
+        - properties
+      properties:
+        type:
+          type: string
+          enum: [Feature]
+        geometry:
+          type: object
+          required:
+            - type
+            - coordinates
+          properties:
+            type:
+              type: string
+              enum: [Point]
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+              example: [10.7522, 59.9110]
+        properties:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "NSR:StopPlace:59872"
+            gid:
+              type: string
+              example: "entur:stopplace:NSR:StopPlace:59872"
+            layer:
+              type: string
+              enum: [address, street, venue, locality, borough, county]
+              example: "venue"
+            source:
+              type: string
+              example: "entur"
+            source_id:
+              type: string
+              example: "NSR:StopPlace:59872"
+            name:
+              type: string
+              example: "Oslo S"
+            popular_name:
+              type: string
+              example: "Oslo Sentralstasjon"
+            housenumber:
+              type: string
+              example: "42"
+            street:
+              type: string
+              example: "Jernbanetorget"
+            postalcode:
+              type: string
+              example: "0154"
+            accuracy:
+              type: string
+              enum: [point, interpolated, centroid]
+              example: "point"
+            country_a:
+              type: string
+              example: "NO"
+            county:
+              type: string
+              example: "Oslo"
+            county_gid:
+              type: string
+              example: "KVE:County:03"
+            locality:
+              type: string
+              example: "Oslo"
+            locality_gid:
+              type: string
+              example: "KVE:Locality:0301"
+            borough:
+              type: string
+              example: "Sentrum"
+            borough_gid:
+              type: string
+              example: "KVE:Borough:030101"
+            label:
+              type: string
+              example: "Oslo S, Oslo"
+            category:
+              type: array
+              items:
+                type: string
+              example: ["public_transport"]
+            tariff_zones:
+              type: array
+              items:
+                type: string
+              example: ["RUT:TariffZone:1"]
+            distance:
+              type: number
+              format: double
+              example: 123.45
+
+    ProblemDetail:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://api.entur.io/problems/validation-error"
+        title:
+          type: string
+          example: "Validation Error"
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: "The 'text' parameter is required for autocomplete requests"
+        instance:
+          type: string
+          format: uri
+          example: "/v2/autocomplete"
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.entur.io/problems/validation-error"
+            title: "Validation Error"
+            status: 400
+            detail: "The 'text' parameter is required"
+            instance: "/v2/autocomplete"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.entur.io/problems/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "No places found with the given IDs"
+            instance: "/v2/place"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+          example:
+            type: "https://api.entur.io/problems/internal-error"
+            title: "Internal Server Error"
+            status: 500
+            detail: "An unexpected error occurred while processing the request"

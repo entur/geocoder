@@ -1,0 +1,44 @@
+#
+# API Documentation Workflow
+#
+# Reusable Workflows used:
+# * API Lint: https://github.com/entur/gha-api/blob/main/README-lint.md
+# * Publish Docs: https://github.com/entur/gha-docs/blob/main/README-publish.md
+# * Owner: Team Plattform
+# * Slack: #Talk-plattform
+#
+
+name: API Documentation
+
+on:
+  push:
+    paths:
+      - 'proxy/docs/**'
+      - 'proxy/.spectral.yml'
+  pull_request:
+    paths:
+      - 'proxy/docs/**'
+      - 'proxy/.spectral.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint OpenAPI Spec
+    uses: entur/gha-api/.github/workflows/lint.yml@v4
+    with:
+      spec: proxy/docs/openapi.yml
+    secrets: inherit
+
+  publish:
+    name: Publish Documentation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: lint
+    uses: entur/gha-docs/.github/workflows/publish.yml@v1
+    with:
+      project: geocoder-proxy
+      directory: proxy/docs
+    secrets: inherit
