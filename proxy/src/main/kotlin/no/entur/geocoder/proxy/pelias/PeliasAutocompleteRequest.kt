@@ -69,11 +69,12 @@ data class PeliasAutocompleteRequest(
         // The fuzzy search "Olso" doesn't resolve to "Oslo", while "olso" does.
         // The non-fuzzy search "Lille" gives better results than "lille". "Lill" and "lill" are equivalent (and both good).
         private fun handleText(params: Parameters): String {
-            val text = params["text"]
-                .safeVar()
-                ?.let {
-                    if (it.length <= 4) it.lowercase() else it.titleize()
-                } ?: ""
+            val text =
+                params["text"]
+                    .safeVar()
+                    ?.let {
+                        if (it.length <= 4) it.lowercase() else it.titleize()
+                    } ?: ""
 
             // 11 Storgata -> Storgata 11
             val match = digitPattern.find(text)
