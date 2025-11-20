@@ -63,15 +63,28 @@ data class PeliasAutocompleteRequest(
             )
         }
 
+        val digitPattern = Regex("^(\\d+)\\s+(.+)")
+
         // Photon handles short (and fuzzy) queries differently to longer ones.
         // The fuzzy search "Olso" doesn't resolve to "Oslo", while "olso" does.
         // The non-fuzzy search "Lille" gives better results than "lille". "Lill" and "lill" are equivalent (and both good).
-        private fun handleText(params: Parameters): String =
-            params["text"]
+        private fun handleText(params: Parameters): String {
+            val text = params["text"]
                 .safeVar()
                 ?.let {
                     if (it.length <= 4) it.lowercase() else it.titleize()
                 } ?: ""
+
+            // 11 Storgata -> Storgata 11
+            val match = digitPattern.find(text)
+            return if (match != null) {
+                val digit = match.groupValues[1]
+                val rest = match.groupValues[2]
+                "$rest $digit"
+            } else {
+                text
+            }
+        }
     }
 
     data class FocusParams(
