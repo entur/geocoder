@@ -18,7 +18,14 @@ data class PhotonResult(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
 
-        fun parse(json: String): PhotonResult = mapper.readValue(json)
+        fun parse(json: String, queryUrl: String? = null): PhotonResult {
+            val result: PhotonResult = mapper.readValue(json)
+            return if (queryUrl != null) {
+                result.copy(properties = result.properties + ("query_url" to queryUrl))
+            } else {
+                result
+            }
+        }
     }
 
     data class PhotonFeature(

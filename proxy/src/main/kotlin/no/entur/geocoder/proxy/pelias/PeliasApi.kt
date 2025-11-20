@@ -23,7 +23,7 @@ object PeliasApi {
         try {
             val photonResponse = PhotonApi.request(photonRequest, client, url)
 
-            val photonResult = PhotonResult.parse(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse.body, photonResponse.url)
             val peliasResult = PeliasResultTransformer.parseAndTransform(photonResult, req)
             call.respond(peliasResult)
         } catch (e: Exception) {
@@ -44,7 +44,7 @@ object PeliasApi {
 
         try {
             val photonResponse = PhotonApi.request(photonRequest, client, url)
-            val photonResult = PhotonResult.parse(photonResponse)
+            val photonResult = PhotonResult.parse(photonResponse.body, photonResponse.url)
             val result = PeliasResultTransformer.parseAndTransform(photonResult, req)
             call.respond(result)
         } catch (e: Exception) {
@@ -67,7 +67,7 @@ object PeliasApi {
             val photonResults =
                 photonRequests.map { photonRequest ->
                     val res = PhotonApi.request(photonRequest, client, url)
-                    PhotonResult.parse(res)
+                    PhotonResult.parse(res.body, res.url)
                 }
             val photonResult =
                 PhotonResult(
