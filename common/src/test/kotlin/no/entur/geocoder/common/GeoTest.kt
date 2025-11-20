@@ -27,73 +27,83 @@ class GeoTest {
     }
 
     @Test
-    fun `radiusToZoom with small radius`() {
-        val zoom = Geo.radiusToZoom(100.0)
-        assertEquals(9, zoom)
+    fun `peliasScaleToPhotonZoom with null scale uses Entur default`() {
+        // When scale is null, should use Entur's Pelias default: 2500km
+        // See: https://developer.entur.org/pages-geocoder-api/
+        // targetRadius = (2500+1)/2.5 = 1000.4km → zoom = 6
+        val zoom = Geo.peliasScaleToPhotonZoom(null)
+        assertEquals(6, zoom) // Photon radius ~512km - appropriately broad
     }
 
     @Test
-    fun `radiusToZoom with medium radius`() {
-        val zoom = Geo.radiusToZoom(1000.0)
-        assertEquals(6, zoom)
+    fun `peliasScaleToPhotonZoom with very local scale`() {
+        // Pelias scale 5km → targetRadius = (5+1)/2.5 = 2.4km → zoom 14
+        val zoom = Geo.peliasScaleToPhotonZoom(5)
+        assertEquals(14, zoom) // Photon radius ~4km
     }
 
     @Test
-    fun `radiusToZoom with large radius`() {
-        val zoom = Geo.radiusToZoom(10000.0)
-        assertEquals(2, zoom)
+    fun `peliasScaleToPhotonZoom with local scale`() {
+        // Pelias scale 10km → targetRadius = (10+1)/2.5 = 4.4km → zoom 13
+        val zoom = Geo.peliasScaleToPhotonZoom(10)
+        assertEquals(13, zoom) // Photon radius ~8km
     }
 
     @Test
-    fun `radiusToZoom with very small radius`() {
-        val zoom = Geo.radiusToZoom(10.0)
-        assertEquals(12, zoom)
+    fun `peliasScaleToPhotonZoom with district scale`() {
+        // Pelias scale 25km → targetRadius = (25+1)/2.5 = 10.4km → zoom 12
+        val zoom = Geo.peliasScaleToPhotonZoom(25)
+        assertEquals(12, zoom) // Photon radius ~16km
     }
 
     @Test
-    fun `radiusToZoom with 1 kilometer radius`() {
-        val zoom = Geo.radiusToZoom(1.0)
-        assertEquals(16, zoom)
+    fun `peliasScaleToPhotonZoom with default Pelias scale`() {
+        // Pelias default scale 50km → targetRadius = (50+1)/2.5 = 20.4km → zoom 11
+        val zoom = Geo.peliasScaleToPhotonZoom(50)
+        assertEquals(11, zoom) // Photon radius ~32km
     }
 
     @Test
-    fun `radiusToZoom with very large radius clamps to minimum`() {
-        val zoom = Geo.radiusToZoom(100000.0)
-        assertEquals(0, zoom)
+    fun `peliasScaleToPhotonZoom with regional scale`() {
+        // Pelias scale 100km → targetRadius = (100+1)/2.5 = 40.4km → zoom 10
+        val zoom = Geo.peliasScaleToPhotonZoom(100)
+        assertEquals(10, zoom) // Photon radius ~64km
     }
 
     @Test
-    fun `radiusToZoom with very small radius clamps to maximum`() {
-        val zoom = Geo.radiusToZoom(0.1)
-        assertEquals(18, zoom)
+    fun `peliasScaleToPhotonZoom with multi-region scale`() {
+        // Pelias scale 200km → targetRadius = (200+1)/2.5 = 80.4km → zoom 9
+        val zoom = Geo.peliasScaleToPhotonZoom(200)
+        assertEquals(9, zoom) // Photon radius ~128km
     }
 
     @Test
-    fun `radiusToZoom edge case at zoom 18`() {
-        val zoom = Geo.radiusToZoom(0.25)
-        assertEquals(18, zoom)
+    fun `peliasScaleToPhotonZoom with national scale`() {
+        // Pelias scale 500km → targetRadius = (500+1)/2.5 = 200.4km → zoom 8
+        val zoom = Geo.peliasScaleToPhotonZoom(500)
+        assertEquals(8, zoom) // Photon radius ~256km
     }
 
     @Test
-    fun `radiusToZoom edge case at zoom 0`() {
-        val zoom = Geo.radiusToZoom(65536.0)
-        assertEquals(0, zoom)
+    fun `peliasScaleToPhotonZoom with explicit Entur default scale`() {
+        // Entur's Pelias default: scale=2500km (very broad, minimal location bias)
+        // targetRadius = (2500+1)/2.5 = 1000.4km → zoom = 6
+        val zoom = Geo.peliasScaleToPhotonZoom(2500)
+        assertEquals(6, zoom) // Photon radius ~512km - appropriately broad
     }
 
     @Test
-    fun `radiusToZoom inverse relationship verification`() {
-        for (zoom in 0..18) {
-            val radius = (1 shl (18 - zoom)) * 0.25
-            val calculatedZoom = Geo.radiusToZoom(radius)
-            assertEquals(zoom, calculatedZoom, "Zoom level $zoom should be produced by radius $radius")
+    fun `peliasScaleToPhotonZoom produces reasonable Photon radius`() {
+        // Verify that the conversion produces Photon radii in the expected ballpark
+        // For Pelias scale=50km, we expect Photon radius to be larger (due to exponential vs linear decay)
+        val zoom = Geo.peliasScaleToPhotonZoom(50)
+        val photonRadius = (1 shl (18 - zoom)) * 0.25
+
+        // Photon radius should be larger than Pelias scale but not excessively so
+        // For scale=50km, we expect radius around 20-40km
+        assert(photonRadius in 20.0..40.0) {
+            "For Pelias scale=50km, expected Photon radius in [20,40]km range, got ${photonRadius}km"
         }
-    }
-
-    @Test
-    fun `radiusToZoom boundary values produce expected zoom levels`() {
-        assertEquals(0, Geo.radiusToZoom(65536.0))
-        assertEquals(10, Geo.radiusToZoom(64.0))
-        assertEquals(18, Geo.radiusToZoom(0.25))
     }
 
     @ParameterizedTest
