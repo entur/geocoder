@@ -32,6 +32,9 @@ jobs:
     with:
       spec: proxy/docs/openapi.yml
     secrets: inherit
+    permissions:
+      contents: read
+      id-token: write
 
   publish:
     name: Publish Documentation
@@ -42,3 +45,6 @@ jobs:
       project: geocoder-proxy
       directory: proxy/docs
     secrets: inherit
+    permissions:
+      contents: read
+      id-token: write
