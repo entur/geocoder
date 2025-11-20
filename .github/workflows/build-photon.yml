@@ -121,12 +121,6 @@ jobs:
             LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
 
             echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
-
-            if [ "$LINE_COUNT" -lt 2000000 ]; then
-              echo "❌ ERROR: LINE_COUNT ($LINE_COUNT) is less than 2,000,000" >> $GITHUB_STEP_SUMMARY
-              exit 1
-            fi
-
           else
             echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
             exit 1
@@ -138,6 +132,7 @@ jobs:
         with:
           image_name: geocoder-nominatim-data
           file_path: converter/nominatim.ndjson.gz
+          min_size_mb: 100
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -169,6 +164,7 @@ jobs:
         with:
           image: geocoder-nominatim-data:${{ needs.setup.outputs.nominatim_data == 'true' && needs.nominatim-data.outputs.image_tag || 'latest' }}
           destination: converter
+          min_size_mb: 100
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -182,6 +178,7 @@ jobs:
         with:
           image_name: geocoder-photon-data
           file_path: converter/photon_data.tar.gz
+          min_size_mb: 400
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -202,11 +199,6 @@ jobs:
             fi
 
             echo "$OUTPUT" >> $GITHUB_STEP_SUMMARY
-
-            if [ "$FILE_SIZE" -lt 400 ]; then
-              echo "❌ ERROR: FILE_SIZE (${FILE_SIZE}M) is less than 400M" >> $GITHUB_STEP_SUMMARY
-              exit 1
-            fi
           else
             echo "❌ photon_data.tar.gz not found" >> $GITHUB_STEP_SUMMARY
             exit 1
@@ -246,6 +238,7 @@ jobs:
         with:
           image: "geocoder-photon-data:${{ needs.setup.outputs.photon_data  == 'true' && needs.photon-data.outputs.image_tag || 'latest' }}"
           destination: photon
+          min_size_mb: 400
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 

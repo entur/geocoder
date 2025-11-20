@@ -8,6 +8,10 @@ inputs:
   image_name:
     description: 'Name of the Docker image to create (without registry prefix)'
     required: true
+  min_size_mb:
+    description: 'Minimum file size in MB (optional validation)'
+    required: false
+    default: ''
   # Note: vars and secrets are not available in composite actions, so they must be passed explicitly
   workload_identity_provider:
     description: 'GCP Workload Identity Provider'
@@ -31,6 +35,26 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Verify file size
+      if: inputs.min_size_mb != ''
+      shell: bash
+      run: |
+        FILE_PATH="${{ inputs.file_path }}"
+        MIN_SIZE_MB="${{ inputs.min_size_mb }}"
+
+        if [ ! -f "$FILE_PATH" ]; then
+          echo "❌ ERROR: File not found: $FILE_PATH"
+          exit 1
+        fi
+
+        FILE_SIZE_MB=$(du -m "$FILE_PATH" | cut -f1)
+        echo "File size: ${FILE_SIZE_MB}M (minimum required: ${MIN_SIZE_MB}M)"
+
+        if [ "$FILE_SIZE_MB" -lt "$MIN_SIZE_MB" ]; then
+          echo "❌ ERROR: File size (${FILE_SIZE_MB}M) is less than minimum required (${MIN_SIZE_MB}M)"
+          exit 1
+        fi
+
     - name: Create Dockerfile
       id: create-dockerfile
       shell: bash
