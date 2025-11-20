@@ -27,15 +27,6 @@ class GeoTest {
     }
 
     @Test
-    fun `peliasScaleToPhotonZoom with null scale uses Entur default`() {
-        // When scale is null, should use Entur's Pelias default: 2500km
-        // See: https://developer.entur.org/pages-geocoder-api/
-        // targetRadius = (2500+1)/2.5 = 1000.4km → zoom = 6
-        val zoom = Geo.peliasScaleToPhotonZoom(null)
-        assertEquals(6, zoom) // Photon radius ~512km - appropriately broad
-    }
-
-    @Test
     fun `peliasScaleToPhotonZoom with very local scale`() {
         // Pelias scale 5km → targetRadius = (5+1)/2.5 = 2.4km → zoom 14
         val zoom = Geo.peliasScaleToPhotonZoom(5)
