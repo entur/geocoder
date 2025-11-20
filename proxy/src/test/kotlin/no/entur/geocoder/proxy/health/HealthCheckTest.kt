@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.health
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
@@ -28,7 +29,8 @@ class HealthCheckTest {
         private const val CUSTOM_PHOTON_URL = "https://custom.photon.server:8080"
         private const val LIVENESS_ENDPOINT = "/actuator/health/liveness"
         private const val READINESS_ENDPOINT = "/actuator/health/readiness"
-        private const val SUCCESS_RESPONSE = """{"type":"FeatureCollection","features":[]}"""
+        private const val SUCCESS_RESPONSE =
+            """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10.75,59.91]},"properties":{"name":"Oslo"}}]}"""
     }
 
     /** Configures test application with health check endpoint. */
@@ -40,7 +42,7 @@ class HealthCheckTest {
         application {
             install(ContentNegotiation) {
                 jackson {
-                    setDefaultPropertyInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                    setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
                 }
             }
             routing {
@@ -124,14 +126,19 @@ class HealthCheckTest {
     fun `readiness check returns DOWN when Photon returns error`() =
         testApplication {
             setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.InternalServerError))
-            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
+            performHealthCheckAndValidate(
+                READINESS_ENDPOINT,
+                HttpStatusCode.ServiceUnavailable,
+                "DOWN",
+                "Photon returned 500 Internal Server Error",
+            )
         }
 
     @Test
     fun `readiness check returns DOWN when Photon is not found`() =
         testApplication {
             setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.NotFound))
-            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon returned 404 Not Found")
         }
 
     @Test
@@ -158,7 +165,20 @@ class HealthCheckTest {
     fun `readiness check handles different HTTP error codes`() =
         testApplication {
             setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createErrorResponse(HttpStatusCode.BadGateway))
-            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon unavailable")
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Photon returned 502 Bad Gateway")
+        }
+
+    @Test
+    fun `readiness check returns DOWN when Photon returns empty results`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT) {
+                respond(
+                    """{"type":"FeatureCollection","features":[]}""",
+                    HttpStatusCode.OK,
+                    headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "No results returned")
         }
 
     @Test
@@ -169,5 +189,14 @@ class HealthCheckTest {
                 respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
             }
             performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
+        }
+
+    @Test
+    fun `readiness check returns DOWN when Photon returns malformed JSON`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT) {
+                respond("Not valid JSON at all", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Invalid response format")
         }
 }
