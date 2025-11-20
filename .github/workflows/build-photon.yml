@@ -114,15 +114,22 @@ jobs:
         working-directory: converter
         run: |
           echo "### Nominatim Data" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f nominatim.ndjson.gz ] && [ -f nominatim.ndjson ]; then
             COMPRESSED_SIZE=$(du -h nominatim.ndjson.gz | cut -f1)
             RATIO=$(gzip -l nominatim.ndjson.gz  | tail -n 1 | awk '{print $3}')
             LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
-            
+
             echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$LINE_COUNT" -lt 2000000 ]; then
+              echo "❌ ERROR: LINE_COUNT ($LINE_COUNT) is less than 2,000,000" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+
           else
             echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
+            exit 1
           fi
 
       - name: Upload nominatim data
@@ -182,21 +189,27 @@ jobs:
         working-directory: converter
         run: |
           echo "### Photon Data" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ -f photon_data.tar.gz ]; then
-            FILE_SIZE=$(du -h photon_data.tar.gz | cut -f1)
+            FILE_SIZE=$(du -m photon_data.tar.gz | cut -f1)
             RATIO=$(gzip -l photon_data.tar.gz | tail -n 1 | awk '{print $3}')
-            OUTPUT="**Archive:** ${FILE_SIZE} (${RATIO})"
-            
+            OUTPUT="**Archive:** ${FILE_SIZE}M (${RATIO})"
+
             if [ -d photon_data ]; then
               DIR_SIZE=$(du -sh photon_data | cut -f1)
               FILE_COUNT=$(find photon_data -type f | wc -l | tr -d ' ')
               OUTPUT="${OUTPUT} • **Data:** ${DIR_SIZE} (${FILE_COUNT} files)"
             fi
-            
+
             echo "$OUTPUT" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$FILE_SIZE" -lt 400 ]; then
+              echo "❌ ERROR: FILE_SIZE (${FILE_SIZE}M) is less than 400M" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
           else
             echo "❌ photon_data.tar.gz not found" >> $GITHUB_STEP_SUMMARY
+            exit 1
           fi
 
   # Photon image jobs
