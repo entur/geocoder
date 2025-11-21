@@ -1,4 +1,4 @@
-name: Photon - Import data and/or deploy
+name: Data import and Photon backend
 
 on:
   schedule:

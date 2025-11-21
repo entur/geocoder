@@ -8,7 +8,7 @@
 # * Slack: #Talk-plattform
 #
 
-name: API Documentation
+name: API Docs
 
 on:
   push:

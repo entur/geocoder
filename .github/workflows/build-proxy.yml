@@ -1,4 +1,4 @@
-name: Proxy - Build and deploy
+name: Proxy frontend
 
 on:
   push:
