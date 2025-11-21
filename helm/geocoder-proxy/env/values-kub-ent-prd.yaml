@@ -1,6 +1,9 @@
 common:
   env: prd
   replicas: 2
+  container:
+    cpu: 1
+    memory: 1536
   ingress:
     host: geocoder-proxy.entur.io
   hpa:
