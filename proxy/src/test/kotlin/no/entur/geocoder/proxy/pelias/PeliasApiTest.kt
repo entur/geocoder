@@ -11,7 +11,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.Routing.configureRouting
-import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -63,7 +63,7 @@ class PeliasApiTest {
             val req = recordedRequests.first()
             assertTrue(req.url.encodedPath.endsWith("/api"))
             assertEquals("oslo", req.url.parameters["q"])
-            assertEquals("${(1 + CITY_AND_GOSP_LIST_HEADROOM)}", req.url.parameters["limit"])
+            assertEquals("${(1 + RESULT_PRUNING_HEADROOM)}", req.url.parameters["limit"])
             assertEquals("en", req.url.parameters["lang"])
         }
 

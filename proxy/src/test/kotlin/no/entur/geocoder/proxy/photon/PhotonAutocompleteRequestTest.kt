@@ -2,7 +2,7 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
-import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import kotlin.test.*
 
 class PhotonAutocompleteRequestTest {
@@ -19,7 +19,7 @@ class PhotonAutocompleteRequestTest {
         val request = PhotonAutocompleteRequest.from(req)
 
         assertEquals("Oslo", request.query)
-        assertEquals(20 + CITY_AND_GOSP_LIST_HEADROOM, request.limit)
+        assertEquals(20 + RESULT_PRUNING_HEADROOM, request.limit)
         assertEquals("en", request.language)
         assertEquals(emptyList(), request.includes)
         assertEquals(listOf("multimodal.child", "osm.public_transport.address"), request.excludes)

@@ -20,7 +20,7 @@ import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.proxy.Routing.configureRouting
 import no.entur.geocoder.proxy.pelias.PeliasResult
-import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.CITY_AND_GOSP_LIST_HEADROOM
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals
@@ -64,7 +64,7 @@ class ProxyTest {
             val mockEngine =
                 MockEngine { request ->
                     assertEquals("Test_query", request.url.parameters["q"])
-                    assertEquals("${(5 + CITY_AND_GOSP_LIST_HEADROOM)}", request.url.parameters["limit"])
+                    assertEquals("${(5 + RESULT_PRUNING_HEADROOM)}", request.url.parameters["limit"])
                     assertEquals("en", request.url.parameters["lang"])
                     assertEquals("59.0", request.url.parameters["lat"])
                     assertEquals("10.0", request.url.parameters["lon"])

@@ -105,18 +105,14 @@ curl -s 'http://localhost:9201/photon/_doc/200127208213' |jq -c "[._source.impor
 We set the `importance` field in the Nominatim data, while `score` is calculated by Photon.
 
 ```
-$ curl -s 'http://localhost:2322/api?q=Ullerud&debug=true&limit=4' | jq -r '
-  [ [ .properties.raw_data[] ], [ .features[] ] ]
-  | transpose[]
-  | "\(.[0].score) \(.[0].infos.importance) \(.[1].properties.name)"
-'
-
-18.888372 0.269897 Ullerud
-18.624405 0.269897 Ullerudsletta
-18.418268 0.230103 Ullerudkroken
-17.695122 0.230103 Ullerudskogen
+$ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
+  | jq -c '.geocoding.debug.raw_data[] | [.localeTags.name.default, .infos.importance, .score]'
+["Oslo",1.0,51.235104]
+["Oslo lufthavn",0.347712,26.492702]
+["Oslo S",0.330103,25.840235]
+["Oslo bussterminal",0.330103,24.307642]
 ```
-
+<small>(Debug shows three more results than we ask for, see PhotonAutocompleteRequest.RESULT_PRUNING_HEADROOM)</small>
 ### Using a patched Photon version
 
 #### Build and release patched Photon
