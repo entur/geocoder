@@ -54,16 +54,16 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 ./gradlew build
 
 # Download a photon jar
-curl -sfLo photon.jar https://github.com/entur/photon/releases/download/os-metrics-and-version/photon-0.7.0.jar
+curl -sfLo photon.jar 'https://github.com/entur/photon/releases/download/os-metrics-and-version/photon-0.7.0.jar'
 
 # EITHER import and convert data
-converter/create-nominatim-data.sh # creates nominatim.ndjson
+converter/create-nominatim-data.sh # downloads data and creates nominatim.ndjson
 converter/create-photon-data.sh    # creates the photon_data search index for Photon
 
 # OR just download the latest Photon search index built by Github Actions
 rm -rf photon_data
 ./geocoder/converter/download-latest-photon-data.sh
-tar xzvf photon_data.tar.gz
+tar -xzvf photon_data.tar.gz
 
 # Run Photon
 java -jar photon.jar
@@ -74,19 +74,19 @@ java -jar proxy/build/libs/proxy-all.jar
 
 Now try some example requests:
 ```bash
-curl -s http://localhost:8080/v2/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
-curl -s http://localhost:8080/v2/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
+curl -s 'http://localhost:8080/v2/autocomplete?text=sk%C3%B8yen%20stasjon&size=20'
+curl -s 'http://localhost:8080/v2/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality'
 ```
 Adding `&debug=true` will also reveal native Photon results with `importance` (input weight) and `score` (calculated weight).
 
 You can also access Photon directly:
 ```bash
-curl -s http://localhost:2322/api?q=Berglyveien&include=layer.stopplace
+curl -s 'http://localhost:2322/api?q=Berglyveien&include=layer.stopplace'
 ```
 Or use the opensearch endpoint to debug queries:
 ```bash
-curl -s http://localhost:9201/photon/_mapping | jq .       # Available fields
-curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
+curl -s 'http://localhost:9201/photon/_mapping' | jq .       # Available fields
+curl -s 'http://localhost:9201/photon/_doc/719158973' | jq . # Get document by ID
 ```
 
 ### Debugging data in k8s / GKE
