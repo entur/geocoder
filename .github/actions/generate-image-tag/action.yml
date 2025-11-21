@@ -28,9 +28,8 @@ runs:
       id: generate
       shell: bash
       run: |
-        branch=$(echo "${GITHUB_REF_NAME:-detached}" | sed 's/[^a-zA-Z0-9_-]\+/_/g')
+        IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh}})
         
-        IMAGE_TAG="${branch}.$(date +'%Y%m%d')-SHA${GITHUB_SHA:0:7}"
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
         
