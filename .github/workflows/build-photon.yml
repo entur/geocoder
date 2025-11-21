@@ -170,7 +170,7 @@ jobs:
 
       - name: Create Photon Data
         working-directory: converter
-        run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url || 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar' }}"
+        run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url }}"
 
       - name: Upload Photon Data
         id: upload-photon-data
@@ -249,7 +249,7 @@ jobs:
           image_name: geocoder-photon
           context: photon
           push: true
-          build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url || 'https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar' }}
+          build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
