@@ -58,7 +58,12 @@ runs:
     - name: Create Dockerfile
       id: create-dockerfile
       shell: bash
-      run: ${{ github.action_path }}/create-dockerfile.sh "${{ inputs.file_path }}"
+      run: |
+        CONTEXT=$(${{ github.action_path }}/create-dockerfile.sh "${{ inputs.file_path }}")
+        echo "Created Dockerfile for ${{ inputs.file_path }}"
+        cat "$CONTEXT/Dockerfile"
+        echo "context=$CONTEXT" >> "$GITHUB_OUTPUT"
+        echo "file=$CONTEXT/Dockerfile" >> "$GITHUB_OUTPUT"
 
     - name: Authenticate with GCP
       uses: google-github-actions/auth@v2
@@ -84,8 +89,8 @@ runs:
     - name: Build and push to GCR
       uses: docker/build-push-action@v6
       with:
-        context: ${{ steps.create-dockerfile.outputs.temp_dir }}
-        file: ${{ steps.create-dockerfile.outputs.temp_dir }}/Dockerfile
+        context: ${{ steps.create-dockerfile.outputs.context }}
+        file: ${{ steps.create-dockerfile.outputs.file }}
         push: true
         tags: |
           ${{ steps.set-tag.outputs.full_image }}

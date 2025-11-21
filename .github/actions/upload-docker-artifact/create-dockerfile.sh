@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-set -eu
+set -euo pipefail
 
 FILE_PATH="$1"
 
@@ -12,9 +12,4 @@ FROM scratch
 COPY ${FILE_NAME} /${FILE_NAME}
 EOF
 
-# Set output
-if [ -n "${GITHUB_OUTPUT:-}" ]; then
-  echo "temp_dir=$TEMP_DIR" >> "$GITHUB_OUTPUT"
-fi
-echo "Created Dockerfile for ${FILE_NAME}"
-cat "$TEMP_DIR/Dockerfile"
+echo "$TEMP_DIR"

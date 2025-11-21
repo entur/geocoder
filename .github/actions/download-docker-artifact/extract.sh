@@ -1,5 +1,6 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 REGISTRY="$1"
 IMAGE="$2"
