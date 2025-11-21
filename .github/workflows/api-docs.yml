@@ -14,11 +14,13 @@ on:
   push:
     paths:
       - 'proxy/docs/**'
+      - 'proxy/specs/**'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
   pull_request:
     paths:
       - 'proxy/docs/**'
+      - 'proxy/specs/**'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
   workflow_dispatch:
@@ -30,21 +32,23 @@ concurrency:
 jobs:
   api-lint:
     uses: entur/gha-api/.github/workflows/lint.yml@v4
-    with:
-      spec: proxy/docs/openapi.yml
     secrets: inherit
+    with:
+      spec: proxy/specs/openapi.yml
 
   api-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: api-lint
     uses: entur/gha-api/.github/workflows/publish.yml@v4
     secrets: inherit
+    with:
+      spec: proxy/specs/openapi.yml
 
   docs-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: api-lint
     uses: entur/gha-docs/.github/workflows/publish.yml@v1
+    secrets: inherit
     with:
       project: geocoder
       directory: proxy/docs
-    secrets: inherit
