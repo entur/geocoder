@@ -1,11 +1,7 @@
 #
 # API Documentation Workflow
 #
-# Reusable Workflows used:
-# * API Lint: https://github.com/entur/gha-api/blob/main/README-lint.md
-# * Publish Docs: https://github.com/entur/gha-docs/blob/main/README-publish.md
-# * Owner: Team Plattform
-# * Slack: #Talk-plattform
+# Api specs end up at https://beta.developer.entur.no/apis/public
 #
 
 name: API Docs

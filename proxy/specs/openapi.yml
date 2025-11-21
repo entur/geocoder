@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
-  title: Geocoder Proxy
+  title: Geocoder
   version: 1.0.0
   description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
   contact:
-    name: Entur Platform Team
+    name: Team Ruter og reiseplanlegging
     url: https://developer.entur.org
   license:
     name: EUPL-1.2
