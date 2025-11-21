@@ -42,7 +42,7 @@ jobs:
     needs: lint
     uses: entur/gha-docs/.github/workflows/publish.yml@v1
     with:
-      project: geocoder-proxy
+      project: geocoder
       directory: proxy/docs
     secrets: inherit
     permissions:
