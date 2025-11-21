@@ -20,8 +20,8 @@ common:
     minReadySeconds: 10  # Wait 10 seconds after pod is ready before marking it available
   container:
     image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
-    cpu: 0.3 # Adjust this to your application needs
-    memory: 512 # Adjust this to your application needs, a java application might need more memory to start like 1024 or 2048 or +++
+    cpu: 1
+    memory: 1536
     probes:
       enabled: true
       spec:
