@@ -112,7 +112,7 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 ["Oslo S",0.330103,25.840235]
 ["Oslo bussterminal",0.330103,24.307642]
 ```
-<small>(Debug shows three more results than we ask for, see PhotonAutocompleteRequest.RESULT_PRUNING_HEADROOM)</small>
+<sub><sup>(Debug shows three more results than we ask for, see PhotonAutocompleteRequest.RESULT_PRUNING_HEADROOM)</sup></sub>
 ### Using a patched Photon version
 
 #### Build and release patched Photon
