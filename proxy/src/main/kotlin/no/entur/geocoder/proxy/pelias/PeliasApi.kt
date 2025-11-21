@@ -11,11 +11,8 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object PeliasApi {
-    suspend fun RoutingContext.peliasAutocompleteRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        req: PeliasAutocompleteRequest,
-    ) {
+    suspend fun RoutingContext.peliasAutocompleteRequest(photonBaseUrl: String, client: HttpClient) {
+        val req = PeliasAutocompleteRequest.from(call.request.queryParameters)
         logger.debug("/v2/autocomplete: {}'", req)
         val photonRequest = PhotonAutocompleteRequest.from(req)
         val url = "$photonBaseUrl/api"
@@ -33,11 +30,8 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.peliasReverseRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        req: PeliasReverseRequest,
-    ) {
+    suspend fun RoutingContext.peliasReverseRequest(photonBaseUrl: String, client: HttpClient) {
+        val req = PeliasReverseRequest.from(call.request.queryParameters)
         logger.debug("/v2/reverse: {}", req)
         val photonRequest = PhotonReverseRequest.from(req)
         val url = "$photonBaseUrl/reverse"
@@ -54,11 +48,8 @@ object PeliasApi {
         }
     }
 
-    suspend fun RoutingContext.peliasPlaceRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        req: PeliasPlaceRequest,
-    ) {
+    suspend fun RoutingContext.peliasPlaceRequest(photonBaseUrl: String, client: HttpClient) {
+        val req = PeliasPlaceRequest.from(call.request.queryParameters)
         logger.debug("/v2/place: {}", req)
         val photonRequests = PhotonAutocompleteRequest.from(req)
         val url = "$photonBaseUrl/api"

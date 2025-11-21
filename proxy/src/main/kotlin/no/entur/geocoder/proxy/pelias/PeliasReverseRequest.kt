@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.server.application.*
+import io.ktor.http.*
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 
@@ -22,16 +22,13 @@ data class PeliasReverseRequest(
     val debug: Boolean = false,
 ) {
     init {
-        val latitude = lat.toDouble()
-        val longitude = lon.toDouble()
-        require(latitude in -90.0..90.0) { "Parameter 'point.lat' must be between -90 and 90" }
-        require(longitude in -180.0..180.0) { "Parameter 'point.lon' must be between -180 and 180" }
+        require(lat in -90.0..90.0) { "Parameter 'point.lat' must be between -90 and 90" }
+        require(lon in -180.0..180.0) { "Parameter 'point.lon' must be between -180 and 180" }
     }
 
     companion object {
-        fun ApplicationCall.peliasReverseRequest(): PeliasReverseRequest {
-            val req = request.queryParameters
-            return PeliasReverseRequest(
+        fun from(req: Parameters) =
+            PeliasReverseRequest(
                 lat = req["point.lat"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'point.lat' is required"),
                 lon = req["point.lon"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'point.lon' is required"),
                 radius = req["boundary.circle.radius"]?.toDoubleOrNull(),
@@ -54,6 +51,5 @@ data class PeliasReverseRequest(
                     },
                 debug = req["debug"].toBoolean(),
             )
-        }
     }
 }

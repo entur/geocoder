@@ -12,11 +12,8 @@ import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
 object V3Api {
-    suspend fun RoutingContext.autocompleteRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        req: V3AutocompleteRequest,
-    ) {
+    suspend fun RoutingContext.autocompleteRequest(photonBaseUrl: String, client: HttpClient) {
+        val req = V3AutocompleteRequest.from(call.request.queryParameters)
         val photonRequest = PhotonAutocompleteRequest.from(req)
         val url = "$photonBaseUrl/api"
         logger.debug("V3 autocomplete request to $url with query='${photonRequest.query}'")
@@ -45,11 +42,8 @@ object V3Api {
         }
     }
 
-    suspend fun RoutingContext.reverseRequest(
-        photonBaseUrl: String,
-        client: HttpClient,
-        req: V3ReverseRequest,
-    ) {
+    suspend fun RoutingContext.reverseRequest(photonBaseUrl: String, client: HttpClient) {
+        val req = V3ReverseRequest.from(call.request.queryParameters)
         val photonRequest = PhotonReverseRequest.from(req)
         val url = "$photonBaseUrl/reverse"
         logger.debug("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")

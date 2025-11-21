@@ -1,7 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
@@ -27,9 +26,8 @@ data class PeliasAutocompleteRequest(
     }
 
     companion object {
-        fun ApplicationCall.peliasAutocompleteRequest(): PeliasAutocompleteRequest {
-            val req = request.queryParameters
-            return PeliasAutocompleteRequest(
+        fun from(req: Parameters) =
+            PeliasAutocompleteRequest(
                 text = handleText(req),
                 size = req["size"]?.toIntOrNull() ?: 10,
                 lang = req["lang"].safeVar() ?: "no",
@@ -61,7 +59,6 @@ data class PeliasAutocompleteRequest(
                     },
                 debug = req["debug"].toBoolean(),
             )
-        }
 
         val digitPattern = Regex("^(\\d+)\\s+(.+)")
 
@@ -95,8 +92,8 @@ data class PeliasAutocompleteRequest(
         val weight: Double? = null,
     ) {
         init {
-            require(lat.toDouble() in -90.0..90.0) { "Parameter 'focus.point.lat' must be between -90 and 90" }
-            require(lon.toDouble() in -180.0..180.0) { "Parameter 'focus.point.lon' must be between -180 and 180" }
+            require(lat in -90.0..90.0) { "Parameter 'focus.point.lat' must be between -90 and 90" }
+            require(lon in -180.0..180.0) { "Parameter 'focus.point.lon' must be between -180 and 180" }
             if (scale != null) {
                 require(scale > 0) { "Parameter 'focus.scale' must be a number > 0" }
             }

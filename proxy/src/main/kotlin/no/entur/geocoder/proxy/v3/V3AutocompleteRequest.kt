@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.v3
 
-import io.ktor.server.application.*
+import io.ktor.http.*
 
 data class V3AutocompleteRequest(
     val query: String = "",
@@ -16,21 +16,19 @@ data class V3AutocompleteRequest(
     val transportModes: List<String> = emptyList(),
 ) {
     companion object {
-        fun ApplicationCall.v3AutocompleteRequest(): V3AutocompleteRequest {
-            val params = request.queryParameters
-            return V3AutocompleteRequest(
-                query = params["query"] ?: params["q"] ?: "",
-                limit = params["limit"]?.toIntOrNull() ?: 10,
-                language = params["language"] ?: params["lang"] ?: "no",
-                placeTypes = params["placeTypes"]?.split(",") ?: emptyList(),
-                sources = params["sources"]?.split(",") ?: emptyList(),
-                countries = params["countries"]?.split(",") ?: emptyList(),
-                countyIds = params["countyIds"]?.split(",") ?: emptyList(),
-                localityIds = params["localityIds"]?.split(",") ?: emptyList(),
-                tariffZones = params["tariffZones"]?.split(",") ?: emptyList(),
-                tariffZoneAuthorities = params["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
-                transportModes = params["transportModes"]?.split(",") ?: emptyList(),
+        fun from(req: Parameters) =
+            V3AutocompleteRequest(
+                query = req["query"] ?: req["q"] ?: "",
+                limit = req["limit"]?.toIntOrNull() ?: 10,
+                language = req["language"] ?: req["lang"] ?: "no",
+                placeTypes = req["placeTypes"]?.split(",") ?: emptyList(),
+                sources = req["sources"]?.split(",") ?: emptyList(),
+                countries = req["countries"]?.split(",") ?: emptyList(),
+                countyIds = req["countyIds"]?.split(",") ?: emptyList(),
+                localityIds = req["localityIds"]?.split(",") ?: emptyList(),
+                tariffZones = req["tariffZones"]?.split(",") ?: emptyList(),
+                tariffZoneAuthorities = req["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
+                transportModes = req["transportModes"]?.split(",") ?: emptyList(),
             )
-        }
     }
 }
