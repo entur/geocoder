@@ -2,27 +2,28 @@
 
 Geocoding service consisting of a Photon search engine and a proxy service.
 
-## Deployment Scenarios
+## Deployment
 
 ### Proxy
 
 **Automatic Deployment:**
 - **Push to main** → Builds → Deploys to **dev** → Runs acceptance tests
-- **Pull requests** → Builds and lints (no deployment)
 
 **Manual Deployment via Workflow Dispatch:**
 - `🚀 Deploy → Staging` - Deploy to staging (uses existing image)
 - `🚀 Deploy → Prod` - Deploy to production (uses existing image)
+
+**Workflow Inputs:**
 - `image_tag` - Specify image tag (default: `latest`)
 
 ### Photon
 
 **Scheduled Build:**
-- **Daily at 09:02 UTC** → Full data import → Build → Deploy to **all environments**
+- **Daily at 07:32 UTC** → Full data import → Build → Deploy to **all environments**
 
 **Manual Build/Deploy via Workflow Dispatch:**
-- `🔨 Download and convert data → build Photon → Dev` - Full data pipeline + deploy
-- `⚡ Use latest data → build Photon → Dev` - Build using latest Nominatim data + deploy
+- `🔨 Download and convert data → build Photon → Dev` - Full data pipeline + deploy to dev
+- `⚡ Use latest data → build Photon → Dev` - Build using latest Nominatim data + deploy dev
 - `🚀 Deploy → Staging` - Deploy pre-built image to staging
 - `🚀 Deploy → Prod` - Deploy pre-built image to production
 
@@ -31,18 +32,16 @@ Geocoding service consisting of a Photon search engine and a proxy service.
 - `photon_jar_url` - Custom Photon JAR URL (optional)
 
 **Data Pipeline:**
-1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace data → `nominatim.ndjson.gz`
+1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace/etc data → `nominatim.ndjson.gz`
 2. **Photon Data** - Imports Nominatim data into Photon search index → `photon_data.tar.gz`
-3. **Photon Image** - Builds Docker image with Photon JAR + search data
+3. **Photon Image** - Builds Docker image using Photon JAR + search index
 4. **Deploy** - Deploys to selected environments (no review required)
 
-💾 Data artifacts are stored as Docker images in GCR (e.g., `geocoder-nominatim-data:latest`, `geocoder-photon-data:latest`).
+💾 Data artifacts are stored in GCR Docker images (e.g., `geocoder-nominatim-data:latest`, `geocoder-photon-data:latest`).
 
 ### Acceptance Tests
 
-Can be triggered manually via workflow dispatch for any environment:
-- **Dev**, **Staging (tst)**, or **Prod**
-- Automatically runs after proxy deployments
+- Runs automatically after every deployment
 - Uses [geocoder-acceptance-tests](https://github.com/entur/geocoder-acceptance-tests) repository
 
 
@@ -54,15 +53,22 @@ Can be triggered manually via workflow dispatch for any environment:
 # Build geocoder
 ./gradlew build
 
-# Import and convert data
-curl -sfLo photon.jar https://github.com/entur/photon/releases/download/cpu-metrics/photon-0.7.0.jar
+# Download a photon jar
+curl -sfLo photon.jar https://github.com/entur/photon/releases/download/os-metrics-and-version/photon-0.7.0.jar
+
+# EITHER import and convert data
 converter/create-nominatim-data.sh # creates nominatim.ndjson
-converter/create-photon-data.sh    # creates the opensearch data folder for photon
+converter/create-photon-data.sh    # creates the photon_data search index for Photon
+
+# OR just download the latest Photon search index built by Github Actions
+rm -rf photon_data
+./geocoder/converter/download-latest-photon-data.sh
+tar xzvf photon_data.tar.gz
 
 # Run Photon
 java -jar photon.jar
 
-# Switch to a different terminal and start the proxy, or just run ProxyKt from your IDE
+# Switch to a different terminal and start the proxy (or just run ProxyKt from your IDE)
 java -jar proxy/build/libs/proxy-all.jar
 ```
 
@@ -71,6 +77,8 @@ Now try some example requests:
 curl -s http://localhost:8080/v2/autocomplete?text=sk%C3%B8yen%20stasjon&size=20
 curl -s http://localhost:8080/v2/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality
 ```
+Adding `&debug=true` will also reveal native Photon results with `importance` (input weight) and `score` (calculated weight).
+
 You can also access Photon directly:
 ```bash
 curl -s http://localhost:2322/api?q=Berglyveien&include=layer.stopplace
@@ -80,6 +88,9 @@ Or use the opensearch endpoint to debug queries:
 curl -s http://localhost:9201/photon/_mapping | jq .       # Available fields
 curl -s http://localhost:9201/photon/_doc/719158973 | jq . # Get document by ID
 ```
+
+### Debugging data in k8s / GKE
+
 Accessing the opensearch queries in k8s:
 ```bash
 kubectl --context dev port-forward geocoder-photon-85994c94dd-6lqhv -n geocoder 9201
