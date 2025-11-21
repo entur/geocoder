@@ -2,9 +2,9 @@
 
 Geocoding and reverse geocoding for Norwegian addresses and points of interest.
 
-## OpenAPI Specification
+## API Docs
 
-[OpenAPI Specification (YAML)](openapi.yml)
+[Api Docs](https://beta.developer.entur.no/public/api/geocoder/openapi/autocomplete)
 
 ## Example
 
