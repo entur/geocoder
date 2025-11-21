@@ -336,8 +336,8 @@ jobs:
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.tst == 'true' &&
-      (needs.deploy-dev.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, build-push, deploy-dev, resolve-image-tag]
+      (needs.acceptance-tests-dev.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, build-push, acceptance-tests-dev, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
@@ -363,8 +363,8 @@ jobs:
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.prd == 'true' &&
-      (needs.deploy-tst.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, build-push, deploy-tst, resolve-image-tag]
+      (needs.acceptance-tests-tst.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, build-push, acceptance-tests-tst, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
