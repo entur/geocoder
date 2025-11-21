@@ -28,25 +28,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint OpenAPI Spec
+  api-lint:
     uses: entur/gha-api/.github/workflows/lint.yml@v4
     with:
       spec: proxy/docs/openapi.yml
     secrets: inherit
-    permissions:
-      contents: read
-      id-token: write
 
-  publish:
-    name: Publish Documentation
+  api-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: lint
+    needs: api-lint
+    uses: entur/gha-api/.github/workflows/publish.yml@v4
+    secrets: inherit
+
+  docs-publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: api-lint
     uses: entur/gha-docs/.github/workflows/publish.yml@v1
     with:
       project: geocoder
       directory: proxy/docs
     secrets: inherit
-    permissions:
-      contents: read
-      id-token: write
