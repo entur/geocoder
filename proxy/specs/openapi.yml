@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Geocoder
-  version: 1.0.0
+  version: 2.0.0
   description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
   contact:
     name: Team Ruter og reiseplanlegging
@@ -27,7 +27,7 @@ paths:
         - Autocomplete
       summary: Autocomplete search
       description: Search for places by text query
-      operationId: autocompleteV1
+      operationId: autocompleteV2
       parameters:
         - $ref: '#/components/parameters/Text'
         - $ref: '#/components/parameters/Size'
@@ -45,7 +45,6 @@ paths:
         - $ref: '#/components/parameters/FocusScale'
         - $ref: '#/components/parameters/FocusWeight'
         - $ref: '#/components/parameters/MultiModal'
-        - $ref: '#/components/parameters/Debug'
         - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
@@ -53,11 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PeliasResult'
-        '400':
-          description: Bad request
-        '500':
-          description: Internal server error
+                $ref: '#/components/schemas/Result'
 
   /v1/reverse:
     get:
@@ -65,7 +60,7 @@ paths:
         - Reverse
       summary: Reverse geocode
       description: Convert coordinates to places
-      operationId: reverseV1
+      operationId: reverseV2
       parameters:
         - $ref: '#/components/parameters/PointLat'
         - $ref: '#/components/parameters/PointLon'
@@ -81,7 +76,6 @@ paths:
         - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Categories'
         - $ref: '#/components/parameters/MultiModal'
-        - $ref: '#/components/parameters/Debug'
         - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
@@ -89,11 +83,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PeliasResult'
-        '400':
-          description: Bad request
-        '500':
-          description: Internal server error
+                $ref: '#/components/schemas/Result'
 
 components:
   parameters:
@@ -250,15 +240,6 @@ components:
         default: parent
       example: "parent"
 
-    Debug:
-      name: debug
-      in: query
-      description: Enable debug mode
-      schema:
-        type: boolean
-        default: false
-      example: false
-
     PointLat:
       name: point.lat
       in: query
@@ -294,7 +275,7 @@ components:
       example: 1.0
 
   schemas:
-    PeliasResult:
+    Result:
       type: object
       required:
         - geocoding
@@ -326,16 +307,13 @@ components:
                 version:
                   type: string
                   example: "0.7.0"
-            debug:
-              type: object
-              additionalProperties: true
         type:
           type: string
           enum: [FeatureCollection]
         features:
           type: array
           items:
-            $ref: '#/components/schemas/PeliasFeature'
+            $ref: '#/components/schemas/Feature'
         bbox:
           type: array
           items:
@@ -343,7 +321,7 @@ components:
           minItems: 4
           maxItems: 4
 
-    PeliasFeature:
+    Feature:
       type: object
       required:
         - type
