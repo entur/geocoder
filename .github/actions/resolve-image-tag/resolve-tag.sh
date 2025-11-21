@@ -1,5 +1,6 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 # Resolve Docker image tag from 'latest' to semantic version
 # Usage: ./resolve-tag.sh <registry> <image_name> <image_tag>
