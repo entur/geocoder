@@ -74,15 +74,15 @@ object Routing {
                 rootRequest()
             }
 
-            get("/actuator/health/liveness") {
+            get("/liveness") {
                 healthCheck.checkLiveness(call)
             }
 
-            get("/actuator/health/readiness") {
+            get("/readiness") {
                 healthCheck.checkReadiness(call)
             }
 
-            get("/actuator/info") {
+            get("/info") {
                 healthCheck.info(call)
             }
 

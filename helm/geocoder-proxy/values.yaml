@@ -27,14 +27,14 @@ common:
       spec:
         startupProbe:
           httpGet:
-            path: /actuator/health/liveness
+            path: /liveness
             port: 8080
           periodSeconds: 2
           timeoutSeconds: 1
           failureThreshold: 60
         readinessProbe:
           httpGet:
-            path: /actuator/health/readiness
+            path: /readiness
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 5
@@ -43,7 +43,7 @@ common:
           failureThreshold: 3
         livenessProbe:
           httpGet:
-            path: /actuator/health/liveness
+            path: /liveness
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10

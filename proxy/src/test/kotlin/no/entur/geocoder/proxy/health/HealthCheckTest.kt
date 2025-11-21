@@ -27,8 +27,8 @@ class HealthCheckTest {
     companion object {
         private const val DEFAULT_PHOTON_URL = "http://photon"
         private const val CUSTOM_PHOTON_URL = "https://custom.photon.server:8080"
-        private const val LIVENESS_ENDPOINT = "/actuator/health/liveness"
-        private const val READINESS_ENDPOINT = "/actuator/health/readiness"
+        private const val LIVENESS_ENDPOINT = "/liveness"
+        private const val READINESS_ENDPOINT = "/readiness"
         private const val SUCCESS_RESPONSE =
             """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10.75,59.91]},"properties":{"name":"Oslo"}}]}"""
     }
