@@ -1,6 +1,6 @@
 # Geocoder
 
-Geocoding service consisting of a Photon search engine and a proxy service.
+Geocoding service consisting of a Photon backend search engine and a Proxy frontend.
 
 ## Deployment
 
