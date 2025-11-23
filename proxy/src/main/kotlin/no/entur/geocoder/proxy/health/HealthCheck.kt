@@ -1,12 +1,12 @@
 package no.entur.geocoder.proxy.health
 
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.withTimeout
 import no.entur.geocoder.proxy.Response
 import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
+import no.entur.geocoder.proxy.photon.PhotonApi
+import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
 import org.slf4j.LoggerFactory
 
@@ -35,16 +35,17 @@ class HealthCheck(private val client: HttpClient, private val photonBaseUrl: Str
 
     private suspend fun checkPhotonHealth(): String? {
         val query = "Oslo"
-        val response = client.get("$photonBaseUrl/api?q=$query&limit=1")
+        val req = PhotonAutocompleteRequest("Oslo", 1)
+        val apiResponse = PhotonApi.request(req, client, "$photonBaseUrl/api")
 
-        if (!response.status.isSuccess()) {
-            logger.warn("Photon not ready: ${response.status}")
-            return "Photon returned ${response.status}"
+        if (!apiResponse.status.isSuccess()) {
+            logger.warn("Photon not ready: ${apiResponse.status}")
+            return "Photon returned ${apiResponse.status}"
         }
 
         val result =
             try {
-                PhotonResult.parse(response.bodyAsText())
+                PhotonResult.parse(apiResponse)
             } catch (e: Exception) {
                 logger.warn("Failed to parse Photon response: ${e.message}")
                 return "Invalid response format"

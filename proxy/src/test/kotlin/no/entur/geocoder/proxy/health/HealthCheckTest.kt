@@ -86,7 +86,12 @@ class HealthCheckTest {
     private fun createSuccessfulPhotonResponse(
         validateUrl: Boolean = false,
     ): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = { request ->
-        if (validateUrl) assertEquals("$DEFAULT_PHOTON_URL/api?q=Oslo&limit=1", request.url.toString())
+        if (validateUrl) {
+            val url = request.url.toString()
+            assertTrue(url.startsWith("$DEFAULT_PHOTON_URL/api"))
+            assertTrue(url.contains("q=Oslo"))
+            assertTrue(url.contains("limit=1"))
+        }
         respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
     }
 

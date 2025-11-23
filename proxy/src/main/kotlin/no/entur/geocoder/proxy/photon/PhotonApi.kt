@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.photon
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import no.entur.geocoder.common.Util.within
 
 object PhotonApi {
@@ -38,6 +39,7 @@ object PhotonApi {
         return PhotonApiResponse(
             body = response.bodyAsText(),
             url = response.request.url.toString(),
+            status = response.status,
         )
     }
 
@@ -66,11 +68,13 @@ object PhotonApi {
         return PhotonApiResponse(
             body = response.bodyAsText(),
             url = response.request.url.toString(),
+            status = response.status,
         )
     }
 
     data class PhotonApiResponse(
         val body: String,
         val url: String,
+        val status: HttpStatusCode = HttpStatusCode.OK,
     )
 }

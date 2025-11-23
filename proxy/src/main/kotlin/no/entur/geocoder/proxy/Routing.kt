@@ -17,8 +17,8 @@ object Routing {
         photonBaseUrl: String,
         appMicrometerRegistry: PrometheusMeterRegistry,
     ) {
-        val healthCheck = HealthCheck(client, photonBaseUrl)
         val api = PeliasApi(client, photonBaseUrl)
+        val healthCheck = HealthCheck(client, photonBaseUrl)
         val v3api = V3Api(client, photonBaseUrl)
 
         routing {

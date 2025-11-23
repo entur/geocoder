@@ -1,9 +1,8 @@
 package no.entur.geocoder.proxy.v3
 
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonReverseRequest
@@ -16,17 +15,7 @@ class V3Api(private val client: HttpClient, private val photonBaseUrl: String) {
         val url = "$photonBaseUrl/api"
         logger.debug("V3 autocomplete request to $url with query='${photonRequest.query}'")
 
-        val photonResponse =
-            client
-                .get(url) {
-                    parameter("q", photonRequest.query)
-                    parameter("limit", photonRequest.limit.toString())
-                    parameter("lang", photonRequest.language)
-
-                    if (photonRequest.includes.isNotEmpty()) {
-                        parameter("include", photonRequest.includes.joinToString(","))
-                    }
-                }.bodyAsText()
+        val photonResponse = PhotonApi.request(photonRequest, client, photonBaseUrl)
 
         val photonResult = PhotonResult.parse(photonResponse)
         return V3ResultTransformer.parseAndTransform(photonResult, req)
@@ -38,22 +27,7 @@ class V3Api(private val client: HttpClient, private val photonBaseUrl: String) {
         val url = "$photonBaseUrl/reverse"
         logger.debug("V3 reverse geocoding request to $url at (${photonRequest.latitude}, ${photonRequest.longitude})")
 
-        val photonResponse =
-            client
-                .get(url) {
-                    parameter("lat", photonRequest.latitude)
-                    parameter("lon", photonRequest.longitude)
-                    parameter("lang", photonRequest.language)
-                    photonRequest.radius?.let { parameter("radius", it) }
-                    parameter("limit", photonRequest.limit.toString())
-
-                    if (photonRequest.includes.isNotEmpty()) {
-                        parameter("include", photonRequest.includes.joinToString(","))
-                    }
-                    if (photonRequest.excludes.isNotEmpty()) {
-                        parameter("exclude", photonRequest.excludes.joinToString(","))
-                    }
-                }.bodyAsText()
+        val photonResponse = PhotonApi.request(photonRequest, client, photonBaseUrl)
 
         val photonResult = PhotonResult.parse(photonResponse)
         return V3ResultTransformer.parseAndTransform(photonResult, req)
