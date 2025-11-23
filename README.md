@@ -131,7 +131,7 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 #### Update geocoder to use the patched Photon
 
 * Go to [build-photon.yml](.github/workflows/build-photon.yml) in `geocoder` and
-  update `on.workflow_dispatch.inputs.photon_jar_url.default` variable with the new link
+  update `env.photon_jar_url.default` variable with the new link
 * Push your `geocoder` changes
 * Go to https://github.com/entur/geocoder/actions/workflows/build-photon.yml and trigger the workflow.
   You should set "Import and convert data" --> `only-photon-data` (or `all`) to avoid OpenSearch data

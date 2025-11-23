@@ -23,12 +23,14 @@ on:
         default: 'latest'
         type: string
       photon_jar_url:
-        description: 'Photon JAR URL'
+        description: 'Override Photon JAR URL'
         required: false
         type: string
-        default: 'https://github.com/entur/photon/releases/download/os-metrics-and-version/photon-0.7.0.jar'
 
 run-name: "Photon: ${{ inputs.build || 'Scheduled full import' }}${{ startsWith(inputs.build, '🚀') && format(' (tag: {0})', inputs.photon_image_tag) || '' }}"
+
+env:
+  DEFAULT_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/os-metrics-and-version/photon-0.7.0.jar'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
@@ -43,6 +45,7 @@ jobs:
       dev: ${{ steps.vars.outputs.dev }}
       tst: ${{ steps.vars.outputs.tst }}
       prd: ${{ steps.vars.outputs.prd }}
+      photon_jar_url: ${{ steps.vars.outputs.photon_jar_url }}
     steps:
       - id: vars
         run: |
@@ -73,6 +76,7 @@ jobs:
           echo "dev=${dev:-false}" >> $GITHUB_OUTPUT
           echo "tst=${tst:-false}" >> $GITHUB_OUTPUT
           echo "prd=${prd:-false}" >> $GITHUB_OUTPUT
+          echo "photon_jar_url=${{ inputs.photon_jar_url || env.DEFAULT_PHOTON_JAR_URL }}" >> $GITHUB_OUTPUT
 
   # Run import and create artifacts
   nominatim-data:
@@ -170,7 +174,7 @@ jobs:
 
       - name: Create Photon Data
         working-directory: converter
-        run: ./create-photon-data.sh -z "${{ inputs.photon_jar_url }}"
+        run: ./create-photon-data.sh -z "${{ needs.setup.outputs.photon_jar_url }}"
 
       - name: Upload Photon Data
         id: upload-photon-data
@@ -249,7 +253,7 @@ jobs:
           image_name: geocoder-photon
           context: photon
           push: true
-          build_args: PHOTON_JAR_URL=${{ inputs.photon_jar_url }}
+          build_args: PHOTON_JAR_URL=${{ needs.setup.outputs.photon_jar_url }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
