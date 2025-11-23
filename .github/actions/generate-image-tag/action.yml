@@ -29,8 +29,8 @@ runs:
       shell: bash
       run: |
         echo "GITHUB_SHA=$GITHUB_SHA, GITHUB_REF_NAME=$GITHUB_REF_NAME"
-        IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$GITHUB_SHA" "$GITHUB_REF_NAME"}})
-        
+        IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$GITHUB_SHA" "$GITHUB_REF_NAME")
+
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
         
