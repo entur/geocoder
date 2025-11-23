@@ -1,7 +1,7 @@
 package no.entur.geocoder.proxy.health
 
-import io.ktor.client.*
 import io.ktor.http.*
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import no.entur.geocoder.proxy.Response
 import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
@@ -10,7 +10,7 @@ import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import no.entur.geocoder.proxy.photon.PhotonResult
 import org.slf4j.LoggerFactory
 
-class HealthCheck(private val client: HttpClient, private val photonBaseUrl: String) {
+class HealthCheck(private val photonApi: PhotonApi) {
     private val logger = LoggerFactory.getLogger(HealthCheck::class.java)
 
     suspend fun liveness(): Response =
@@ -22,7 +22,7 @@ class HealthCheck(private val client: HttpClient, private val photonBaseUrl: Str
                 withTimeout(5000) {
                     checkPhotonHealth()
                 }
-            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+            } catch (_: TimeoutCancellationException) {
                 logger.warn("Timeout checking Photon health")
                 "Timeout"
             } catch (e: Exception) {
@@ -36,7 +36,7 @@ class HealthCheck(private val client: HttpClient, private val photonBaseUrl: Str
     private suspend fun checkPhotonHealth(): String? {
         val query = "Oslo"
         val req = PhotonAutocompleteRequest("Oslo", 1)
-        val apiResponse = PhotonApi.request(req, client, "$photonBaseUrl/api")
+        val apiResponse = photonApi.request(req)
 
         if (!apiResponse.status.isSuccess()) {
             logger.warn("Photon not ready: ${apiResponse.status}")

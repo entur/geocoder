@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy.pelias
 
-import io.ktor.client.*
 import io.ktor.http.*
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
@@ -8,13 +7,13 @@ import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
-class PeliasApi(private val client: HttpClient, private val photonBaseUrl: String) {
+class PeliasApi(private val photonApi: PhotonApi) {
     suspend fun autocomplete(params: Parameters): PeliasResult {
         val req = PeliasAutocompleteRequest.from(params)
         logger.debug("/v2/autocomplete: {}'", req)
 
         val photonRequest = PhotonAutocompleteRequest.from(req)
-        val apiResponse = PhotonApi.request(photonRequest, client, "$photonBaseUrl/api")
+        val apiResponse = photonApi.request(photonRequest)
 
         val photonResult = PhotonResult.parse(apiResponse)
         return PeliasResultTransformer.parseAndTransform(photonResult, req)
@@ -26,7 +25,7 @@ class PeliasApi(private val client: HttpClient, private val photonBaseUrl: Strin
 
         val photonRequest = PhotonReverseRequest.from(req)
 
-        val apiResponse = PhotonApi.request(photonRequest, client, "$photonBaseUrl/reverse")
+        val apiResponse = photonApi.request(photonRequest)
         val photonResult = PhotonResult.parse(apiResponse)
         return PeliasResultTransformer.parseAndTransform(photonResult, req)
     }
@@ -39,7 +38,7 @@ class PeliasApi(private val client: HttpClient, private val photonBaseUrl: Strin
 
         val photonResults =
             photonRequests.map { photonRequest ->
-                val apiResponse = PhotonApi.request(photonRequest, client, "$photonBaseUrl/api")
+                val apiResponse = photonApi.request(photonRequest)
                 PhotonResult.parse(apiResponse)
             }
         val photonResult =

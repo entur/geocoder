@@ -6,15 +6,15 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.entur.geocoder.common.Util.within
 
-object PhotonApi {
+class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
     /**
      * Allowed parameters are:
      * [include, location_bias_scale, debug, dedupe, bbox, lon, zoom, layer, q, limit, osm_tag, exclude, geometry, lang, lat]
      */
-    suspend fun request(req: PhotonAutocompleteRequest, client: HttpClient, url: String): PhotonApiResponse {
+    suspend fun request(req: PhotonAutocompleteRequest): PhotonApiResponse {
         val response =
             client
-                .get(url) {
+                .get(baseUrl + "/api") {
                     parameter("q", req.query)
                     parameter("limit", req.limit)
                     parameter("lang", req.language)
@@ -47,10 +47,10 @@ object PhotonApi {
      * Allowed parameters are:
      * [include, debug, dedupe, query_string_filter, lon, layer, limit, osm_tag, distance_sort, exclude, geometry, lang, radius, lat]
      */
-    suspend fun request(req: PhotonReverseRequest, client: HttpClient, url: String): PhotonApiResponse {
+    suspend fun request(req: PhotonReverseRequest): PhotonApiResponse {
         val response =
             client
-                .get(url) {
+                .get(baseUrl + "/reverse") {
                     parameter("lat", req.latitude)
                     parameter("lon", req.longitude)
                     parameter("lang", req.language)

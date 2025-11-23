@@ -8,6 +8,7 @@ import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi
+import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.v3.V3Api
 import org.slf4j.LoggerFactory
 
@@ -17,9 +18,10 @@ object Routing {
         photonBaseUrl: String,
         appMicrometerRegistry: PrometheusMeterRegistry,
     ) {
-        val api = PeliasApi(client, photonBaseUrl)
-        val healthCheck = HealthCheck(client, photonBaseUrl)
-        val v3api = V3Api(client, photonBaseUrl)
+        val photonApi = PhotonApi(client, photonBaseUrl)
+        val api = PeliasApi(photonApi)
+        val v3api = V3Api(photonApi)
+        val healthCheck = HealthCheck(photonApi)
 
         routing {
             get("/v2/autocomplete") {

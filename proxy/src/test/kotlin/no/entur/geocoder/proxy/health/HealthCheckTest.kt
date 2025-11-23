@@ -16,6 +16,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
 import no.entur.geocoder.proxy.Response
+import no.entur.geocoder.proxy.photon.PhotonApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -49,7 +50,9 @@ class HealthCheckTest {
             }
             routing {
                 get(endpoint) {
-                    val healthCheck = HealthCheck(HttpClient(MockEngine(mockEngineHandler)), photonUrl)
+                    val client = HttpClient(MockEngine(mockEngineHandler))
+                    val photonApi = PhotonApi(client, photonUrl)
+                    val healthCheck = HealthCheck(photonApi)
                     val response =
                         when (endpoint) {
                             LIVENESS_ENDPOINT -> healthCheck.liveness()
