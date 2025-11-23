@@ -15,6 +15,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
+import no.entur.geocoder.proxy.Response
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -49,16 +50,16 @@ class HealthCheckTest {
             routing {
                 get(endpoint) {
                     val healthCheck = HealthCheck(HttpClient(MockEngine(mockEngineHandler)), photonUrl)
-                    val (status, responseBody) =
+                    val response =
                         when (endpoint) {
                             LIVENESS_ENDPOINT -> healthCheck.liveness()
                             READINESS_ENDPOINT -> healthCheck.readiness()
-                            else -> HttpStatusCode.NotFound to mapOf("error" to "Unknown endpoint")
+                            else -> Response(mapOf("error" to "Unknown endpoint"), HttpStatusCode.NotFound)
                         }
                     call.respondText(
-                        objectMapper.writeValueAsString(responseBody),
+                        objectMapper.writeValueAsString(response.message),
                         ContentType.Application.Json,
-                        status,
+                        response.status,
                     )
                 }
             }

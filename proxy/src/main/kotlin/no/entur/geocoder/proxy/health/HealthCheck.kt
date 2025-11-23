@@ -5,6 +5,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.withTimeout
+import no.entur.geocoder.proxy.Response
 import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
 import no.entur.geocoder.proxy.photon.PhotonResult
 import org.slf4j.LoggerFactory
@@ -12,10 +13,10 @@ import org.slf4j.LoggerFactory
 class HealthCheck(private val client: HttpClient, private val photonBaseUrl: String) {
     private val logger = LoggerFactory.getLogger(HealthCheck::class.java)
 
-    suspend fun liveness(): Pair<HttpStatusCode, Any> =
+    suspend fun liveness(): Response =
         respondUp()
 
-    suspend fun readiness(): Pair<HttpStatusCode, Any> {
+    suspend fun readiness(): Response {
         val reason =
             try {
                 withTimeout(5000) {
@@ -63,17 +64,17 @@ class HealthCheck(private val client: HttpClient, private val photonBaseUrl: Str
     }
 
     private fun respondDown(reason: String) =
-        HttpStatusCode.ServiceUnavailable to mapOf("status" to "DOWN", "reason" to reason)
+        Response(mapOf("status" to "DOWN", "reason" to reason), HttpStatusCode.ServiceUnavailable)
 
     private fun respondUp() =
-        HttpStatusCode.OK to mapOf("status" to "UP")
+        Response(mapOf("status" to "UP"), HttpStatusCode.OK)
 
     data class Info(val build: Build) {
         data class Build(val version: String?, val name: String)
     }
 
-    fun info(): Pair<HttpStatusCode, Info> {
+    fun info(): Info {
         val version = HealthCheck::class.java.getPackage().implementationVersion
-        return HttpStatusCode.OK to Info(Build(version ?: "unknown", "geocoder-proxy"))
+        return Info(Build(version ?: "unknown", "geocoder-proxy"))
     }
 }

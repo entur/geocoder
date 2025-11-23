@@ -81,7 +81,7 @@ object Routing {
             }
 
             get("/info") {
-                handleResponse {
+                okResponse {
                     healthCheck.info()
                 }
             }
@@ -95,12 +95,12 @@ object Routing {
     }
 
     private suspend fun RoutingContext.okResponse(handler: suspend RoutingContext.() -> Any) =
-        this.handleResponse { HttpStatusCode.OK to handler() }
+        this.handleResponse { Response(handler(), HttpStatusCode.OK) }
 
-    private suspend fun RoutingContext.handleResponse(handler: suspend RoutingContext.() -> Pair<HttpStatusCode, Any>) {
+    private suspend fun RoutingContext.handleResponse(handler: suspend RoutingContext.() -> Response) {
         try {
             val res = handler.invoke(this)
-            call.respond(res.first, res.second)
+            call.respond(res.status, res.message)
         } catch (e: IllegalArgumentException) {
             logger.error("Invalid request parameters: ${e.message}")
             val error = ErrorHandler.handleError(e, "Invalid parameters")
