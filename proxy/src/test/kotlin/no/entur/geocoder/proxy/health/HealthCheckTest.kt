@@ -11,6 +11,7 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
@@ -48,10 +49,17 @@ class HealthCheckTest {
             routing {
                 get(endpoint) {
                     val healthCheck = HealthCheck(HttpClient(MockEngine(mockEngineHandler)), photonUrl)
-                    when (endpoint) {
-                        LIVENESS_ENDPOINT -> healthCheck.checkLiveness(call)
-                        READINESS_ENDPOINT -> healthCheck.checkReadiness(call)
-                    }
+                    val (status, responseBody) =
+                        when (endpoint) {
+                            LIVENESS_ENDPOINT -> healthCheck.liveness()
+                            READINESS_ENDPOINT -> healthCheck.readiness()
+                            else -> HttpStatusCode.NotFound to mapOf("error" to "Unknown endpoint")
+                        }
+                    call.respondText(
+                        objectMapper.writeValueAsString(responseBody),
+                        ContentType.Application.Json,
+                        status,
+                    )
                 }
             }
         }

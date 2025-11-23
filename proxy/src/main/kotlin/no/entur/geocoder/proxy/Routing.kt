@@ -7,12 +7,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.health.HealthCheck
-import no.entur.geocoder.proxy.pelias.PeliasApi.peliasAutocompleteRequest
-import no.entur.geocoder.proxy.pelias.PeliasApi.peliasPlaceRequest
-import no.entur.geocoder.proxy.pelias.PeliasApi.peliasReverseRequest
+import no.entur.geocoder.proxy.pelias.PeliasApi
+import no.entur.geocoder.proxy.v3.V3Api
 import org.slf4j.LoggerFactory
-import no.entur.geocoder.proxy.v3.V3Api.autocompleteRequest as v3AutocompleteRequest
-import no.entur.geocoder.proxy.v3.V3Api.reverseRequest as v3ReverseRequest
 
 object Routing {
     fun Application.configureRouting(
@@ -21,47 +18,49 @@ object Routing {
         appMicrometerRegistry: PrometheusMeterRegistry,
     ) {
         val healthCheck = HealthCheck(client, photonBaseUrl)
+        val api = PeliasApi(client, photonBaseUrl)
+        val v3api = V3Api(client, photonBaseUrl)
 
         routing {
             get("/v2/autocomplete") {
-                handleRequest {
-                    peliasAutocompleteRequest(photonBaseUrl, client)
+                okResponse {
+                    api.autocomplete(call.request.queryParameters)
                 }
             }
 
             get("/v2/search") {
-                handleRequest {
-                    peliasAutocompleteRequest(photonBaseUrl, client)
+                okResponse {
+                    api.autocomplete(call.request.queryParameters)
                 }
             }
 
             get("/v2/reverse") {
-                handleRequest {
-                    peliasReverseRequest(photonBaseUrl, client)
+                okResponse {
+                    api.reverse(call.request.queryParameters)
                 }
             }
 
             get("/v2/nearby") {
-                handleRequest {
-                    peliasReverseRequest(photonBaseUrl, client)
+                okResponse {
+                    api.reverse(call.request.queryParameters)
                 }
             }
 
             get("/v2/place") {
-                handleRequest {
-                    peliasPlaceRequest(photonBaseUrl, client)
+                okResponse {
+                    api.place(call.request.queryParameters)
                 }
             }
 
             get("/v3/autocomplete") {
-                handleRequest {
-                    v3AutocompleteRequest(photonBaseUrl, client)
+                okResponse {
+                    v3api.autocomplete(call.request.queryParameters)
                 }
             }
 
             get("/v3/reverse") {
-                handleRequest {
-                    v3ReverseRequest(photonBaseUrl, client)
+                okResponse {
+                    v3api.reverse(call.request.queryParameters)
                 }
             }
 
@@ -70,26 +69,38 @@ object Routing {
             }
 
             get("/liveness") {
-                healthCheck.checkLiveness(call)
+                handleResponse {
+                    healthCheck.liveness()
+                }
             }
 
             get("/readiness") {
-                healthCheck.checkReadiness(call)
+                handleResponse {
+                    healthCheck.readiness()
+                }
             }
 
             get("/info") {
-                healthCheck.info(call)
+                handleResponse {
+                    healthCheck.info()
+                }
             }
 
             get("/metrics") {
-                call.respond(appMicrometerRegistry.scrape())
+                okResponse {
+                    appMicrometerRegistry.scrape()
+                }
             }
         }
     }
 
-    private suspend fun RoutingContext.handleRequest(handler: suspend RoutingContext.() -> Unit) {
+    private suspend fun RoutingContext.okResponse(handler: suspend RoutingContext.() -> Any) =
+        this.handleResponse { HttpStatusCode.OK to handler() }
+
+    private suspend fun RoutingContext.handleResponse(handler: suspend RoutingContext.() -> Pair<HttpStatusCode, Any>) {
         try {
-            handler()
+            val res = handler.invoke(this)
+            call.respond(res.first, res.second)
         } catch (e: IllegalArgumentException) {
             logger.error("Invalid request parameters: ${e.message}")
             val error = ErrorHandler.handleError(e, "Invalid parameters")
