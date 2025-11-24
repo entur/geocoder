@@ -1,7 +1,6 @@
 package no.entur.geocoder.proxy.health
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -15,6 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.proxy.ProxyResponse
 import no.entur.geocoder.proxy.photon.PhotonApi
 import kotlin.test.Test
@@ -25,8 +25,6 @@ import kotlin.test.assertTrue
  * Tests for HealthCheck endpoints.
  */
 class HealthCheckTest {
-    private val objectMapper = jacksonObjectMapper()
-
     companion object {
         private const val DEFAULT_PHOTON_URL = "http://photon"
         private const val CUSTOM_PHOTON_URL = "https://custom.photon.server:8080"
@@ -60,7 +58,7 @@ class HealthCheckTest {
                             else -> ProxyResponse(mapOf("error" to "Unknown endpoint"), HttpStatusCode.NotFound)
                         }
                     call.respondText(
-                        objectMapper.writeValueAsString(response.message),
+                        jacksonMapper.writeValueAsString(response.message),
                         ContentType.Application.Json,
                         response.status,
                     )
@@ -77,7 +75,7 @@ class HealthCheckTest {
         expectedReason: String? = null,
     ) {
         val response = client.get(endpoint)
-        val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
+        val result: Map<String, String> = jacksonMapper.readValue(response.bodyAsText())
 
         assertEquals(expectedStatus, response.status)
         assertEquals(expectedHealthStatus, result["status"])
@@ -167,7 +165,7 @@ class HealthCheckTest {
             setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createExceptionResponse())
 
             val response = client.get(READINESS_ENDPOINT)
-            val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
+            val result: Map<String, String> = jacksonMapper.readValue(response.bodyAsText())
 
             assertEquals(HttpStatusCode.ServiceUnavailable, response.status)
             assertEquals("DOWN", result["status"])
@@ -211,7 +209,7 @@ class HealthCheckTest {
                 respond("Not valid JSON at all", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
             }
             val response = client.get(READINESS_ENDPOINT)
-            val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
+            val result: Map<String, String> = jacksonMapper.readValue(response.bodyAsText())
 
             assertEquals(HttpStatusCode.ServiceUnavailable, response.status)
             assertEquals("DOWN", result["status"])

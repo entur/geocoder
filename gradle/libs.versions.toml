@@ -4,8 +4,8 @@ ktor = "3.3.2"
 jackson = "2.20.1"
 logback = "1.5.20"
 geotools = "33.2"
-ktlint = "1.7.1"
 ktlint-gradle = "13.1.0"
+osmosis = "0.49.2"
 shadow = "9.2.2"
 
 [libraries]
@@ -17,6 +17,10 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+osmosis_core = { module = "org.openstreetmap.osmosis:osmosis-core", version.ref = "osmosis" }
+osmosis_pbf = { module = "org.openstreetmap.osmosis:osmosis-pbf", version.ref = "osmosis" }
+osmosis_xml = { module = "org.openstreetmap.osmosis:osmosis-xml", version.ref = "osmosis" }
 
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }

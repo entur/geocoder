@@ -10,13 +10,10 @@ application {
 
 dependencies {
     implementation(project(":common"))
-    implementation(libs.jackson.kotlin)
-    implementation(libs.jackson.xml)
-    implementation(libs.jackson.datatype.jsr310)
 
-    implementation("org.openstreetmap.osmosis:osmosis-core:0.49.2")
-    implementation("org.openstreetmap.osmosis:osmosis-pbf:0.49.2")
-    implementation("org.openstreetmap.osmosis:osmosis-xml:0.49.2")
+    implementation(libs.osmosis.core)
+    implementation(libs.osmosis.pbf)
+    implementation(libs.osmosis.xml)
 
     testImplementation(libs.kotlin.test)
 }

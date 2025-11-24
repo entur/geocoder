@@ -1,9 +1,11 @@
 package no.entur.geocoder.proxy.photon
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.common.Util.within
 
 class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
@@ -14,7 +16,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
     suspend fun request(req: PhotonAutocompleteRequest): PhotonResult {
         val response =
             client
-                .get(baseUrl + "/api") {
+                .get("$baseUrl/api") {
                     parameter("q", req.query)
                     parameter("limit", req.limit)
                     parameter("lang", req.language)
@@ -51,7 +53,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
     suspend fun request(req: PhotonReverseRequest): PhotonResult {
         val response =
             client
-                .get(baseUrl + "/reverse") {
+                .get("$baseUrl/reverse") {
                     parameter("lat", req.latitude)
                     parameter("lon", req.longitude)
                     parameter("lang", req.language)
@@ -72,4 +74,11 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
             PhotonResult(status = response.status)
         }
     }
+
+    suspend fun status(): Map<String, String> =
+        try {
+            jacksonMapper.readValue(client.get("$baseUrl/status").bodyAsText())
+        } catch (_: Exception) {
+            emptyMap()
+        }
 }

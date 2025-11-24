@@ -4,7 +4,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 import no.entur.geocoder.proxy.ProxyResponse
-import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import org.slf4j.LoggerFactory
@@ -61,12 +60,21 @@ class HealthCheck(private val photonApi: PhotonApi) {
     private fun respondUp() =
         ProxyResponse(mapOf("status" to "UP"))
 
-    data class Info(val build: Build) {
-        data class Build(val version: String?, val name: String)
-    }
+    data class Info(
+        val version: String?,
+        val name: String,
+        val photonVersion: String?,
+        val photonImportDate: String?,
+    )
 
-    fun info(): Info {
+    suspend fun info(): Info {
+        val photonStatus = photonApi.status()
         val version = HealthCheck::class.java.getPackage().implementationVersion
-        return Info(Build(version ?: "unknown", "geocoder-proxy"))
+        return Info(
+            "geocoder-proxy",
+            version ?: "unknown",
+            photonStatus["version"] ?: "unknown",
+            photonStatus["import_date"] ?: "unknown",
+        )
     }
 }

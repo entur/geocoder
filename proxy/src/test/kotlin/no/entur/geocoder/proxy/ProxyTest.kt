@@ -1,7 +1,6 @@
 package no.entur.geocoder.proxy
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -18,6 +17,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.proxy.Routing.configureRouting
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
@@ -101,7 +101,7 @@ class ProxyTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val collection: PeliasResult = jacksonObjectMapper().readValue(response.bodyAsText())
+            val collection: PeliasResult = jacksonMapper.readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)
 
             val feature = collection.features[0]
@@ -158,7 +158,7 @@ class ProxyTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
 
-            val collection: PeliasResult = jacksonObjectMapper().readValue(response.bodyAsText())
+            val collection: PeliasResult = jacksonMapper.readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)
             assertEquals(
                 listOf(BigDecimal("10.752200"), BigDecimal("59.913900")),

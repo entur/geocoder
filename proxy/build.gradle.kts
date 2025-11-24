@@ -16,6 +16,10 @@ dependencies {
             version { require("[3.19.0,)") }
             because("require at least 3.19.0 to fix CVE-2025-48924")
         }
+        implementation("commons-codec:commons-codec") {
+            version { require("[1.20.0,)") }
+            because("require at least 1.20.0 to fix CVE-2025-48924 and CVE-2020-15250")
+        }
     }
     implementation(project(":common"))
     implementation(libs.ktor.server.netty)
@@ -24,8 +28,6 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
     implementation(libs.logback)
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.kotlin)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.metrics)
     implementation(libs.ktor.server.content.negotiation)

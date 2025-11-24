@@ -1,9 +1,9 @@
 package no.entur.geocoder.converter
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.converter.target.NominatimHeader
 import no.entur.geocoder.converter.target.NominatimPlace
 import org.junit.jupiter.api.Assertions.*
@@ -15,7 +15,6 @@ import java.nio.file.Path
 
 class JsonWriterTest {
     private val jsonWriter = JsonWriter()
-    private val objectMapper = jacksonObjectMapper()
 
     @Test
     fun `export creates output file with header when not appending`(
@@ -30,7 +29,7 @@ class JsonWriterTest {
         val lines = Files.readAllLines(outputPath)
         assertEquals(1, lines.size)
 
-        val header = objectMapper.readValue<NominatimHeader>(lines[0])
+        val header = jacksonMapper.readValue<NominatimHeader>(lines[0])
         assertEquals("NominatimDumpFile", header.type)
         assertEquals("0.1.0", header.content.version)
         assertEquals("geocoder", header.content.generator)
@@ -83,16 +82,16 @@ class JsonWriterTest {
         val lines = Files.readAllLines(outputPath)
         assertEquals(4, lines.size)
 
-        val header = objectMapper.readValue<NominatimHeader>(lines[0])
+        val header = jacksonMapper.readValue<NominatimHeader>(lines[0])
         assertEquals("NominatimDumpFile", header.type)
 
-        val place1 = objectMapper.readValue<NominatimPlace>(lines[1])
+        val place1 = jacksonMapper.readValue<NominatimPlace>(lines[1])
         assertEquals(1L, place1.content[0].place_id)
 
-        val place2 = objectMapper.readValue<NominatimPlace>(lines[2])
+        val place2 = jacksonMapper.readValue<NominatimPlace>(lines[2])
         assertEquals(2L, place2.content[0].place_id)
 
-        val place3 = objectMapper.readValue<NominatimPlace>(lines[3])
+        val place3 = jacksonMapper.readValue<NominatimPlace>(lines[3])
         assertEquals(3L, place3.content[0].place_id)
     }
 
@@ -148,7 +147,7 @@ class JsonWriterTest {
         val lines = Files.readAllLines(outputPath)
         lines.forEach { line ->
             assertDoesNotThrow {
-                objectMapper.readTree(line)
+                jacksonMapper.readTree(line)
             }
         }
     }
@@ -163,7 +162,7 @@ class JsonWriterTest {
         jsonWriter.export(entries, outputPath, isAppending = false)
 
         val lines = Files.readAllLines(outputPath)
-        val header = objectMapper.readValue<NominatimHeader>(lines[0])
+        val header = jacksonMapper.readValue<NominatimHeader>(lines[0])
 
         assertTrue(header.content.features.sorted_by_country)
         assertFalse(header.content.features.has_addresslines)
@@ -179,7 +178,7 @@ class JsonWriterTest {
         jsonWriter.export(entries, outputPath, isAppending = false)
 
         val lines = Files.readAllLines(outputPath)
-        val header = objectMapper.readValue<NominatimHeader>(lines[0])
+        val header = jacksonMapper.readValue<NominatimHeader>(lines[0])
 
         assertNotNull(header.content.data_timestamp)
         assertTrue(header.content.data_timestamp.isNotEmpty())
@@ -195,7 +194,7 @@ class JsonWriterTest {
         jsonWriter.export(entries, outputPath, isAppending = false)
 
         val lines = Files.readAllLines(outputPath)
-        val header = objectMapper.readValue<NominatimHeader>(lines[0])
+        val header = jacksonMapper.readValue<NominatimHeader>(lines[0])
 
         assertEquals("0.3.6-1", header.content.database_version)
     }
@@ -243,13 +242,13 @@ class JsonWriterTest {
         val lines = Files.readAllLines(outputPath)
         assertEquals(4, lines.size)
 
-        val place1 = objectMapper.readValue<NominatimPlace>(lines[1])
+        val place1 = jacksonMapper.readValue<NominatimPlace>(lines[1])
         assertEquals(1L, place1.content[0].place_id)
 
-        val place2 = objectMapper.readValue<NominatimPlace>(lines[2])
+        val place2 = jacksonMapper.readValue<NominatimPlace>(lines[2])
         assertEquals(2L, place2.content[0].place_id)
 
-        val place3 = objectMapper.readValue<NominatimPlace>(lines[3])
+        val place3 = jacksonMapper.readValue<NominatimPlace>(lines[3])
         assertEquals(3L, place3.content[0].place_id)
     }
 

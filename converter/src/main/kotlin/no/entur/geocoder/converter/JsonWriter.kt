@@ -1,7 +1,6 @@
 package no.entur.geocoder.converter
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.converter.target.NominatimHeader
 import no.entur.geocoder.converter.target.NominatimHeader.Features
 import no.entur.geocoder.converter.target.NominatimHeader.HeaderContent
@@ -19,10 +18,6 @@ class JsonWriter {
         outputPath: Path,
         isAppending: Boolean = true,
     ) {
-        val objectMapper =
-            jacksonObjectMapper().apply {
-                setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-            }
         Files.createDirectories(outputPath.parent)
 
         if (!isAppending) {
@@ -40,14 +35,14 @@ class JsonWriter {
                     content = headerContent,
                 )
             Files.newBufferedWriter(outputPath).use { writer ->
-                writer.write(objectMapper.writeValueAsString(header))
+                writer.write(jacksonMapper.writeValueAsString(header))
                 writer.newLine()
             }
         }
 
         Files.newBufferedWriter(outputPath, APPEND, CREATE).use { writer ->
             entries.forEach { entry ->
-                writer.write(objectMapper.writeValueAsString(entry))
+                writer.write(jacksonMapper.writeValueAsString(entry))
                 writer.newLine()
             }
         }

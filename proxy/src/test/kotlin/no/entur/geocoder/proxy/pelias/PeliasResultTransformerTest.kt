@@ -1,8 +1,8 @@
 package no.entur.geocoder.proxy.pelias
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*
@@ -547,8 +547,7 @@ class PeliasResultTransformerTest {
         val request = PeliasAutocompleteRequest("foo")
         val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
 
-        val mapper = jacksonObjectMapper()
-        val json = mapper.writeValueAsString(result)
+        val json = jacksonMapper.writeValueAsString(result)
 
         assertContains(json, """"description":[{"nor":"foran Oslo S"}]""")
     }

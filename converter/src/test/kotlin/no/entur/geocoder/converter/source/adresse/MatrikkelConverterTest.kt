@@ -1,7 +1,7 @@
 package no.entur.geocoder.converter.source.adresse
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.converter.target.NominatimPlace
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -36,7 +36,6 @@ class MatrikkelConverterTest {
         assertTrue(outputFile.exists())
         assertTrue(outputFile.length() > 0)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines()
         assertTrue(lines.isNotEmpty())
 
@@ -49,7 +48,7 @@ class MatrikkelConverterTest {
             }
         assertNotNull(targetPlaceJson, "Could not find address with lokalid 225678815")
 
-        val nominatimPlace: NominatimPlace = objectMapper.readValue(targetPlaceJson)
+        val nominatimPlace: NominatimPlace = jacksonMapper.readValue(targetPlaceJson)
 
         assertNotNull(nominatimPlace.content.firstOrNull()?.extra, "Extratags should not be null")
         val extra = nominatimPlace.content.first().extra
@@ -87,7 +86,6 @@ class MatrikkelConverterTest {
         assertTrue(outputFile.exists())
         assertTrue(outputFile.length() > 0)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines()
         assertTrue(lines.isNotEmpty())
 
@@ -97,7 +95,7 @@ class MatrikkelConverterTest {
             }
         assertNotNull(targetPlaceJson, "Could not find address with lokalid 225678815")
 
-        val nominatimPlace: NominatimPlace = objectMapper.readValue(targetPlaceJson)
+        val nominatimPlace: NominatimPlace = jacksonMapper.readValue(targetPlaceJson)
         val placeContent = nominatimPlace.content.first()
 
         assertNotNull(placeContent.address.county, "County should be populated when Stedsnavn GML file is provided")
@@ -143,12 +141,11 @@ class MatrikkelConverterTest {
 
         converter.convert(inputFile, outputFile)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines()
         val addressLine = lines.find { it.contains("\"225678815\"") }
         assertNotNull(addressLine)
 
-        val nominatimPlace: NominatimPlace = objectMapper.readValue(addressLine)
+        val nominatimPlace: NominatimPlace = jacksonMapper.readValue(addressLine)
         val categories = nominatimPlace.content.first().categories
 
         assertTrue(categories.any { it.contains("address") }, "Should have address category")
@@ -161,12 +158,11 @@ class MatrikkelConverterTest {
 
         converter.convert(inputFile, outputFile)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines().drop(1)
 
         assertTrue(lines.isNotEmpty(), "Should have data entries")
         lines.forEach { line ->
-            val nominatimPlace: NominatimPlace = objectMapper.readValue(line)
+            val nominatimPlace: NominatimPlace = jacksonMapper.readValue(line)
             val categories = nominatimPlace.content.first().categories
 
             assertTrue(categories.isNotEmpty(), "All entries should have at least one category")
@@ -179,11 +175,10 @@ class MatrikkelConverterTest {
 
         converter.convert(inputFile, outputFile)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines().drop(1)
 
         lines.forEach { line ->
-            val nominatimPlace: NominatimPlace = objectMapper.readValue(line)
+            val nominatimPlace: NominatimPlace = jacksonMapper.readValue(line)
             val centroid = nominatimPlace.content.first().centroid
 
             assertEquals(2, centroid.size, "Centroid should have exactly 2 coordinates")
@@ -198,11 +193,10 @@ class MatrikkelConverterTest {
 
         converter.convert(inputFile, outputFile)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines().drop(1)
 
         lines.forEach { line ->
-            val nominatimPlace: NominatimPlace = objectMapper.readValue(line)
+            val nominatimPlace: NominatimPlace = jacksonMapper.readValue(line)
             val importance =
                 nominatimPlace.content
                     .first()
@@ -220,12 +214,11 @@ class MatrikkelConverterTest {
 
         converter.convert(inputFile, outputFile)
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines()
         val addressWith1A = lines.find { it.contains("\"225678815\"") }
         assertNotNull(addressWith1A)
 
-        val nominatimPlace: NominatimPlace = objectMapper.readValue(addressWith1A)
+        val nominatimPlace: NominatimPlace = jacksonMapper.readValue(addressWith1A)
         assertEquals("1A", nominatimPlace.content.first().housenumber, "Should combine number and letter")
     }
 }

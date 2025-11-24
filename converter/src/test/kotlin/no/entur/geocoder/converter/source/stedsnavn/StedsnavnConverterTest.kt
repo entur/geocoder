@@ -1,8 +1,8 @@
 package no.entur.geocoder.converter.source.stedsnavn
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.converter.target.NominatimPlace
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -58,13 +58,12 @@ class StedsnavnConverterTest {
         assertTrue(outputFile.exists(), "Output file should exist")
         assertTrue(outputFile.length() > 0, "Output file should not be empty")
 
-        val objectMapper = jacksonObjectMapper()
         val lines = outputFile.readLines()
         assertTrue(lines.isNotEmpty(), "Output file should have lines")
         assertTrue(lines.size > 1, "Output file should have at least two lines (header and data)")
 
         val firstPlaceJson = lines[1]
-        val nominatimPlace: NominatimPlace = objectMapper.readValue(firstPlaceJson)
+        val nominatimPlace: NominatimPlace = jacksonMapper.readValue(firstPlaceJson)
 
         assertNotNull(nominatimPlace.content.firstOrNull(), "Place content should not be null")
         val placeContent = nominatimPlace.content.first()
