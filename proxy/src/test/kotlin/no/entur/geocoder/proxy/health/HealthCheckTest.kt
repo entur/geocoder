@@ -15,7 +15,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
-import no.entur.geocoder.proxy.Response
+import no.entur.geocoder.proxy.ProxyResponse
 import no.entur.geocoder.proxy.photon.PhotonApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -57,7 +57,7 @@ class HealthCheckTest {
                         when (endpoint) {
                             LIVENESS_ENDPOINT -> healthCheck.liveness()
                             READINESS_ENDPOINT -> healthCheck.readiness()
-                            else -> Response(mapOf("error" to "Unknown endpoint"), HttpStatusCode.NotFound)
+                            else -> ProxyResponse(mapOf("error" to "Unknown endpoint"), HttpStatusCode.NotFound)
                         }
                     call.respondText(
                         objectMapper.writeValueAsString(response.message),
@@ -86,15 +86,11 @@ class HealthCheckTest {
     }
 
     /** Creates a successful Photon response handler. */
-    private fun createSuccessfulPhotonResponse(
-        validateUrl: Boolean = false,
-    ): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = { request ->
-        if (validateUrl) {
-            val url = request.url.toString()
-            assertTrue(url.startsWith("$DEFAULT_PHOTON_URL/api"))
-            assertTrue(url.contains("q=Oslo"))
-            assertTrue(url.contains("limit=1"))
-        }
+    private fun createSuccessfulPhotonResponse(): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = { request ->
+        val url = request.url.toString()
+        assertTrue(url.startsWith("$DEFAULT_PHOTON_URL/api"))
+        assertTrue(url.contains("q=Oslo"))
+        assertTrue(url.contains("limit=1"))
         respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
     }
 
@@ -135,7 +131,7 @@ class HealthCheckTest {
     @Test
     fun `readiness check returns UP when Photon is available`() =
         testApplication {
-            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createSuccessfulPhotonResponse(validateUrl = true))
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, mockEngineHandler = createSuccessfulPhotonResponse())
             performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
         }
 

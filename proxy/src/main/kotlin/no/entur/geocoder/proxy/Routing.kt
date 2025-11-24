@@ -97,9 +97,9 @@ object Routing {
     }
 
     private suspend fun RoutingContext.okResponse(handler: suspend RoutingContext.() -> Any) =
-        this.handleResponse { Response(handler(), HttpStatusCode.OK) }
+        this.handleResponse { ProxyResponse(handler()) }
 
-    private suspend fun RoutingContext.handleResponse(handler: suspend RoutingContext.() -> Response) {
+    private suspend fun RoutingContext.handleResponse(handler: suspend RoutingContext.() -> ProxyResponse) {
         try {
             val res = handler.invoke(this)
             call.respond(res.status, res.message)

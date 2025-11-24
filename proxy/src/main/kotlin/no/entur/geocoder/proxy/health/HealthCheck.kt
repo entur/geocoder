@@ -3,7 +3,7 @@ package no.entur.geocoder.proxy.health
 import io.ktor.http.*
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
-import no.entur.geocoder.proxy.Response
+import no.entur.geocoder.proxy.ProxyResponse
 import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory
 class HealthCheck(private val photonApi: PhotonApi) {
     private val logger = LoggerFactory.getLogger(HealthCheck::class.java)
 
-    suspend fun liveness(): Response =
+    fun liveness(): ProxyResponse =
         respondUp()
 
-    suspend fun readiness(): Response {
+    suspend fun readiness(): ProxyResponse {
         val reason =
             try {
                 withTimeout(5000) {
@@ -56,10 +56,10 @@ class HealthCheck(private val photonApi: PhotonApi) {
     }
 
     private fun respondDown(reason: String) =
-        Response(mapOf("status" to "DOWN", "reason" to reason), HttpStatusCode.ServiceUnavailable)
+        ProxyResponse(mapOf("status" to "DOWN", "reason" to reason), HttpStatusCode.ServiceUnavailable)
 
     private fun respondUp() =
-        Response(mapOf("status" to "UP"), HttpStatusCode.OK)
+        ProxyResponse(mapOf("status" to "UP"))
 
     data class Info(val build: Build) {
         data class Build(val version: String?, val name: String)
