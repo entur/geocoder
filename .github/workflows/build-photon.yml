@@ -30,7 +30,7 @@ on:
 run-name: "Photon: ${{ inputs.build || 'Scheduled full import' }}${{ startsWith(inputs.build, '🚀') && format(' (tag: {0})', inputs.photon_image_tag) || '' }}"
 
 env:
-  DEFAULT_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/os-metrics-and-version/photon-0.7.0.jar'
+  DEFAULT_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/metrics-and-version/photon-0.7.0.jar'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
