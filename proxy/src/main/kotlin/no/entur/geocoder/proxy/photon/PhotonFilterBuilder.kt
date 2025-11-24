@@ -1,7 +1,9 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 
@@ -41,7 +43,7 @@ object PhotonFilterBuilder {
         categories: List<String>,
     ): List<String> =
         buildList {
-            boundaryCountry?.let { add("country.$it") }
+            Country.fromThreeLetterCode(boundaryCountry)?.let { add(COUNTRY_PREFIX + it.name) }
             if (boundaryCountyIds.isNotEmpty()) {
                 addAll(boundaryCountyIds.map { "county_gid.$it" })
             }

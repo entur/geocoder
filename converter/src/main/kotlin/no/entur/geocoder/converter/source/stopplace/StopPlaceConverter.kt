@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.stopplace
 
 import no.entur.geocoder.common.*
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
@@ -85,7 +86,7 @@ class StopPlaceConverter : Converter {
             tags
                 .plus(SOURCE_NSR)
                 .plus(tariffZoneCategories)
-                .plus("country.${country.name}")
+                .plus(COUNTRY_PREFIX + country.name)
                 .plus(countyGid?.let { "county_gid.$it" })
                 .plus(localityGid?.let { "locality_gid.$it" })
                 .plus(multimodalityCategory)
@@ -210,7 +211,7 @@ class StopPlaceConverter : Converter {
         val categories =
             tags
                 .plus(SOURCE_NSR)
-                .plus("country.${country.name}")
+                .plus(COUNTRY_PREFIX + country.name)
                 .plus(countyGid?.let { "county_gid.$it" })
                 .plus(localityGid?.let { "locality_gid.$it" })
                 .filterNotNull()

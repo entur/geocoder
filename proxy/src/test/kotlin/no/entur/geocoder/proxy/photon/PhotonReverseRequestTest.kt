@@ -135,7 +135,7 @@ class PhotonReverseRequestTest {
 
         val request = PhotonReverseRequest.from(req)
 
-        assertTrue(request.includes.contains("country.NOR"))
+        assertTrue(request.includes.contains("country.no"))
         assertTrue(request.includes.contains("county_gid.03"))
         assertTrue(request.includes.contains("locality_gid.0301"))
         assertTrue(request.includes.contains("legacy.source.osm"))
@@ -190,7 +190,7 @@ class PhotonReverseRequestTest {
         val request = PhotonReverseRequest.from(req)
 
         assertEquals(7, request.includes.size)
-        assertTrue(request.includes.contains("country.NOR"))
+        assertTrue(request.includes.contains("country.no"))
         assertTrue(request.includes.contains("county_gid.03"))
         assertTrue(request.includes.contains("county_gid.18"))
         assertTrue(request.includes.contains("county_gid.50"))

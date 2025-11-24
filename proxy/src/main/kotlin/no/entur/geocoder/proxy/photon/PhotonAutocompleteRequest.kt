@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
@@ -60,7 +61,7 @@ data class PhotonAutocompleteRequest(
             val includes =
                 buildList {
                     if (req.countries.isNotEmpty()) {
-                        addAll(req.countries.map { "country.$it" })
+                        addAll(req.countries.map { COUNTRY_PREFIX + it })
                     }
                     if (req.countyIds.isNotEmpty()) {
                         addAll(req.countyIds.map { "county_gid.$it" })

@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.source.poi
 
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.OSM_CUSTOM_POI
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Country
@@ -62,7 +63,7 @@ class PoiConverter : Converter {
                         place_id = placeId,
                         object_type = "N",
                         object_id = placeId,
-                        categories = listOf(OSM_CUSTOM_POI, "country.${country.name}"),
+                        categories = listOf(OSM_CUSTOM_POI, COUNTRY_PREFIX + country.name),
                         rank_address = 30,
                         importance = 0.5.toBigDecimal(),
                         name = Name(name = name),

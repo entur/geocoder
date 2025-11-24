@@ -69,7 +69,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("country.NOR"))
+        assertTrue(request.includes.contains("country.no"))
         assertTrue(request.includes.contains("county_gid.03"))
         assertTrue(request.includes.contains("legacy.source.osm"))
         assertTrue(request.includes.contains("legacy.layer.venue"))
@@ -218,7 +218,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("country.NOR"))
+        assertTrue(request.includes.contains("country.no"))
         assertTrue(request.includes.contains("county_gid.03"))
         assertTrue(request.includes.contains("county_gid.18"))
         assertTrue(request.includes.contains("locality_gid.0301"))

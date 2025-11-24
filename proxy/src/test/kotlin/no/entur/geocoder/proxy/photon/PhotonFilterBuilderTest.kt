@@ -21,7 +21,7 @@ class PhotonFilterBuilderTest {
                     layers = emptyList(),
                     categories = emptyList(),
                     multiModal = "all",
-                ) to emptyList<String>(),
+                ) to emptyList(),
                 PeliasAutocompleteRequest(
                     text = "Oslo only",
                     boundaryCountry = "NOR",
@@ -33,7 +33,7 @@ class PhotonFilterBuilderTest {
                     layers = emptyList(),
                     categories = emptyList(),
                     multiModal = "all",
-                ) to listOf("country.NOR", "county_gid.03"),
+                ) to listOf("country.no", "county_gid.03"),
                 PeliasAutocompleteRequest(
                     text = "Bergen addresses",
                     boundaryCountry = "NOR",
@@ -45,7 +45,7 @@ class PhotonFilterBuilderTest {
                     layers = listOf("address"),
                     categories = emptyList(),
                     multiModal = "all",
-                ) to listOf("country.NOR", "county_gid.46", "locality_gid.4601", "legacy.source.kartverket", "legacy.layer.address"),
+                ) to listOf("country.no", "county_gid.46", "locality_gid.4601", "legacy.source.kartverket", "legacy.layer.address"),
                 PeliasAutocompleteRequest(
                     text = "Trondheim transit",
                     boundaryCountry = "NOR",
@@ -60,7 +60,7 @@ class PhotonFilterBuilderTest {
                 )
                     to
                     listOf(
-                        "country.NOR", "county_gid.50", "tariff_zone_id.ATB:TariffZone:A", "tariff_zone_id.ATB:TariffZone:B",
+                        "country.no", "county_gid.50", "tariff_zone_id.ATB:TariffZone:A", "tariff_zone_id.ATB:TariffZone:B",
                         "tariff_zone_authority.ATB", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
                     ),
                 PeliasAutocompleteRequest(

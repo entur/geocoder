@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.stedsnavn
 
 import no.entur.geocoder.common.*
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
@@ -219,7 +220,7 @@ class StedsnavnConverter : Converter {
                 LEGACY_CATEGORY_PREFIX + entry.navneobjekttype,
             )
 
-        val categories = tags.plus(SOURCE_STEDSNAVN).plus("country.${country.name}")
+        val categories = tags.plus(SOURCE_STEDSNAVN).plus(COUNTRY_PREFIX + country.name)
 
         val id = entry.lokalId
         val extra =

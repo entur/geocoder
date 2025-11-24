@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.osm
 
 import no.entur.geocoder.common.*
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
@@ -190,7 +191,7 @@ class OsmEntityConverter(
     ): List<String> =
         buildList {
             addAll(tags)
-            country?.let { add("country.${it.name}") }
+            country?.let { add(COUNTRY_PREFIX + it.name) }
             county?.refCode?.let { add("county_gid.KVE:TopographicPlace:$it") }
             municipality?.refCode?.let { add("locality_gid.KVE:TopographicPlace:$it") }
         }

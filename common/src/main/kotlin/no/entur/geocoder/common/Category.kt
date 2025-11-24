@@ -11,6 +11,8 @@ object Category {
     const val SOURCE_STEDSNAVN = "source.kartverket.stedsnavn"
     const val SOURCE_NSR = "source.nsr"
 
+    const val COUNTRY_PREFIX = "country."
+
     const val LEGACY_LAYER_PREFIX = "legacy.layer."
     const val LEGACY_LAYER_VENUE = LEGACY_LAYER_PREFIX + "venue"
     const val LEGACY_LAYER_ADDRESS = LEGACY_LAYER_PREFIX + "address"

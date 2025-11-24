@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.adresse
 
 import no.entur.geocoder.common.*
+import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
@@ -133,7 +134,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 tags = tags.joinToString(","),
                 alt_name = adresse.adressetilleggsnavn,
             )
-        val categories = tags.plus(SOURCE_ADRESSE).plus("country.${country.name}")
+        val categories = tags.plus(SOURCE_ADRESSE).plus(COUNTRY_PREFIX + country.name)
 
         val fylkesnavn = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnavn }
 
