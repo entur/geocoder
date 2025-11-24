@@ -8,6 +8,7 @@ import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source.CUSTOM_POI
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.source.PlaceId
 import no.entur.geocoder.converter.source.stopplace.NetexParser
@@ -17,7 +18,7 @@ import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDateTime
 
-class PoiConverter : Converter {
+class PoiConverter(config: ConverterConfig) : Converter {
     override fun convert(
         input: File,
         output: File,

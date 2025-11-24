@@ -1,31 +1,18 @@
 package no.entur.geocoder.converter.source.stopplace
 
+import no.entur.geocoder.converter.ConverterConfig.StopPlaceConfig
+
 /**
- * Calculates popularity (boost) values for stop places based on legacy kakka boost configuration.
+ * Calculates popularity (boost) values for stop places based on configurable boost configuration.
  *
  * Configuration reference (pelias.stop.place.boost.config):
- * {"defaultValue":30, "stopTypeFactors":{"busStation":{"*":2},"metroStation":{"*":2},"railStation":{"*":2}}}
- * See: /Users/testower/Developer/github/entur/kakka/helm/kakka/env/values-kub-ent-*.yaml
+ * {"defaultValue":50, "stopTypeFactors":{"busStation":2.0,"metroStation":2.0,"railStation":2.0}, "interchangeFactors":{...}}
  *
  * Formula: popularity = defaultValue * (SUM of stopTypeFactors) * interchangeFactor
  * For multimodal parents: factors from all child stop types are summed.
  */
-object StopPlacePopularityCalculator {
-    internal const val DEFAULT_VALUE = 50
-
-    private val STOP_TYPE_FACTORS =
-        mapOf(
-            "busStation" to 2.0,
-            "metroStation" to 2.0,
-            "railStation" to 2.0,
-        )
-
-    // Interchange weighting factors
-    private val INTERCHANGE_FACTORS =
-        mapOf(
-            "recommendedInterchange" to 3.0,
-            "preferredInterchange" to 10.0,
-        )
+class StopPlacePopularityCalculator(private val config: StopPlaceConfig) {
+    internal val defaultValue = config.defaultValue
 
     /**
      * Calculate raw popularity value (boost) for a stop place.
@@ -38,7 +25,7 @@ object StopPlacePopularityCalculator {
      * @return Raw popularity value (not normalized)
      */
     fun calculatePopularity(stopPlace: StopPlace, childTypes: List<String> = emptyList()): Long {
-        var popularity = DEFAULT_VALUE.toLong()
+        var popularity = config.defaultValue.toLong()
 
         // Collect all stop types: parent's own type (if any) plus children's types
         val allStopTypes = mutableListOf<String>()
@@ -69,7 +56,7 @@ object StopPlacePopularityCalculator {
         if (stopPlaceType == null) {
             return 1.0
         }
-        return STOP_TYPE_FACTORS[stopPlaceType] ?: 1.0
+        return config.stopTypeFactors[stopPlaceType] ?: 1.0
     }
 
     /**
@@ -80,6 +67,6 @@ object StopPlacePopularityCalculator {
         if (weighting == null) {
             return null
         }
-        return INTERCHANGE_FACTORS[weighting]
+        return config.interchangeFactors[weighting]
     }
 }

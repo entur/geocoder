@@ -1,9 +1,9 @@
 package no.entur.geocoder.converter.source.adresse
 
-object MatrikkelPopularityCalculator {
-    private const val DEFAULT_VALUE = 20.0
+import no.entur.geocoder.converter.ConverterConfig.MatrikkelConfig
 
-    fun calculateAddressPopularity(): Double = DEFAULT_VALUE
+class MatrikkelPopularityCalculator(private val config: MatrikkelConfig) {
+    fun calculateAddressPopularity(): Double = config.addressPopularity
 
-    fun calculateStreetPopularity(): Double = DEFAULT_VALUE
+    fun calculateStreetPopularity(): Double = config.streetPopularity
 }

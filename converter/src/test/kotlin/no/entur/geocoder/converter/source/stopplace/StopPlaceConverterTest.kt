@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.source.stopplace
 
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.FileUtil.streamToFile
 import java.io.File
 import kotlin.test.Test
@@ -8,7 +9,7 @@ import kotlin.test.assertTrue
 class StopPlaceConverterTest {
     @Test
     fun `convert stopPlaces xml to nominatimDumpFile json`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream) { "stopPlaces.xml not found in test resources" }
 
@@ -26,7 +27,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `convert GroupOfStopPlaces to nominatim format`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream) { "stopPlaces.xml not found in test resources" }
 
@@ -48,7 +49,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `output file should contain valid JSON on each line`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -68,7 +69,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `all stop places should have coordinates`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -86,7 +87,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have transport mode categories`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -103,7 +104,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `output should have header as first line`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -124,7 +125,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have valid IDs`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -141,7 +142,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `GroupOfStopPlaces should have higher importance than individual stops`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream)
 
@@ -160,7 +161,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have names`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -177,7 +178,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `converted file should have multiple entries`() {
-        val converter = StopPlaceConverter()
+        val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 

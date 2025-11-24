@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.stopplace
 
+import no.entur.geocoder.converter.ConverterConfig.GroupOfStopPlacesConfig
+
 /**
  * Calculates popularity (boost) values for GroupOfStopPlaces based on legacy kakka boost configuration.
  *
@@ -21,19 +23,17 @@ package no.entur.geocoder.converter.source.stopplace
  *     .reduce(1L, Math::multiplyExact);
  * ```
  */
-object GroupOfStopPlacesPopularityCalculator {
-    private const val GOS_BOOST_FACTOR = 10.0
-
+class GroupOfStopPlacesPopularityCalculator(private val config: GroupOfStopPlacesConfig) {
     /**
      * Calculate raw popularity value (boost) for a GroupOfStopPlaces based on member stop popularities.
      *
      * @param memberPopularities List of popularity values for all member stop places
-     * @return Raw popularity value (not normalized). Returns GOS_BOOST_FACTOR for empty groups.
+     * @return Raw popularity value (not normalized). Returns gosBoostFactor for empty groups.
      */
     fun calculatePopularity(memberPopularities: List<Long>): Double {
         if (memberPopularities.isEmpty()) {
             // Empty groups get just the boost factor
-            return GOS_BOOST_FACTOR
+            return config.gosBoostFactor
         }
 
         // Calculate product of all member popularities
@@ -44,6 +44,6 @@ object GroupOfStopPlacesPopularityCalculator {
             }
 
         // Apply gosBoostFactor
-        return GOS_BOOST_FACTOR * product
+        return config.gosBoostFactor * product
     }
 }

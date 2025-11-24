@@ -12,6 +12,7 @@ import no.entur.geocoder.common.Category.SOURCE_ADRESSE
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
@@ -25,7 +26,9 @@ import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
 
-class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
+class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterConfig) : Converter {
+    private val popularityCalculator = MatrikkelPopularityCalculator(config.matrikkel)
+    private val importanceCalculator = ImportanceCalculator(config.importance)
     val kommuneFylkeMapping: Map<String, KommuneInfo> by lazy {
         KommuneFylkeMapping.build(stedsnavnGmlFile)
     }
@@ -80,7 +83,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             placeId = PlaceId.address.create(adresse.lokalid),
             id = adresse.lokalid, // This is the only numeric id type. All others are colon separated.
             tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
-            popularity = MatrikkelPopularityCalculator.calculateAddressPopularity(),
+            popularity = popularityCalculator.calculateAddressPopularity(),
             displayName = null, // Addresses proper are considered to be "nameless" in Photon
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
             postcode = adresse.postnummer,
@@ -97,7 +100,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
             placeId = PlaceId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
-            popularity = MatrikkelPopularityCalculator.calculateStreetPopularity(),
+            popularity = popularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,
             postcode = null,
@@ -145,7 +148,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null) : Converter {
                 object_id = placeId,
                 categories = categories.plus(tags),
                 rank_address = 26,
-                importance = ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale(),
+                importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale(),
                 parent_place_id = 0,
                 name =
                     displayName?.let {

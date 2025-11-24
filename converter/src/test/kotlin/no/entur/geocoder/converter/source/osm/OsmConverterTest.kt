@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.source.ImportanceCalculator
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.util.*
 import kotlin.test.*
@@ -9,7 +11,10 @@ class OsmConverterTest {
         val nodesCoords = CoordinateStore(100)
         val wayCentroids = CoordinateStore(100)
         val adminBoundaryIndex = AdministrativeBoundaryIndex()
-        return OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex)
+        val config = ConverterConfig()
+        val popularityCalculator = OSMPopularityCalculator(config.osm)
+        val importanceCalculator = ImportanceCalculator(config.importance)
+        return OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, popularityCalculator, importanceCalculator)
     }
 
     @Test

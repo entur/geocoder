@@ -1,15 +1,18 @@
 package no.entur.geocoder.converter.source
 
+import no.entur.geocoder.converter.ConverterConfig
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ImportanceCalculatorTest {
+    private val calculator = ImportanceCalculator(ConverterConfig().importance)
+
     @Test
     fun `output is always within valid range`() {
         val testValues = listOf(1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, 100_000_000, 1_000_000_000)
         testValues.forEach { value ->
-            val importance = ImportanceCalculator.calculateImportance(value)
+            val importance = calculator.calculateImportance(value)
             assertTrue(importance >= 0.1, "Importance $importance below floor for value $value")
             assertTrue(importance <= 1.0, "Importance $importance above 1.0 for value $value")
         }
@@ -18,7 +21,7 @@ class ImportanceCalculatorTest {
     @Test
     fun `higher popularity always gives higher importance`() {
         val values = listOf(1, 50, 500, 5_000, 50_000, 500_000, 5_000_000, 50_000_000)
-        val importances = values.map { ImportanceCalculator.calculateImportance(it) }
+        val importances = values.map { calculator.calculateImportance(it) }
 
         // Verify monotonically increasing
         importances.zipWithNext().forEach { (current, next) ->
@@ -28,23 +31,23 @@ class ImportanceCalculatorTest {
 
     @Test
     fun `minimum value gives floor`() {
-        val result = ImportanceCalculator.calculateImportance(1)
+        val result = calculator.calculateImportance(1)
         assertEquals(0.1, result, 0.001)
     }
 
     @Test
     fun `maximum value gives 1_0`() {
-        val result = ImportanceCalculator.calculateImportance(1_000_000_000)
+        val result = calculator.calculateImportance(1_000_000_000)
         assertEquals(1.0, result, 0.001)
     }
 
     @Test
     fun `equal logarithmic steps produce equal importance steps`() {
         // Powers of 10 should have equal spacing in importance
-        val step1 = ImportanceCalculator.calculateImportance(100)
-        val step2 = ImportanceCalculator.calculateImportance(1_000)
-        val step3 = ImportanceCalculator.calculateImportance(10_000)
-        val step4 = ImportanceCalculator.calculateImportance(100_000)
+        val step1 = calculator.calculateImportance(100)
+        val step2 = calculator.calculateImportance(1_000)
+        val step3 = calculator.calculateImportance(10_000)
+        val step4 = calculator.calculateImportance(100_000)
 
         val delta1 = step2 - step1
         val delta2 = step3 - step2
@@ -58,7 +61,7 @@ class ImportanceCalculatorTest {
     @Test
     fun `preserves ordering of any input sequence`() {
         val randomValues = listOf(42, 157, 1_234, 5_678, 123_456, 9_876_543)
-        val importances = randomValues.map { ImportanceCalculator.calculateImportance(it) }
+        val importances = randomValues.map { calculator.calculateImportance(it) }
 
         assertEquals(importances, importances.sorted())
     }
@@ -70,18 +73,18 @@ class ImportanceCalculatorTest {
         val floor = 0.2
 
         // Minimum should give floor
-        val minResult = ImportanceCalculator.calculateImportance(10, minPop, maxPop, floor)
+        val minResult = calculator.calculateImportance(10, minPop, maxPop, floor)
         assertEquals(floor, minResult, 0.001)
 
         // Maximum should give 1.0
-        val maxResult = ImportanceCalculator.calculateImportance(10_000, minPop, maxPop, floor)
+        val maxResult = calculator.calculateImportance(10_000, minPop, maxPop, floor)
         assertEquals(1.0, maxResult, 0.001)
     }
 
     @Test
     fun `custom floor is respected`() {
         val customFloor = 0.3
-        val result = ImportanceCalculator.calculateImportance(1, floor = customFloor)
+        val result = calculator.calculateImportance(1, floor = customFloor)
         assertEquals(customFloor, result, 0.001)
     }
 }

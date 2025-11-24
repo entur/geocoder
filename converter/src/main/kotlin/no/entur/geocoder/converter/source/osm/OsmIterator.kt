@@ -54,9 +54,9 @@ class OsmIterator(inputFile: File, private val filter: ((Entity) -> Boolean)? = 
 
     companion object {
         /** Filter for POI entities (entities with name and wanted tags) */
-        val POI_FILTER: (Entity) -> Boolean = { entity ->
+        fun poiFilter(popularityCalculator: OSMPopularityCalculator): (Entity) -> Boolean = { entity ->
             entity.tags.any { it.key == "name" } &&
-                entity.tags.any { tag -> OSMPopularityCalculator.hasFilter(tag.key, tag.value) }
+                entity.tags.any { tag -> popularityCalculator.hasFilter(tag.key, tag.value) }
         }
 
         /** Filter for administrative boundary relations only */

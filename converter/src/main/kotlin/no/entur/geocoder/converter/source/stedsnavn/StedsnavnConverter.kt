@@ -10,6 +10,7 @@ import no.entur.geocoder.common.Category.SOURCE_STEDSNAVN
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
@@ -22,7 +23,10 @@ import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamReader
 
-class StedsnavnConverter : Converter {
+class StedsnavnConverter(config: ConverterConfig) : Converter {
+    private val popularityCalculator = StedsnavnPopularityCalculator(config.stedsnavn)
+    private val importanceCalculator = ImportanceCalculator(config.importance)
+
     override fun convert(
         input: File,
         output: File,
@@ -244,9 +248,9 @@ class StedsnavnConverter : Converter {
                 categories = categories,
                 rank_address = 16,
                 importance =
-                    ImportanceCalculator
+                    importanceCalculator
                         .calculateImportance(
-                            StedsnavnPopularityCalculator.calculatePopularity(entry.navneobjekttype),
+                            popularityCalculator.calculatePopularity(entry.navneobjekttype),
                         ).toBigDecimalWithScale(),
                 parent_place_id = 0,
                 name =

@@ -3,6 +3,7 @@ package no.entur.geocoder.converter.source.stedsnavn
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.target.NominatimPlace
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -21,7 +22,7 @@ class StedsnavnConverterTest {
 
     @BeforeEach
     fun setup() {
-        converter = StedsnavnConverter()
+        converter = StedsnavnConverter(ConverterConfig())
     }
 
     fun parseDefault() {

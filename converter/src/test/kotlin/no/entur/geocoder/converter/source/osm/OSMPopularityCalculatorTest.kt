@@ -1,19 +1,22 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.converter.ConverterConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OSMPopularityCalculatorTest {
+    private val calculator = OSMPopularityCalculator(ConverterConfig().osm)
+
     @Test
     fun `calculates popularity as base times priority`() {
         // Test that the formula is: popularity = DEFAULT_VALUE × priority
         val hospitalTags = mapOf("amenity" to "hospital") // Priority 9
         val cinemaTags = mapOf("amenity" to "cinema") // Priority 1
 
-        val hospitalPop = OSMPopularityCalculator.calculatePopularity(hospitalTags)
-        val cinemaPop = OSMPopularityCalculator.calculatePopularity(cinemaTags)
+        val hospitalPop = calculator.calculatePopularity(hospitalTags)
+        val cinemaPop = calculator.calculatePopularity(cinemaTags)
 
         // Both should be non-zero and hospital should be exactly 9x cinema
         assertTrue(hospitalPop > 0, "Hospital should have positive popularity")
@@ -31,9 +34,9 @@ class OSMPopularityCalculatorTest {
                 "tourism" to "attraction", // Priority 1
             )
 
-        val highPop = OSMPopularityCalculator.calculatePopularity(highOnly)
-        val lowPop = OSMPopularityCalculator.calculatePopularity(lowOnly)
-        val bothPop = OSMPopularityCalculator.calculatePopularity(both)
+        val highPop = calculator.calculatePopularity(highOnly)
+        val lowPop = calculator.calculatePopularity(lowOnly)
+        val bothPop = calculator.calculatePopularity(both)
 
         // Should use max, not sum or average
         assertEquals(highPop, bothPop, "Should use highest priority, not sum or average")
@@ -47,28 +50,28 @@ class OSMPopularityCalculatorTest {
         val convenience = mapOf("shop" to "convenience")
         val randomTag = mapOf("foo" to "bar")
 
-        assertEquals(0.0, OSMPopularityCalculator.calculatePopularity(bench))
-        assertEquals(0.0, OSMPopularityCalculator.calculatePopularity(convenience))
-        assertEquals(0.0, OSMPopularityCalculator.calculatePopularity(randomTag))
+        assertEquals(0.0, calculator.calculatePopularity(bench))
+        assertEquals(0.0, calculator.calculatePopularity(convenience))
+        assertEquals(0.0, calculator.calculatePopularity(randomTag))
     }
 
     @Test
     fun `empty tags return zero popularity`() {
-        assertEquals(0.0, OSMPopularityCalculator.calculatePopularity(emptyMap()))
+        assertEquals(0.0, calculator.calculatePopularity(emptyMap()))
     }
 
     @Test
     fun `hasFilter requires exact key and value match`() {
         // Test that it's not just checking keys or doing partial matches
-        assertTrue(OSMPopularityCalculator.hasFilter("amenity", "hospital"))
-        assertFalse(OSMPopularityCalculator.hasFilter("amenity", "bench"))
-        assertFalse(OSMPopularityCalculator.hasFilter("amenity", "hospitals")) // Plural
-        assertFalse(OSMPopularityCalculator.hasFilter("building", "hospital")) // Wrong key
+        assertTrue(calculator.hasFilter("amenity", "hospital"))
+        assertFalse(calculator.hasFilter("amenity", "bench"))
+        assertFalse(calculator.hasFilter("amenity", "hospitals")) // Plural
+        assertFalse(calculator.hasFilter("building", "hospital")) // Wrong key
     }
 
     @Test
     fun `getFilterKeys returns non-empty set`() {
-        val keys = OSMPopularityCalculator.getFilterKeys()
+        val keys = calculator.getFilterKeys()
 
         assertTrue(keys.isNotEmpty(), "Should have configured filter keys")
         assertTrue(keys.contains("amenity"), "Should include common OSM keys")
@@ -82,9 +85,9 @@ class OSMPopularityCalculatorTest {
         val hotel = mapOf("tourism" to "hotel")
         val cinema = mapOf("amenity" to "cinema")
 
-        val hospitalPop = OSMPopularityCalculator.calculatePopularity(hospital)
-        val hotelPop = OSMPopularityCalculator.calculatePopularity(hotel)
-        val cinemaPop = OSMPopularityCalculator.calculatePopularity(cinema)
+        val hospitalPop = calculator.calculatePopularity(hospital)
+        val hotelPop = calculator.calculatePopularity(hotel)
+        val cinemaPop = calculator.calculatePopularity(cinema)
 
         // Verify they're all different and all positive
         assertTrue(hospitalPop > 0)

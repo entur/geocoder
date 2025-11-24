@@ -21,6 +21,8 @@ class OsmEntityConverter(
     private val nodesCoords: CoordinateStore,
     private val wayCentroids: CoordinateStore,
     private val adminBoundaryIndex: AdministrativeBoundaryIndex,
+    private val popularityCalculator: OSMPopularityCalculator,
+    private val importanceCalculator: ImportanceCalculator,
 ) {
     companion object {
         private const val OBJECT_TYPE_NODE = "N"
@@ -52,13 +54,13 @@ class OsmEntityConverter(
     fun isPotentialPoi(entity: Entity): Boolean {
         val tags = entity.tags.associate { it.key to it.value }
         return tags.containsKey("name") &&
-            tags.any { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
+            tags.any { (key, value) -> popularityCalculator.hasFilter(key, value) }
     }
 
     private fun filterTags(tags: Collection<Tag>): Map<String, String> =
         tags
             .associate { it.key to it.value }
-            .filter { (key, value) -> OSMPopularityCalculator.hasFilter(key, value) }
+            .filter { (key, value) -> popularityCalculator.hasFilter(key, value) }
 
     private fun convertNode(node: Node, tags: Map<String, String>, name: String): NominatimPlace =
         createPlaceContent(
@@ -209,7 +211,7 @@ class OsmEntityConverter(
         }
 
     private fun calculateImportance(tags: Map<String, String>): BigDecimal {
-        val popularity = OSMPopularityCalculator.calculatePopularity(tags)
-        return ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
+        val popularity = popularityCalculator.calculatePopularity(tags)
+        return importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
     }
 }

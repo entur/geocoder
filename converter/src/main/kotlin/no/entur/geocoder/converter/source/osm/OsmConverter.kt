@@ -1,7 +1,9 @@
 package no.entur.geocoder.converter.source.osm
 
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
+import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimPlace
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.io.File
@@ -18,13 +20,16 @@ import java.nio.file.Paths
  *    b. Calculate centroids for relation member ways
  *    c. Convert all POI entities to Nominatim format
  */
-class OsmConverter : Converter {
+class OsmConverter(config: ConverterConfig) : Converter {
     private val nodesCoords = CoordinateStore(500000)
     private val wayCentroids = CoordinateStore(50000)
     private val adminBoundaryIndex = AdministrativeBoundaryIndex()
     private val nodeCollector = NodeCoordinateCollector(nodesCoords, wayCentroids)
     private val boundaryCollector = AdminBoundaryCollector(nodesCoords, wayCentroids)
-    private val entityConverter = OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex)
+    private val popularityCalculator = OSMPopularityCalculator(config.osm)
+    private val importanceCalculator = ImportanceCalculator(config.importance)
+    private val entityConverter =
+        OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, popularityCalculator, importanceCalculator)
 
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
@@ -53,7 +58,8 @@ class OsmConverter : Converter {
         sequence {
             // First pass: collect member way IDs from POI relations and calculate Way POI centroids
             val relationMemberWayIds = hashSetOf<Long>()
-            parsePbf(inputFile, OsmIterator.POI_FILTER).forEach { entity ->
+            val poiFilter = OsmIterator.poiFilter(popularityCalculator)
+            parsePbf(inputFile, poiFilter).forEach { entity ->
                 when (entity) {
                     is Way -> nodeCollector.calculateAndStoreWayCentroid(entity)
                     is Relation -> {
@@ -75,7 +81,7 @@ class OsmConverter : Converter {
 
             // Third pass: convert all POI entities to Nominatim format
             var count = 0
-            parsePbf(inputFile, OsmIterator.POI_FILTER).forEach { entity ->
+            parsePbf(inputFile, poiFilter).forEach { entity ->
 
                 entityConverter.convert(entity)?.let {
                     yield(it)

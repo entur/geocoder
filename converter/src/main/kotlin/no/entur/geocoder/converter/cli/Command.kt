@@ -1,11 +1,13 @@
 package no.entur.geocoder.converter.cli
 
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.cli.FileTypeDetector.FileType.*
 import no.entur.geocoder.converter.source.adresse.MatrikkelConverter
-import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter
 import no.entur.geocoder.converter.source.osm.OsmConverter
-import no.entur.geocoder.converter.source.stedsnavn.StedsnavnConverter
 import no.entur.geocoder.converter.source.poi.PoiConverter
+import no.entur.geocoder.converter.source.stedsnavn.StedsnavnConverter
+import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -27,6 +29,7 @@ class Command(private val args: Array<String>) {
         var stedsnavnInputPath: String? = null
         var poiInputPath: String? = null
         var outputPath: String? = null
+        var configPath: String? = null
         var forceOverwrite = false
         var appendMode = false
         var noCounty = false
@@ -83,6 +86,14 @@ class Command(private val args: Array<String>) {
                     i += 2
                 }
 
+                "-c" -> {
+                    if (i + 1 >= args.size) {
+                        exit("Error: -c flag requires <config-file> argument.")
+                    }
+                    configPath = args[i + 1]
+                    i += 2
+                }
+
                 "-f" -> {
                     forceOverwrite = true
                     i += 1
@@ -97,6 +108,7 @@ class Command(private val args: Array<String>) {
                     noCounty = true
                     i += 1
                 }
+
                 "--no-stedsnavn" -> {
                     noStedsnavn = true
                     i += 1
@@ -143,17 +155,18 @@ class Command(private val args: Array<String>) {
         }
 
         var isFirstConversion = !appendMode
+        val config = readConfig(configPath)
 
         val stedsnavnFile = stedsnavnInputPath?.let { File(it) }
         val stedsnavnConversionPath = if (noStedsnavn) null else stedsnavnInputPath
 
         val conversionTasks =
             listOf(
-                ConversionTask("StopPlace", stopplaceInputPath, StopPlaceConverter(), FileTypeDetector.FileType.XML, "-s"),
-                ConversionTask("Matrikkel", matrikkelInputPath, MatrikkelConverter(stedsnavnFile), FileTypeDetector.FileType.CSV, "-m"),
-                ConversionTask("OSM PBF", osmInputPath, OsmConverter(), FileTypeDetector.FileType.PBF, "-p"),
-                ConversionTask("Stedsnavn GML", stedsnavnConversionPath, StedsnavnConverter(), FileTypeDetector.FileType.GML, "-g"),
-                ConversionTask("POI XML", poiInputPath, PoiConverter(), FileTypeDetector.FileType.XML, "-x"),
+                ConversionTask("StopPlace", stopplaceInputPath, StopPlaceConverter(config), XML, "-s"),
+                ConversionTask("Matrikkel", matrikkelInputPath, MatrikkelConverter(stedsnavnFile, config), CSV, "-m"),
+                ConversionTask("OSM PBF", osmInputPath, OsmConverter(config), PBF, "-p"),
+                ConversionTask("Stedsnavn GML", stedsnavnConversionPath, StedsnavnConverter(config), GML, "-g"),
+                ConversionTask("POI XML", poiInputPath, PoiConverter(config), XML, "-x"),
             )
 
         for (task in conversionTasks) {
@@ -181,6 +194,27 @@ class Command(private val args: Array<String>) {
                 isFirstConversion = false
             }
         }
+    }
+
+    internal fun readConfig(configPath: String?): ConverterConfig {
+        val configFile =
+            if (configPath != null) {
+                File(configPath)
+            } else {
+                val defaultConfig = File("converter.json")
+                if (defaultConfig.exists()) defaultConfig else null
+            }
+
+        val config = ConverterConfig.load(configFile)
+
+        if (configFile != null) {
+            if (configFile.exists()) {
+                println("Loaded configuration from: ${configFile.absolutePath}")
+            } else {
+                println("Config file not found: ${configFile.absolutePath}, using default configuration")
+            }
+        }
+        return config
     }
 
     private data class ConversionTask(
@@ -216,7 +250,7 @@ class Command(private val args: Array<String>) {
         println(
             """
             Usage: ./convert.sh [options] -o <output-file>
-            
+
             Options:
               -s <input-xml-file>     Convert StopPlace NeTEx data
               -m <input-csv-file>     Convert Matrikkel CSV data
@@ -224,6 +258,7 @@ class Command(private val args: Array<String>) {
               -g <input-gml-file>     Convert Stedsnavn GML data
               -x <input-poi-file>     Convert POI NeTEx data
               -o <output-file>        Specify the output file (required)
+              -c <config-file>        Configuration file (defaults to converter.json if it exists, otherwise built-in values)
               -f                      Force overwrite if output file exists
               -a                      Append to existing output file
               --no-county             Skip county population for Matrikkel data (when -m is provided and -g is not)

@@ -12,6 +12,7 @@ import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
@@ -21,7 +22,11 @@ import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
 import java.nio.file.Paths
 
-class StopPlaceConverter : Converter {
+class StopPlaceConverter(config: ConverterConfig) : Converter {
+    private val stopPlacePopularityCalculator = StopPlacePopularityCalculator(config.stopPlace)
+    private val groupOfStopPlacesPopularityCalculator = GroupOfStopPlacesPopularityCalculator(config.groupOfStopPlaces)
+    private val importanceCalculator = ImportanceCalculator(config.importance)
+
     override fun convert(
         input: File,
         output: File,
@@ -56,7 +61,7 @@ class StopPlaceConverter : Converter {
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
         val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
 
-        val importance = ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
+        val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tariffZoneCategories =
             stopPlace.tariffZones
@@ -200,8 +205,8 @@ class StopPlaceConverter : Converter {
                 ?.mapNotNull { stopPlacePopularities[it] }
                 ?: emptyList()
 
-        val popularity = GroupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
-        val importance = ImportanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
+        val popularity = groupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
+        val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tags =
             listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
@@ -258,7 +263,7 @@ class StopPlaceConverter : Converter {
         val stopPlacePopularities =
             stopPlacesList.associate { stopPlace ->
                 val childStopTypes = result.categories.getOrDefault(stopPlace.id, emptyList())
-                val popularity = StopPlacePopularityCalculator.calculatePopularity(stopPlace, childStopTypes)
+                val popularity = stopPlacePopularityCalculator.calculatePopularity(stopPlace, childStopTypes)
                 stopPlace.id to popularity
             }
 

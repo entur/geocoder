@@ -1,23 +1,20 @@
 package no.entur.geocoder.converter.source
 
+import no.entur.geocoder.converter.ConverterConfig.ImportanceConfig
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
 
-object ImportanceCalculator {
-    private const val MIN_POPULARITY = 1.0
-    private const val MAX_POPULARITY = 1_000_000_000.0
-    private const val IMPORTANCE_FLOOR = 0.1
-
+class ImportanceCalculator(private val config: ImportanceConfig) {
     /**
      * Normalize popularity scores to Photon importance (0-1 range).
      * Uses logarithmic normalization to handle wide-ranging values.
      */
     fun calculateImportance(
         popularity: Number,
-        minPopularity: Double = MIN_POPULARITY,
-        maxPopularity: Double = MAX_POPULARITY,
-        floor: Double = IMPORTANCE_FLOOR,
+        minPopularity: Double = config.minPopularity,
+        maxPopularity: Double = config.maxPopularity,
+        floor: Double = config.floor,
     ): Double {
         val pop = popularity.toDouble()
 
