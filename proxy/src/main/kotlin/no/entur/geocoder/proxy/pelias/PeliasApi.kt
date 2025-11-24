@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 
 class PeliasApi(private val photonApi: PhotonApi) {
     suspend fun autocomplete(params: Parameters): PeliasResult {
-        logger.debug("/v2/autocomplete: {}'", params)
+        logger.debug("/v2/autocomplete: {}'", params.formUrlEncode())
         val req = PeliasAutocompleteRequest.from(params)
 
         val photonRequest = PhotonAutocompleteRequest.from(req)
@@ -19,7 +19,7 @@ class PeliasApi(private val photonApi: PhotonApi) {
     }
 
     suspend fun reverse(params: Parameters): PeliasResult {
-        logger.debug("/v2/reverse: {}", params)
+        logger.debug("/v2/reverse: {}", params.formUrlEncode())
         val req = PeliasReverseRequest.from(params)
 
         val photonRequest = PhotonReverseRequest.from(req)
@@ -29,7 +29,7 @@ class PeliasApi(private val photonApi: PhotonApi) {
     }
 
     suspend fun place(params: Parameters): PeliasResult {
-        logger.debug("/v2/place: {}", params)
+        logger.debug("/v2/place: {}", params.formUrlEncode())
         val req = PeliasPlaceRequest.from(params)
 
         val photonRequests = PhotonAutocompleteRequest.from(req)
