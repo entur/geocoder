@@ -53,7 +53,6 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             nominatim_data=true
             photon_data=true
-            dev=true
             tst=true
             prd=true
           elif [ "${{ inputs.build }}" = "🔨 Download data → build Photon → Dev" ]; then
@@ -340,8 +339,8 @@ jobs:
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
       needs.setup.outputs.tst == 'true' &&
-      (needs.acceptance-tests-dev.result == 'success' || needs.setup.outputs.photon_data  == 'false')
-    needs: [setup, build-push, acceptance-tests-dev, resolve-image-tag]
+      (needs.photon-data.result == 'success' || needs.setup.outputs.photon_data  == 'false')
+    needs: [setup, build-push, resolve-image-tag]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
