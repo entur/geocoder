@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy.v3
 import io.ktor.http.*
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
-import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
@@ -13,9 +12,8 @@ class V3Api(private val photonApi: PhotonApi) {
         val photonRequest = PhotonAutocompleteRequest.from(req)
         logger.debug("V3 autocomplete request with query='$photonRequest'")
 
-        val photonResponse = photonApi.request(photonRequest)
+        val photonResult = photonApi.request(photonRequest)
 
-        val photonResult = PhotonResult.parse(photonResponse)
         return V3ResultTransformer.parseAndTransform(photonResult, req)
     }
 
@@ -24,9 +22,8 @@ class V3Api(private val photonApi: PhotonApi) {
         val photonRequest = PhotonReverseRequest.from(req)
         logger.debug("V3 reverse geocoding request with query=$photonRequest")
 
-        val photonResponse = photonApi.request(photonRequest)
+        val photonResult = photonApi.request(photonRequest)
 
-        val photonResult = PhotonResult.parse(photonResponse)
         return V3ResultTransformer.parseAndTransform(photonResult, req)
     }
 

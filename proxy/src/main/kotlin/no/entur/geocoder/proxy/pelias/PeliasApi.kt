@@ -13,9 +13,8 @@ class PeliasApi(private val photonApi: PhotonApi) {
         logger.debug("/v2/autocomplete: {}'", req)
 
         val photonRequest = PhotonAutocompleteRequest.from(req)
-        val apiResponse = photonApi.request(photonRequest)
+        val photonResult = photonApi.request(photonRequest)
 
-        val photonResult = PhotonResult.parse(apiResponse)
         return PeliasResultTransformer.parseAndTransform(photonResult, req)
     }
 
@@ -25,8 +24,7 @@ class PeliasApi(private val photonApi: PhotonApi) {
 
         val photonRequest = PhotonReverseRequest.from(req)
 
-        val apiResponse = photonApi.request(photonRequest)
-        val photonResult = PhotonResult.parse(apiResponse)
+        val photonResult = photonApi.request(photonRequest)
         return PeliasResultTransformer.parseAndTransform(photonResult, req)
     }
 
@@ -38,8 +36,7 @@ class PeliasApi(private val photonApi: PhotonApi) {
 
         val photonResults =
             photonRequests.map { photonRequest ->
-                val apiResponse = photonApi.request(photonRequest)
-                PhotonResult.parse(apiResponse)
+                photonApi.request(photonRequest)
             }
         val photonResult =
             PhotonResult(

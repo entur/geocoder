@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.proxy.photon.PhotonApi.PhotonApiResponse
+import io.ktor.http.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -47,7 +47,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertEquals("FeatureCollection", result.type)
         assertEquals(1, result.features.size)
@@ -92,7 +92,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertEquals("FeatureCollection", result.type)
         assertEquals(0, result.features.size)
@@ -136,7 +136,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertEquals(3, result.features.size)
         assertEquals("Place 1", result.features[0].properties.name)
@@ -155,7 +155,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertNotNull(result.bbox)
         assertEquals(4, result.bbox.size)
@@ -183,7 +183,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertEquals(1, result.features.size)
         val feature = result.features[0]
@@ -226,7 +226,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         val extra = result.features[0].properties.extra
         assertNotNull(extra)
@@ -254,7 +254,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertEquals("FeatureCollection", result.type)
         assertEquals(0, result.features.size)
@@ -285,7 +285,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         assertEquals("FeatureCollection", result.type)
         assertEquals(1, result.features.size)
@@ -319,7 +319,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         val props = result.features[0].properties
         assertEquals("Oslo Sentralstasjon", props.name)
@@ -354,7 +354,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(PhotonApiResponse(json, "http://foo"))
+        val result = PhotonResult.parse(json, Url("http://foo"))
 
         val props = result.features[0].properties
         assertEquals("Ålesund", props.name)

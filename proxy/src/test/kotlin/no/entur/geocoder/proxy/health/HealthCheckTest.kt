@@ -214,6 +214,11 @@ class HealthCheckTest {
             setupHealthCheckEndpoint(READINESS_ENDPOINT) {
                 respond("Not valid JSON at all", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
             }
-            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "Invalid response format")
+            val response = client.get(READINESS_ENDPOINT)
+            val result: Map<String, String> = objectMapper.readValue(response.bodyAsText())
+
+            assertEquals(HttpStatusCode.ServiceUnavailable, response.status)
+            assertEquals("DOWN", result["status"])
+            assertTrue(result["reason"]?.startsWith("Error:") == true)
         }
 }

@@ -1,17 +1,19 @@
 package no.entur.geocoder.proxy.photon
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.http.*
 import no.entur.geocoder.common.Extra
-import no.entur.geocoder.proxy.photon.PhotonApi.PhotonApiResponse
 
 data class PhotonResult(
     val type: String = "FeatureCollection",
     val features: List<PhotonFeature> = emptyList(),
     val properties: Map<String, Any> = emptyMap(),
     val bbox: List<Double>? = null,
+    @JsonIgnore val status: HttpStatusCode = HttpStatusCode.OK,
 ) {
     companion object {
         private val mapper: ObjectMapper =
@@ -19,9 +21,12 @@ data class PhotonResult(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
 
-        fun parse(response: PhotonApiResponse): PhotonResult {
-            val result: PhotonResult = mapper.readValue(response.body)
-            return result.copy(properties = result.properties + ("query_url" to response.url))
+        fun parse(body: String, url: Url, status: HttpStatusCode = HttpStatusCode.OK): PhotonResult {
+            val result: PhotonResult = mapper.readValue(body)
+            return result.copy(
+                properties = result.properties + ("query_url" to url.toString()),
+                status = status,
+            )
         }
     }
 

@@ -11,7 +11,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
      * Allowed parameters are:
      * [include, location_bias_scale, debug, dedupe, bbox, lon, zoom, layer, q, limit, osm_tag, exclude, geometry, lang, lat]
      */
-    suspend fun request(req: PhotonAutocompleteRequest): PhotonApiResponse {
+    suspend fun request(req: PhotonAutocompleteRequest): PhotonResult {
         val response =
             client
                 .get(baseUrl + "/api") {
@@ -36,18 +36,19 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     }
                     parameter("debug", req.debug)
                 }
-        return PhotonApiResponse(
-            body = response.bodyAsText(),
-            url = response.request.url.toString(),
-            status = response.status,
-        )
+
+        return if (response.status.isSuccess()) {
+            PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
+        } else {
+            PhotonResult(status = response.status)
+        }
     }
 
     /**
      * Allowed parameters are:
      * [include, debug, dedupe, query_string_filter, lon, layer, limit, osm_tag, distance_sort, exclude, geometry, lang, radius, lat]
      */
-    suspend fun request(req: PhotonReverseRequest): PhotonApiResponse {
+    suspend fun request(req: PhotonReverseRequest): PhotonResult {
         val response =
             client
                 .get(baseUrl + "/reverse") {
@@ -65,16 +66,10 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     }
                     parameter("debug", req.debug)
                 }
-        return PhotonApiResponse(
-            body = response.bodyAsText(),
-            url = response.request.url.toString(),
-            status = response.status,
-        )
+        return if (response.status.isSuccess()) {
+            PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
+        } else {
+            PhotonResult(status = response.status)
+        }
     }
-
-    data class PhotonApiResponse(
-        val body: String,
-        val url: String,
-        val status: HttpStatusCode = HttpStatusCode.OK,
-    )
 }

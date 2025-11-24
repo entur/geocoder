@@ -7,7 +7,6 @@ import no.entur.geocoder.proxy.Response
 import no.entur.geocoder.proxy.health.HealthCheck.Info.Build
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
-import no.entur.geocoder.proxy.photon.PhotonResult
 import org.slf4j.LoggerFactory
 
 class HealthCheck(private val photonApi: PhotonApi) {
@@ -36,20 +35,12 @@ class HealthCheck(private val photonApi: PhotonApi) {
     private suspend fun checkPhotonHealth(): String? {
         val query = "Oslo"
         val req = PhotonAutocompleteRequest("Oslo", 1)
-        val apiResponse = photonApi.request(req)
+        val result = photonApi.request(req)
 
-        if (!apiResponse.status.isSuccess()) {
-            logger.warn("Photon not ready: ${apiResponse.status}")
-            return "Photon returned ${apiResponse.status}"
+        if (!result.status.isSuccess()) {
+            logger.warn("Photon not ready: ${result.status}")
+            return "Photon returned ${result.status}"
         }
-
-        val result =
-            try {
-                PhotonResult.parse(apiResponse)
-            } catch (e: Exception) {
-                logger.warn("Failed to parse Photon response: ${e.message}")
-                return "Invalid response format"
-            }
 
         if (result.features.isEmpty() ||
             result.features
