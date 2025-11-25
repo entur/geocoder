@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -8,9 +7,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.http.ContentType.Application.Json
-import io.ktor.serialization.jackson.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -18,7 +14,7 @@ import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
-import no.entur.geocoder.proxy.Routing.configureRouting
+import no.entur.geocoder.proxy.Proxy.Companion.configureApp
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Test
@@ -77,15 +73,10 @@ class ProxyTest {
                 }
 
             application {
-                install(ContentNegotiation) {
-                    jackson {
-                        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-                    }
-                }
-                configureRouting(
+                configureApp(
                     client = HttpClient(mockEngine),
                     photonBaseUrl = "http://photon-test",
-                    appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                    micrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 )
             }
 
@@ -118,14 +109,10 @@ class ProxyTest {
     @Test
     fun `test reverse endpoint`() =
         testApplication {
+            var capturedRequest: HttpRequestData? = null
             val mockEngine =
                 MockEngine { request ->
-                    assertEquals("59.9139", request.url.parameters["lat"])
-                    assertEquals("10.7522", request.url.parameters["lon"])
-                    assertEquals("100.0", request.url.parameters["radius"])
-                    assertEquals("3", request.url.parameters["limit"])
-                    assertEquals("no", request.url.parameters["lang"])
-
+                    capturedRequest = request
                     respond(
                         content = samplePhotonResponse,
                         status = HttpStatusCode.OK,
@@ -134,15 +121,10 @@ class ProxyTest {
                 }
 
             application {
-                install(ContentNegotiation) {
-                    jackson {
-                        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-                    }
-                }
-                configureRouting(
+                configureApp(
                     client = HttpClient(mockEngine),
                     photonBaseUrl = "http://photon-test",
-                    appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                    micrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
                 )
             }
 
@@ -164,5 +146,13 @@ class ProxyTest {
                 listOf(BigDecimal("10.752200"), BigDecimal("59.913900")),
                 collection.features[0].geometry.coordinates,
             )
+
+            // Assert on captured request parameters
+            val params = requireNotNull(capturedRequest).url.parameters
+            assertEquals("59.9139", params["lat"])
+            assertEquals("10.7522", params["lon"])
+            assertEquals("100.0", params["radius"])
+            assertEquals("3", params["limit"])
+            assertEquals("no", params["lang"])
         }
 }

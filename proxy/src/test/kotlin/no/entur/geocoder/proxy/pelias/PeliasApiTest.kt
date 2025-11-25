@@ -1,22 +1,18 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.entur.geocoder.proxy.Routing.configureRouting
+import no.entur.geocoder.proxy.Proxy.Companion.configureApp
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.fail
 
 class PeliasApiTest {
     private lateinit var testClient: HttpClient
@@ -38,8 +34,7 @@ class PeliasApiTest {
     }
 
     private fun Application.setupRouting() {
-        install(ContentNegotiation) { jackson() }
-        configureRouting(
+        configureApp(
             testClient,
             "http://localhost:2322",
             PrometheusMeterRegistry(io.micrometer.prometheus.PrometheusConfig.DEFAULT),
@@ -56,7 +51,6 @@ class PeliasApiTest {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 }
-            if (response.status != HttpStatusCode.OK) fail("autocomplete: " + response.body<String>())
             assertEquals(HttpStatusCode.OK, response.status)
 
             assertEquals(1, recordedRequests.size)
@@ -77,7 +71,6 @@ class PeliasApiTest {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 }
-            if (response.status != HttpStatusCode.OK) fail("reverse: " + response.body<String>())
             assertEquals(HttpStatusCode.OK, response.status)
 
             assertEquals(1, recordedRequests.size)
@@ -99,7 +92,6 @@ class PeliasApiTest {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 }
-            if (response.status != HttpStatusCode.OK) fail("place: " + response.body<String>())
             assertEquals(HttpStatusCode.OK, response.status)
 
             assertEquals(2, recordedRequests.size)
