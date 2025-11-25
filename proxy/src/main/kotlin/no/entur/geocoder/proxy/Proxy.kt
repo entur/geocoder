@@ -10,6 +10,8 @@ import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.netty.*
 import io.ktor.server.netty.NettyApplicationEngine.*
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.response.*
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
@@ -41,6 +43,12 @@ class Proxy {
             install(ServerContentNegotiation) {
                 jackson {
                     setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+                }
+            }
+            install(StatusPages) {
+                exception<Exception> { call, cause ->
+                    val error = ErrorHandler.handleError(cause, "Request processing")
+                    call.respond(error.status, error.result)
                 }
             }
             install(MicrometerMetrics) {

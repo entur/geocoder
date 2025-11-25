@@ -71,10 +71,10 @@ class HealthCheck(private val photonApi: PhotonApi) {
         val photonStatus = photonApi.status()
         val version = HealthCheck::class.java.getPackage().implementationVersion
         return Info(
-            "geocoder-proxy",
-            version ?: "unknown",
-            photonStatus["version"] ?: "unknown",
-            photonStatus["import_date"] ?: "unknown",
+            version = version ?: "unknown",
+            name = "geocoder-proxy",
+            photonVersion = photonStatus["version"] ?: "unknown",
+            photonImportDate = photonStatus["import_date"] ?: "unknown",
         )
     }
 }

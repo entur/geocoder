@@ -10,7 +10,6 @@ import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.v3.V3Api
-import org.slf4j.LoggerFactory
 
 object Routing {
     fun Application.configureRouting(
@@ -25,104 +24,71 @@ object Routing {
 
         routing {
             get("/v2/autocomplete") {
-                okResponse {
-                    api.autocomplete(call.request.queryParameters)
-                }
+                val result = api.autocomplete(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/v2/search") {
-                okResponse {
-                    api.autocomplete(call.request.queryParameters)
-                }
+                val result = api.autocomplete(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/v2/reverse") {
-                okResponse {
-                    api.reverse(call.request.queryParameters)
-                }
+                val result = api.reverse(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/v2/nearby") {
-                okResponse {
-                    api.reverse(call.request.queryParameters)
-                }
+                val result = api.reverse(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/v2/place") {
-                okResponse {
-                    api.place(call.request.queryParameters)
-                }
+                val result = api.place(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/v3/autocomplete") {
-                okResponse {
-                    v3api.autocomplete(call.request.queryParameters)
-                }
+                val result = v3api.autocomplete(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/v3/reverse") {
-                okResponse {
-                    v3api.reverse(call.request.queryParameters)
-                }
+                val result = v3api.reverse(call.request.queryParameters)
+                call.respond(HttpStatusCode.OK, result)
             }
 
             get("/") {
-                rootRequest()
+                val indexHtml = readIndexHtml()
+                call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
             }
 
             get("/liveness") {
-                handleResponse {
-                    healthCheck.liveness()
-                }
+                val liveness = healthCheck.liveness()
+                call.respond(liveness.status, liveness.message)
             }
 
             get("/readiness") {
-                handleResponse {
-                    healthCheck.readiness()
-                }
+                val readiness = healthCheck.readiness()
+                call.respond(readiness.status, readiness.message)
             }
 
             get("/info") {
-                okResponse {
-                    healthCheck.info()
-                }
+                val info = healthCheck.info()
+                call.respond(HttpStatusCode.OK, info)
             }
 
             get("/metrics") {
-                okResponse {
-                    appMicrometerRegistry.scrape()
-                }
+                val metrics = appMicrometerRegistry.scrape()
+                call.respond(HttpStatusCode.OK, metrics)
             }
         }
     }
 
-    private suspend fun RoutingContext.okResponse(handler: suspend RoutingContext.() -> Any) =
-        this.handleResponse { ProxyResponse(handler()) }
-
-    private suspend fun RoutingContext.handleResponse(handler: suspend RoutingContext.() -> ProxyResponse) {
-        try {
-            val res = handler.invoke(this)
-            call.respond(res.status, res.message)
-        } catch (e: IllegalArgumentException) {
-            logger.error("Invalid request parameters: ${e.message}")
-            val error = ErrorHandler.handleError(e, "Invalid parameters")
-            call.respond(error.status, error.result)
-        } catch (e: Exception) {
-            logger.error("Unexpected error: ${e.message}", e)
-            val error = ErrorHandler.handleError(e, "Request processing")
-            call.respond(error.status, error.result)
-        }
-    }
-
-    private suspend fun RoutingContext.rootRequest() {
-        val indexHtml =
-            this::class.java.classLoader
-                .getResourceAsStream("index.html")
-                ?.readBytes()
-                ?: throw IllegalStateException("index.html not found in resources")
-
-        call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
-    }
-
-    private val logger = LoggerFactory.getLogger(Routing::class.java)
+    private fun readIndexHtml(): ByteArray = (
+        this::class.java.classLoader
+            .getResourceAsStream("index.html")
+            ?.readBytes()
+            ?: throw IllegalStateException("index.html not found in resources")
+    )
 }
