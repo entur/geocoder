@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass.set("no.entur.geocoder.proxy.ProxyKt")
+    mainClass.set("no.entur.geocoder.proxy.AppKt")
 }
 
 dependencies {

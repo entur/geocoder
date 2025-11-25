@@ -7,7 +7,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.testing.*
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import no.entur.geocoder.proxy.Proxy.Companion.configureApp
+import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

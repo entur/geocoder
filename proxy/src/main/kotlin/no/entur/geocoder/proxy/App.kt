@@ -28,16 +28,12 @@ import org.slf4j.LoggerFactory
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
 
-fun main() {
-    Proxy().startServer()
-}
-
-class Proxy {
+class App {
     val photonBaseUrl = if (Environment.detect() == CONSOLE) "http://localhost:2322" else "http://geocoder-photon"
     val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
 
     fun startServer() {
-        logger.info("Starting Photon proxy server on port $proxyPort, forwarding to $photonBaseUrl")
+        logger.info("Starting geocoder-proxy on port $proxyPort, forwarding to $photonBaseUrl")
 
         embeddedServer(Netty, port = proxyPort) {
             configureApp(httpClient, photonBaseUrl, appMicrometerRegistry)
@@ -165,7 +161,7 @@ class Proxy {
                 ?: throw IllegalStateException("index.html not found in resources")
         )
 
-        private val logger = LoggerFactory.getLogger("Proxy")
+        private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
         // milliseconds in nanoseconds
@@ -174,4 +170,8 @@ class Proxy {
         // seconds in nanoseconds
         private val Double.seconds: Double get() = this * 1_000_000_000.0
     }
+}
+
+fun main() {
+    App().startServer()
 }

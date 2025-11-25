@@ -14,14 +14,14 @@ import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
-import no.entur.geocoder.proxy.Proxy.Companion.configureApp
+import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals
 
-class ProxyTest {
+class AppTest {
     private val samplePhotonResponse =
         """
         {
