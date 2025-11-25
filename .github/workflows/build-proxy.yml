@@ -32,6 +32,7 @@ on:
         type: choice
         options:
           # NB! These values are used in the 'setup' job, so if you change them, update the job as well
+          - '🚀 Deploy → Dev'
           - '🚀 Deploy → Staging'
           - '🚀 Deploy → Prod'
       image_tag:
@@ -64,7 +65,9 @@ jobs:
               dev=true
             fi
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Staging" ]; then
+            if [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Dev" ]; then
+              dev=true
+            elif [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Staging" ]; then
               tst=true
             elif [ "${{ inputs.deploy_env }}" = "🚀 Deploy → Prod" ]; then
               prd=true
