@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
     implementation(libs.logback)
+    implementation(libs.logback.encoder)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.metrics)
     implementation(libs.ktor.server.content.negotiation)
