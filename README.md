@@ -10,34 +10,35 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 - **Push to main** → Builds → Deploys to **dev** → Runs acceptance tests
 
 **Manual Deployment via Workflow Dispatch:**
-- `🚀 Deploy → Staging` - Deploy to staging (uses existing image)
-- `🚀 Deploy → Prod` - Deploy to production (uses existing image)
+- `🚀 Deploy → Dev` - Deploy latest (or specified) to dev
+- `🚀 Deploy → Staging` - Deploy latest (or specified) to staging
+- `🚀 Deploy → Prod` - Deploy latest (or specified) to production
 
 **Workflow Inputs:**
 - `image_tag` - Specify image tag (default: `latest`)
 
 ### Photon
 
-**Scheduled Build:**
-- **Daily at 07:32 UTC** → Full data import → Build → Deploy to **all environments**
+**Scheduled Import:**
+- **Daily at 07:32 UTC** → Full data import → Create Photon image → Deploy to **staging and prod**
 
-**Manual Build/Deploy via Workflow Dispatch:**
-- `🔨 Download and convert data → build Photon → Dev` - Full data pipeline + deploy to dev
-- `⚡ Use latest data → build Photon → Dev` - Build using latest Nominatim data + deploy dev
-- `🚀 Deploy → Staging` - Deploy pre-built image to staging
-- `🚀 Deploy → Prod` - Deploy pre-built image to production
+**Manual Import/Deploy via Workflow Dispatch:**
+- `🔨 Download and convert data → Photon image → Dev` - Full data pipeline + deploy to dev
+- `⚡ Use latest data → Photon image → Dev` - Use latest Nominatim data + deploy dev
+- `🚀 Deploy → Dev` - Deploy latest (or specified) image to staging
+- `🚀 Deploy → Staging` - Deploy latest (or specified) image to staging
+- `🚀 Deploy → Prod` - Deploy latest (or specified) image to production
 
 **Workflow Inputs:**
 - `photon_image_tag` - Image tag to deploy (default: `latest`)
-- `photon_jar_url` - Custom Photon JAR URL (optional)
+- `photon_jar_url` - Custom Photon JAR URL (optional, default in photon.yml)
 
 **Data Pipeline:**
-1. **Nominatim Data** - Converts OSM/Kartverket/StopPlace/etc data → `nominatim.ndjson.gz`
-2. **Photon Data** - Imports Nominatim data into Photon search index → `photon_data.tar.gz`
-3. **Photon Image** - Builds Docker image using Photon JAR + search index
-4. **Deploy** - Deploys to selected environments (no review required)
+1. **Nominatim Data** - Downloads OSM/Kartverket/StopPlace/etc data → `nominatim.ndjson.gz`
+2. **Photon Image** - Imports nominatim data and creates Docker image using Photon JAR
+3. **Deploy** - Deploys to selected environments (no review required)
 
-💾 Data artifacts are stored in GCR Docker images (e.g., `geocoder-nominatim-data:latest`, `geocoder-photon-data:latest`).
+💾 Data artifacts are stored in GCR Docker images (e.g., `geocoder-nominatim-data:latest`).
 
 ### Acceptance Tests
 
@@ -130,10 +131,10 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 #### Update geocoder to use the patched Photon
 
-* Go to [build-photon.yml](.github/workflows/build-photon.yml) in `geocoder` and
+* Go to [photon.yml](.github/workflows/photon.yml) in `geocoder` and
   update `env.photon_jar_url.default` variable with the new link
 * Push your `geocoder` changes
-* Go to https://github.com/entur/geocoder/actions/workflows/build-photon.yml and trigger the workflow.
+* Go to https://github.com/entur/geocoder/actions/workflows/photon.yml and trigger the workflow.
   You should set "Import and convert data" --> `only-photon-data` (or `all`) to avoid OpenSearch data
   inconsistencies, and deploy to e.g. `dev`.
 

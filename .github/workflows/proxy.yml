@@ -11,7 +11,7 @@ on:
       - 'proxy/docs/**'
       - 'proxy/specs/**'
       - '.github/workflows/api-docs.yml'
-      - '.github/workflows/build-photon.yml'
+      - 'photon.yml'
   pull_request:
     paths-ignore:
       - '**/*.md'
@@ -22,7 +22,7 @@ on:
       - 'proxy/docs/**'
       - 'proxy/specs/**'
       - '.github/workflows/api-docs.yml'
-      - '.github/workflows/build-photon.yml'
+      - 'photon.yml'
   workflow_dispatch:
     inputs:
       deploy_env:

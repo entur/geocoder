@@ -12,8 +12,8 @@ on:
         type: choice
         options:
           # NB! These values are used in the 'setup' job, so if you change them, update the job as well
-          - '🔨 Download data → build Photon → Dev'
-          - '⚡ Use latest data → build Photon → Dev'
+          - '🔨 Download data → Photon image → Dev'
+          - '⚡ Use latest data → Photon image → Dev'
           - '🚀 Deploy → Dev'
           - '🚀 Deploy → Staging'
           - '🚀 Deploy → Prod'
@@ -50,17 +50,16 @@ jobs:
     steps:
       - id: vars
         run: |
-          # Full build and deploy to all environments for scheduled runs
           if [ "${{ github.event_name }}" = "schedule" ]; then
             nominatim_data=true
             photon=true
             tst=true
             prd=true
-          elif [ "${{ inputs.build }}" = "🔨 Download data → build Photon → Dev" ]; then
+          elif [ "${{ inputs.build }}" = "🔨 Download data → Photon image → Dev" ]; then
             nominatim_data=true
             photon=true
             dev=true
-          elif [ "${{ inputs.build }}" = "⚡ Use latest data → build Photon → Dev" ]; then
+          elif [ "${{ inputs.build }}" = "⚡ Use latest data → Photon image → Dev" ]; then
             photon=true
             dev=true
           elif [ "${{ inputs.build }}" = "🚀 Deploy → Dev" ]; then
@@ -169,7 +168,7 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      image_tag: ${{ steps.build-push.outputs.image_tag }}
+      image_tag: ${{ steps.docker-image.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v4
@@ -217,8 +216,8 @@ jobs:
             exit 1
           fi 
 
-      - name: Build and Push Photon image
-        id: build-push
+      - name: Create and Push Photon image
+        id: docker-image
         uses: ./.github/actions/docker-build-push
         with:
           image_name: geocoder-photon
