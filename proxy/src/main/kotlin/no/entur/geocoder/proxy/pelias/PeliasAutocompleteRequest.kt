@@ -22,10 +22,12 @@ data class PeliasAutocompleteRequest(
     val debug: Boolean = false,
 ) {
     init {
-        require(text.isNotBlank()) { "text cannot be blank" }
+        require(text.isNotBlank()) { errorMessage }
     }
 
     companion object {
+        const val errorMessage = "text cannot be blank"
+
         fun from(req: Parameters) =
             PeliasAutocompleteRequest(
                 text = handleText(req),

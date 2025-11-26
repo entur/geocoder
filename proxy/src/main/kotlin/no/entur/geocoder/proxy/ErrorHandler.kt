@@ -8,6 +8,7 @@ import io.ktor.http.HttpStatusCode.Companion.BadGateway
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.ServiceUnavailable
+import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -41,7 +42,9 @@ object ErrorHandler {
             }
 
             is IllegalArgumentException -> {
-                logger.info("Invalid request parameters: ${e.message}")
+                if (e.message != PeliasAutocompleteRequest.errorMessage) {
+                    logger.info("Invalid request parameters: ${e.message}")
+                }
                 toError("Invalid parameters. ${e.message ?: "One or more parameters are invalid"}", BadRequest)
             }
 
