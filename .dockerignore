@@ -2,4 +2,4 @@
 !converter/src/test/resources/oslo-center.osm.pbf
 !*/build/libs/*-all.jar
 !*/*-start.sh
-!photon/jmx-exporter.yml
+!photon/photon_data
