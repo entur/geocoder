@@ -188,15 +188,17 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-      - name: Download Photon JAR
-        working-directory: converter
-        run: curl -sfL --retry 2 -o photon.jar "${{ needs.setup.outputs.photon_jar_url }}"
-
       - name: Create Photon Data
         working-directory: converter
         run: |
-          ./create-photon-data.sh
-          
+          curl -sfL --retry 2 -o photon.jar "${{ needs.setup.outputs.photon_jar_url }}"
+          ./create-photon-data.sh          
+          mv photon_data ../photon/
+          mv photon.jar ../photon/
+
+      - name: Summarize
+        working-directory: photon
+        run: |
           PHOTON_DATA_MIN_SIZE=600
           echo "### Photon Data" >> $GITHUB_STEP_SUMMARY
           if [ -d photon_data ]; then
@@ -213,10 +215,7 @@ jobs:
           else
             echo "❌ photon_data not found" >> $GITHUB_STEP_SUMMARY
             exit 1
-          fi
-          
-          mv photon_data ../photon/
-          mv photon.jar ../photon/
+          fi 
 
       - name: Build and Push Photon image
         id: build-push
