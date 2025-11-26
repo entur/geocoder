@@ -38,7 +38,7 @@ jobs:
     uses: entur/gha-api/.github/workflows/publish.yml@v4
     secrets: inherit
     with:
-      spec: proxy/specs/openapi.yml
+      spec: proxy/src/main/resources/openapi.yml
 
   docs-publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
