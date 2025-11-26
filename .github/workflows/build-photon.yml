@@ -160,7 +160,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.setup.outputs.photon  == 'true' &&
-      needs.setup.lint.result == 'success' &&
+      needs.lint.result == 'success' &&
       (needs.nominatim-data.result == 'success' || needs.setup.outputs.nominatim_data  == 'false')
     needs: [ setup, nominatim-data, lint ]
     runs-on:
@@ -282,10 +282,9 @@ jobs:
     if: |
       !cancelled() &&
       github.ref == 'refs/heads/main' &&
-      needs.lint.result == 'success' &&
       needs.setup.outputs.dev == 'true' &&
       (needs.photon.result == 'success' || needs.setup.outputs.photon  == 'false')
-    needs: [ setup, lint, photon, resolve-image-tag ]
+    needs: [ setup, photon, resolve-image-tag ]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
