@@ -32,8 +32,8 @@ BLOB_HASH=$(jq -r ".\"$REPO_KEY\".\"$TAG\" // empty" "$TEMP_DIR/repositories")
 echo "Extracting from blob ${BLOB_HASH}"
 
 # Get the filename from the tar archive before extracting
-ARTIFACT_FILENAME=$(tar -tf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" | head -n1)
-NUM_ENTRIES=$(tar -tf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" | wc -l | sed 's/ //g')
+ARTIFACT_FILENAME=$(tar -tf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" | head -1)
+NUM_ENTRIES=$(tar -tf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" | wc -l | tr -d ' ')
 echo "First entry (of $NUM_ENTRIES) in archive: $ARTIFACT_FILENAME"
 
 tar -xf "$TEMP_DIR/blobs/sha256/$BLOB_HASH" -C "$DESTINATION" || { echo "ERROR: Failed to extract file"; exit 1; }
