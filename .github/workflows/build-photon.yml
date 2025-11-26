@@ -142,13 +142,27 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
+  # Photon image jobs
+  lint:
+    name: Lint
+    if: |
+      !cancelled() &&
+      needs.setup.outputs.dev == 'true' &&
+      needs.setup.outputs.photon  == 'true'
+    needs: [ setup ]
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: photon/Dockerfile
+      ignore: "DL3018,DL3059"
+
   photon:
     name: Photon Image
     if: |
       !cancelled() &&
       needs.setup.outputs.photon  == 'true' &&
+      needs.setup.lint.result == 'success' &&
       (needs.nominatim-data.result == 'success' || needs.setup.outputs.nominatim_data  == 'false')
-    needs: [ setup, nominatim-data ]
+    needs: [ setup, nominatim-data, lint ]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -213,18 +227,6 @@ jobs:
           push: true
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-  # Photon image jobs
-  lint:
-    name: Lint
-    if: |
-      !cancelled() &&
-      needs.setup.outputs.dev == 'true'
-    needs: [ setup ]
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: photon/Dockerfile
-      ignore: "DL3018,DL3059"
 
   scan:
     name: Scan
