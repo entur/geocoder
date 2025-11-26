@@ -12,6 +12,10 @@ inputs:
     description: 'Minimum file size in MB (optional validation)'
     required: false
     default: ''
+  single_file:
+    description: 'Only a single file is expected'
+    required: false
+    default: 'true'
   workload_identity_provider:
     description: 'GCP Workload Identity Provider'
     required: true
@@ -46,7 +50,7 @@ runs:
     - name: Extract artifact from Docker image
       id: extract
       shell: bash
-      run: ${{ github.action_path }}/extract.sh "${{ inputs.registry }}" "${{ inputs.image }}" "${{ inputs.destination }}"
+      run: ${{ github.action_path }}/extract.sh "${{ inputs.registry }}" "${{ inputs.image }}" "${{ inputs.destination }}" "${{ inputs.single_file }}"
 
     - name: Verify file size
       if: inputs.min_size_mb != ''
