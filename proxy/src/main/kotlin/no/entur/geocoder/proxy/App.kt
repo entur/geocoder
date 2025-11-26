@@ -121,7 +121,7 @@ class App {
                 }
 
                 get("/") {
-                    val indexHtml = readIndexHtml()
+                    val indexHtml = readFile("index.html")
                     call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
                 }
 
@@ -144,6 +144,11 @@ class App {
                     val metrics = micrometerRegistry.scrape()
                     call.respond(HttpStatusCode.OK, metrics)
                 }
+
+                get("/v2/openapi.yaml") {
+                    val openapi = readFile("openapi.yml")
+                    call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
+                }
             }
         }
 
@@ -154,11 +159,11 @@ class App {
                 }
             }
 
-        private fun readIndexHtml(): ByteArray = (
+        private fun readFile(name: String): ByteArray = (
             this::class.java.classLoader
-                .getResourceAsStream("index.html")
+                .getResourceAsStream(name)
                 ?.readBytes()
-                ?: throw IllegalStateException("index.html not found in resources")
+                ?: throw IllegalStateException(name + " not found")
         )
 
         private val logger = LoggerFactory.getLogger("App")
