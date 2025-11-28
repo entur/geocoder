@@ -31,7 +31,7 @@ on:
 run-name: "Photon: ${{ inputs.build || 'Scheduled full import' }}${{ startsWith(inputs.build, '🚀') && format(' (tag: {0})', inputs.photon_image_tag) || '' }}"
 
 env:
-  DEV_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/metrics-and-version/photon-0.7.0.jar'
+  DEV_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/2025-11-28/photon-0.7.0.jar'
   DEV_GEOCODER_GIT_REF: HEAD
   STABLE_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/metrics-and-version/photon-0.7.0.jar'
   STABLE_GEOCODER_GIT_REF: 5ed272e
