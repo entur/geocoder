@@ -89,37 +89,37 @@ class App {
             routing {
                 get("/v2/autocomplete") {
                     val result = api.autocomplete(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/v2/search") {
                     val result = api.autocomplete(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/v2/reverse") {
                     val result = api.reverse(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/v2/nearby") {
                     val result = api.reverse(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/v2/place") {
                     val result = api.place(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/v3/autocomplete") {
                     val result = v3api.autocomplete(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/v3/reverse") {
                     val result = v3api.reverse(call.request.queryParameters)
-                    call.respond(HttpStatusCode.OK, result)
+                    call.respond(result)
                 }
 
                 get("/") {
@@ -139,12 +139,12 @@ class App {
 
                 get("/info") {
                     val info = healthCheck.info()
-                    call.respond(HttpStatusCode.OK, info)
+                    call.respond(info)
                 }
 
                 get("/metrics") {
                     val metrics = micrometerRegistry.scrape()
-                    call.respond(HttpStatusCode.OK, metrics)
+                    call.respond(metrics)
                 }
 
                 get("/v2/openapi.yaml") {
@@ -165,7 +165,7 @@ class App {
             this::class.java.classLoader
                 .getResourceAsStream(name)
                 ?.readBytes()
-                ?: throw IllegalStateException(name + " not found")
+                ?: throw IllegalStateException("$name not found")
         )
 
         private val logger = LoggerFactory.getLogger("App")
