@@ -17,8 +17,8 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.Environment.CONSOLE
 import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi
@@ -170,7 +170,7 @@ class App {
                 .getResourceAsStream(name)
                 ?.readBytes()
                 ?: throw IllegalStateException("$name not found")
-        )
+            )
 
         private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)

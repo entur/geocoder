@@ -6,7 +6,8 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.testing.*
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,7 +38,7 @@ class PeliasApiTest {
         configureApp(
             testClient,
             "http://localhost:2322",
-            PrometheusMeterRegistry(io.micrometer.prometheus.PrometheusConfig.DEFAULT),
+            PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
         )
     }
 
