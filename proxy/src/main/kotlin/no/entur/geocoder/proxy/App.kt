@@ -49,10 +49,17 @@ class App {
 
             install(CORS) {
                 anyHost()
+                allowMethod(HttpMethod.Options)
+                allowMethod(HttpMethod.Get)
+                allowMethod(HttpMethod.Post)
+                allowMethod(HttpMethod.Put)
+                allowMethod(HttpMethod.Delete)
+                allowMethod(HttpMethod.Patch)
                 allowCredentials = true
                 allowNonSimpleContentTypes = true
                 allowHeader("et-client-name")
                 allowHeader("x-correlation-id")
+                allowHeader("x-requested-with")
             }
             install(ServerContentNegotiation) {
                 jackson {
