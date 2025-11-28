@@ -47,12 +47,16 @@ class App {
             val v3api = V3Api(photonApi)
             val healthCheck = HealthCheck(photonApi)
 
+            // Align with CORS config in Apigee:
+            // See https://console.cloud.google.com/apigee/proxies/geocoder/develop/32/policies/assignMessage.addCors?project=ent-apigee-shr-001
             install(CORS) {
                 anyHost()
                 anyMethod()
                 allowCredentials = true
                 allowNonSimpleContentTypes = true
+                allowHeader("entur-pos")
                 allowHeader("et-client-name")
+                allowHeader("et-client-id")
                 allowHeader("x-correlation-id")
                 allowHeader("x-requested-with")
             }
