@@ -49,12 +49,7 @@ class App {
 
             install(CORS) {
                 anyHost()
-                allowMethod(HttpMethod.Options)
-                allowMethod(HttpMethod.Get)
-                allowMethod(HttpMethod.Post)
-                allowMethod(HttpMethod.Put)
-                allowMethod(HttpMethod.Delete)
-                allowMethod(HttpMethod.Patch)
+                anyMethod()
                 allowCredentials = true
                 allowNonSimpleContentTypes = true
                 allowHeader("et-client-name")
