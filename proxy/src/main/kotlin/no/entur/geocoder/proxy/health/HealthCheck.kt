@@ -64,6 +64,7 @@ class HealthCheck(private val photonApi: PhotonApi) {
         val version: String?,
         val name: String,
         val photonVersion: String?,
+        val photonCommit: String?,
         val photonImportDate: String?,
     )
 
@@ -74,6 +75,7 @@ class HealthCheck(private val photonApi: PhotonApi) {
             version = version ?: "unknown",
             name = "geocoder-proxy",
             photonVersion = photonStatus["version"] ?: "unknown",
+            photonCommit = photonStatus["git_commit"] ?: "unknown",
             photonImportDate = photonStatus["import_date"] ?: "unknown",
         )
     }
