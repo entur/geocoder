@@ -1,12 +1,10 @@
-FROM bellsoft/liberica-runtime-container:jre-21-musl
+FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
 
 ARG PHOTON_JAR_URL
 
 WORKDIR /srv
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
-
-RUN apk add --no-cache curl
 
 COPY photon.jar ./
 RUN unzip -p photon.jar META-INF/MANIFEST.MF \
