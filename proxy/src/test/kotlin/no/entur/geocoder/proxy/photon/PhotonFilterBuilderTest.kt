@@ -60,7 +60,7 @@ class PhotonFilterBuilderTest {
                 )
                     to
                     listOf(
-                        "country.no", "county_gid.50", "tariff_zone_id.ATB:TariffZone:A", "tariff_zone_id.ATB:TariffZone:B",
+                        "country.no", "county_gid.50", "tariff_zone_id.ATB.TariffZone.A", "tariff_zone_id.ATB.TariffZone.B",
                         "tariff_zone_authority.ATB", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
                     ),
                 PeliasAutocompleteRequest(

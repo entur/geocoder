@@ -1,6 +1,8 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
+import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
+import no.entur.geocoder.common.Category.TARIFF_ZONE_ID_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
@@ -70,10 +72,10 @@ data class PhotonAutocompleteRequest(
                         addAll(req.localityIds.map { "locality_gid.$it" })
                     }
                     if (req.tariffZones.isNotEmpty()) {
-                        addAll(req.tariffZones.map { "tariff_zone_id.$it" })
+                        addAll(req.tariffZones.map { TARIFF_ZONE_ID_PREFIX + it })
                     }
                     if (req.tariffZoneAuthorities.isNotEmpty()) {
-                        addAll(req.tariffZoneAuthorities.map { "tariff_zone_authority.$it" })
+                        addAll(req.tariffZoneAuthorities.map { TARIFF_ZONE_AUTH_PREFIX + it })
                     }
                     if (req.sources.isNotEmpty()) {
                         addAll(req.sources.map { "source.$it" })

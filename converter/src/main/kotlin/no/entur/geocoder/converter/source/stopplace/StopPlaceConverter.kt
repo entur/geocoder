@@ -10,6 +10,7 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
+import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
@@ -63,16 +64,8 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
-        val tariffZoneCategories =
-            stopPlace.tariffZones
-                ?.tariffZoneRef
-                ?.mapNotNull {
-                    it.ref
-                        ?.split(":")
-                        ?.first()
-                        ?.let { ref -> "tariff_zone_id.$ref" }
-                }?.toSet()
-                ?: emptySet()
+        val tariffZoneIds = tariffZoneIdCategories(stopPlace)
+        val tariffZoneAuthorities = tariffZoneAuthorityCategories(stopPlace)
 
         val isParentStopPlace = childStopTypes.isNotEmpty()
         val multimodalityCategory =
@@ -90,7 +83,8 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val categories: List<String> =
             tags
                 .plus(SOURCE_NSR)
-                .plus(tariffZoneCategories)
+                .plus(tariffZoneIds)
+                .plus(tariffZoneAuthorities)
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(countyGid?.let { "county_gid.$it" })
                 .plus(localityGid?.let { "locality_gid.$it" })
@@ -154,6 +148,27 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         return entries
     }
+
+    private fun tariffZoneAuthorityCategories(stopPlace: StopPlace): Set<String> = (
+        stopPlace.tariffZones
+            ?.tariffZoneRef
+            ?.mapNotNull {
+                it.ref
+                    ?.split(":")
+                    ?.first()
+                    ?.let { ref -> TARIFF_ZONE_AUTH_PREFIX + ref }
+            }?.toSet()
+            ?: emptySet()
+    )
+
+    private fun tariffZoneIdCategories(stopPlace: StopPlace): Set<String> = (
+        stopPlace.tariffZones
+            ?.tariffZoneRef
+            ?.mapNotNull {
+                it.ref?.let { ref -> Category.tariffZoneIdCategory(ref) }
+            }?.toSet()
+            ?: emptySet()
+    )
 
     private fun determineCountry(
         topoPlaces: Map<String, TopographicPlace>,

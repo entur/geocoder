@@ -112,8 +112,8 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("tariff_zone_id.RUT:TariffZone:01"))
-        assertTrue(request.includes.contains("tariff_zone_id.RUT:TariffZone:02"))
+        assertTrue(request.includes.contains("tariff_zone_id.RUT.TariffZone.01"))
+        assertTrue(request.includes.contains("tariff_zone_id.RUT.TariffZone.02"))
         assertTrue(request.includes.contains("tariff_zone_authority.RUT"))
     }
 
