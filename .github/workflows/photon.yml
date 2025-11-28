@@ -31,7 +31,10 @@ on:
 run-name: "Photon: ${{ inputs.build || 'Scheduled full import' }}${{ startsWith(inputs.build, '🚀') && format(' (tag: {0})', inputs.photon_image_tag) || '' }}"
 
 env:
-  DEFAULT_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/metrics-and-version/photon-0.7.0.jar'
+  DEV_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/metrics-and-version/photon-0.7.0.jar'
+  DEV_GEOCODER_GIT_REF: HEAD
+  STABLE_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/metrics-and-version/photon-0.7.0.jar'
+  STABLE_GEOCODER_GIT_REF: 5ed272e
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
@@ -50,11 +53,15 @@ jobs:
     steps:
       - id: vars
         run: |
+          PHOTON_JAR_URL=${{ inputs.photon_jar_url || env.DEV_PHOTON_JAR_URL }}
+          GEOCODER_GIT_REF=${{ env.DEV_GEOCODER_GIT_REF }}
           if [ "${{ github.event_name }}" = "schedule" ]; then
             nominatim_data=true
             photon=true
             tst=true
             prd=true
+            PHOTON_JAR_URL=${{ env.STABLE_PHOTON_JAR_URL }}
+            GEOCODER_GIT_REF=${{ env.STABLE_GEOCODER_GIT_REF }}
           elif [ "${{ inputs.build }}" = "🔨 Download data → Photon image → Dev" ]; then
             nominatim_data=true
             photon=true
@@ -77,7 +84,8 @@ jobs:
           echo "dev=${dev:-false}" >> $GITHUB_OUTPUT
           echo "tst=${tst:-false}" >> $GITHUB_OUTPUT
           echo "prd=${prd:-false}" >> $GITHUB_OUTPUT
-          echo "photon_jar_url=${{ inputs.photon_jar_url || env.DEFAULT_PHOTON_JAR_URL }}" >> $GITHUB_OUTPUT
+          echo "photon_jar_url=$PHOTON_JAR_URL" >> $GITHUB_OUTPUT
+          echo "geocoder_git_ref=$GEOCODER_GIT_REF" >> $GITHUB_OUTPUT
 
   # Run import and create artifacts
   nominatim-data:
@@ -93,9 +101,11 @@ jobs:
       image_tag: ${{ steps.upload-nominatim-data.outputs.image_tag }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ setup.outputs.geocoder_git_ref }}
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'liberica'
           java-version: '21'
@@ -171,9 +181,11 @@ jobs:
       image_tag: ${{ steps.docker-image.outputs.image_tag }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ setup.outputs.geocoder_git_ref }}
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'liberica'
           java-version: '21'
@@ -241,6 +253,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ setup.outputs.geocoder_git_ref }}
 
       - name: Security Scan
         uses: ./.github/actions/docker-scan
@@ -262,6 +276,8 @@ jobs:
       resolved_tag: ${{ steps.resolve.outputs.resolved_tag }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ setup.outputs.geocoder_git_ref }}
 
       - name: Resolve image tag
         id: resolve
