@@ -183,7 +183,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ setup.outputs.geocoder_git_ref }}
+          ref: ${{ needs.setup.outputs.geocoder_git_ref }}
 
       - uses: actions/setup-java@v5
         with:
@@ -241,7 +241,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.photon.result == 'success'
-    needs: [ photon ]
+    needs: [ photon, setup ]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -254,7 +254,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ setup.outputs.geocoder_git_ref }}
+          ref: ${{ needs.setup.outputs.geocoder_git_ref }}
 
       - name: Security Scan
         uses: ./.github/actions/docker-scan
@@ -277,7 +277,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ setup.outputs.geocoder_git_ref }}
+          ref: ${{ needs.setup.outputs.geocoder_git_ref }}
 
       - name: Resolve image tag
         id: resolve
