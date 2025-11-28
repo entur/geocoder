@@ -81,6 +81,11 @@ jobs:
           echo "tst=${tst:-false}" >> $GITHUB_OUTPUT
           echo "prd=${prd:-false}" >> $GITHUB_OUTPUT
 
+      - name: Generate setup summary
+        run: |
+          echo "\`build=${{ steps.vars.outputs.build }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "\`dev=${{ steps.vars.outputs.dev }}\` \`tst=${{ steps.vars.outputs.tst }}\` \`prd=${{ steps.vars.outputs.prd }}\`" >> $GITHUB_STEP_SUMMARY
+
   lint:
     name: Lint
     if: needs.setup.outputs.build == 'true'

@@ -87,6 +87,13 @@ jobs:
           echo "photon_jar_url=$PHOTON_JAR_URL" >> $GITHUB_OUTPUT
           echo "geocoder_git_ref=$GEOCODER_GIT_REF" >> $GITHUB_OUTPUT
 
+      - name: Generate setup summary
+        run: |
+          echo "\`nominatim_data=${{ steps.vars.outputs.nominatim_data }}\` \`photon=${{ steps.vars.outputs.photon }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "\`dev=${{ steps.vars.outputs.dev }}\` \`tst=${{ steps.vars.outputs.tst }}\` \`prd=${{ steps.vars.outputs.prd }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "\`photon_jar_url=${{ steps.vars.outputs.photon_jar_url }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "\`geocoder_git_ref=${{ steps.vars.outputs.geocoder_git_ref }}\`" >> $GITHUB_STEP_SUMMARY
+
   # Run import and create artifacts
   nominatim-data:
     name: Nominatim Data
