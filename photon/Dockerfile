@@ -7,9 +7,6 @@ WORKDIR /srv
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 COPY photon.jar ./
-RUN unzip -p photon.jar META-INF/MANIFEST.MF \
-    | grep -E 'Git-Commit' || true > version
-
 COPY photon-start.sh ./
 COPY photon_data ./photon_data
 
