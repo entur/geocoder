@@ -1,0 +1,55 @@
+name: Monitor Photon Data Freshness
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  check-data-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Photon import date
+        id: check
+        run: |
+          INFO=$(curl -sf https://geocoder-proxy.entur.io/info)
+          IMPORT_DATE=$(echo "$INFO" | jq -r '.photonImportDate')
+
+          echo "Import date: $IMPORT_DATE"
+
+          if [ "$IMPORT_DATE" = "null" ] || [ "$IMPORT_DATE" = "unknown" ]; then
+            echo "alert=true" >> $GITHUB_OUTPUT
+            echo "message=⚠️ Photon data import date is unavailable" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Parse the import date (ISO 8601 with milliseconds: 2025-12-01T08:38:18.728Z)
+          IMPORT_TIMESTAMP=$(date -u -d "$IMPORT_DATE" +%s 2>/dev/null)
+
+          if [ -z "$IMPORT_TIMESTAMP" ]; then
+            echo "alert=true" >> $GITHUB_OUTPUT
+            echo "message=⚠️ Unable to parse Photon import date: $IMPORT_DATE" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          CURRENT_TIMESTAMP=$(date -u +%s)
+          AGE_HOURS=$(( ($CURRENT_TIMESTAMP - $IMPORT_TIMESTAMP) / 3600 ))
+
+          echo "Data age: ${AGE_HOURS} hours"
+
+          if [ $AGE_HOURS -gt 50 ]; then
+            echo "alert=true" >> $GITHUB_OUTPUT
+            echo "message=⚠️ Photon data is ${AGE_HOURS} hours old (last import: $IMPORT_DATE)" >> $GITHUB_OUTPUT
+          else
+            echo "alert=false" >> $GITHUB_OUTPUT
+            echo "Data is fresh (${AGE_HOURS} hours old)"
+          fi
+
+      - name: Send Slack notification
+        if: steps.check.outputs.alert == 'true'
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: "${{ steps.check.outputs.message }} | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
