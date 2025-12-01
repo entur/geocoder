@@ -37,7 +37,7 @@ jobs:
 
           echo "Data age: ${AGE_HOURS} hours"
 
-          if [ $AGE_HOURS -gt 50 ]; then
+          if [ $AGE_HOURS -gt 0 ]; then
             echo "alert=true" >> $GITHUB_OUTPUT
             echo "message=⚠️ Photon data is ${AGE_HOURS} hours old (last import: $IMPORT_DATE)" >> $GITHUB_OUTPUT
           else
@@ -52,4 +52,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
-            text: "${{ steps.check.outputs.message }} | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "TEST: ${{ steps.check.outputs.message }} | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
