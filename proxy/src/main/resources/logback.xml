@@ -33,5 +33,6 @@
 
     <!-- Adjust log levels for noisy libraries -->
     <logger name="io.ktor" level="INFO"/>
+    <logger name="io.ktor.server.plugins.cors.CORS" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
 </configuration>
