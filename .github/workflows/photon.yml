@@ -164,7 +164,6 @@ jobs:
     name: Lint
     if: |
       !cancelled() &&
-      needs.setup.outputs.dev == 'true' &&
       needs.setup.outputs.photon  == 'true'
     needs: [ setup ]
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
