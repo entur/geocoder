@@ -1,10 +1,8 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
-import no.entur.geocoder.common.Category.COUNTY_ID_PREFIX
-import no.entur.geocoder.common.Category.LOCALITY_ID_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
-import no.entur.geocoder.common.Category.TARIFF_ZONE_ID_PREFIX
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
@@ -68,13 +66,13 @@ data class PhotonAutocompleteRequest(
                         addAll(req.countries.map { COUNTRY_PREFIX + it })
                     }
                     if (req.countyIds.isNotEmpty()) {
-                        addAll(req.countyIds.map { COUNTY_ID_PREFIX + it })
+                        addAll(req.countyIds.map { Category.countyIdsCategory(it) })
                     }
                     if (req.localityIds.isNotEmpty()) {
-                        addAll(req.localityIds.map { LOCALITY_ID_PREFIX + it })
+                        addAll(req.localityIds.map { Category.localityIdsCategory(it) })
                     }
                     if (req.tariffZones.isNotEmpty()) {
-                        addAll(req.tariffZones.map { TARIFF_ZONE_ID_PREFIX + it })
+                        addAll(req.tariffZones.map { Category.tariffZoneIdCategory(it) })
                     }
                     if (req.tariffZoneAuthorities.isNotEmpty()) {
                         addAll(req.tariffZoneAuthorities.map { TARIFF_ZONE_AUTH_PREFIX + it })

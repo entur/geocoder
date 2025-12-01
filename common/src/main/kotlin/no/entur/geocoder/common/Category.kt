@@ -58,4 +58,8 @@ object Category {
     const val LEGACY_CATEGORY_PREFIX = "legacy.category."
 
     fun tariffZoneIdCategory(ref: String) = TARIFF_ZONE_ID_PREFIX + ref.replace(":", ".")
+
+    fun countyIdsCategory(ref: String) = COUNTY_ID_PREFIX + ref.replace(":", ".")
+
+    fun localityIdsCategory(ref: String) = LOCALITY_ID_PREFIX + ref.replace(":", ".")
 }

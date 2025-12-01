@@ -2,11 +2,9 @@ package no.entur.geocoder.converter.source.osm
 
 import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
-import no.entur.geocoder.common.Category.COUNTY_ID_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
-import no.entur.geocoder.common.Category.LOCALITY_ID_PREFIX
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
@@ -196,8 +194,8 @@ class OsmEntityConverter(
         buildList {
             addAll(tags)
             country?.let { add(COUNTRY_PREFIX + it.name) }
-            county?.refCode?.let { add(COUNTY_ID_PREFIX + "KVE:TopographicPlace:$it") }
-            municipality?.refCode?.let { add(LOCALITY_ID_PREFIX + "KVE:TopographicPlace:$it") }
+            county?.refCode?.let { add(Category.countyIdsCategory("KVE:TopographicPlace:$it")) }
+            municipality?.refCode?.let { add(Category.localityIdsCategory("KVE:TopographicPlace:$it")) }
         }
 
     private fun determineRankAddress(tags: Map<String, String>): Int =
