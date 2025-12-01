@@ -9,9 +9,8 @@ on:
       - 'helm/**'
       - 'photon/**'
       - 'proxy/docs/**'
-      - 'proxy/specs/**'
       - '.github/workflows/api-docs.yml'
-      - 'photon.yml'
+      - '.github/workflows/photon.yml'
   pull_request:
     paths-ignore:
       - '**/*.md'
@@ -20,9 +19,8 @@ on:
       - 'helm/**'
       - 'photon/**'
       - 'proxy/docs/**'
-      - 'proxy/specs/**'
       - '.github/workflows/api-docs.yml'
-      - 'photon.yml'
+      - '.github/workflows/photon.yml'
   workflow_dispatch:
     inputs:
       deploy_env:
