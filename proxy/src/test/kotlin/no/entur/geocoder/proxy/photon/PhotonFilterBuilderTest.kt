@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
+import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -103,5 +104,32 @@ class PhotonFilterBuilderTest {
         testCases.forEach { test ->
             assertEquals(test.expected, PhotonFilterBuilder.buildMultiModalExclude(test.mode))
         }
+    }
+
+    @Test
+    fun `boundary county_ids and locality_ids are converted to Photon filters`() {
+        val autocomplete =
+            PeliasAutocompleteRequest(
+                text = "test",
+                boundaryCountyIds = listOf("KVE:TopographicPlace:03", "KVE:TopographicPlace:18"),
+                boundaryLocalityIds = listOf("KVE:TopographicPlace:4601", "KVE:TopographicPlace:3001"),
+            )
+        val autocompleteIncludes = PhotonFilterBuilder.buildIncludes(autocomplete)
+        assertTrue(autocompleteIncludes.contains("county_gid.KVE:TopographicPlace:03"))
+        assertTrue(autocompleteIncludes.contains("county_gid.KVE:TopographicPlace:18"))
+        assertTrue(autocompleteIncludes.contains("locality_gid.KVE:TopographicPlace:4601"))
+        assertTrue(autocompleteIncludes.contains("locality_gid.KVE:TopographicPlace:3001"))
+
+        val reverse =
+            PeliasReverseRequest(
+                lat = 60.0,
+                lon = 10.0,
+                boundaryCountyIds = listOf("KVE:TopographicPlace:40"),
+                boundaryLocalityIds = listOf("KVE:TopographicPlace:4005"),
+                multiModal = "parent",
+            )
+        val reverseIncludes = PhotonFilterBuilder.buildIncludes(reverse)
+        assertTrue(reverseIncludes.contains("county_gid.KVE:TopographicPlace:40"))
+        assertTrue(reverseIncludes.contains("locality_gid.KVE:TopographicPlace:4005"))
     }
 }

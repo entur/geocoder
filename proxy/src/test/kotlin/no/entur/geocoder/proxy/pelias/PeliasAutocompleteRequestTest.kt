@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
+import io.ktor.http.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -160,5 +161,18 @@ class PeliasAutocompleteRequestTest {
             assertEquals(scenario.sources, req.sources)
             assertEquals(scenario.multiModal, req.multiModal)
         }
+    }
+
+    @Test
+    fun `from Parameters parses boundary county_ids and locality_ids`() {
+        val params =
+            parametersOf(
+                "text" to listOf("test"),
+                "boundary.county_ids" to listOf("KVE:TopographicPlace:03,KVE:TopographicPlace:18"),
+                "boundary.locality_ids" to listOf("KVE:TopographicPlace:4601,KVE:TopographicPlace:3001"),
+            )
+        val req = PeliasAutocompleteRequest.from(params)
+        assertEquals(listOf("KVE:TopographicPlace:03", "KVE:TopographicPlace:18"), req.boundaryCountyIds)
+        assertEquals(listOf("KVE:TopographicPlace:4601", "KVE:TopographicPlace:3001"), req.boundaryLocalityIds)
     }
 }

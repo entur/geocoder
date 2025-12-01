@@ -16,6 +16,9 @@ object Category {
     const val TARIFF_ZONE_ID_PREFIX = "tariff_zone_id."
     const val TARIFF_ZONE_AUTH_PREFIX = "tariff_zone_authority."
 
+    const val COUNTY_ID_PREFIX = "county_gid."
+    const val LOCALITY_ID_PREFIX = "locality_gid."
+
     const val LEGACY_LAYER_PREFIX = "legacy.layer."
     const val LEGACY_LAYER_VENUE = LEGACY_LAYER_PREFIX + "venue"
     const val LEGACY_LAYER_ADDRESS = LEGACY_LAYER_PREFIX + "address"

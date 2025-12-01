@@ -2,7 +2,9 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
+import no.entur.geocoder.common.Category.COUNTY_ID_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.common.Category.LOCALITY_ID_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Country
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
@@ -46,10 +48,10 @@ object PhotonFilterBuilder {
         buildList {
             Country.fromThreeLetterCode(boundaryCountry)?.let { add(COUNTRY_PREFIX + it.name) }
             if (boundaryCountyIds.isNotEmpty()) {
-                addAll(boundaryCountyIds.map { "county_gid.$it" })
+                addAll(boundaryCountyIds.map { COUNTY_ID_PREFIX + it })
             }
             if (boundaryLocalityIds.isNotEmpty()) {
-                addAll(boundaryLocalityIds.map { "locality_gid.$it" })
+                addAll(boundaryLocalityIds.map { LOCALITY_ID_PREFIX + it })
             }
             if (tariffZones.isNotEmpty()) {
                 addAll(tariffZones.map { Category.tariffZoneIdCategory(it) })

@@ -1,6 +1,8 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
+import no.entur.geocoder.common.Category.COUNTY_ID_PREFIX
+import no.entur.geocoder.common.Category.LOCALITY_ID_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_ID_PREFIX
 import no.entur.geocoder.common.Geo
@@ -66,10 +68,10 @@ data class PhotonAutocompleteRequest(
                         addAll(req.countries.map { COUNTRY_PREFIX + it })
                     }
                     if (req.countyIds.isNotEmpty()) {
-                        addAll(req.countyIds.map { "county_gid.$it" })
+                        addAll(req.countyIds.map { COUNTY_ID_PREFIX + it })
                     }
                     if (req.localityIds.isNotEmpty()) {
-                        addAll(req.localityIds.map { "locality_gid.$it" })
+                        addAll(req.localityIds.map { LOCALITY_ID_PREFIX + it })
                     }
                     if (req.tariffZones.isNotEmpty()) {
                         addAll(req.tariffZones.map { TARIFF_ZONE_ID_PREFIX + it })

@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
+import io.ktor.http.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -203,5 +204,19 @@ class PeliasReverseRequestTest {
                 multiModal = "all",
             )
         assertEquals("all", all.multiModal)
+    }
+
+    @Test
+    fun `from Parameters parses boundary county_ids and locality_ids`() {
+        val params =
+            parametersOf(
+                "point.lat" to listOf("60.0"),
+                "point.lon" to listOf("10.0"),
+                "boundary.county_ids" to listOf("KVE:TopographicPlace:40,KVE:TopographicPlace:46"),
+                "boundary.locality_ids" to listOf("KVE:TopographicPlace:4005,KVE:TopographicPlace:4601"),
+            )
+        val req = PeliasReverseRequest.from(params)
+        assertEquals(listOf("KVE:TopographicPlace:40", "KVE:TopographicPlace:46"), req.boundaryCountyIds)
+        assertEquals(listOf("KVE:TopographicPlace:4005", "KVE:TopographicPlace:4601"), req.boundaryLocalityIds)
     }
 }
