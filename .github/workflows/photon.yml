@@ -35,7 +35,7 @@ env:
   DEV_GEOCODER_GIT_REF: HEAD
   # The stable vars are used for the daily full data import with deployment to staging and prod
   STABLE_PHOTON_JAR_URL: 'https://github.com/entur/photon/releases/download/2025-11-28/photon-0.7.0.jar'
-  STABLE_GEOCODER_GIT_REF: 34e7f30
+  STABLE_GEOCODER_GIT_REF: 59ff0fc
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
