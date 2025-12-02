@@ -69,7 +69,7 @@ rm -rf photon_data
 # Run Photon
 java -jar photon.jar
 
-# Switch to a different terminal and start the proxy (or just run ProxyKt from your IDE)
+# Switch to a different terminal and start the proxy (or just run `no.entur.geocoder.proxy.AppKt` from your IDE)
 cd ../proxy
 java -jar build/libs/proxy-all.jar
 ```
