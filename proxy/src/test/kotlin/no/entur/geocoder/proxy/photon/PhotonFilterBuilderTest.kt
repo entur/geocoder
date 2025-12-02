@@ -1,7 +1,10 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
+import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
+import no.entur.geocoder.proxy.photon.PhotonFilterBuilder.buildLayerExcludes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -131,5 +134,13 @@ class PhotonFilterBuilderTest {
         val reverseIncludes = PhotonFilterBuilder.buildIncludes(reverse)
         assertTrue(reverseIncludes.contains("county_gid.KVE.TopographicPlace.40"))
         assertTrue(reverseIncludes.contains("locality_gid.KVE.TopographicPlace.4005"))
+    }
+
+    @Test
+    fun `exclude non-selected layers`() {
+        assertEquals(emptyList(), buildLayerExcludes(listOf(LEGACY_LAYER_ADDRESS, LEGACY_LAYER_VENUE)))
+        assertEquals(listOf(LEGACY_LAYER_ADDRESS), buildLayerExcludes(listOf(LEGACY_LAYER_VENUE)))
+        assertEquals(listOf(LEGACY_LAYER_VENUE), buildLayerExcludes(listOf(LEGACY_LAYER_ADDRESS)))
+        assertEquals(emptyList(), buildLayerExcludes(emptyList()))
     }
 }
