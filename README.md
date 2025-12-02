@@ -70,7 +70,8 @@ rm -rf photon_data
 java -jar photon.jar
 
 # Switch to a different terminal and start the proxy (or just run ProxyKt from your IDE)
-java -jar proxy/build/libs/proxy-all.jar
+cd ../proxy
+java -jar build/libs/proxy-all.jar
 ```
 
 Now try some example requests:
