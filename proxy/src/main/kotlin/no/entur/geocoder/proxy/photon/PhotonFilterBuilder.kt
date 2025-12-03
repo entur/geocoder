@@ -7,6 +7,7 @@ import no.entur.geocoder.common.Category.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Country
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 
@@ -79,11 +80,11 @@ object PhotonFilterBuilder {
         )
 
     // Exclude addresses unless the query contains a house number or sources=<whatever>
-    // Typically takes care of "Oslo C" returning addresses.
     private fun buildHouseNumberExclude(req: PeliasAutocompleteRequest): String? =
-        if (req.experimental && req.sources.isNotEmpty()) {
+        if (req.sources.contains(Source.LEGACY_OPENADDRESSES)) {
             null
         } else {
+            // Typically takes care of "Oslo C" returning addresses.
             req.text
                 .takeIf { !it.contains("\\s\\d".toRegex()) }
                 ?.let { Category.OSM_ADDRESS }
