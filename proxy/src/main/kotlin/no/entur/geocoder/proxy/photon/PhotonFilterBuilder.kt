@@ -75,16 +75,11 @@ object PhotonFilterBuilder {
     fun buildExcludes(req: PeliasAutocompleteRequest): List<String> =
         listOfNotNull(
             buildMultiModalExclude(req.multiModal),
-            // LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
-            req.text
-                .takeIf { !it.contains("\\s\\d".toRegex()) }
-                ?.let { Category.OSM_ADDRESS }, // Exclude addresses unless the query contains a house number
         )
 
     fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(
             buildMultiModalExclude(req.multiModal),
-            // LEGACY_CATEGORY_PREFIX + "by", // There is no "by" category Pelias
             Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
         )
 

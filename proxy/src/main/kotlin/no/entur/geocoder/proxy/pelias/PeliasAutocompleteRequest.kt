@@ -20,6 +20,7 @@ data class PeliasAutocompleteRequest(
     val focus: FocusParams? = null,
     val multiModal: String = "parent",
     val debug: Boolean = false,
+    val experimental: Boolean = false,
 ) {
     init {
         require(text.isNotBlank()) { errorMessage }
@@ -60,6 +61,7 @@ data class PeliasAutocompleteRequest(
                         else -> "parent"
                     },
                 debug = req["debug"].toBoolean(),
+                experimental = req["experimental"].toBoolean(),
             )
 
         val digitPattern = Regex("^(\\d+)\\s+(.+)")

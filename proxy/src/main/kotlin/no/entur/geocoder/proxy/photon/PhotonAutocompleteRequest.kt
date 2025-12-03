@@ -19,6 +19,7 @@ data class PhotonAutocompleteRequest(
     val lon: Double? = null,
     val zoom: Int? = null,
     val locationBiasScale: Double? = null,
+    val includeHousenumbers: Boolean = false,
     val debug: Boolean = false,
 ) {
     companion object {
@@ -47,6 +48,7 @@ data class PhotonAutocompleteRequest(
                 zoom = zoom,
                 locationBiasScale = locationBiasScale,
                 debug = req.debug,
+                includeHousenumbers = req.experimental && req.sources.isNotEmpty(),
             )
         }
 
