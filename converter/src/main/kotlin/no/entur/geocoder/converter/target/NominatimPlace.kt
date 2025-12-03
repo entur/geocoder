@@ -1,5 +1,6 @@
 package no.entur.geocoder.converter.target
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import no.entur.geocoder.common.Extra
 import java.math.BigDecimal
 
@@ -34,6 +35,7 @@ data class NominatimPlace(
     // https://github.com/komoot/photon/blob/master/src/main/java/de/komoot/photon/nominatim/model/NameMap.java#L16
     data class Name(
         val name: String,
+        @JsonProperty("name:en") val name_en: String? = null,
         val alt_name: String? = null,
     )
 }

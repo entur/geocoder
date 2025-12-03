@@ -134,6 +134,7 @@ class OsmEntityConverter(
 
         val altName =
             altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
+        val enName = tags["en:name"]
 
         val id = "OSM:TopographicPlace:" + entity.id
         val countyGid = county?.refCode?.let { "KVE:TopographicPlace:$it" }
@@ -164,7 +165,7 @@ class OsmEntityConverter(
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,
-                name = Name(name = name, alt_name = altName(altName, id)),
+                name = Name(name = name, name_en = enName, alt_name = altName(altName, id)),
                 housenumber = null,
                 address = updatedAddress,
                 postcode = null,
