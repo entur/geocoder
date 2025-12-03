@@ -126,6 +126,8 @@ class GeoTest {
                 Triple(59.09735, 11.25770, Country.no),
                 // Tull Customs, Strömstad
                 Triple(59.08674, 11.24925, Country.se),
+                // Østerbyvegen
+                Triple(60.146179, 12.518511, Country.no)
             )
     }
 }
