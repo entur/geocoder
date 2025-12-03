@@ -75,7 +75,19 @@ object PhotonFilterBuilder {
     fun buildExcludes(req: PeliasAutocompleteRequest): List<String> =
         listOfNotNull(
             buildMultiModalExclude(req.multiModal),
+            buildHouseNumberExclude(req),
         )
+
+    // Exclude addresses unless the query contains a house number or sources=<whatever>
+    // Typically takes care of "Oslo C" returning addresses.
+    private fun buildHouseNumberExclude(req: PeliasAutocompleteRequest): String? =
+        if (req.experimental && req.sources.isNotEmpty()) {
+            null
+        } else {
+            req.text
+                .takeIf { !it.contains("\\s\\d".toRegex()) }
+                ?.let { Category.OSM_ADDRESS }
+        }
 
     fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(

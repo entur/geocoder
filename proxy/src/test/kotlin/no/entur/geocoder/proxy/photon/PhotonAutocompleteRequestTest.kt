@@ -22,7 +22,7 @@ class PhotonAutocompleteRequestTest {
         assertEquals(20 + RESULT_PRUNING_HEADROOM, request.limit)
         assertEquals("en", request.language)
         assertEquals(emptyList(), request.includes)
-        assertEquals(listOf("multimodal.child"), request.excludes)
+        assertEquals(listOf("multimodal.child", "osm.public_transport.address"), request.excludes)
         assertNull(request.lat)
         assertNull(request.lon)
     }
