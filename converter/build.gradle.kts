@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm")
     application
     alias(libs.plugins.shadow)
+    alias(libs.plugins.versions)
 }
 
 application {

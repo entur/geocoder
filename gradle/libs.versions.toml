@@ -1,7 +1,7 @@
 [versions]
 ben-manes-ver = "0.53.0"
 countries = "3.0.0"
-geotools = "33.2"
+geotools = "34.1"
 jackson = "2.20.1"
 kotlin = "2.2.21"
 ktlint-gradle = "13.1.0"
