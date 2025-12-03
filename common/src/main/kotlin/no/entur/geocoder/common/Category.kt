@@ -20,13 +20,13 @@ object Category {
     const val LOCALITY_ID_PREFIX = "locality_gid."
 
     const val LEGACY_LAYER_PREFIX = "legacy.layer."
-    const val LEGACY_LAYER_VENUE = LEGACY_LAYER_PREFIX + "venue"
-    const val LEGACY_LAYER_ADDRESS = LEGACY_LAYER_PREFIX + "address"
+    const val LEGACY_LAYER_VENUE = LEGACY_LAYER_PREFIX + Layer.LEGACY_VENUE
+    const val LEGACY_LAYER_ADDRESS = LEGACY_LAYER_PREFIX + Layer.LEGACY_ADDRESS
 
     const val LEGACY_SOURCE_PREFIX = "legacy.source."
-    const val LEGACY_SOURCE_WHOSONFIRST = LEGACY_SOURCE_PREFIX + "whosonfirst"
-    const val LEGACY_SOURCE_OPENADDRESSES = LEGACY_SOURCE_PREFIX + "openaddresses"
-    const val LEGACY_SOURCE_OPENSTREETMAP = LEGACY_SOURCE_PREFIX + "openstreetmap"
+    const val LEGACY_SOURCE_WHOSONFIRST = LEGACY_SOURCE_PREFIX + Source.LEGACY_WHOSONFIRST
+    const val LEGACY_SOURCE_OPENADDRESSES = LEGACY_SOURCE_PREFIX + Source.LEGACY_OPENADDRESSES
+    const val LEGACY_SOURCE_OPENSTREETMAP = LEGACY_SOURCE_PREFIX + Source.LEGACY_OSM
 
     /**
      * NSR, layer = venue:
