@@ -49,7 +49,7 @@ data class PhotonAutocompleteRequest(
                 zoom = zoom,
                 locationBiasScale = locationBiasScale,
                 debug = req.debug,
-                includeHousenumbers = req.sources.contains(Source.LEGACY_OPENADDRESSES),
+                includeHousenumbers = req.sources.contains(Source.LEGACY_OPENADDRESSES) && !req.text.contains("\\s\\d".toRegex()),
             )
         }
 
