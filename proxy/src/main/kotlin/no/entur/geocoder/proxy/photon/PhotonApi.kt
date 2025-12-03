@@ -26,8 +26,8 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     if (req.zoom != null) {
                         parameter("zoom", req.zoom)
                     }
-                    if (req.includes.isNotEmpty()) {
-                        parameter("include", req.includes.joinToString(","))
+                    req.includes.forEach {
+                        parameter("include", it)
                     }
                     req.excludes.forEach {
                         parameter("exclude", it)
@@ -60,8 +60,8 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     req.radius?.let { parameter("radius", it) }
                     parameter("limit", req.limit.toString())
 
-                    if (req.includes.isNotEmpty()) {
-                        parameter("include", req.includes.joinToString(","))
+                    req.includes.forEach {
+                        parameter("include", it)
                     }
                     req.excludes.forEach {
                         parameter("exclude", it)

@@ -112,8 +112,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("tariff_zone_id.RUT.TariffZone.01"))
-        assertTrue(request.includes.contains("tariff_zone_id.RUT.TariffZone.02"))
+        assertTrue(request.includes.contains("tariff_zone_id.RUT.TariffZone.01,tariff_zone_id.RUT.TariffZone.02"))
         assertTrue(request.includes.contains("tariff_zone_authority.RUT"))
     }
 
@@ -219,9 +218,7 @@ class PhotonAutocompleteRequestTest {
         val request = PhotonAutocompleteRequest.from(req)
 
         assertTrue(request.includes.contains("country.no"))
-        assertTrue(request.includes.contains("county_gid.03"))
-        assertTrue(request.includes.contains("county_gid.18"))
-        assertTrue(request.includes.contains("locality_gid.0301"))
-        assertTrue(request.includes.contains("locality_gid.1804"))
+        assertTrue(request.includes.contains("county_gid.03,county_gid.18"))
+        assertTrue(request.includes.contains("locality_gid.0301,locality_gid.1804"))
     }
 }

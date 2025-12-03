@@ -224,7 +224,14 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 LEGACY_CATEGORY_PREFIX + entry.navneobjekttype,
             )
 
-        val categories = tags.plus(SOURCE_STEDSNAVN).plus(COUNTRY_PREFIX + country.name)
+        val countyGid = "KVE:TopographicPlace:${entry.fylkesnummer}"
+        val localityGid = "KVE:TopographicPlace:${entry.kommunenummer}"
+        val categories =
+            tags
+                .plus(SOURCE_STEDSNAVN)
+                .plus(COUNTRY_PREFIX + country.name)
+                .plus(Category.countyIdsCategory(countyGid))
+                .plus(Category.localityIdsCategory(localityGid))
 
         val id = entry.lokalId
         val extra =
@@ -233,9 +240,9 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 source = Source.KARTVERKET_STEDSNAVN,
                 accuracy = "point",
                 country_a = country.threeLetterCode,
-                county_gid = "KVE:TopographicPlace:${entry.fylkesnummer}",
+                county_gid = countyGid,
                 locality = entry.kommunenavn,
-                locality_gid = "KVE:TopographicPlace:${entry.kommunenummer}",
+                locality_gid = localityGid,
                 tags = tags.joinToString(","),
             )
 

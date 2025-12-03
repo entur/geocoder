@@ -11,7 +11,7 @@ data class NominatimPlace(
         val place_id: Long,
         val object_type: String,
         val object_id: Long,
-        val categories: List<String>,
+        val categories: List<String>, // categories are used for filtering using include/exclude params
         val rank_address: Int,
         val importance: BigDecimal,
         val parent_place_id: Long? = null,

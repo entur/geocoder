@@ -120,8 +120,9 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
     ): NominatimPlace {
         val coord = Geo.convertUtm33ToLatLon(utm)
         val country = Geo.getCountry(coord) ?: Country.no
-
         val fylkesnummer = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnummer }
+        val countyGid = fylkesnummer?.let { "KVE:TopographicPlace:$it" }
+        val localityGid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" }
 
         val extra =
             Extra(
@@ -129,15 +130,24 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 source = Source.KARTVERKET_ADRESSE,
                 accuracy = "point",
                 country_a = country.threeLetterCode,
-                county_gid = fylkesnummer?.let { "KVE:TopographicPlace:$it" },
+                county_gid = countyGid,
                 locality = adresse.kommunenavn?.titleize(),
-                locality_gid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" },
+                locality_gid = localityGid,
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
                 tags = tags.joinToString(","),
                 alt_name = adresse.adressetilleggsnavn,
             )
-        val categories = tags.plus(SOURCE_ADRESSE).plus(COUNTRY_PREFIX + country.name)
+        val categories =
+            tags
+                .plus(SOURCE_ADRESSE)
+                .plus(COUNTRY_PREFIX + country.name)
+                .plus(
+                    listOfNotNull(
+                        countyGid?.let { Category.countyIdsCategory(it) },
+                        localityGid?.let { Category.countyIdsCategory(it) },
+                    ),
+                )
 
         val fylkesnavn = adresse.kommunenummer?.let { kommuneFylkeMapping[it]?.fylkesnavn }
 

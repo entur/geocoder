@@ -189,4 +189,23 @@ class StopPlaceConverterTest {
         val lines = output.readLines()
         assertTrue(lines.size > 10, "Should have more than 10 lines (header + multiple entries)")
     }
+
+    @Test
+    fun `stop places should have county_gid and locality_gid categories`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
+        requireNotNull(xmlStream)
+
+        val input = streamToFile(xmlStream)
+        val output = File.createTempFile("gid_categories", ".json")
+        converter.convert(input, output)
+
+        val lines = output.readLines().drop(1)
+        assertTrue(
+            lines.any { line ->
+                line.contains("county_gid.KVE") && line.contains("locality_gid.KVE")
+            },
+            "Should contain both county_gid and locality_gid with KVE prefix",
+        )
+    }
 }

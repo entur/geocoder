@@ -1,5 +1,7 @@
 package no.entur.geocoder.converter.source.osm
 
+import no.entur.geocoder.common.Coordinate
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import org.openstreetmap.osmosis.core.domain.v0_6.*
@@ -372,5 +374,75 @@ class OsmConverterTest {
         val allTags = name?.let { tags + Tag("name", it) } ?: tags
         val commonEntityData = CommonEntityData(id, 1, Date(), OsmUser(1, "test"), 1, allTags)
         return Way(commonEntityData, wayNodes)
+    }
+
+    @Test
+    fun `OSM entities should have county_gid and locality_gid in categories when admin boundaries are set`() {
+        val nodesCoords = CoordinateStore(100)
+        val wayCentroids = CoordinateStore(100)
+        val adminBoundaryIndex = AdministrativeBoundaryIndex()
+
+        // Add admin boundaries
+        val countyBoundary =
+            AdministrativeBoundary(
+                id = 1L,
+                name = "Oslo",
+                adminLevel = AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY,
+                refCode = "03",
+                country = Country.no,
+                centroid = Coordinate(59.9, 10.7),
+                bbox = BoundingBox(59.8, 60.0, 10.6, 10.8),
+                boundaryNodes =
+                    listOf(
+                        Coordinate(59.8, 10.6),
+                        Coordinate(60.0, 10.6),
+                        Coordinate(60.0, 10.8),
+                        Coordinate(59.8, 10.8),
+                    ),
+            )
+        adminBoundaryIndex.addBoundary(countyBoundary)
+
+        val municipalityBoundary =
+            AdministrativeBoundary(
+                id = 2L,
+                name = "Oslo kommune",
+                adminLevel = AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY,
+                refCode = "301",
+                country = Country.no,
+                centroid = Coordinate(59.9, 10.7),
+                bbox = BoundingBox(59.8, 60.0, 10.6, 10.8),
+                boundaryNodes =
+                    listOf(
+                        Coordinate(59.8, 10.6),
+                        Coordinate(60.0, 10.6),
+                        Coordinate(60.0, 10.8),
+                        Coordinate(59.8, 10.8),
+                    ),
+            )
+        adminBoundaryIndex.addBoundary(municipalityBoundary)
+
+        val config = ConverterConfig()
+        val popularityCalculator = OSMPopularityCalculator(config.osm)
+        val importanceCalculator = ImportanceCalculator(config.importance)
+        val converter = OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, popularityCalculator, importanceCalculator)
+
+        val mockNode =
+            createMockNode(
+                id = 1L,
+                lat = 59.9,
+                lon = 10.7,
+                tags =
+                    listOf(
+                        Tag("name", "Test Place"),
+                        Tag("amenity", "restaurant"),
+                    ),
+            )
+
+        val result = converter.convert(mockNode)
+
+        assertNotNull(result)
+        val categories = result.content[0].categories
+        assertTrue(categories.contains("county_gid.KVE.TopographicPlace.03"), "Should contain county_gid with correct format")
+        assertTrue(categories.contains("locality_gid.KVE.TopographicPlace.301"), "Should contain locality_gid with correct format")
     }
 }

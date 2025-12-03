@@ -222,4 +222,17 @@ class MatrikkelConverterTest {
         val nominatimPlace: NominatimPlace = jacksonMapper.readValue(addressWith1A)
         assertEquals("1A", nominatimPlace.content.first().housenumber, "Should combine number and letter")
     }
+
+    @Test
+    fun `addresses should have county_gid in categories`() {
+        val outputFile = tempDir.resolve("output_gid_categories.json").toFile()
+
+        converter.convert(inputFile, outputFile)
+
+        val lines = outputFile.readLines().drop(1)
+        assertTrue(
+            lines.any { it.contains("county_gid.KVE.TopographicPlace.") },
+            "Should contain county_gid with KVE TopographicPlace format",
+        )
+    }
 }

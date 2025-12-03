@@ -136,20 +136,23 @@ class OsmEntityConverter(
             altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
 
         val id = "OSM:TopographicPlace:" + entity.id
+        val countyGid = county?.refCode?.let { "KVE:TopographicPlace:$it" }
+        val localityGid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" }
+
         val extra =
             Extra(
                 id = id,
                 source = Source.OSM,
                 accuracy = accuracy,
                 country_a = country?.threeLetterCode,
-                county_gid = county?.refCode?.let { "KVE:TopographicPlace:$it" },
+                county_gid = countyGid,
                 locality = municipality?.name?.titleize(),
-                locality_gid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" },
+                locality_gid = localityGid,
                 tags = tagList.joinToString(","),
                 alt_name = altName,
             )
 
-        val categories = buildCategories(tagList, country, county, municipality)
+        val categories = buildCategories(tagList, country, countyGid, localityGid)
 
         val placeId = PlaceId.osm.create(entity.id)
         val content =
@@ -180,22 +183,19 @@ class OsmEntityConverter(
         tags: Map<String, String>,
         coord: Coordinate,
     ): Country? =
-        county?.country ?: municipality?.country ?: Country.parse(
-            tags["addr:country"],
-        )
-            ?: Geo.getCountry(coord)
+        county?.country ?: municipality?.country ?: Country.parse(tags["addr:country"]) ?: Geo.getCountry(coord)
 
     private fun buildCategories(
         tags: List<String>,
         country: Country?,
-        county: AdministrativeBoundary?,
-        municipality: AdministrativeBoundary?,
+        countyGid: String?,
+        localityGid: String?,
     ): List<String> =
         buildList {
             addAll(tags)
             country?.let { add(COUNTRY_PREFIX + it.name) }
-            county?.refCode?.let { add(Category.countyIdsCategory("KVE:TopographicPlace:$it")) }
-            municipality?.refCode?.let { add(Category.localityIdsCategory("KVE:TopographicPlace:$it")) }
+            countyGid?.let { add(Category.countyIdsCategory(it)) }
+            localityGid?.let { add(Category.localityIdsCategory(it)) }
         }
 
     private fun determineRankAddress(tags: Map<String, String>): Int =

@@ -1,10 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
-import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
-import no.entur.geocoder.proxy.photon.PhotonFilterBuilder.buildLayerExcludes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -64,7 +61,7 @@ class PhotonFilterBuilderTest {
                 )
                     to
                     listOf(
-                        "country.no", "county_gid.50", "tariff_zone_id.ATB.TariffZone.A", "tariff_zone_id.ATB.TariffZone.B",
+                        "country.no", "county_gid.50", "tariff_zone_id.ATB.TariffZone.A,tariff_zone_id.ATB.TariffZone.B",
                         "tariff_zone_authority.ATB", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
                     ),
                 PeliasAutocompleteRequest(
@@ -82,8 +79,7 @@ class PhotonFilterBuilderTest {
             )
 
         scenarios.forEach { scenario ->
-            val includes =
-                PhotonFilterBuilder.buildIncludes(scenario.first)
+            val includes = PhotonFilterBuilder.buildIncludes(scenario.first)
             assertEquals(scenario.second.size, includes.size, "Failed for scenario: ${scenario.first.text}")
             scenario.second.forEach { expected ->
                 assertTrue(includes.contains(expected), "Missing '$expected' in scenario: ${scenario.first.text}")
@@ -118,10 +114,8 @@ class PhotonFilterBuilderTest {
                 boundaryLocalityIds = listOf("KVE:TopographicPlace:4601", "KVE:TopographicPlace:3001"),
             )
         val autocompleteIncludes = PhotonFilterBuilder.buildIncludes(autocomplete)
-        assertTrue(autocompleteIncludes.contains("county_gid.KVE.TopographicPlace.03"))
-        assertTrue(autocompleteIncludes.contains("county_gid.KVE.TopographicPlace.18"))
-        assertTrue(autocompleteIncludes.contains("locality_gid.KVE.TopographicPlace.4601"))
-        assertTrue(autocompleteIncludes.contains("locality_gid.KVE.TopographicPlace.3001"))
+        assertTrue(autocompleteIncludes.contains("county_gid.KVE.TopographicPlace.03,county_gid.KVE.TopographicPlace.18"))
+        assertTrue(autocompleteIncludes.contains("locality_gid.KVE.TopographicPlace.4601,locality_gid.KVE.TopographicPlace.3001"))
 
         val reverse =
             PeliasReverseRequest(
@@ -134,13 +128,5 @@ class PhotonFilterBuilderTest {
         val reverseIncludes = PhotonFilterBuilder.buildIncludes(reverse)
         assertTrue(reverseIncludes.contains("county_gid.KVE.TopographicPlace.40"))
         assertTrue(reverseIncludes.contains("locality_gid.KVE.TopographicPlace.4005"))
-    }
-
-    @Test
-    fun `exclude non-selected layers`() {
-        assertEquals(emptyList(), buildLayerExcludes(listOf(LEGACY_LAYER_ADDRESS, LEGACY_LAYER_VENUE)))
-        assertEquals(listOf(LEGACY_LAYER_ADDRESS), buildLayerExcludes(listOf(LEGACY_LAYER_VENUE)))
-        assertEquals(listOf(LEGACY_LAYER_VENUE), buildLayerExcludes(listOf(LEGACY_LAYER_ADDRESS)))
-        assertEquals(emptyList(), buildLayerExcludes(emptyList()))
     }
 }

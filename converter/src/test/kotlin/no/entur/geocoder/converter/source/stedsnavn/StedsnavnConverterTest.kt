@@ -375,4 +375,20 @@ class StedsnavnConverterTest {
             assertEquals("N", objectType, "Stedsnavn entries should have object_type 'N' (node)")
         }
     }
+
+    @Test
+    fun `stedsnavn should have county_gid and locality_gid in categories`() {
+        val outputFile = tempDir.resolve("output_gid_categories.json").toFile()
+        inputFile = getTestFile("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml")
+
+        converter.convert(inputFile, outputFile, isAppending = false)
+
+        val lines = outputFile.readLines().drop(1)
+        assertTrue(
+            lines.any { line ->
+                line.contains("county_gid.KVE") && line.contains("locality_gid.KVE")
+            },
+            "Should contain both county_gid and locality_gid with KVE prefix",
+        )
+    }
 }

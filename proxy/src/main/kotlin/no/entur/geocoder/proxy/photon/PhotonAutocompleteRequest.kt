@@ -63,25 +63,25 @@ data class PhotonAutocompleteRequest(
             val includes =
                 buildList {
                     if (req.countries.isNotEmpty()) {
-                        addAll(req.countries.map { COUNTRY_PREFIX + it })
+                        add(req.countries.joinToString(",") { COUNTRY_PREFIX + it })
                     }
                     if (req.countyIds.isNotEmpty()) {
-                        addAll(req.countyIds.map { Category.countyIdsCategory(it) })
+                        add(req.countyIds.joinToString(",") { Category.countyIdsCategory(it) })
                     }
                     if (req.localityIds.isNotEmpty()) {
-                        addAll(req.localityIds.map { Category.localityIdsCategory(it) })
+                        add(req.localityIds.joinToString(",") { Category.localityIdsCategory(it) })
                     }
                     if (req.tariffZones.isNotEmpty()) {
-                        addAll(req.tariffZones.map { Category.tariffZoneIdCategory(it) })
+                        add(req.tariffZones.joinToString(",") { Category.tariffZoneIdCategory(it) })
                     }
                     if (req.tariffZoneAuthorities.isNotEmpty()) {
-                        addAll(req.tariffZoneAuthorities.map { TARIFF_ZONE_AUTH_PREFIX + it })
+                        add(req.tariffZoneAuthorities.joinToString(",") { TARIFF_ZONE_AUTH_PREFIX + it })
                     }
                     if (req.sources.isNotEmpty()) {
-                        addAll(req.sources.map { "source.$it" })
+                        add(req.sources.joinToString(",") { "source.$it" })
                     }
                     if (req.placeTypes.isNotEmpty()) {
-                        addAll(req.placeTypes.map { "layer.$it" })
+                        add(req.placeTypes.joinToString(",") { "layer.$it" })
                     }
                 }
 
