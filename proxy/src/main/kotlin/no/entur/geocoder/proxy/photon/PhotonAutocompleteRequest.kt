@@ -39,7 +39,7 @@ data class PhotonAutocompleteRequest(
             val locationBiasScale = req.focus?.let { calculateLocationBias(it.weight ?: 15.0) }
 
             return PhotonAutocompleteRequest(
-                query = req.text,
+                query = handleText(req.text),
                 limit = req.size + RESULT_PRUNING_HEADROOM, // We ask for more since we prune away 'by' when there's already a matching GOSP
                 language = req.lang,
                 includes = includes,
@@ -51,6 +51,20 @@ data class PhotonAutocompleteRequest(
                 debug = req.debug,
                 includeHousenumbers = req.sources.contains(Source.LEGACY_OPENADDRESSES) && !req.text.contains("\\s\\d".toRegex()),
             )
+        }
+
+        val digitPattern = Regex("^(\\d+)\\s+(.+)")
+
+        private fun handleText(text: String): String {
+            // 11 Storgata -> Storgata 11
+            val match = digitPattern.find(text)
+            return if (match == null) {
+                text
+            } else {
+                val digit = match.groupValues[1]
+                val rest = match.groupValues[2]
+                "$rest $digit"
+            }
         }
 
         fun from(req: PeliasPlaceRequest): List<PhotonAutocompleteRequest> =

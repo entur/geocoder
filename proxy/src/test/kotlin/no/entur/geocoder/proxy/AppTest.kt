@@ -57,13 +57,10 @@ class AppTest {
     @Test
     fun `test autocomplete endpoint`() =
         testApplication {
+            var capturedRequest: HttpRequestData? = null
             val mockEngine =
                 MockEngine { request ->
-                    assertEquals("Test_query", request.url.parameters["q"])
-                    assertEquals("${(5 + RESULT_PRUNING_HEADROOM)}", request.url.parameters["limit"])
-                    assertEquals("en", request.url.parameters["lang"])
-                    assertEquals("59.0", request.url.parameters["lat"])
-                    assertEquals("10.0", request.url.parameters["lon"])
+                    capturedRequest = request
 
                     respond(
                         content = samplePhotonResponse,
@@ -91,6 +88,11 @@ class AppTest {
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("test_query", capturedRequest?.url?.parameters["q"])
+            assertEquals("${(5 + RESULT_PRUNING_HEADROOM)}", capturedRequest?.url?.parameters["limit"])
+            assertEquals("en", capturedRequest?.url?.parameters["lang"])
+            assertEquals("59.0", capturedRequest?.url?.parameters["lat"])
+            assertEquals("10.0", capturedRequest?.url?.parameters["lon"])
 
             val collection: PeliasResult = jacksonMapper.readValue(response.bodyAsText())
             assertEquals(1, collection.features.size)

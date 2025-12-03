@@ -1,7 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.http.*
-import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 
@@ -31,7 +30,7 @@ data class PeliasAutocompleteRequest(
 
         fun from(req: Parameters) =
             PeliasAutocompleteRequest(
-                text = handleText(req),
+                text = req["text"]?.safeVar() ?: "",
                 size = req["size"]?.toIntOrNull() ?: 10,
                 lang = req["lang"].safeVar() ?: "no",
                 boundaryCountry = req["boundary.country"]?.safeVar(),
@@ -63,30 +62,6 @@ data class PeliasAutocompleteRequest(
                 debug = req["debug"].toBoolean(),
                 experimental = req["experimental"].toBoolean(),
             )
-
-        val digitPattern = Regex("^(\\d+)\\s+(.+)")
-
-        // Photon handles short (and fuzzy) queries differently to longer ones.
-        // The fuzzy search "Olso" doesn't resolve to "Oslo", while "olso" does.
-        // The non-fuzzy search "Lille" gives better results than "lille". "Lill" and "lill" are equivalent (and both good).
-        private fun handleText(params: Parameters): String {
-            val text =
-                params["text"]
-                    .safeVar()
-                    ?.let {
-                        if (it.length <= 4) it.lowercase() else it.titleize()
-                    } ?: ""
-
-            // 11 Storgata -> Storgata 11
-            val match = digitPattern.find(text)
-            return if (match != null) {
-                val digit = match.groupValues[1]
-                val rest = match.groupValues[2]
-                "$rest $digit"
-            } else {
-                text
-            }
-        }
     }
 
     data class FocusParams(

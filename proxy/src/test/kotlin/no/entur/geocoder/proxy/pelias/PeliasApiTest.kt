@@ -57,7 +57,7 @@ class PeliasApiTest {
             assertEquals(1, recordedRequests.size)
             val req = recordedRequests.first()
             assertTrue(req.url.encodedPath.endsWith("/api"))
-            assertEquals("oslo", req.url.parameters["q"])
+            assertEquals("Oslo", req.url.parameters["q"])
             assertEquals("${(1 + RESULT_PRUNING_HEADROOM)}", req.url.parameters["limit"])
             assertEquals("en", req.url.parameters["lang"])
         }
