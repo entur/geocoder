@@ -42,7 +42,7 @@ jobs:
             echo "message=⚠️ Photon data is ${AGE_HOURS} hours old (last import: $IMPORT_DATE)" >> $GITHUB_OUTPUT
           else
             echo "alert=false" >> $GITHUB_OUTPUT
-            echo "Data is fresh (${AGE_HOURS} hours old)"
+            echo "message=Data is fresh (${AGE_HOURS} hours old)" >> $GITHUB_OUTPUT
           fi
 
       - name: Send Slack notification
