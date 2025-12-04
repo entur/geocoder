@@ -3,6 +3,8 @@ package no.entur.geocoder.proxy.photon
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.*
 
 class PhotonAutocompleteRequestTest {
@@ -48,14 +50,15 @@ class PhotonAutocompleteRequestTest {
 
         assertEquals(59.911491, request.lat)
         assertEquals(10.757933, request.lon)
-        assertTrue(request.zoom != null)
-        assertTrue(request.locationBiasScale != null)
-        assertTrue(request.locationBiasScale < 1.0)
-        assertTrue(request.locationBiasScale > 0.0)
+        assertEquals(11, request.zoom)
+        assertNotNull(request.locationBiasScale)
+        // Weight of 15.0 produces scale of ~0.2
+        assertEquals(0.2, request.locationBiasScale, 0.01)
     }
 
-    @Test
-    fun `from PeliasAutocompleteParams builds includes from filters`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["country.no", "county_gid.03", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport"])
+    fun `from PeliasAutocompleteParams builds includes from filters`(expectedInclude: String) {
         val req =
             PeliasAutocompleteRequest(
                 text = "Oslo",
@@ -69,11 +72,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("country.no"))
-        assertTrue(request.includes.contains("county_gid.03"))
-        assertTrue(request.includes.contains("legacy.source.osm"))
-        assertTrue(request.includes.contains("legacy.layer.venue"))
-        assertTrue(request.includes.contains("legacy.category.transport"))
+        assertEquals(expectedInclude, request.includes.find { it == expectedInclude })
     }
 
     @Test
@@ -100,8 +99,9 @@ class PhotonAutocompleteRequestTest {
         assertEquals(listOf(), PhotonAutocompleteRequest.from(reqAll).excludes)
     }
 
-    @Test
-    fun `from PeliasAutocompleteParams includes tariff zones`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["tariff_zone_id.RUT.TariffZone.01,tariff_zone_id.RUT.TariffZone.02", "tariff_zone_authority.RUT"])
+    fun `from PeliasAutocompleteParams includes tariff zones`(expectedInclude: String) {
         val req =
             PeliasAutocompleteRequest(
                 text = "Oslo",
@@ -112,8 +112,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("tariff_zone_id.RUT.TariffZone.01,tariff_zone_id.RUT.TariffZone.02"))
-        assertTrue(request.includes.contains("tariff_zone_authority.RUT"))
+        assertEquals(expectedInclude, request.includes.find { it == expectedInclude })
     }
 
     @Test
@@ -159,13 +158,13 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.zoom != null)
-        assertTrue(request.zoom > 0)
+        // Scale of 100 should map to zoom level 10
+        assertEquals(10, request.zoom)
     }
 
     @Test
-    fun `from PeliasAutocompleteParams converts weight correctly`() {
-        val focus1 =
+    fun `from PeliasAutocompleteParams converts weight of 0_1 to scale`() {
+        val focus =
             PeliasAutocompleteRequest.FocusParams(
                 lat = 60.0,
                 lon = 10.0,
@@ -173,18 +172,23 @@ class PhotonAutocompleteRequestTest {
                 weight = 0.1,
             )
 
-        val req1 =
+        val req =
             PeliasAutocompleteRequest(
                 text = "Oslo",
-                focus = focus1,
+                focus = focus,
                 multiModal = "parent",
             )
 
-        val request1 = PhotonAutocompleteRequest.from(req1)
-        assertNotNull(request1.locationBiasScale)
-        assertTrue(request1.locationBiasScale <= 1.0)
+        val request = PhotonAutocompleteRequest.from(req)
 
-        val focus2 =
+        // Weight 0.1 produces scale of ~0.683
+        assertNotNull(request.locationBiasScale)
+        assertEquals(0.683, request.locationBiasScale, 0.001)
+    }
+
+    @Test
+    fun `from PeliasAutocompleteParams converts weight of 100 to scale`() {
+        val focus =
             PeliasAutocompleteRequest.FocusParams(
                 lat = 60.0,
                 lon = 10.0,
@@ -192,20 +196,23 @@ class PhotonAutocompleteRequestTest {
                 weight = 100.0,
             )
 
-        val req2 =
+        val req =
             PeliasAutocompleteRequest(
                 text = "Oslo",
-                focus = focus2,
+                focus = focus,
                 multiModal = "parent",
             )
 
-        val request2 = PhotonAutocompleteRequest.from(req2)
-        assertNotNull(request2.locationBiasScale)
-        assertTrue(request2.locationBiasScale >= 0.0)
+        val request = PhotonAutocompleteRequest.from(req)
+
+        // Weight 100.0 should produce scale close to 0.0 (high weight = low scale)
+        assertNotNull(request.locationBiasScale)
+        assertEquals(0.0, request.locationBiasScale, 0.01)
     }
 
-    @Test
-    fun `from PeliasAutocompleteParams includes all boundary filters`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["country.no", "county_gid.03,county_gid.18", "locality_gid.0301,locality_gid.1804"])
+    fun `from PeliasAutocompleteParams includes all boundary filters`(expectedInclude: String) {
         val req =
             PeliasAutocompleteRequest(
                 text = "Oslo",
@@ -217,8 +224,6 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertTrue(request.includes.contains("country.no"))
-        assertTrue(request.includes.contains("county_gid.03,county_gid.18"))
-        assertTrue(request.includes.contains("locality_gid.0301,locality_gid.1804"))
+        assertEquals(expectedInclude, request.includes.find { it == expectedInclude })
     }
 }

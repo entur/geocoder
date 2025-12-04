@@ -213,7 +213,7 @@ class StopPlaceConverterTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["nor:ved spor 19;eng:at track 19","nor:foran Oslo S;eng:in front of Oslo S", "nor:i Storgata;eng:in Storgata"])
+    @ValueSource(strings = ["nor:ved spor 19;eng:at track 19", "nor:foran Oslo S;eng:in front of Oslo S", "nor:i Storgata;eng:in Storgata"])
     fun `descriptions should be translated to both Norwegian and English`(text: String) {
         val converter = StopPlaceConverter(ConverterConfig())
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")

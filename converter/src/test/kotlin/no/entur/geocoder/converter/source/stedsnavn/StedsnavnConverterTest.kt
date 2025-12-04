@@ -45,8 +45,10 @@ class StedsnavnConverterTest {
         val outputFile = tempDir.resolve("output.json").toFile()
         converter.convert(inputFile, outputFile, isAppending = false)
 
-        assertTrue(outputFile.readText().contains("Grünerløkka"))
-        assertEquals(outputFile.readLines().size, 3)
+        val content = outputFile.readText()
+        val placeName = if (content.contains("Grünerløkka")) "Grünerløkka" else null
+        assertEquals("Grünerløkka", placeName)
+        assertEquals(3, outputFile.readLines().size)
     }
 
     @Test
@@ -56,12 +58,9 @@ class StedsnavnConverterTest {
 
         converter.convert(inputFile, outputFile, isAppending = false)
 
-        assertTrue(outputFile.exists(), "Output file should exist")
-        assertTrue(outputFile.length() > 0, "Output file should not be empty")
-
         val lines = outputFile.readLines()
-        assertTrue(lines.isNotEmpty(), "Output file should have lines")
-        assertTrue(lines.size > 1, "Output file should have at least two lines (header and data)")
+        // Should have header + 3 entries (see test below that verifies 3 entries)
+        assertEquals(4, lines.size)
 
         val firstPlaceJson = lines[1]
         val nominatimPlace: NominatimPlace = jacksonMapper.readValue(firstPlaceJson)
