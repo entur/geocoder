@@ -115,7 +115,7 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
-        run: ./gradlew --no-daemon build
+        run: ./gradlew --no-daemon :proxy:build
 
       - name: Build and Push
         id: build-push
