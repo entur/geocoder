@@ -1,7 +1,6 @@
-package no.entur.geocoder.converter
+package no.entur.geocoder.converter.source
 
-import no.entur.geocoder.converter.NorwegianToEnglishTranslator.translate
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -9,8 +8,8 @@ import org.junit.jupiter.params.provider.CsvSource
 class NorwegianToEnglishTranslatorTest {
     @Test
     fun `handle empty and blank strings`() {
-        assertEquals("", translate(""))
-        assertEquals("  ", translate("  "))
+        Assertions.assertEquals("", NorwegianToEnglishTranslator.translate(""))
+        Assertions.assertEquals("  ", NorwegianToEnglishTranslator.translate("  "))
     }
 
     @ParameterizedTest
@@ -39,7 +38,7 @@ class NorwegianToEnglishTranslatorTest {
         "midlertidig stopp | temporary stop",
         "ved inngangen | at entrance",
         "øvre plan | upper floor",
-        "kun avstigning | only exit only",
+        "kun avstigning | only exit",
         "midlertidig i Holtegata | temporary in Holtegata",
         "i Akersgata | in Akersgata",
         "ved rundkjøringen | at roundabout",
@@ -52,7 +51,7 @@ class NorwegianToEnglishTranslatorTest {
         "ikke i bruk | not in use",
         "Ikkje betjent av rutebuss | Not served by scheduled bus",
         "brukes kun av flybuss | used only by airport bus",
-        "Bare avstigning for skoleelever | Only exit only for pupils",
+        "Bare avstigning for skoleelever | Only exit for pupils",
         "Betjenes av bestillingsruter | Served by on-demand routes",
         "bussterminal ved terminal 3 | bus terminal at terminal 3",
         "Inngang A | Entrance A",
@@ -69,6 +68,6 @@ class NorwegianToEnglishTranslatorTest {
         delimiter = '|',
     )
     fun `translate ramp descriptions`(input: String, expected: String) {
-        assertEquals(expected, translate(input))
+        Assertions.assertEquals(expected, NorwegianToEnglishTranslator.translate(input))
     }
 }
