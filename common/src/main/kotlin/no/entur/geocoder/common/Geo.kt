@@ -77,6 +77,7 @@ object Geo {
         source?.let { CountryBoundaries.deserializeFrom(source) }
     }
 
+    // See common/README.md for details on how to country mapper
     fun getCountry(coord: Coordinate): Country? =
         boundaries
             ?.getIds(coord.lon, coord.lat)
