@@ -149,9 +149,29 @@ object PeliasResultTransformer {
                     label = createLabel(props),
                     category = transformCategory(extra),
                     tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
-                    description = extra?.description?.let { listOf(mapOf("nor" to it)) },
+                    description = transformDescription(extra),
                 ),
         )
+    }
+
+    private fun transformDescription(extra: Extra?): List<Map<String, String>>? {
+        val description = extra?.description ?: return null
+
+        return if (description.contains("\\w{3}:".toRegex())) {
+            // Parse entries with language prefixes: "nor:text" or "nor:text;eng:text"
+            description.split(";").mapNotNull { part ->
+                val colonIndex = part.indexOf(":")
+                if (colonIndex > 0) {
+                    val langCode = part.take(colonIndex).trim()
+                    val text = part.substring(colonIndex + 1).trim()
+                    mapOf(langCode to text)
+                } else {
+                    null
+                }
+            }
+        } else {
+            listOf(mapOf("nor" to description))
+        }
     }
 
     private fun createLabel(props: PhotonProperties): String? =
