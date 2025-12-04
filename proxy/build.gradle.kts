@@ -11,7 +11,6 @@ application {
     mainClass.set("no.entur.geocoder.proxy.AppKt")
 }
 
-
 dependencies {
     constraints {
         implementation("org.apache.commons:commons-lang3") {

@@ -1,7 +1,7 @@
 package no.entur.geocoder.common
 
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,61 +26,20 @@ class GeoTest {
         assertEquals(305072.3952385879, distance) // Distance in meters
     }
 
-    @Test
-    fun `peliasScaleToPhotonZoom with very local scale`() {
-        // Pelias scale 5km → targetRadius = (5+1)/2.5 = 2.4km → zoom 14
-        val zoom = Geo.peliasScaleToPhotonZoom(5)
-        assertEquals(14, zoom) // Photon radius ~4km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with local scale`() {
-        // Pelias scale 10km → targetRadius = (10+1)/2.5 = 4.4km → zoom 13
-        val zoom = Geo.peliasScaleToPhotonZoom(10)
-        assertEquals(13, zoom) // Photon radius ~8km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with district scale`() {
-        // Pelias scale 25km → targetRadius = (25+1)/2.5 = 10.4km → zoom 12
-        val zoom = Geo.peliasScaleToPhotonZoom(25)
-        assertEquals(12, zoom) // Photon radius ~16km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with default Pelias scale`() {
-        // Pelias default scale 50km → targetRadius = (50+1)/2.5 = 20.4km → zoom 11
-        val zoom = Geo.peliasScaleToPhotonZoom(50)
-        assertEquals(11, zoom) // Photon radius ~32km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with regional scale`() {
-        // Pelias scale 100km → targetRadius = (100+1)/2.5 = 40.4km → zoom 10
-        val zoom = Geo.peliasScaleToPhotonZoom(100)
-        assertEquals(10, zoom) // Photon radius ~64km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with multi-region scale`() {
-        // Pelias scale 200km → targetRadius = (200+1)/2.5 = 80.4km → zoom 9
-        val zoom = Geo.peliasScaleToPhotonZoom(200)
-        assertEquals(9, zoom) // Photon radius ~128km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with national scale`() {
-        // Pelias scale 500km → targetRadius = (500+1)/2.5 = 200.4km → zoom 8
-        val zoom = Geo.peliasScaleToPhotonZoom(500)
-        assertEquals(8, zoom) // Photon radius ~256km
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom with explicit Entur default scale`() {
-        // Entur's Pelias default: scale=2500km (very broad, minimal location bias)
-        // targetRadius = (2500+1)/2.5 = 1000.4km → zoom = 6
-        val zoom = Geo.peliasScaleToPhotonZoom(2500)
-        assertEquals(6, zoom) // Photon radius ~512km - appropriately broad
+    @ParameterizedTest
+    @CsvSource(
+        "5, 14", // very local: ~4km radius
+        "10, 13", // local: ~8km radius
+        "25, 12", // district: ~16km radius
+        "50, 11", // default Pelias: ~32km radius
+        "100, 10", // regional: ~64km radius
+        "200, 9", // multi-region: ~128km radius
+        "500, 8", // national: ~256km radius
+        "2500, 6", // Entur default: ~512km radius
+    )
+    fun `peliasScaleToPhotonZoom converts scale to zoom level`(peliasScale: Int, expectedZoom: Int) {
+        val zoom = Geo.peliasScaleToPhotonZoom(peliasScale)
+        assertEquals(expectedZoom, zoom)
     }
 
     @Test
@@ -98,36 +57,23 @@ class GeoTest {
     }
 
     @ParameterizedTest
-    @MethodSource("borderCountryCoordinates")
-    fun `getCountryCode returns correct country for border coordinates`(testCase: Triple<Double, Double, Country>) {
-        val (lat, lon, expectedCode) = testCase
-        val actualCode = Geo.getCountry(Coordinate(lat, lon))
-        assertEquals(expectedCode, actualCode, "Expected $expectedCode for ($lat, $lon), got $actualCode")
-    }
-
-    companion object {
-        @JvmStatic
-        fun borderCountryCoordinates() =
-            listOf(
-                Triple(59.91386, 10.75224, Country.no),
-                // Norway–Sweden
-                Triple(59.47787, 11.71967, Country.no),
-                Triple(59.49251, 11.78009, Country.se),
-                // Sweden–Finland
-                Triple(65.8481, 24.1466, Country.fi),
-                Triple(65.8350, 24.1300, Country.se),
-                // Denmark–Sweden near Øresund Bridge
-                Triple(55.6210, 12.6500, Country.dk),
-                Triple(55.5700, 12.9800, Country.se),
-                // Denmark–Germany near Kruså/Padborg
-                Triple(54.8205, 9.3980, Country.de),
-                Triple(54.8675, 9.4175, Country.dk),
-                // Oscar Torp-heimen
-                Triple(59.09735, 11.25770, Country.no),
-                // Tull Customs, Strömstad
-                Triple(59.08674, 11.24925, Country.se),
-                // Østerbyvegen
-                Triple(60.146179, 12.518511, Country.no)
-            )
+    @CsvSource(
+        "59.91386, 10.75224, no",
+        "59.47787, 11.71967, no", // Norway–Sweden border (NO side)
+        "59.49251, 11.78009, se", // Norway–Sweden border (SE side)
+        "65.8481, 24.1466, fi", // Sweden–Finland border (FI side)
+        "65.8350, 24.1300, se", // Sweden–Finland border (SE side)
+        "55.6210, 12.6500, dk", // Denmark–Sweden Øresund (DK side)
+        "55.5700, 12.9800, se", // Denmark–Sweden Øresund (SE side)
+        "54.8205, 9.3980, de", // Denmark–Germany Kruså (DE side)
+        "54.8675, 9.4175, dk", // Denmark–Germany Kruså (DK side)
+        "59.09735, 11.25770, no", // Oscar Torp-heimen (NO)
+        "59.08674, 11.24925, se", // Tull Customs, Strömstad (SE)
+        "60.146179, 12.518511, no", // Østerbyvegen (NO)
+    )
+    fun `getCountryCode returns correct country for border coordinates`(lat: Double, lon: Double, countryCode: String) {
+        val expectedCountry = Country.valueOf(countryCode)
+        val actualCountry = Geo.getCountry(Coordinate(lat, lon))
+        assertEquals(expectedCountry, actualCountry, "Expected $expectedCountry for ($lat, $lon), got $actualCountry")
     }
 }
