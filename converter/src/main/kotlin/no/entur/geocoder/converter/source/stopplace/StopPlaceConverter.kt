@@ -15,6 +15,7 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
+import no.entur.geocoder.converter.NorwegianToEnglishTranslator
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.PlaceId
@@ -113,7 +114,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         ?.joinToString(",")
                 ),
                 alt_name = altName,
-                description = stopPlace.description?.text,
+                description = descriptionWithTranslation(stopPlace.description),
                 tags = tags.joinToString(","),
             )
 
@@ -147,6 +148,12 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         entries.add(NominatimPlace("Place", listOf(stopPlaceContent)))
 
         return entries
+    }
+
+    private fun descriptionWithTranslation(desc: StopPlace.LocalizedText?): String? {
+        val norwegianText = desc?.text ?: return null
+        val englishText = NorwegianToEnglishTranslator.translate(norwegianText)
+        return "nor:$norwegianText;eng:$englishText"
     }
 
     private fun tariffZoneAuthorityCategories(stopPlace: StopPlace): Set<String> = (

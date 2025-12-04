@@ -313,7 +313,11 @@ class PeliasResultTransformerTest {
         val photonResult = createPhotonResult(extra = extra)
         val result = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("foo"))
 
-        assertNull(result.features.first().properties.description)
+        assertNull(
+            result.features
+                .first()
+                .properties.description,
+        )
     }
 
     @ParameterizedTest
@@ -322,13 +326,16 @@ class PeliasResultTransformerTest {
         "nor:norsk beskrivelse | nor=norsk beskrivelse",
         "nor:norsk beskrivelse;eng:english description | nor=norsk beskrivelse,eng=english description",
         "nor:norsk;eng:english;swe:svenska | nor=norsk,eng=english,swe=svenska",
-        delimiter = '|'
+        delimiter = '|',
     )
     fun `transformDescription handles various formats`(description: String, expectedEntriesStr: String) {
         val extra = Extra(id = "1", tags = "legacy.source.osm,legacy.layer.venue", description = description)
         val photonResult = createPhotonResult(extra = extra)
         val result = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("foo"))
-        val actualDescription = result.features.first().properties.description
+        val actualDescription =
+            result.features
+                .first()
+                .properties.description
 
         assertNotNull(actualDescription)
 

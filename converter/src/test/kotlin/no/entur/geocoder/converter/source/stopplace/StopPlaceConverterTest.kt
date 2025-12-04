@@ -2,8 +2,11 @@ package no.entur.geocoder.converter.source.stopplace
 
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.FileUtil.streamToFile
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StopPlaceConverterTest {
@@ -207,5 +210,24 @@ class StopPlaceConverterTest {
             },
             "Should contain both county_gid and locality_gid with KVE prefix",
         )
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["nor:ved spor 19;eng:at track 19","nor:foran Oslo S;eng:in front of Oslo S", "nor:i Storgata;eng:in Storgata"])
+    fun `descriptions should be translated to both Norwegian and English`(text: String) {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
+        requireNotNull(xmlStream)
+
+        val input = streamToFile(xmlStream)
+        val output = File.createTempFile("descriptions", ".json")
+        converter.convert(input, output)
+
+        val content = output.readText()
+
+        val descriptionPattern = "\"description\":\"([^\"]+)\"".toRegex()
+        val descriptions = descriptionPattern.findAll(content).map { it.groupValues[1] }.toList()
+
+        assertEquals(text, descriptions.find { it == text })
     }
 }
