@@ -125,28 +125,28 @@ jobs:
     with:
       environment: tst
 
-#  deploy-prd:
-#    name: Prod
-#    if: |
-#      !cancelled() &&
-#      needs.acceptance-tests-tst.result == 'success'
-#    needs: [ build-push, acceptance-tests-tst ]
-#    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
-#    with:
-#      environment: prd
-#      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
-#      chart: helm/geocoder-proxy
-#      namespace: geocoder
-#      release_name: geocoder-proxy
-#    secrets: inherit
-#
-#  acceptance-tests-prd:
-#    name: Prod Tests
-#    if: |
-#      !cancelled() &&
-#      needs.deploy-prd.result == 'success'
-#    needs: deploy-prd
-#    uses: "./.github/workflows/acceptance-tests.yml"
-#    with:
-#      environment: prd
+  deploy-prd:
+    name: Prod
+    if: |
+      !cancelled() &&
+      needs.acceptance-tests-tst.result == 'success'
+    needs: [ build-push, acceptance-tests-tst ]
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: prd
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy
+    secrets: inherit
+
+  acceptance-tests-prd:
+    name: Prod Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-prd.result == 'success'
+    needs: deploy-prd
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: prd
 
