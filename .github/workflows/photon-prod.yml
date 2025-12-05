@@ -62,11 +62,11 @@ jobs:
 
   photon:
     name: Photon Image
+    needs: [ nominatim-data, lint ]
     if: |
       !cancelled() &&
       needs.lint.result == 'success' &&
       (needs.nominatim-data.result == 'success' || inputs.build == 'Use latest data → Photon image → deploy')
-    needs: [ nominatim-data, lint ]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -90,10 +90,10 @@ jobs:
 
   scan:
     name: Scan
+    needs: photon
     if: |
       !cancelled() &&
       needs.photon.result == 'success'
-    needs: [ photon ]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -117,10 +117,10 @@ jobs:
 
   deploy-tst:
     name: Staging
+    needs: [ photon, scan ]
     if: |
       !cancelled() &&
       (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image')
-    needs: [ photon, scan ]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst

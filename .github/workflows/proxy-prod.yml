@@ -25,6 +25,8 @@ concurrency:
 
 jobs:
   lint:
+    if: |
+      github.event_name == 'push'
     name: Lint
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
@@ -33,8 +35,11 @@ jobs:
 
   build-push:
     name: Proxy
+    needs: lint
     if: |
-      github.event_name == 'push'
+      !cancelled() &&
+      github.event_name == 'push' &&
+      needs.lint.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,11 +74,11 @@ jobs:
 
   scan:
     name: Scan
+    needs: build-push
     if: |
       !cancelled() &&
       needs.build-push.result == 'success' &&
       github.event_name == 'push'
-    needs: [ build-push ]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -97,10 +102,10 @@ jobs:
 
   deploy-tst:
     name: Staging
+    needs: [ build-push, scan ]
     if: |
       !cancelled() &&
       (needs.scan.result == 'success' || github.event_name == 'workflow_dispatch')
-    needs: [ build-push, scan ]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
