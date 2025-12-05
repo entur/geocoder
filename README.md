@@ -54,11 +54,11 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 ./gradlew build
 
 # Download a photon jar
-cd converter
-curl -sfLo photon.jar 'https://github.com/entur/photon/releases/download/2025-11-28/photon-0.7.0.jar'
+cd photon
+./download-photon-jar.sh
 
 # EITHER import and convert data
-./create-nominatim-data.sh # downloads data and creates nominatim.ndjson
+../converter/create-nominatim-data.sh # downloads data and creates nominatim.ndjson
 ./create-photon-data.sh    # creates the photon_data search index for Photon
 
 # OR just download the latest Photon search index built by Github Actions
