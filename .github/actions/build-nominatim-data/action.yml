@@ -1,0 +1,69 @@
+name: 'Build Nominatim Data'
+description: 'Build converter JAR, run import, and upload nominatim data as artifact'
+
+inputs:
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+
+outputs:
+  image_tag:
+    description: 'The tag of the uploaded nominatim data image'
+    value: ${{ steps.upload-nominatim-data.outputs.image_tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'liberica'
+        java-version: '21'
+        cache: gradle
+
+    - name: Build converter JAR
+      shell: bash
+      run: ./gradlew :converter:build
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get clean
+        sudo apt-get purge -y needrestart
+        sudo apt-get install -fy libarchive-tools
+
+    - name: Run create-nominatim-data.sh
+      shell: bash
+      run: ./create-nominatim-data.sh -z
+      working-directory: converter
+
+    - name: Generate stats summary
+      shell: bash
+      working-directory: converter
+      run: |
+        echo "### Nominatim Data" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f nominatim.ndjson.gz ] && [ -f nominatim.ndjson ]; then
+          COMPRESSED_SIZE=$(du -h nominatim.ndjson.gz | cut -f1)
+          RATIO=$(gzip -l nominatim.ndjson.gz  | tail -n 1 | awk '{print $3}')
+          LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
+
+          echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+    - name: Upload nominatim data
+      id: upload-nominatim-data
+      uses: ./.github/actions/upload-docker-artifact
+      with:
+        image_name: geocoder-nominatim-data
+        file_path: converter/nominatim.ndjson.gz
+        min_size_mb: 100
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}

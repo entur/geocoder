@@ -10,7 +10,7 @@ fail() {
     exit 1
 }
 
-[ -f "$NOMINATIM_FILE" ] || fail "$NOMINATIM_FILE not found. Please run create-nominatim-data.sh first."
+[ -f "$NOMINATIM_FILE" ] || fail "$NOMINATIM_FILE not found. Please run create-nominatim-data.sh in converter first."
 which tar >/dev/null || fail "bsdtar not found. Please install it to proceed."
 which curl >/dev/null || fail "curl not found. Please install it to proceed."
 which gzip >/dev/null || fail "gzip not found. Please install it to proceed."

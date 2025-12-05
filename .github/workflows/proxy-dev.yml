@@ -1,0 +1,115 @@
+name: Proxy - DEV
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - '.entur/**'
+      - 'converter/**'
+      - 'helm/**'
+      - 'photon/**'
+      - 'proxy/docs/**'
+      - '.github/workflows/api-docs.yml'
+      - 'photon-*.yml'
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy to DEV'
+        required: false
+        type: string
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.deploy_env || 'none' }}"
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: proxy/Dockerfile
+      ignore: "DL3018,DL3059"
+
+  build-push:
+    name: Proxy
+    if: |
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build-push.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: liberica
+          java-version: 21
+          cache: gradle
+
+      - name: Build with Gradle
+        run: ./gradlew --no-daemon :proxy:build
+
+      - name: Build and Push
+        id: build-push
+        uses: ./.github/actions/docker-build-push
+        with:
+          image_name: geocoder-proxy
+          context: proxy
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  scan:
+    name: Scan
+    if: |
+      !cancelled() &&
+      needs.build-push.result == 'success'
+    needs: [ build-push ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Security Scan
+        uses: ./.github/actions/docker-scan
+        with:
+          image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  deploy-dev:
+    name: Dev
+    if: |
+      !cancelled() &&
+      (needs.build-push.result == 'success' || github.event_name == 'workflow_dispatch')
+    needs: [ build-push ]
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: dev
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy
+    secrets: inherit
+
+  acceptance-tests-dev:
+    name: Dev Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-dev.result == 'success'
+    needs: deploy-dev
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: dev

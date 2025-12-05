@@ -1,0 +1,73 @@
+name: 'Build Photon Image'
+description: 'Download nominatim data, create Photon data, and build Docker image'
+
+inputs:
+  nominatim_data_tag:
+    description: 'Tag of the nominatim data image to use'
+    required: true
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+
+outputs:
+  image_tag:
+    description: 'The tag of the built Photon image'
+    value: ${{ steps.docker-image.outputs.image_tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'liberica'
+        java-version: '21'
+
+    - name: Download nominatim data
+      uses: ./.github/actions/download-docker-artifact
+      with:
+        image: geocoder-nominatim-data:${{ inputs.nominatim_data_tag }}
+        destination: photon
+        min_size_mb: 100
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: Create Photon Data
+      shell: bash
+      working-directory: photon
+      run: |
+        ./download-photon-jar.sh
+        ./create-photon-data.sh
+
+    - name: Summarize
+      shell: bash
+      working-directory: photon
+      run: |
+        PHOTON_DATA_MIN_SIZE=600
+        echo "### Photon Data" >> $GITHUB_STEP_SUMMARY
+        if [ -d photon_data ]; then
+          DIR_SIZE=$(du -sm photon_data | cut -f1)
+          FILE_COUNT=$(find photon_data -type f | wc -l | tr -d ' ')
+          echo "**Data:** ${DIR_SIZE}M (${FILE_COUNT} files)" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$DIR_SIZE" -lt "$PHOTON_DATA_MIN_SIZE" ]; then
+            echo "❌ photon_data of ${DIR_SIZE}M is less than expected ${PHOTON_DATA_MIN_SIZE}M" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        else
+          echo "❌ photon_data not found" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+    - name: Create and Push Photon image
+      id: docker-image
+      uses: ./.github/actions/docker-build-push
+      with:
+        image_name: geocoder-photon
+        context: photon
+        push: true
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
