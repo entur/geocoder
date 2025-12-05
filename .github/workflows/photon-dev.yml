@@ -17,7 +17,7 @@ on:
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.build }}"
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.build || 'none'}}"
   cancel-in-progress: true
 
 jobs:

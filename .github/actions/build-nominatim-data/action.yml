@@ -45,16 +45,16 @@ runs:
       shell: bash
       working-directory: converter
       run: |
-        echo "### Nominatim Data" >> $GITHUB_STEP_SUMMARY
+        echo "### Nominatim Data" >> "$GITHUB_STEP_SUMMARY"
 
         if [ -f nominatim.ndjson.gz ] && [ -f nominatim.ndjson ]; then
           COMPRESSED_SIZE=$(du -h nominatim.ndjson.gz | cut -f1)
           RATIO=$(gzip -l nominatim.ndjson.gz  | tail -n 1 | awk '{print $3}')
           LINE_COUNT=$(wc -l < nominatim.ndjson | tr -d ' ')
 
-          echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}) • **Records:** ${LINE_COUNT}" >> $GITHUB_STEP_SUMMARY
+          echo "**Size:** ${COMPRESSED_SIZE} (${RATIO}) • **Records:** ${LINE_COUNT}" >> "$GITHUB_STEP_SUMMARY"
         else
-          echo "❌ Required files not found" >> $GITHUB_STEP_SUMMARY
+          echo "❌ Required files not found" >> "$GITHUB_STEP_SUMMARY"
           exit 1
         fi
 

@@ -51,7 +51,7 @@ jobs:
           set -o pipefail
           npm run v2${{ inputs.environment }} 2>&1 | tee test-output.log
           TEST_EXIT_CODE=${PIPESTATUS[0]}
-          echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
+          echo "exit_code=$TEST_EXIT_CODE" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Upload test results
@@ -66,11 +66,13 @@ jobs:
         if: always()
         working-directory: acceptance-tests
         run: |
-          echo "### Acceptance Test Results - v2${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cat test-output.log |grep -v 'Tests completed:' >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "### Acceptance Test Results - v2${{ inputs.environment }}"
+            echo ""
+            echo "\`\`\`"
+            grep -v 'Tests completed:' test-output.log
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail workflow if tests failed
         if: always() && steps.tests.outputs.exit_code != '0'

@@ -34,9 +34,9 @@ runs:
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
         
-        echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
-        echo "full_image=${FULL_IMAGE}" >> $GITHUB_OUTPUT
-        echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        echo "base_image=${BASE_IMAGE}" >> "$GITHUB_OUTPUT"
+        echo "full_image=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
+        echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
         
         echo "Base image: ${BASE_IMAGE}"
         echo "Full image reference: ${FULL_IMAGE}"
@@ -45,6 +45,6 @@ runs:
     - name: Summary
       shell: bash
       run: |
-          echo "### Generated Docker Image Tag" >> $GITHUB_STEP_SUMMARY
-          echo "**In:** image_name=\`${{ inputs.image_name }}\` registry=\`${{ inputs.registry }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Out:** image_tag=\`${{ steps.generate.outputs.image_tag }}\` base_image=\`${{ steps.generate.outputs.base_image }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated Docker Image Tag" >> "$GITHUB_STEP_SUMMARY"
+          echo "**In:** image_name=\`${{ inputs.image_name }}\` registry=\`${{ inputs.registry }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Out:** image_tag=\`${{ steps.generate.outputs.image_tag }}\` base_image=\`${{ steps.generate.outputs.base_image }}\`" >> "$GITHUB_STEP_SUMMARY"

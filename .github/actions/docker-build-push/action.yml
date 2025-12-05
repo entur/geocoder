@@ -1,4 +1,5 @@
 name: Docker Build and Push
+description: Runs docker build and push
 
 inputs:
   image_name:
@@ -74,6 +75,6 @@ runs:
       shell: bash
       if: always()
       run: |
-        echo "### Docker Build & Push Summary" >> $GITHUB_STEP_SUMMARY
-        echo "**In:** image_name=\`${{ inputs.image_name }}\` context=\`${{ inputs.context }}\` push=\`${{ inputs.push }}\` build_args=\`${{ inputs.build_args || 'none' }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Out:** image_tag=\`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "### Docker Build & Push Summary" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** image_name=\`${{ inputs.image_name }}\` context=\`${{ inputs.context }}\` push=\`${{ inputs.push }}\` build_args=\`${{ inputs.build_args || 'none' }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "**Out:** image_tag=\`${{ steps.set-tag.outputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"

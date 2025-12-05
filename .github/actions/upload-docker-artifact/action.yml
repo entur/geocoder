@@ -100,7 +100,7 @@ runs:
     - name: Summary
       shell: bash
       run: |
-        echo "### Docker Artifact Upload" >> $GITHUB_STEP_SUMMARY
-        echo "**In:** file_path=\`${{ inputs.file_path }}\` image_name=\`${{ inputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Out:** image_tag=\`${{ steps.set-tag.outputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "### Docker Artifact Upload" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** file_path=\`${{ inputs.file_path }}\` image_name=\`${{ inputs.image_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "**Out:** image_tag=\`${{ steps.set-tag.outputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
 

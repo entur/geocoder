@@ -20,7 +20,7 @@ on:
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}-${{ inputs.deploy_env || 'none' }}"
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}"
   cancel-in-progress: true
 
 jobs:

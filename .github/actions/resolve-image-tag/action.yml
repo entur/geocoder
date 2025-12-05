@@ -38,8 +38,8 @@ runs:
       shell: bash
       run: |
         RESOLVED_TAG=$(${{ github.action_path }}/resolve-tag.sh "${{ inputs.registry }}" "${{ inputs.image_name }}" "${{ inputs.image_tag }}")
-        echo "resolved_tag=$RESOLVED_TAG" >> $GITHUB_OUTPUT
+        echo "resolved_tag=$RESOLVED_TAG" >> "$GITHUB_OUTPUT"
         
-        echo "### Image Tag Resolution" >> $GITHUB_STEP_SUMMARY
-        echo "**In:** \`${{inputs.registry}} ${{ inputs.image_name }} ${{ inputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Out:** \`$RESOLVED_TAG\`" >> $GITHUB_STEP_SUMMARY
+        echo "### Image Tag Resolution" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** \`${{inputs.registry}} ${{ inputs.image_name }} ${{ inputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "**Out:** \`$RESOLVED_TAG\`" >> "$GITHUB_STEP_SUMMARY"

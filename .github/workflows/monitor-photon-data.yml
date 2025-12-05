@@ -18,8 +18,8 @@ jobs:
           echo "Import date: $IMPORT_DATE"
 
           if [ "$IMPORT_DATE" = "null" ] || [ "$IMPORT_DATE" = "unknown" ]; then
-            echo "alert=true" >> $GITHUB_OUTPUT
-            echo "message=⚠️ Photon data import date is unavailable" >> $GITHUB_OUTPUT
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+            echo "message=⚠️ Photon data import date is unavailable" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -27,22 +27,22 @@ jobs:
           IMPORT_TIMESTAMP=$(date -u -d "$IMPORT_DATE" +%s 2>/dev/null)
 
           if [ -z "$IMPORT_TIMESTAMP" ]; then
-            echo "alert=true" >> $GITHUB_OUTPUT
-            echo "message=⚠️ Unable to parse Photon import date: $IMPORT_DATE" >> $GITHUB_OUTPUT
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+            echo "message=⚠️ Unable to parse Photon import date: $IMPORT_DATE" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           CURRENT_TIMESTAMP=$(date -u +%s)
-          AGE_HOURS=$(( ($CURRENT_TIMESTAMP - $IMPORT_TIMESTAMP) / 3600 ))
+          AGE_HOURS=$(( (CURRENT_TIMESTAMP - IMPORT_TIMESTAMP) / 3600 ))
 
           echo "Data age: ${AGE_HOURS} hours"
 
           if [ $AGE_HOURS -gt 50 ]; then
-            echo "alert=true" >> $GITHUB_OUTPUT
-            echo "message=⚠️ Photon data is ${AGE_HOURS} hours old (last import: $IMPORT_DATE)" >> $GITHUB_OUTPUT
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+            echo "message=⚠️ Photon data is ${AGE_HOURS} hours old (last import: $IMPORT_DATE)" >> "$GITHUB_OUTPUT"
           else
-            echo "alert=false" >> $GITHUB_OUTPUT
-            echo "message=Data is fresh (${AGE_HOURS} hours old)" >> $GITHUB_OUTPUT
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+            echo "message=Data is fresh (${AGE_HOURS} hours old)" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send Slack notification
@@ -56,5 +56,5 @@ jobs:
 
       - name: Summary
         run: |
-          echo "alert=${{ steps.check.outputs.alert }}" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.check.outputs.message }}" >> $GITHUB_STEP_SUMMARY
+          echo "alert=${{ steps.check.outputs.alert }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.check.outputs.message }}" >> "$GITHUB_STEP_SUMMARY"
