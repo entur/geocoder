@@ -67,6 +67,9 @@ object PeliasResultTransformer {
         )
     }
 
+    /**
+     * We're making room for more results by using PhotonAutocompleteRequest#RESULT_PRUNING_HEADROOM in the request
+     */
     private fun filterCityIfGospIsPresent(features: List<PeliasFeature>, expectedSize: Int): List<PeliasFeature> {
         val gospList =
             features
@@ -250,7 +253,7 @@ object PeliasResultTransformer {
         val featureCoords = geometry.coordinates
         if (featureCoords.size < 2) return null
 
-        val coord1 = Coordinate(featureCoords[1].toDouble(), featureCoords[0].toDouble())
+        val coord1 = Coordinate(featureCoords[1], featureCoords[0])
         val distance = Geo.haversineDistance(coord1, coord)
 
         return ((distance * PELIAS_DISTANCE_FUDGE_FACTOR) / 1000)

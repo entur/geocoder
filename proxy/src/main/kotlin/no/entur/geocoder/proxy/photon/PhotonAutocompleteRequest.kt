@@ -27,6 +27,8 @@ data class PhotonAutocompleteRequest(
         /**
          * We drop the city (by) if a GOSP exists with the same name. This can only be done after fetching,
          * so we fetch one extra and drop the last result if there is a match.
+         *
+         * see PeliasResultTransformer#filterCityIfGospIsPresent()
          */
         const val RESULT_PRUNING_HEADROOM = 3
 
