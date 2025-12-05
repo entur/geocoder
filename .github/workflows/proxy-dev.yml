@@ -61,6 +61,7 @@ jobs:
         with:
           image_name: geocoder-proxy
           context: proxy
+          push: true
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
