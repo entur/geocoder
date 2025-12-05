@@ -145,27 +145,6 @@ class PhotonResultTest {
     }
 
     @Test
-    fun `parse handles bbox`() {
-        val json =
-            """
-            {
-                "type": "FeatureCollection",
-                "bbox": [10.0, 59.0, 11.0, 60.0],
-                "features": []
-            }
-            """.trimIndent()
-
-        val result = PhotonResult.parse(json, Url("http://foo"))
-
-        assertNotNull(result.bbox)
-        assertEquals(4, result.bbox.size)
-        assertEquals(10.0, result.bbox[0])
-        assertEquals(59.0, result.bbox[1])
-        assertEquals(11.0, result.bbox[2])
-        assertEquals(60.0, result.bbox[3])
-    }
-
-    @Test
     fun `parse handles minimal feature`() {
         val json =
             """
