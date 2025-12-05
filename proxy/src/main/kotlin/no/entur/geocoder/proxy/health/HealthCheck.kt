@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy.health
 import io.ktor.http.*
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
-import no.entur.geocoder.proxy.ProxyResponse
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import org.slf4j.LoggerFactory
@@ -11,10 +10,10 @@ import org.slf4j.LoggerFactory
 class HealthCheck(private val photonApi: PhotonApi) {
     private val logger = LoggerFactory.getLogger(HealthCheck::class.java)
 
-    fun liveness(): ProxyResponse =
+    fun liveness(): HealthResponse =
         respondUp()
 
-    suspend fun readiness(): ProxyResponse {
+    suspend fun readiness(): HealthResponse {
         val reason =
             try {
                 withTimeout(5000) {
@@ -29,6 +28,18 @@ class HealthCheck(private val photonApi: PhotonApi) {
             }
 
         return reason?.let { respondDown(it) } ?: respondUp()
+    }
+
+    suspend fun info(): Info {
+        val photonStatus = photonApi.status()
+        val version = HealthCheck::class.java.getPackage().implementationVersion
+        return Info(
+            version = version ?: "unknown",
+            name = "geocoder-proxy",
+            photonVersion = photonStatus["version"] ?: "unknown",
+            photonCommit = photonStatus["git_commit"] ?: "unknown",
+            photonImportDate = photonStatus["import_date"] ?: "unknown",
+        )
     }
 
     private suspend fun checkPhotonHealth(): String? {
@@ -55,10 +66,10 @@ class HealthCheck(private val photonApi: PhotonApi) {
     }
 
     private fun respondDown(reason: String) =
-        ProxyResponse(mapOf("status" to "DOWN", "reason" to reason), HttpStatusCode.ServiceUnavailable)
+        HealthResponse(mapOf("status" to "DOWN", "reason" to reason), HttpStatusCode.ServiceUnavailable)
 
     private fun respondUp() =
-        ProxyResponse(mapOf("status" to "UP"))
+        HealthResponse(mapOf("status" to "UP"))
 
     data class Info(
         val version: String?,
@@ -68,15 +79,5 @@ class HealthCheck(private val photonApi: PhotonApi) {
         val photonImportDate: String?,
     )
 
-    suspend fun info(): Info {
-        val photonStatus = photonApi.status()
-        val version = HealthCheck::class.java.getPackage().implementationVersion
-        return Info(
-            version = version ?: "unknown",
-            name = "geocoder-proxy",
-            photonVersion = photonStatus["version"] ?: "unknown",
-            photonCommit = photonStatus["git_commit"] ?: "unknown",
-            photonImportDate = photonStatus["import_date"] ?: "unknown",
-        )
-    }
+    data class HealthResponse(val message: Any, val status: HttpStatusCode = HttpStatusCode.OK)
 }

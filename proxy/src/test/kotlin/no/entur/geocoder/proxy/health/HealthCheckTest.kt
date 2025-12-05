@@ -15,7 +15,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
-import no.entur.geocoder.proxy.ProxyResponse
+import no.entur.geocoder.proxy.health.HealthCheck.HealthResponse
 import no.entur.geocoder.proxy.photon.PhotonApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,7 +55,7 @@ class HealthCheckTest {
                         when (endpoint) {
                             LIVENESS_ENDPOINT -> healthCheck.liveness()
                             READINESS_ENDPOINT -> healthCheck.readiness()
-                            else -> ProxyResponse(mapOf("error" to "Unknown endpoint"), HttpStatusCode.NotFound)
+                            else -> HealthResponse(mapOf("error" to "Unknown endpoint"), HttpStatusCode.NotFound)
                         }
                     call.respondText(
                         jacksonMapper.writeValueAsString(response.message),
