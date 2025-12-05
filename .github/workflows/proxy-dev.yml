@@ -69,7 +69,8 @@ jobs:
     name: Scan
     if: |
       !cancelled() &&
-      needs.build-push.result == 'success'
+      needs.build-push.result == 'success' &&
+      github.event_name == 'push'
     needs: [ build-push ]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -94,8 +95,8 @@ jobs:
     name: Dev
     if: |
       !cancelled() &&
-      (needs.build-push.result == 'success' || github.event_name == 'workflow_dispatch')
-    needs: [ build-push ]
+      (needs.scan.result == 'success' || github.event_name == 'workflow_dispatch')
+    needs: [ build-push, scan ]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev

@@ -109,8 +109,8 @@ jobs:
     name: Dev
     if: |
       !cancelled() &&
-      (needs.photon.result == 'success' || inputs.build == 'Deploy specified Photon image')
-    needs: [ photon ]
+      (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image')
+    needs: [ photon, scan ]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: dev
