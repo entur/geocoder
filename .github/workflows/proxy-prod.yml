@@ -1,4 +1,4 @@
-name: Proxy - TST/PRD
+name: Proxy - TST→PRD
 
 on:
   push:
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Image tag to deploy to TST/PRD'
+        description: 'Image tag to deploy to TST→PRD'
         required: false
         type: string
 
