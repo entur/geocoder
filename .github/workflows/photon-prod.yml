@@ -1,4 +1,4 @@
-name: Photon - PROD
+name: Photon - TST→PRD
 
 on:
   schedule:
@@ -7,16 +7,16 @@ on:
   workflow_dispatch:
     inputs:
       build:
-        description: 'Manual PROD deploy'
+        description: 'Manual TST→PRD deploy'
         required: true
         type: choice
         options:
-          # Remember that these strings are matched further down
+          # Remember that these strings must match further down
           - 'Download data → Photon image → deploy'
           - 'Use latest data → Photon image → deploy'
           - 'Deploy specified Photon image'
       photon_image_tag:
-        description: 'Photon image tag for PROD'
+        description: 'Photon image tag for TST→PRD'
         required: false
         type: string
 
