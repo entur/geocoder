@@ -137,6 +137,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     },
                 address =
                     Address(
+                        city = locality,
                         county = county,
                     ),
                 postcode = null,
@@ -257,6 +258,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 name = groupName?.let { Name(name = it, alt_name = id) },
                 address =
                     Address(
+                        city = locality,
                         county = county,
                     ),
                 postcode = null,

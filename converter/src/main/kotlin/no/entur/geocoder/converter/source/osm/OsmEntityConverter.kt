@@ -97,11 +97,11 @@ class OsmEntityConverter(
         if (memberCoords.isEmpty()) return null
 
         val centroid = GeometryCalculator.calculateCentroid(memberCoords) ?: return null
-        val address =
+        val county =
             if (tags["type"] == "boundary" && tags["boundary"] == "administrative") {
-                Address(county = tags["name"]?.titleize())
+                tags["name"]?.titleize()
             } else {
-                Address()
+                null
             }
 
         return createPlaceContent(
@@ -111,7 +111,7 @@ class OsmEntityConverter(
             objectType = OBJECT_TYPE_RELATION,
             accuracy = ACCURACY_POLYGON,
             centroid = centroid,
-            address = address,
+            fallbackCounty = county,
         )
     }
 
@@ -122,12 +122,11 @@ class OsmEntityConverter(
         objectType: String,
         accuracy: String,
         centroid: Coordinate,
-        address: Address = Address(),
+        fallbackCounty: String? = null,
     ): NominatimPlace {
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(centroid)
 
         val country = determineCountry(county, municipality, tags, centroid)
-        val updatedAddress = address.copy(county = county?.name?.titleize() ?: address.county)
         val tagList: List<String> =
             listOf(LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
                 .plus(tags.map { LEGACY_CATEGORY_PREFIX + it.value })
@@ -139,6 +138,12 @@ class OsmEntityConverter(
         val id = "OSM:TopographicPlace:" + entity.id
         val countyGid = county?.refCode?.let { "KVE:TopographicPlace:$it" }
         val localityGid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" }
+        val locality = municipality?.name?.titleize()
+        val address =
+            Address(
+                city = locality,
+                county = county?.name?.titleize() ?: fallbackCounty,
+            )
 
         val extra =
             Extra(
@@ -147,7 +152,7 @@ class OsmEntityConverter(
                 accuracy = accuracy,
                 country_a = country?.threeLetterCode,
                 county_gid = countyGid,
-                locality = municipality?.name?.titleize(),
+                locality = locality,
                 locality_gid = localityGid,
                 tags = tagList.joinToString(","),
                 alt_name = altName,
@@ -167,7 +172,7 @@ class OsmEntityConverter(
                 parent_place_id = 0,
                 name = Name(name = name, name_en = enName, alt_name = altName(altName, id)),
                 housenumber = null,
-                address = updatedAddress,
+                address = address,
                 postcode = null,
                 country_code = country?.name,
                 centroid = centroid.centroid(),
