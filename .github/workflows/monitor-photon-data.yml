@@ -1,8 +1,8 @@
-name: Monitor Photon Data Freshness
+name: Photon Data Monitor
 
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '22 8 * * *'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
@@ -33,16 +33,18 @@ jobs:
           fi
 
           CURRENT_TIMESTAMP=$(date -u +%s)
-          AGE_HOURS=$(( (CURRENT_TIMESTAMP - IMPORT_TIMESTAMP) / 3600 ))
+          AGE_SECONDS=$(( CURRENT_TIMESTAMP - IMPORT_TIMESTAMP ))
+          AGE_HOURS=$(( AGE_SECONDS / 3600 ))
+          AGE_MINUTES=$(( (AGE_SECONDS % 3600) / 60 ))
 
-          echo "Data age: ${AGE_HOURS} hours"
+          echo "Data age: ${AGE_HOURS}h ${AGE_MINUTES}m"
 
           if [ $AGE_HOURS -gt 50 ]; then
             echo "alert=true" >> "$GITHUB_OUTPUT"
-            echo "message=⚠️ Photon data is ${AGE_HOURS} hours old (last import: $IMPORT_DATE)" >> "$GITHUB_OUTPUT"
+            echo "message=⚠️ Photon data is ${AGE_HOURS}h ${AGE_MINUTES}m old (last import: $IMPORT_DATE)" >> "$GITHUB_OUTPUT"
           else
             echo "alert=false" >> "$GITHUB_OUTPUT"
-            echo "message=Data is fresh (${AGE_HOURS} hours old)" >> "$GITHUB_OUTPUT"
+            echo "message=Data is fresh (${AGE_HOURS}h ${AGE_MINUTES}m old)" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send Slack notification
