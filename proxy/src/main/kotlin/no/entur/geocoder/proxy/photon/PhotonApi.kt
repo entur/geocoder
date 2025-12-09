@@ -40,11 +40,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     if (req.includeHousenumbers) parameter("include_housenumbers", true)
                 }
 
-        return if (response.status.isSuccess()) {
-            PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
-        } else {
-            PhotonResult(status = response.status)
-        }
+        return convertResponse(response)
     }
 
     /**
@@ -69,11 +65,19 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     }
                     parameter("debug", req.debug)
                 }
-        return if (response.status.isSuccess()) {
-            PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
-        } else {
-            PhotonResult(status = response.status)
+        return convertResponse(response)
+    }
+
+    private suspend fun convertResponse(response: HttpResponse): PhotonResult = if (response.status.isSuccess()) {
+        PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
+    } else {
+        val body = response.bodyAsText()
+        val errorResult = try {
+            jacksonMapper.readValue<PhotonResult>(body)
+        } catch (e: Exception) {
+            PhotonResult(message = body)
         }
+        errorResult.copy(status = response.status)
     }
 
     suspend fun status(): Map<String, String> =

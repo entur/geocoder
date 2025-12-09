@@ -10,6 +10,7 @@ data class PhotonResult(
     val type: String = "FeatureCollection",
     val features: List<PhotonFeature> = emptyList(),
     val properties: Map<String, Any> = emptyMap(),
+    val message: String? = null,
     @JsonIgnore val status: HttpStatusCode = HttpStatusCode.OK,
 ) {
     companion object {

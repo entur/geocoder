@@ -45,6 +45,8 @@ object PeliasResultTransformer {
         coord: Coordinate? = null,
         debug: Boolean = false,
     ): PeliasResult {
+        val errors = photonResult.message?.let { listOf(it) }
+
         val transformedFeatures =
             photonResult.features.map { feature ->
                 val distance = coord?.let { calculateDistanceKm(feature.geometry, coord) }
@@ -61,7 +63,7 @@ object PeliasResultTransformer {
             }
 
         return PeliasResult(
-            geocoding = GeocodingMetadata(debug = debugInfo),
+            geocoding = GeocodingMetadata(debug = debugInfo, errors = errors),
             features = filterCityIfGospIsPresent(transformedFeatures, expectedSize),
             bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )

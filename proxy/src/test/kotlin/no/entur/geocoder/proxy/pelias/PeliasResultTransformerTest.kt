@@ -365,6 +365,35 @@ class PeliasResultTransformerTest {
             ),
     )
 
+    @Test
+    fun `parseAndTransform includes error message when PhotonResult has message`() {
+        val photonResult =
+            PhotonResult(
+                message = "Unknown query parameter 'include_housenumbers'. Allowed parameters are: [include, location_bias_scale, debug, ...]",
+                features = emptyList(),
+            )
+        val request = PeliasAutocompleteRequest("foo")
+
+        val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
+
+        assertNotNull(result.geocoding.errors)
+        assertEquals(1, result.geocoding.errors?.size)
+        assertEquals(
+            "Unknown query parameter 'include_housenumbers'. Allowed parameters are: [include, location_bias_scale, debug, ...]",
+            result.geocoding.errors?.first(),
+        )
+    }
+
+    @Test
+    fun `parseAndTransform has no errors when PhotonResult has no message`() {
+        val photonResult = createPhotonResult(name = "Oslo")
+        val request = PeliasAutocompleteRequest("foo")
+
+        val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
+
+        assertNull(result.geocoding.errors)
+    }
+
     private fun createPhotonResult(
         name: String? = "Test",
         coordinates: List<Double> = listOf(10.0, 60.0),
