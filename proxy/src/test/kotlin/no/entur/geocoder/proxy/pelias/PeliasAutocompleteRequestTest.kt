@@ -175,4 +175,17 @@ class PeliasAutocompleteRequestTest {
         assertEquals(listOf("KVE:TopographicPlace:03", "KVE:TopographicPlace:18"), req.boundaryCountyIds)
         assertEquals(listOf("KVE:TopographicPlace:4601", "KVE:TopographicPlace:3001"), req.boundaryLocalityIds)
     }
+
+    @Test
+    fun `from Parameters parses short form county_ids and locality_ids`() {
+        val params =
+            parametersOf(
+                "text" to listOf("test"),
+                "boundary.county_ids" to listOf("03,18"),
+                "boundary.locality_ids" to listOf("4601,3001"),
+            )
+        val req = PeliasAutocompleteRequest.from(params)
+        assertEquals(listOf("03", "18"), req.boundaryCountyIds)
+        assertEquals(listOf("4601", "3001"), req.boundaryLocalityIds)
+    }
 }

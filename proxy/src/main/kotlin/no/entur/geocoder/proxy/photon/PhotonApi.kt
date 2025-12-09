@@ -68,17 +68,19 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
         return convertResponse(response)
     }
 
-    private suspend fun convertResponse(response: HttpResponse): PhotonResult = if (response.status.isSuccess()) {
-        PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
-    } else {
-        val body = response.bodyAsText()
-        val errorResult = try {
-            jacksonMapper.readValue<PhotonResult>(body)
-        } catch (e: Exception) {
-            PhotonResult(message = body)
+    private suspend fun convertResponse(response: HttpResponse): PhotonResult =
+        if (response.status.isSuccess()) {
+            PhotonResult.parse(response.bodyAsText(), response.request.url, response.status)
+        } else {
+            val body = response.bodyAsText()
+            val errorResult =
+                try {
+                    jacksonMapper.readValue<PhotonResult>(body)
+                } catch (_: Exception) {
+                    PhotonResult(message = body)
+                }
+            errorResult.copy(status = response.status)
         }
-        errorResult.copy(status = response.status)
-    }
 
     suspend fun status(): Map<String, String> =
         try {

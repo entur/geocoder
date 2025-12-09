@@ -136,8 +136,8 @@ class PhotonReverseRequestTest {
         val request = PhotonReverseRequest.from(req)
 
         assertTrue(request.includes.contains("country.no"))
-        assertTrue(request.includes.contains("county_gid.03"))
-        assertTrue(request.includes.contains("locality_gid.0301"))
+        assertTrue(request.includes.contains("county_gid.KVE.TopographicPlace.03"))
+        assertTrue(request.includes.contains("locality_gid.KVE.TopographicPlace.0301"))
         assertTrue(request.includes.contains("legacy.source.osm,legacy.source.kartverket"))
         assertTrue(request.includes.contains("legacy.layer.venue"))
         assertTrue(request.includes.contains("legacy.category.transport"))
@@ -190,7 +190,14 @@ class PhotonReverseRequestTest {
 
         assertEquals(3, request.includes.size)
         assertTrue(request.includes.contains("country.no"))
-        assertTrue(request.includes.contains("county_gid.03,county_gid.18,county_gid.50"))
-        assertTrue(request.includes.contains("locality_gid.0301,locality_gid.1804,locality_gid.5001"))
+        assertTrue(
+            request.includes
+                .contains("county_gid.KVE.TopographicPlace.03,county_gid.KVE.TopographicPlace.18,county_gid.KVE.TopographicPlace.50"),
+        )
+        assertTrue(
+            request.includes.contains(
+                "locality_gid.KVE.TopographicPlace.0301,locality_gid.KVE.TopographicPlace.1804,locality_gid.KVE.TopographicPlace.5001",
+            ),
+        )
     }
 }

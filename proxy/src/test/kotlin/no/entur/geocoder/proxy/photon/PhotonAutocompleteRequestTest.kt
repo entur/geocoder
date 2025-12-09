@@ -57,7 +57,11 @@ class PhotonAutocompleteRequestTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["country.no", "county_gid.03", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport"])
+    @ValueSource(
+        strings = [
+            "country.no", "county_gid.KVE.TopographicPlace.03", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
+        ],
+    )
     fun `from PeliasAutocompleteParams builds includes from filters`(expectedInclude: String) {
         val req =
             PeliasAutocompleteRequest(
@@ -211,7 +215,13 @@ class PhotonAutocompleteRequestTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["country.no", "county_gid.03,county_gid.18", "locality_gid.0301,locality_gid.1804"])
+    @ValueSource(
+        strings = [
+            "country.no",
+            "county_gid.KVE.TopographicPlace.03,county_gid.KVE.TopographicPlace.18",
+            "locality_gid.KVE.TopographicPlace.0301,locality_gid.KVE.TopographicPlace.1804",
+        ],
+    )
     fun `from PeliasAutocompleteParams includes all boundary filters`(expectedInclude: String) {
         val req =
             PeliasAutocompleteRequest(

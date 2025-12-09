@@ -12,6 +12,16 @@ import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 
 object PhotonFilterBuilder {
+    private const val KVE_PREFIX = "KVE:TopographicPlace:"
+    private val DIGIT_ONLY_PATTERN = Regex("^\\d+$")
+
+    private fun normalizeTopographicPlaceId(id: String): String =
+        if (id.matches(DIGIT_ONLY_PATTERN)) {
+            "$KVE_PREFIX$id"
+        } else {
+            id
+        }
+
     fun buildIncludes(req: PeliasAutocompleteRequest): List<String> =
         buildIncludes(
             boundaryCountry = req.boundaryCountry,
@@ -49,10 +59,10 @@ object PhotonFilterBuilder {
         buildList {
             Country.fromThreeLetterCode(boundaryCountry)?.let { add(COUNTRY_PREFIX + it.name) }
             if (boundaryCountyIds.isNotEmpty()) {
-                add(boundaryCountyIds.joinToString(",") { Category.countyIdsCategory(it) })
+                add(boundaryCountyIds.joinToString(",") { Category.countyIdsCategory(normalizeTopographicPlaceId(it)) })
             }
             if (boundaryLocalityIds.isNotEmpty()) {
-                add(boundaryLocalityIds.joinToString(",") { Category.localityIdsCategory(it) })
+                add(boundaryLocalityIds.joinToString(",") { Category.localityIdsCategory(normalizeTopographicPlaceId(it)) })
             }
             if (tariffZones.isNotEmpty()) {
                 add(tariffZones.joinToString(",") { Category.tariffZoneIdCategory(it) })
