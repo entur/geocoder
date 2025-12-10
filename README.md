@@ -4,45 +4,25 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 
 ## Deployment
 
-### Proxy
+### DEV Environment (`main` branch)
 
-**DEV Workflow** (`proxy-dev.yml`):
-- **Push to main** → Builds → Deploys to **dev** → Runs acceptance tests
-- **Workflow dispatch** - Deploy specified image tag to dev
+**Proxy** - Automatic deployment:
+- Push to `main` → Builds and deploys to dev → Runs acceptance tests
 
-**PROD Workflow** (`proxy-prod.yml`):
-- **Push to prod branch** → Builds → Deploys to **staging** → Tests → Deploys to **prod** → Tests
-- **Workflow dispatch** - Deploy specified image tag to staging and prod
+**Photon** - Manual deployment only:
+- Go to [photon-dev.yml](https://github.com/entur/geocoder/actions/workflows/photon-dev.yml) → Run workflow:
+  - `Download data → Photon image → deploy` - Full deployment with fresh OSM/StopPlace/etc data
+  - `Use latest data → Photon image → deploy` - Create Photon image using existing Nominatim data
+  - `Deploy specified Photon image` - Just deploy an existing image tag
 
-**Workflow Inputs:**
-- `image_tag` - Specify image tag to deploy (optional)
+### TST/PRD Environments (`prod` branch)
 
-### Photon
+**Proxy** - Automatic deployment:
+- Push to `prod` branch → Builds → Deploys to **TST** → Tests → Deploys to **PRD** → Tests
 
-**DEV Workflow** (`photon-dev.yml`):
-- **Workflow dispatch only** with options:
-  - `Download data → Photon image → deploy` - Full data pipeline (download OSM/StopPlace data, create Photon image, deploy to dev)
-  - `Use latest data → Photon image → deploy` - Use latest Nominatim data from GCR, create Photon image, deploy to dev
-  - `Deploy specified Photon image` - Deploy specified image tag to dev
-
-**PROD Workflow** (`photon-prod.yml`):
-- **Daily at 07:32 UTC** → Full data import → Create Photon image → Deploy to **staging** → Tests → Deploy to **prod** → Tests
-- **Workflow dispatch** with same options as DEV workflow (deploys to staging and prod)
-
-**Workflow Inputs:**
-- `photon_image_tag` - Image tag to deploy when using "Deploy specified Photon image" option
-
-**Data Pipeline:**
-1. **Nominatim Data** - Downloads OSM/Kartverket/StopPlace/etc data → Converts to `nominatim.ndjson.gz` → Uploads to GCR
-2. **Photon Image** - Downloads Nominatim data from GCR → Creates Photon search index → Builds Docker image → Uploads to GCR
-3. **Deploy** - Deploys to environments with acceptance tests between staging and prod
-
-💾 Data artifacts are stored as Docker images in GCR (`geocoder-nominatim-data`, `geocoder-photon`).
-
-### Acceptance Tests
-
-- Runs automatically after every deployment
-- Uses [geocoder-acceptance-tests](https://github.com/entur/geocoder-acceptance-tests) repository
+**Photon** - Automatic scheduled deployment:
+- **Daily at 07:32 UTC** - Automatic download and deployment (TST → PRD) of the `prod` branch.
+- **Manual** - Go to [photon-prod.yml](https://github.com/entur/geocoder/actions/workflows/photon-prod.yml) → Run workflow with same options as DEV
 
 
 ## Usage
@@ -59,7 +39,7 @@ cd photon
 
 # EITHER import and convert data
 ../converter/create-nominatim-data.sh # downloads data and creates nominatim.ndjson
-./create-photon-data.sh    # creates the photon_data search index for Photon
+./create-photon-data.sh               # creates the photon_data search index for Photon
 
 # OR just download the latest Photon search index built by Github Actions
 rm -rf photon_data
@@ -84,7 +64,7 @@ You can also access Photon directly:
 ```bash
 curl -s 'http://localhost:2322/api?q=Berglyveien&include=layer.stopplace'
 ```
-Or use the opensearch endpoint to debug queries:
+Or use the opensearch endpoint:
 ```bash
 curl -s 'http://localhost:9201/photon/_mapping' | jq .       # Available fields
 curl -s 'http://localhost:9201/photon/_doc/719158973' | jq . # Get document by ID
@@ -131,7 +111,7 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 #### Update geocoder to use the patched Photon
 
-* Go to [photon/download-photon-jar.sh](photon/download-photon-jar.sh)
+* Go to [photon/download-photon-jar.sh](photon/download-photon-jar.sh) and
   update the `PHOTON_JAR` variable with the new link
 * Push your `geocoder` changes
 * Go to https://github.com/entur/geocoder/actions/workflows/photon-dev.yml and trigger the workflow for DEV deployment.
