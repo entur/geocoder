@@ -170,7 +170,9 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          curl -X POST -H 'Content-type:application/json' --data \
-            '{"text":"❌ *${{ github.workflow }}* failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+      - uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
