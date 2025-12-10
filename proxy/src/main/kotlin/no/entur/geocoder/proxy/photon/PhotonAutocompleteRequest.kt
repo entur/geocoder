@@ -43,7 +43,7 @@ data class PhotonAutocompleteRequest(
             return PhotonAutocompleteRequest(
                 query = handleText(req.text),
                 limit = req.size + RESULT_PRUNING_HEADROOM, // We ask for more since we prune away 'by' when there's already a matching GOSP
-                language = req.lang,
+                language = handleLang(req.lang),
                 includes = includes,
                 excludes = excludes,
                 lat = req.focus?.lat,
@@ -54,6 +54,8 @@ data class PhotonAutocompleteRequest(
                 includeHousenumbers = req.sources.contains(Source.LEGACY_OPENADDRESSES) && !req.text.contains("\\s\\d".toRegex()),
             )
         }
+
+        private fun handleLang(lang: String): String = if (lang == "nb") "no" else lang
 
         val digitPattern = Regex("^(\\d+)\\s+(.+)")
 
