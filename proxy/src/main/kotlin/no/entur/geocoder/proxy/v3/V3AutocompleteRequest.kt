@@ -13,6 +13,7 @@ data class V3AutocompleteRequest(
     val localityIds: List<String> = emptyList(),
     val tariffZones: List<String> = emptyList(),
     val tariffZoneAuthorities: List<String> = emptyList(),
+    val fareZoneAuthorities: List<String> = emptyList(),
     val transportModes: List<String> = emptyList(),
 ) {
     companion object {
@@ -28,6 +29,7 @@ data class V3AutocompleteRequest(
                 localityIds = req["localityIds"]?.split(",") ?: emptyList(),
                 tariffZones = req["tariffZones"]?.split(",") ?: emptyList(),
                 tariffZoneAuthorities = req["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
+                fareZoneAuthorities = req["fareZoneAuthorities"]?.split(",") ?: emptyList(),
                 transportModes = req["transportModes"]?.split(",") ?: emptyList(),
             )
     }

@@ -98,6 +98,9 @@ data class PhotonAutocompleteRequest(
                     if (req.tariffZoneAuthorities.isNotEmpty()) {
                         add(req.tariffZoneAuthorities.joinToString(",") { TARIFF_ZONE_AUTH_PREFIX + it })
                     }
+                    if (req.fareZoneAuthorities.isNotEmpty()) {
+                        add(req.fareZoneAuthorities.joinToString(",") { Category.fareZoneAuthorityCategory(it) })
+                    }
                     if (req.sources.isNotEmpty()) {
                         add(req.sources.joinToString(",") { "source.$it" })
                     }

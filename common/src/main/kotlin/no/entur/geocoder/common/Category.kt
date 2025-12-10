@@ -15,6 +15,7 @@ object Category {
 
     const val TARIFF_ZONE_ID_PREFIX = "tariff_zone_id."
     const val TARIFF_ZONE_AUTH_PREFIX = "tariff_zone_authority."
+    const val FARE_ZONE_PREFIX = "fare_zone_authority."
 
     const val COUNTY_ID_PREFIX = "county_gid."
     const val LOCALITY_ID_PREFIX = "locality_gid."
@@ -58,6 +59,8 @@ object Category {
     const val LEGACY_CATEGORY_PREFIX = "legacy.category."
 
     fun tariffZoneIdCategory(ref: String) = TARIFF_ZONE_ID_PREFIX + ref.replace(":", ".")
+
+    fun fareZoneAuthorityCategory(ref: String) = FARE_ZONE_PREFIX + ref.replace(":", ".")
 
     fun countyIdsCategory(ref: String) = COUNTY_ID_PREFIX + ref.replace(":", ".")
 

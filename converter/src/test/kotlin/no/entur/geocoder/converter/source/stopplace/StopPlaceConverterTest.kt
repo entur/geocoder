@@ -230,4 +230,26 @@ class StopPlaceConverterTest {
 
         assertEquals(text, descriptions.find { it == text })
     }
+
+    @Test
+    fun `stop places should have authority categories from FareZone AuthorityRef`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
+        requireNotNull(xmlStream)
+
+        val input = streamToFile(xmlStream)
+        val output = File.createTempFile("authority_categories", ".json")
+        converter.convert(input, output)
+
+        val content = output.readText()
+
+        assertTrue(
+            content.contains("fare_zone_authority.FIN.Authority.FIN_ID"),
+            "Should contain authority category from FareZone AuthorityRef for FIN",
+        )
+        assertTrue(
+            content.contains("fare_zone_authority.RUT.Authority.RUT_ID"),
+            "Should contain authority category from FareZone AuthorityRef for RUT",
+        )
+    }
 }

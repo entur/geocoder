@@ -29,6 +29,7 @@ object PhotonFilterBuilder {
             boundaryLocalityIds = req.boundaryLocalityIds,
             tariffZones = req.tariffZones,
             tariffZoneAuthorities = req.tariffZoneAuthorities,
+            fareZoneAuthorities = req.fareZoneAuthorities,
             sources = req.sources,
             layers = req.layers,
             categories = req.categories,
@@ -41,6 +42,7 @@ object PhotonFilterBuilder {
             boundaryLocalityIds = req.boundaryLocalityIds,
             tariffZones = req.tariffZones,
             tariffZoneAuthorities = req.tariffZoneAuthorities,
+            fareZoneAuthorities = req.fareZoneAuthorities,
             sources = req.sources,
             layers = req.layers,
             categories = req.categories,
@@ -52,6 +54,7 @@ object PhotonFilterBuilder {
         boundaryLocalityIds: List<String>,
         tariffZones: List<String>,
         tariffZoneAuthorities: List<String>,
+        fareZoneAuthorities: List<String>,
         sources: List<String>,
         layers: List<String>,
         categories: List<String>,
@@ -69,6 +72,9 @@ object PhotonFilterBuilder {
             }
             if (tariffZoneAuthorities.isNotEmpty()) {
                 add(tariffZoneAuthorities.joinToString(",") { TARIFF_ZONE_AUTH_PREFIX + it })
+            }
+            if (fareZoneAuthorities.isNotEmpty()) {
+                add(fareZoneAuthorities.joinToString(",") { Category.fareZoneAuthorityCategory(it) })
             }
             if (sources.isNotEmpty()) {
                 add(sources.joinToString(",") { LEGACY_SOURCE_PREFIX + it })

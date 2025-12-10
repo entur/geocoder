@@ -34,4 +34,22 @@ class NetexParserTest {
         assertEquals("NSR:GroupOfStopPlaces:1", groups[1].id)
         assertEquals("Oslo", groups[1].name.text)
     }
+
+    @Test
+    fun `parse FareZones with AuthorityRef from stopPlaces xml`() {
+        val parser = NetexParser()
+        val stream = this::class.java.getResourceAsStream("/stopPlaces.xml")
+        assertNotNull(stream, "Test file /stopPlaces.xml not found.")
+
+        val result = parser.parseXml(stream)
+        val fareZones = result.fareZones
+
+        assertEquals(3, fareZones.size)
+        assertNotNull(fareZones["FIN:FareZone:31"])
+        assertEquals("FIN:Authority:FIN_ID", fareZones["FIN:FareZone:31"]?.authorityRef?.ref)
+        assertNotNull(fareZones["FIN:FareZone:26"])
+        assertEquals("FIN:Authority:FIN_ID", fareZones["FIN:FareZone:26"]?.authorityRef?.ref)
+        assertNotNull(fareZones["RUT:FareZone:4"])
+        assertEquals("RUT:Authority:RUT_ID", fareZones["RUT:FareZone:4"]?.authorityRef?.ref)
+    }
 }

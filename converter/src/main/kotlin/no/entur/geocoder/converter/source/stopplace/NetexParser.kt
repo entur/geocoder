@@ -19,6 +19,7 @@ class NetexParser {
     fun parseXml(netexXml: File): ParseResult {
         val categories = extractCategories(netexXml)
         val topoPlaces = extractTopoPlaces(netexXml)
+        val fareZones = extractFareZones(netexXml)
         val stopPlaces = stopPlacesSequence(netexXml)
         val groupOfStopPlaces = groupOfStopPlacesSequence(netexXml)
 
@@ -27,6 +28,7 @@ class NetexParser {
             groupOfStopPlaces = groupOfStopPlaces,
             topoPlaces = topoPlaces,
             categories = categories,
+            fareZones = fareZones,
         )
     }
 
@@ -64,7 +66,7 @@ class NetexParser {
                     )) {
                         yield(groupOfStopPlaces)
                     }
-                } catch (e: IllegalStateException) {
+                } catch (_: IllegalStateException) {
                     // Element not found, return empty sequence
                 } finally {
                     netexReader.close()
@@ -107,10 +109,33 @@ class NetexParser {
         return categories
     }
 
+    internal fun extractFareZones(netexXml: File): Map<String, FareZone> {
+        val netexReader: XMLStreamReader = createReader(netexXml, xmlInputFactory)
+
+        val fareZones = mutableMapOf<String, FareZone>()
+        try {
+            moveToStartElement(netexReader, "fareZones")
+            for (fareZone in elementSequence<FareZone>(
+                netexReader,
+                xmlMapper,
+                "FareZone",
+                "fareZones",
+            )) {
+                fareZone.id?.let { fareZones[it] = fareZone }
+            }
+        } catch (_: IllegalStateException) {
+            // Element not found, return empty map
+        } finally {
+            netexReader.close()
+        }
+        return fareZones
+    }
+
     data class ParseResult(
         val stopPlaces: Sequence<StopPlace>,
         val groupOfStopPlaces: Sequence<GroupOfStopPlaces>,
         val topoPlaces: Map<String, TopographicPlace>,
         val categories: Map<String, List<String>>,
+        val fareZones: Map<String, FareZone>,
     )
 }

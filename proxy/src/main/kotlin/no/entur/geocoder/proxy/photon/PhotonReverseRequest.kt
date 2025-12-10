@@ -43,6 +43,5 @@ data class PhotonReverseRequest(
             )
 
         private fun handleLang(lang: String): String = if (lang == "nb") "no" else lang
-
     }
 }

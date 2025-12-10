@@ -596,5 +596,18 @@
                 </StopPlace>
             </stopPlaces>
         </SiteFrame>
+        <FareFrame modification="new" version="1" id="NSR:FareFrame:1590165423">
+            <fareZones>
+                <FareZone changed="2025-01-22T20:53:20.134" modification="new" version="5" id="FIN:FareZone:31">
+                    <AuthorityRef ref="FIN:Authority:FIN_ID"/>
+                </FareZone>
+                <FareZone changed="2025-01-22T20:53:20.134" modification="new" version="5" id="FIN:FareZone:26">
+                    <AuthorityRef ref="FIN:Authority:FIN_ID"/>
+                </FareZone>
+                <FareZone changed="2025-01-22T20:53:20.134" modification="new" version="8" id="RUT:FareZone:4">
+                    <AuthorityRef ref="RUT:Authority:RUT_ID"/>
+                </FareZone>
+            </fareZones>
+        </FareFrame>
     </dataObjects>
 </PublicationDelivery>

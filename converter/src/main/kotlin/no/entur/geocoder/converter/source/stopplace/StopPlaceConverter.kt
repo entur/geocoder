@@ -10,7 +10,6 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
-import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
@@ -46,6 +45,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         stopPlace: StopPlace,
         topoPlaces: Map<String, TopographicPlace>,
         categories: Map<String, List<String>>,
+        fareZones: Map<String, FareZone>,
         popularity: Long,
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
@@ -67,6 +67,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         val tariffZoneIds = tariffZoneIdCategories(stopPlace)
         val tariffZoneAuthorities = tariffZoneAuthorityCategories(stopPlace)
+        val fareZoneAuthorities = fareZoneAuthorityCategories(stopPlace, fareZones)
 
         val isParentStopPlace = childStopTypes.isNotEmpty()
         val multimodalityCategory =
@@ -86,6 +87,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(SOURCE_NSR)
                 .plus(tariffZoneIds)
                 .plus(tariffZoneAuthorities)
+                .plus(fareZoneAuthorities)
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(countyGid?.let { Category.countyIdsCategory(it) })
                 .plus(localityGid?.let { Category.localityIdsCategory(it) })
@@ -160,11 +162,27 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
     private fun tariffZoneAuthorityCategories(stopPlace: StopPlace): Set<String> = (
         stopPlace.tariffZones
             ?.tariffZoneRef
-            ?.mapNotNull {
-                it.ref
-                    ?.split(":")
-                    ?.first()
-                    ?.let { ref -> TARIFF_ZONE_AUTH_PREFIX + ref }
+            ?.asSequence()
+            ?.mapNotNull { it.ref }
+            ?.filter { it.contains(":TariffZone:") }
+            ?.map { it.split(":").first() }
+            ?.map { Category.TARIFF_ZONE_AUTH_PREFIX + it }
+            ?.toSet()
+            ?: emptySet()
+    )
+
+    private fun fareZoneAuthorityCategories(
+        stopPlace: StopPlace,
+        fareZones: Map<String, FareZone>,
+    ): Set<String> = (
+        stopPlace.tariffZones
+            ?.tariffZoneRef
+            ?.mapNotNull { tariffZoneRef ->
+                tariffZoneRef.ref?.let { ref ->
+                    fareZones[ref]?.authorityRef?.ref?.let { authorityRef ->
+                        Category.fareZoneAuthorityCategory(authorityRef)
+                    }
+                }
             }?.toSet()
             ?: emptySet()
     )
@@ -298,6 +316,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     stopPlace,
                     result.topoPlaces,
                     result.categories,
+                    result.fareZones,
                     popularity,
                 ).asSequence()
             }
