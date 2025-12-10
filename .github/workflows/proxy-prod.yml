@@ -150,3 +150,12 @@ jobs:
     with:
       environment: prd
 
+  notify-slack:
+    needs: acceptance-tests-prd
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -X POST -H 'Content-type:application/json' --data \
+            '{"text":"❌ *${{ github.workflow }}* failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
