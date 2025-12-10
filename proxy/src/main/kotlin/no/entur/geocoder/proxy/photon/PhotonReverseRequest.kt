@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
+import no.entur.geocoder.proxy.photon.Lang.handleLang
 import no.entur.geocoder.proxy.v3.V3ReverseRequest
 
 data class PhotonReverseRequest(
@@ -41,7 +42,5 @@ data class PhotonReverseRequest(
                 excludes = listOf(Category.OSM_ADDRESS), // Exclude addresses with house numbers in reverse requests
                 debug = false,
             )
-
-        private fun handleLang(lang: String): String = if (lang == "nb") "no" else lang
     }
 }

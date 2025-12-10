@@ -7,6 +7,7 @@ import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
+import no.entur.geocoder.proxy.photon.Lang.handleLang
 import no.entur.geocoder.proxy.photon.LocationBiasCalculator.calculateLocationBias
 import no.entur.geocoder.proxy.v3.V3AutocompleteRequest
 
@@ -54,8 +55,6 @@ data class PhotonAutocompleteRequest(
                 includeHousenumbers = req.sources.contains(Source.LEGACY_OPENADDRESSES) && !req.text.contains("\\s\\d".toRegex()),
             )
         }
-
-        private fun handleLang(lang: String): String = if (lang == "nb") "no" else lang
 
         val digitPattern = Regex("^(\\d+)\\s+(.+)")
 
