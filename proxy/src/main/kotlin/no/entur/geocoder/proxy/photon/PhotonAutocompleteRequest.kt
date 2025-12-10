@@ -109,7 +109,7 @@ data class PhotonAutocompleteRequest(
             return PhotonAutocompleteRequest(
                 query = req.query,
                 limit = req.limit,
-                language = req.language,
+                language = handleLang(req.language),
                 includes = includes,
                 lat = null,
                 lon = null,

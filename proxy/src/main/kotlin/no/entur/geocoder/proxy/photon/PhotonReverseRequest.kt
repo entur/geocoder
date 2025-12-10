@@ -22,7 +22,7 @@ data class PhotonReverseRequest(
             return PhotonReverseRequest(
                 latitude = req.lat,
                 longitude = req.lon,
-                language = req.lang,
+                language = handleLang(req.lang),
                 limit = req.size,
                 radius = req.radius,
                 includes = includes,
@@ -35,11 +35,14 @@ data class PhotonReverseRequest(
             PhotonReverseRequest(
                 latitude = req.lat,
                 longitude = req.lon,
-                language = req.language,
+                language = handleLang(req.language),
                 limit = req.limit,
                 radius = req.radius,
                 excludes = listOf(Category.OSM_ADDRESS), // Exclude addresses with house numbers in reverse requests
                 debug = false,
             )
+
+        private fun handleLang(lang: String): String = if (lang == "nb") "no" else lang
+
     }
 }
