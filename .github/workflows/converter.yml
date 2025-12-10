@@ -18,8 +18,6 @@ on:
       - 'settings.gradle.kts'
       - '.github/workflows/converter.yml'
 
-run-name: "Converter: ${{ github.event_name == 'pull_request' && github.event.pull_request.title || github.event.head_commit.message }}"
-
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
