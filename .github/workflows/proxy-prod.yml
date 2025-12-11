@@ -3,15 +3,14 @@ name: Proxy - TST→PRD
 on:
   push:
     branches: [ prod ]
-    paths-ignore:
-      - '**/*.md'
-      - '.entur/**'
-      - 'converter/**'
-      - 'helm/**'
-      - 'photon/**'
-      - 'proxy/docs/**'
-      - '.github/workflows/api-docs.yml'
-      - 'photon-*.yml'
+    paths:
+      - 'proxy/**'
+      - 'common/**'
+      - 'gradle/**'
+      - '*gradle*'
+      - '.github/workflows/proxy-prod.yml'
+      - '.github/actions/**'
+      - '!**/*.md'
   workflow_dispatch:
     inputs:
       image_tag:
@@ -68,7 +67,7 @@ jobs:
         with:
           image_name: geocoder-proxy
           context: proxy
-          push: true
+          push: ${{ github.ref == 'refs/heads/prod' }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 

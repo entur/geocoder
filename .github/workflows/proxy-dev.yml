@@ -2,16 +2,23 @@ name: Proxy - DEV
 
 on:
   push:
-    branches: [ main ]
-    paths-ignore:
-      - '**/*.md'
-      - '.entur/**'
-      - 'converter/**'
-      - 'helm/**'
-      - 'photon/**'
-      - 'proxy/docs/**'
-      - '.github/workflows/api-docs.yml'
-      - 'photon-*.yml'
+    paths:
+      - 'proxy/**'
+      - 'common/**'
+      - 'gradle/**'
+      - '*gradle*'
+      - '.github/workflows/proxy-dev.yml'
+      - '.github/actions/**'
+      - '!**/*.md'
+  pull_request:
+    paths:
+      - 'proxy/**'
+      - 'common/**'
+      - 'gradle/**'
+      - '*gradle*'
+      - '.github/workflows/proxy-dev.yml'
+      - '.github/actions/**'
+      - '!**/*.md'
   workflow_dispatch:
     inputs:
       image_tag:
@@ -26,7 +33,7 @@ concurrency:
 jobs:
   lint:
     if: |
-      github.event_name == 'push'
+      github.event_name != 'workflow_dispatch'
     name: Lint
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
@@ -38,7 +45,7 @@ jobs:
     needs: lint
     if: |
       !cancelled() &&
-      github.event_name == 'push' &&
+      github.event_name != 'workflow_dispatch' &&
       needs.lint.result == 'success'
     runs-on: ubuntu-latest
     permissions:
@@ -66,7 +73,7 @@ jobs:
         with:
           image_name: geocoder-proxy
           context: proxy
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -76,7 +83,8 @@ jobs:
     if: |
       !cancelled() &&
       needs.build-push.result == 'success' &&
-      github.event_name == 'push'
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:

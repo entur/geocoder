@@ -6,17 +6,19 @@ on:
       - 'converter/**'
       - 'common/**'
       - 'gradle/**'
-      - 'build.gradle.kts'
-      - 'settings.gradle.kts'
+      - '*gradle*'
       - '.github/workflows/converter.yml'
+      - '.github/actions/**'
+      - '!**/*.md'
   pull_request:
     paths:
       - 'converter/**'
       - 'common/**'
       - 'gradle/**'
-      - 'build.gradle.kts'
-      - 'settings.gradle.kts'
+      - '*gradle*'
       - '.github/workflows/converter.yml'
+      - '.github/actions/**'
+      - '!**/*.md'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
