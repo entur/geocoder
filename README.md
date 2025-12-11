@@ -37,9 +37,13 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 cd photon
 ./download-photon-jar.sh
 
-# EITHER import and convert data
-../converter/create-nominatim-data.sh # downloads data and creates nominatim.ndjson
-./create-photon-data.sh               # creates the photon_data search index for Photon
+# EITHER download source data, convert to nominatim.ndjson, and create the photon index
+../converter/create-nominatim-data.sh
+./create-photon-data.sh
+
+# OR download the latest nominatim.ndjson build by Github Actions and create the photon index
+../converter/download-latest-nominatim-data.sh
+./create-photon-data.sh
 
 # OR just download the latest Photon search index built by Github Actions
 rm -rf photon_data
