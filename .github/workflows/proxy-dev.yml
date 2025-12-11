@@ -2,6 +2,7 @@ name: Proxy - DEV
 
 on:
   push:
+    branches-ignore: [ prod ]
     paths:
       - 'proxy/**'
       - 'common/**'
