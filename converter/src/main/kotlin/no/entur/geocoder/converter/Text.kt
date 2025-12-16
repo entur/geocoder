@@ -1,13 +1,13 @@
 package no.entur.geocoder.converter
 
 object Text {
-    fun altName(vararg text: String?, separator: String = ";"): String? =
-        listOf(*text).altName(separator)
+    fun altName(vararg text: String?): String? =
+        listOf(*text).altName()
 
-    fun List<String?>.altName(separator: String = ";"): String? =
+    fun List<String?>.altName(): String? =
         this
             .filterNotNull()
             .filter { it.isNotBlank() }
-            .joinToString(separator)
+            .joinToString(";")
             .ifBlank { null }
 }
