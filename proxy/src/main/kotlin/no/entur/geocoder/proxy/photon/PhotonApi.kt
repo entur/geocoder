@@ -11,7 +11,7 @@ import no.entur.geocoder.common.Util.within
 class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
     /**
      * Allowed parameters are:
-     * [include, location_bias_scale, debug, dedupe, bbox, lon, zoom, layer, q, limit, osm_tag, exclude, geometry, lang, lat, include_housenumbers]
+     * [include, location_bias_scale, debug, dedupe, bbox, lon, zoom, layer, q, limit, osm_tag, exclude, geometry, lang, lat, suggest_addresses]
      */
     suspend fun request(req: PhotonAutocompleteRequest): PhotonResult {
         val response =
@@ -37,7 +37,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                         parameter("lon", req.lon)
                     }
                     parameter("debug", req.debug)
-                    if (req.includeHousenumbers) parameter("include_housenumbers", true)
+                    if (req.includeHousenumbers) parameter("suggest_addresses", true)
                 }
 
         return convertResponse(response)
