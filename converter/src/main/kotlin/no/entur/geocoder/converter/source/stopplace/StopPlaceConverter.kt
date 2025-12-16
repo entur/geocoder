@@ -47,6 +47,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         categories: Map<String, List<String>>,
         fareZones: Map<String, FareZone>,
         popularity: Long,
+        childStopNames: List<String> = emptyList(),
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
         val coord =
@@ -94,9 +95,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(multimodalityCategory)
                 .filterNotNull()
 
-        // Extract alternative names from NeTEx AlternativeNames
-        val alternativeNames = stopPlace.alternativeNames?.alternativeName
-        val altName = alternativeNames?.mapNotNull { it.name?.text }?.joinToString(";")?.ifBlank { null }
+        val altNames = createAltNames(stopPlace, childStopNames)
         val id = stopPlace.id
 
         val extra =
@@ -114,7 +113,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         ?.mapNotNull { it.ref }
                         ?.joinToString(",")
                 ),
-                alt_name = altName,
+                alt_name = altNames,
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = tags.joinToString(","),
             )
@@ -133,7 +132,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     stopPlace.name.text?.let {
                         Name(
                             name = it,
-                            alt_name = altName(altName, id),
+                            alt_name = altName(altNames, id),
                         )
                     },
                 address =
@@ -153,6 +152,26 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
     }
 
     val includeTransportModeAsStopPlaceType = listOf("funicular")
+
+    private fun createAltNames(stopPlace: StopPlace, childStopNames: List<String>): String? {
+        val alternativeNames =
+            stopPlace.alternativeNames
+                ?.alternativeName
+                ?.mapNotNull { it.name?.text }
+                ?: emptyList()
+        val allAltNames = alternativeNames + childStopNames
+        return allAltNames.joinToString(";").ifBlank { null }
+    }
+
+    private fun buildChildStopNamesMap(stopPlaces: List<StopPlace>): Map<String, List<String>> {
+        val childStopNamesMap = mutableMapOf<String, MutableList<String>>()
+        for (stopPlace in stopPlaces) {
+            val parentRef = stopPlace.parentSiteRef?.ref ?: continue
+            val name = stopPlace.name.text ?: continue
+            childStopNamesMap.getOrPut(parentRef) { mutableListOf() }.add(name)
+        }
+        return childStopNamesMap
+    }
 
     private fun createStopPlaceTypes(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
         val transportMode = includeTransportModeAsStopPlaceType.firstOrNull { it == stopPlace.transportMode }
@@ -316,15 +335,20 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 stopPlace.id to popularity
             }
 
+        // Build map of parent stop place ID -> list of child stop names
+        val childStopNamesMap = buildChildStopNamesMap(stopPlacesList)
+
         val stopPlaceEntries =
             stopPlacesList.asSequence().flatMap { stopPlace ->
                 val popularity = stopPlacePopularities[stopPlace.id] ?: 0L
+                val childStopNames = childStopNamesMap[stopPlace.id] ?: emptyList()
                 convertStopPlaceToNominatim(
                     stopPlace,
                     result.topoPlaces,
                     result.categories,
                     result.fareZones,
                     popularity,
+                    childStopNames,
                 ).asSequence()
             }
 

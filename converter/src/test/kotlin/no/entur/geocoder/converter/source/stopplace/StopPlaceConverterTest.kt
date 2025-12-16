@@ -98,12 +98,138 @@ class StopPlaceConverterTest {
         assertFalse(categories.contains("legacy.category.rail"), "Should NOT include rail transportMode")
     }
 
+    @Test
+    fun `parent stop place should include child stop names in altNames`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:Parent",
+                name = "Parent Station",
+                transportMode = null,
+                stopPlaceType = null,
+            )
+
+        val childStopNames = listOf("Child Stop A", "Child Stop B")
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+                childStopNames,
+            )
+
+        val nameAltName =
+            result
+                .first()
+                .content
+                .first()
+                .name
+                ?.alt_name
+        assertTrue(nameAltName?.contains("Child Stop A") == true, "Should include child stop name A in alt_name")
+        assertTrue(nameAltName?.contains("Child Stop B") == true, "Should include child stop name B in alt_name")
+    }
+
+    @Test
+    fun `child stop names should be combined with existing alternative names`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlaceWithAltNames(
+                id = "NSR:StopPlace:Parent",
+                name = "Parent Station",
+                altNames = listOf("Existing Alt Name"),
+            )
+
+        val childStopNames = listOf("Child Stop A")
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+                childStopNames,
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertTrue(extra?.alt_name?.contains("Existing Alt Name") == true, "Should include existing alt name")
+        assertTrue(extra?.alt_name?.contains("Child Stop A") == true, "Should include child stop name")
+    }
+
+    @Test
+    fun `altNames should be null when no alternative names and no child stops`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:1",
+                name = "Simple Stop",
+                transportMode = null,
+                stopPlaceType = null,
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+                emptyList(),
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals(null, extra?.alt_name, "alt_name should be null when no alt names exist")
+    }
+
+    @Test
+    fun `altNames should use semicolon separator`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlaceWithAltNames(
+                id = "NSR:StopPlace:1",
+                name = "Station",
+                altNames = listOf("Alt 1", "Alt 2"),
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+                listOf("Child 1"),
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals("Alt 1;Alt 2;Child 1", extra?.alt_name, "alt_name should be semicolon-separated")
+    }
+
     private fun createStopPlace(
         id: String,
         transportMode: String?,
         stopPlaceType: String?,
+        name: String = "Test Stop",
     ): StopPlace {
-        val name = StopPlace.LocalizedText().apply { text = "Test Stop" }
+        val nameText = StopPlace.LocalizedText().apply { text = name }
         val location = StopPlace.Location(10.0, 60.0)
         val centroid = StopPlace.Centroid(location)
 
@@ -113,10 +239,41 @@ class StopPlaceConverterTest {
             modification = "new",
             created = null,
             changed = null,
-            name = name,
+            name = nameText,
             centroid = centroid,
             transportMode = transportMode,
             stopPlaceType = stopPlaceType,
+        )
+    }
+
+    private fun createStopPlaceWithAltNames(
+        id: String,
+        name: String,
+        altNames: List<String>,
+    ): StopPlace {
+        val nameText = StopPlace.LocalizedText().apply { text = name }
+        val location = StopPlace.Location(10.0, 60.0)
+        val centroid = StopPlace.Centroid(location)
+
+        val alternativeNames =
+            StopPlace.AlternativeNames().apply {
+                alternativeName =
+                    altNames.map { altName ->
+                        StopPlace.AlternativeName().apply {
+                            this.name = StopPlace.LocalizedText().apply { text = altName }
+                        }
+                    }
+            }
+
+        return StopPlace(
+            id = id,
+            version = "1",
+            modification = "new",
+            created = null,
+            changed = null,
+            name = nameText,
+            centroid = centroid,
+            alternativeNames = alternativeNames,
         )
     }
 
