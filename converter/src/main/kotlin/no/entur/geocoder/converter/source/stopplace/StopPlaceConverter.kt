@@ -95,7 +95,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(multimodalityCategory)
                 .filterNotNull()
 
-        val stopNames = allStopNames(stopPlace, childStopNames)
+        val otherStopNames = otherStopNames(stopPlace, childStopNames)
         val id = stopPlace.id
 
         val extra =
@@ -113,7 +113,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         ?.mapNotNull { it.ref }
                         ?.joinToString(",")
                 ),
-                alt_name = stopNames.altName(),
+                alt_name = otherStopNames.altName(),
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = tags.joinToString(","),
             )
@@ -132,7 +132,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     stopPlace.name.text?.let {
                         Name(
                             name = it,
-                            alt_name = stopNames.plus(id).altName(),
+                            alt_name = otherStopNames.plus(id).altName(),
                         )
                     },
                 address =
@@ -153,7 +153,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
     val includeTransportModeAsStopPlaceType = listOf("funicular")
 
-    private fun allStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
+    private fun otherStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
         val alternativeNames =
             stopPlace.alternativeNames
                 ?.alternativeName
