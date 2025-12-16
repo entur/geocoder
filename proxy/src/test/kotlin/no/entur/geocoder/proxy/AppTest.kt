@@ -44,7 +44,6 @@ class AppTest {
                   "county_gid": "county:1",
                   "locality": "Oslo",
                   "locality_gid": "locality:1",
-                  "transport_modes": "city,transport",
                   "tariff_zones": "zone1,zone2",
                   "tags": "$LEGACY_SOURCE_OPENSTREETMAP,$LEGACY_LAYER_ADDRESS,${LEGACY_CATEGORY_PREFIX}poi,${LEGACY_CATEGORY_PREFIX}transport,${LEGACY_CATEGORY_PREFIX}city"
                 }

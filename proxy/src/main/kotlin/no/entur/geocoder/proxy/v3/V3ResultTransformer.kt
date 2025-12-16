@@ -25,8 +25,7 @@ object V3ResultTransformer {
                 req.countyIds.isNotEmpty() ||
                 req.localityIds.isNotEmpty() ||
                 req.tariffZones.isNotEmpty() ||
-                req.tariffZoneAuthorities.isNotEmpty() ||
-                req.transportModes.isNotEmpty()
+                req.tariffZoneAuthorities.isNotEmpty()
             ) {
                 V3Result.Filters(
                     placeTypes = req.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
@@ -36,7 +35,6 @@ object V3ResultTransformer {
                     localityIds = req.localityIds.takeIf { it.isNotEmpty() },
                     tariffZones = req.tariffZones.takeIf { it.isNotEmpty() },
                     tariffZoneAuthorities = req.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
-                    transportModes = req.transportModes.takeIf { it.isNotEmpty() },
                 )
             } else {
                 null
@@ -117,12 +115,6 @@ object V3ResultTransformer {
                     ?.tags
                     ?.split(",")
                     ?.map { it.substringAfter('.') }
-                    ?.filter { it.isNotBlank() },
-            transportModes =
-                extra
-                    ?.transport_modes
-                    ?.split(',')
-                    ?.map { it.trim() }
                     ?.filter { it.isNotBlank() },
             tariffZones =
                 extra

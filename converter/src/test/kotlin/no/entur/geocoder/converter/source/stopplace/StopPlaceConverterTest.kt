@@ -7,9 +7,119 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class StopPlaceConverterTest {
+    @Test
+    fun `funicular transportMode should be included in categories`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:1",
+                transportMode = "funicular",
+                stopPlaceType = "other",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val categories =
+            result
+                .first()
+                .content
+                .first()
+                .categories
+        assertTrue(categories.contains("legacy.category.funicular"), "Should include funicular from transportMode")
+        assertTrue(categories.contains("legacy.category.other"), "Should include stopPlaceType")
+    }
+
+    @Test
+    fun `bus transportMode should not be included in categories`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:2",
+                transportMode = "bus",
+                stopPlaceType = "onstreetBus",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val categories =
+            result
+                .first()
+                .content
+                .first()
+                .categories
+        assertFalse(categories.contains("legacy.category.bus"), "Should NOT include bus transportMode")
+        assertTrue(categories.contains("legacy.category.onstreetBus"), "Should include stopPlaceType")
+    }
+
+    @Test
+    fun `stopPlaceType should always be included in categories`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:3",
+                transportMode = "rail",
+                stopPlaceType = "railStation",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val categories =
+            result
+                .first()
+                .content
+                .first()
+                .categories
+        assertTrue(categories.contains("legacy.category.railStation"), "Should include stopPlaceType")
+        assertFalse(categories.contains("legacy.category.rail"), "Should NOT include rail transportMode")
+    }
+
+    private fun createStopPlace(
+        id: String,
+        transportMode: String?,
+        stopPlaceType: String?,
+    ): StopPlace {
+        val name = StopPlace.LocalizedText().apply { text = "Test Stop" }
+        val location = StopPlace.Location(10.0, 60.0)
+        val centroid = StopPlace.Centroid(location)
+
+        return StopPlace(
+            id = id,
+            version = "1",
+            modification = "new",
+            created = null,
+            changed = null,
+            name = name,
+            centroid = centroid,
+            transportMode = transportMode,
+            stopPlaceType = stopPlaceType,
+        )
+    }
+
     @Test
     fun `convert stopPlaces xml to nominatimDumpFile json`() {
         val converter = StopPlaceConverter(ConverterConfig())

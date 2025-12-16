@@ -61,7 +61,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
         val country = determineCountry(topoPlaces, stopPlace, coord)
         val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
-        val transportModes = childStopTypes.plus(stopPlace.stopPlaceType).filterNotNull()
+        val stopPlaceTypes = createStopPlaceTypes(childStopTypes, stopPlace)
 
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
@@ -79,7 +79,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         val tags: List<String> =
             listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE)
-                .plus(transportModes.map { LEGACY_CATEGORY_PREFIX + it })
+                .plus(stopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
                 .plus(if (isParentStopPlace) LEGACY_SOURCE_OPENSTREETMAP else LEGACY_SOURCE_WHOSONFIRST)
 
         val categories: List<String> =
@@ -108,7 +108,6 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                transport_modes = transportModes.joinToString(","),
                 tariff_zones = (
                     stopPlace.tariffZones
                         ?.tariffZoneRef
@@ -151,6 +150,14 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         entries.add(NominatimPlace("Place", listOf(stopPlaceContent)))
 
         return entries
+    }
+
+    val includeTransportModeAsStopPlaceType = listOf("funicular")
+
+    private fun createStopPlaceTypes(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
+        val transportMode = includeTransportModeAsStopPlaceType.firstOrNull { it == stopPlace.transportMode }
+
+        return childStopTypes.plus(transportMode).plus(stopPlace.stopPlaceType).filterNotNull()
     }
 
     private fun descriptionWithTranslation(desc: StopPlace.LocalizedText?): String? {

@@ -14,7 +14,6 @@ data class V3AutocompleteRequest(
     val tariffZones: List<String> = emptyList(),
     val tariffZoneAuthorities: List<String> = emptyList(),
     val fareZoneAuthorities: List<String> = emptyList(),
-    val transportModes: List<String> = emptyList(),
 ) {
     companion object {
         fun from(req: Parameters) =
@@ -30,7 +29,6 @@ data class V3AutocompleteRequest(
                 tariffZones = req["tariffZones"]?.split(",") ?: emptyList(),
                 tariffZoneAuthorities = req["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
                 fareZoneAuthorities = req["fareZoneAuthorities"]?.split(",") ?: emptyList(),
-                transportModes = req["transportModes"]?.split(",") ?: emptyList(),
             )
     }
 }

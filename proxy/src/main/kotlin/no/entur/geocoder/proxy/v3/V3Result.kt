@@ -16,7 +16,6 @@ data class V3Result(
         val location: Location,
         val address: Address? = null,
         val categories: List<String>? = null,
-        val transportModes: List<String>? = null,
         val tariffZones: List<String>? = null,
         val source: DataSource,
     )
@@ -90,7 +89,6 @@ data class V3Result(
         val localityIds: List<String>? = null,
         val tariffZones: List<String>? = null,
         val tariffZoneAuthorities: List<String>? = null,
-        val transportModes: List<String>? = null,
     )
 
     data class BoundingBox(

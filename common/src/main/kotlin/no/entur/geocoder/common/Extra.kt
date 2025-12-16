@@ -9,7 +9,6 @@ data class Extra(
     val tariff_zones: String? = null,
     val id: String? = null,
     val county_gid: String? = null,
-    val transport_modes: String? = null,
     val borough: String? = null,
     val borough_gid: String? = null,
     val alt_name: String? = null,

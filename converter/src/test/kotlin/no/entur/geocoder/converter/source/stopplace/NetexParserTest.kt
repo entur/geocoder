@@ -6,6 +6,27 @@ import kotlin.test.assertNotNull
 
 class NetexParserTest {
     @Test
+    fun `parse transportMode from StopPlace`() {
+        val parser = NetexParser()
+        val stream = this::class.java.getResourceAsStream("/stopPlaces.xml")
+        assertNotNull(stream, "Test file /stopPlaces.xml not found.")
+
+        val places = parser.parseXml(stream).stopPlaces.toList()
+
+        // First stop place has transportMode=bus and stopPlaceType=onstreetBus
+        val busStop = places.find { it.id == "NSR:StopPlace:56697" }
+        assertNotNull(busStop)
+        assertEquals("bus", busStop.transportMode)
+        assertEquals("onstreetBus", busStop.stopPlaceType)
+
+        // Rail station has transportMode=rail and stopPlaceType=railStation
+        val railStation = places.find { it.id == "NSR:StopPlace:305" }
+        assertNotNull(railStation)
+        assertEquals("rail", railStation.transportMode)
+        assertEquals("railStation", railStation.stopPlaceType)
+    }
+
+    @Test
     fun `parse that file`() {
         val parser = NetexParser()
         val stream = this::class.java.getResourceAsStream("/oslo.xml")

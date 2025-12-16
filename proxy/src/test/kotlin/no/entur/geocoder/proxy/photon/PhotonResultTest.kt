@@ -195,7 +195,6 @@ class PhotonResultTest {
                                 "country_a": "NOR",
                                 "accuracy": "point",
                                 "tariff_zones": "RUT:TariffZone:01,RUT:TariffZone:02",
-                                "transport_modes": "bus,tram",
                                 "alt_name": "Alternative Name",
                                 "tags": "legacy.source.osm,legacy.layer.venue"
                             }
@@ -219,7 +218,6 @@ class PhotonResultTest {
         assertEquals("NOR", extra.country_a)
         assertEquals("point", extra.accuracy)
         assertEquals("RUT:TariffZone:01,RUT:TariffZone:02", extra.tariff_zones)
-        assertEquals("bus,tram", extra.transport_modes)
         assertEquals("Alternative Name", extra.alt_name)
         assertEquals("legacy.source.osm,legacy.layer.venue", extra.tags)
     }
