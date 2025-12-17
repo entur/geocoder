@@ -61,7 +61,10 @@ class OsmConverter(config: ConverterConfig) : Converter {
             val poiFilter = OsmIterator.poiFilter(popularityCalculator)
             parsePbf(inputFile, poiFilter).forEach { entity ->
                 when (entity) {
-                    is Way -> nodeCollector.calculateAndStoreWayCentroid(entity)
+                    is Way -> {
+                        nodeCollector.calculateAndStoreWayCentroid(entity)
+                    }
+
                     is Relation -> {
                         entity.members
                             .filter { it.memberType == EntityType.Way }

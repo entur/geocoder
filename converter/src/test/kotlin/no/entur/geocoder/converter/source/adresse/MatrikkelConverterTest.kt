@@ -114,7 +114,10 @@ class MatrikkelConverterTest {
         val addressEntries = lines.filter { it.contains("osm.public_transport.address") }
         val streetEntries =
             lines.filter { line ->
-                line.contains("osm.highway") || line.contains("street") && !line.contains("osm.public_transport.address")
+                val isHighway = line.contains("osm.highway")
+                val isStreet = line.contains("street")
+                val isAddress = line.contains("osm.public_transport.address")
+                isHighway || (isStreet && !isAddress)
             }
 
         assertTrue(streetEntries.isNotEmpty())

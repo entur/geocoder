@@ -114,7 +114,9 @@ class Command(private val args: Array<String>) {
                     i += 1
                 }
 
-                else -> exit("Error: Unknown option ${args[i]}")
+                else -> {
+                    exit("Error: Unknown option ${args[i]}")
+                }
             }
         }
 

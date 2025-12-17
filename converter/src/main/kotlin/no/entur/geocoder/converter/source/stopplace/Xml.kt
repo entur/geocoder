@@ -69,10 +69,13 @@ object Xml {
             while (reader.hasNext()) {
                 nextRelevantEvent(reader)
                 when {
-                    isStartElement(reader, startElement) ->
+                    isStartElement(reader, startElement) -> {
                         yield(mapper.readValue(reader, C::class.java))
+                    }
 
-                    isEndElement(reader, endElement) -> break
+                    isEndElement(reader, endElement) -> {
+                        break
+                    }
                 }
             }
         }

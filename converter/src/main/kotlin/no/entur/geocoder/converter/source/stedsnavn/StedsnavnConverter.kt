@@ -107,10 +107,22 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
 
             if (reader.eventType == XMLStreamConstants.START_ELEMENT) {
                 when (reader.localName) {
-                    "lokalId" -> lokalId = readElementText(reader)
-                    "navnerom" -> navnerom = readElementText(reader)
-                    "versjonId" -> versjonId = readElementText(reader)
-                    "oppdateringsdato" -> oppdateringsdato = readElementText(reader)
+                    "lokalId" -> {
+                        lokalId = readElementText(reader)
+                    }
+
+                    "navnerom" -> {
+                        navnerom = readElementText(reader)
+                    }
+
+                    "versjonId" -> {
+                        versjonId = readElementText(reader)
+                    }
+
+                    "oppdateringsdato" -> {
+                        oppdateringsdato = readElementText(reader)
+                    }
+
                     "komplettskrivemåte" -> {
                         val text = readElementText(reader)
                         if (insideAnnenSkrivemåte) {
@@ -120,7 +132,10 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                         }
                     }
 
-                    "navneobjekttype" -> navneobjekttype = readElementText(reader)
+                    "navneobjekttype" -> {
+                        navneobjekttype = readElementText(reader)
+                    }
+
                     "skrivemåtestatus" -> {
                         val text = readElementText(reader)
                         if (!insideAnnenSkrivemåte && skrivemåtestatus == null) {
@@ -128,13 +143,34 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                         }
                     }
 
-                    "matrikkelId" -> matrikkelId = readElementText(reader)
-                    "adressekode" -> adressekode = readElementText(reader)
-                    "kommunenummer" -> kommunenummer = readElementText(reader)
-                    "kommunenavn" -> kommunenavn = readElementText(reader)
-                    "fylkesnummer" -> fylkesnummer = readElementText(reader)
-                    "fylkesnavn" -> fylkesnavn = readElementText(reader)
-                    "annenSkrivemåte" -> insideAnnenSkrivemåte = true
+                    "matrikkelId" -> {
+                        matrikkelId = readElementText(reader)
+                    }
+
+                    "adressekode" -> {
+                        adressekode = readElementText(reader)
+                    }
+
+                    "kommunenummer" -> {
+                        kommunenummer = readElementText(reader)
+                    }
+
+                    "kommunenavn" -> {
+                        kommunenavn = readElementText(reader)
+                    }
+
+                    "fylkesnummer" -> {
+                        fylkesnummer = readElementText(reader)
+                    }
+
+                    "fylkesnavn" -> {
+                        fylkesnavn = readElementText(reader)
+                    }
+
+                    "annenSkrivemåte" -> {
+                        insideAnnenSkrivemåte = true
+                    }
+
                     "posList" -> {
                         val text = readElementText(reader).trim()
                         val coords = text.split("\\s+".toRegex())
