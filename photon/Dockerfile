@@ -1,4 +1,4 @@
-FROM bellsoft/liberica-runtime-container:jre-21-slim-musl
+FROM bellsoft/liberica-runtime-container:jre-25-slim-musl
 
 ARG PHOTON_JAR_URL
 

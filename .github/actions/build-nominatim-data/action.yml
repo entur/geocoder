@@ -17,11 +17,11 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set up JDK 21
+    - name: Set up JDK
       uses: actions/setup-java@v5
       with:
-        distribution: 'liberica'
-        java-version: '21'
+        distribution: liberica
+        java-version: 25
         cache: gradle
 
     - name: Build converter JAR
