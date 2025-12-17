@@ -1,9 +1,9 @@
-package no.entur.geocoder.converter.source
+package no.entur.geocoder.converter.target
 
 import kotlin.math.abs
 
 // Prefix nominatim place IDs to avoid document collisions
-enum class PlaceId(val prefix: Int) {
+enum class NominatimId(val prefix: Int) {
     address(100),
     street(200),
     stedsnavn(300),

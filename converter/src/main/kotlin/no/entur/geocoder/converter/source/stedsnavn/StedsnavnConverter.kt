@@ -14,7 +14,7 @@ import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
-import no.entur.geocoder.converter.source.PlaceId
+import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
@@ -246,12 +246,12 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 tags = tags.joinToString(","),
             )
 
-        val placeId = PlaceId.stedsnavn.create(entry.lokalId)
+        val nominatimId = NominatimId.stedsnavn.create(entry.lokalId)
         val properties =
             PlaceContent(
-                place_id = placeId,
+                place_id = nominatimId,
                 object_type = "N",
-                object_id = placeId,
+                object_id = nominatimId,
                 categories = categories,
                 rank_address = 16,
                 importance =

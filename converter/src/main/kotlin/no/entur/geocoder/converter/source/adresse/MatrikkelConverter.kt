@@ -16,7 +16,7 @@ import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
-import no.entur.geocoder.converter.source.PlaceId
+import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping.KommuneInfo
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -80,7 +80,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         convertToNominatim(
             adresse = adresse,
             utm = UtmCoordinate(adresse.ost, adresse.nord),
-            placeId = PlaceId.address.create(adresse.lokalid),
+            placeId = NominatimId.address.create(adresse.lokalid),
             id = adresse.lokalid, // This is the only numeric id type. All others are colon separated.
             tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
             popularity = popularityCalculator.calculateAddressPopularity(),
@@ -97,7 +97,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         return convertToNominatim(
             adresse = adresse,
             utm = coord,
-            placeId = PlaceId.street.create(adresse.lokalid),
+            placeId = NominatimId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
             tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
             popularity = popularityCalculator.calculateStreetPopularity(),

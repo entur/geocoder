@@ -10,7 +10,7 @@ import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
-import no.entur.geocoder.converter.source.PlaceId
+import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import org.openstreetmap.osmosis.core.domain.v0_6.*
@@ -160,12 +160,12 @@ class OsmEntityConverter(
 
         val categories = buildCategories(tagList, country, countyGid, localityGid)
 
-        val placeId = PlaceId.osm.create(entity.id)
+        val nominatimId = NominatimId.osm.create(entity.id)
         val content =
             PlaceContent(
-                place_id = placeId,
+                place_id = nominatimId,
                 object_type = objectType,
-                object_id = placeId,
+                object_id = nominatimId,
                 categories = categories,
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),

@@ -1,12 +1,12 @@
 package no.entur.geocoder.converter
 
-import no.entur.geocoder.converter.source.PlaceId
+import no.entur.geocoder.converter.target.NominatimId
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.Test
 
-class PlaceIdTest {
+class NominatimIdTest {
     @ParameterizedTest
     @CsvSource(
         "address, 100",
@@ -18,28 +18,28 @@ class PlaceIdTest {
         "poi, 600",
     )
     fun `all prefixes create correct IDs`(type: String, expectedPrefix: Int) {
-        val placeId = PlaceId.valueOf(type)
-        val id = placeId.create(123L)
+        val nominatimId = NominatimId.valueOf(type)
+        val id = nominatimId.create(123L)
         assertTrue(id.toString().startsWith(expectedPrefix.toString()))
-        assertEquals(expectedPrefix, placeId.prefix)
+        assertEquals(expectedPrefix, nominatimId.prefix)
     }
 
     @Test
     fun `different prefixes create different IDs`() {
-        val ids = PlaceId.entries.map { it.create(100L) }.toSet()
+        val ids = NominatimId.entries.map { it.create(100L) }.toSet()
         assertEquals(7, ids.size)
     }
 
     @Test
     fun `negative IDs use absolute value`() {
-        assertEquals(PlaceId.address.create(123L), PlaceId.address.create(-123L))
+        assertEquals(NominatimId.address.create(123L), NominatimId.address.create(-123L))
     }
 
     @Test
     fun `string hashCode is consistent`() {
-        val id1 = PlaceId.stedsnavn.create("Oslo")
-        val id2 = PlaceId.stedsnavn.create("Oslo")
-        val id3 = PlaceId.stedsnavn.create("Bergen")
+        val id1 = NominatimId.stedsnavn.create("Oslo")
+        val id2 = NominatimId.stedsnavn.create("Oslo")
+        val id3 = NominatimId.stedsnavn.create("Bergen")
 
         assertEquals(id1, id2)
         assertNotEquals(id1, id3)

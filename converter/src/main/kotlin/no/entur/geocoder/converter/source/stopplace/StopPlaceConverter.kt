@@ -17,7 +17,7 @@ import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
 import no.entur.geocoder.converter.Text.altName
 import no.entur.geocoder.converter.source.ImportanceCalculator
-import no.entur.geocoder.converter.source.PlaceId
+import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
@@ -114,12 +114,12 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 tags = tags.joinToString(","),
             )
 
-        val placeId = PlaceId.stopplace.create(stopPlace.id)
+        val nominatimId = NominatimId.stopplace.create(stopPlace.id)
         val stopPlaceContent =
             PlaceContent(
-                place_id = placeId,
+                place_id = nominatimId,
                 object_type = "N",
-                object_id = placeId,
+                object_id = nominatimId,
                 categories = categories,
                 rank_address = 30,
                 importance = importance,
@@ -288,12 +288,12 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .filterNotNull()
 
         val id = groupOfStopPlaces.id
-        val placeId = PlaceId.gosp.create(id)
+        val nominatimId = NominatimId.gosp.create(id)
         val placeContent =
             PlaceContent(
-                place_id = placeId,
+                place_id = nominatimId,
                 object_type = "N",
-                object_id = placeId,
+                object_id = nominatimId,
                 categories = categories,
                 rank_address = 30,
                 importance = importance,

@@ -9,9 +9,9 @@ data class NominatimPlace(
     val content: List<PlaceContent>,
 ) {
     data class PlaceContent(
-        val place_id: Long,
+        val place_id: Long, // Use NominatimId
         val object_type: String,
-        val object_id: Long,
+        val object_id: Long, // Use NominatimId
         val categories: List<String>, // categories are used for filtering using include/exclude params
         val rank_address: Int,
         val importance: BigDecimal,

@@ -10,7 +10,7 @@ import no.entur.geocoder.common.Source.CUSTOM_POI
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.source.PlaceId
+import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.source.stopplace.NetexParser
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
@@ -58,12 +58,12 @@ class PoiConverter(config: ConverterConfig) : Converter {
                         tags = OSM_CUSTOM_POI,
                         country_a = country.threeLetterCode,
                     )
-                val placeId = PlaceId.poi.create(id)
+                val nominatimId = NominatimId.poi.create(id)
                 val placeContent =
                     PlaceContent(
-                        place_id = placeId,
+                        place_id = nominatimId,
                         object_type = "N",
-                        object_id = placeId,
+                        object_id = nominatimId,
                         categories = listOf(OSM_CUSTOM_POI, COUNTRY_PREFIX + country.name),
                         rank_address = 30,
                         importance = 0.5.toBigDecimal(),
