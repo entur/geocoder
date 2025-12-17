@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.2.21" apply false
+    kotlin("jvm") version "2.3.0" apply false
     alias(libs.plugins.ktlint)
 }
 
@@ -8,5 +8,9 @@ subprojects {
 
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         ignoreFailures.set(true)
+    }
+
+    ktlint {
+        version = "1.8.0"
     }
 }
