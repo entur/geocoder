@@ -17,7 +17,7 @@ class NetexParser {
     fun parseXml(netexStream: InputStream): ParseResult = parseXml(streamToFile(netexStream))
 
     fun parseXml(netexXml: File): ParseResult {
-        val categories = extractCategories(netexXml)
+        val stopPlaceTypes = extractStopPlaceTypes(netexXml)
         val topoPlaces = extractTopoPlaces(netexXml)
         val fareZones = extractFareZones(netexXml)
         val stopPlaces = stopPlacesSequence(netexXml)
@@ -27,7 +27,7 @@ class NetexParser {
             stopPlaces = stopPlaces,
             groupOfStopPlaces = groupOfStopPlaces,
             topoPlaces = topoPlaces,
-            categories = categories,
+            stopPlaceTypes = stopPlaceTypes,
             fareZones = fareZones,
         )
     }
@@ -91,22 +91,22 @@ class NetexParser {
         return topoPlaces
     }
 
-    private fun extractCategories(netexXml: File): MutableMap<String, List<String>> {
+    private fun extractStopPlaceTypes(netexXml: File): MutableMap<String, List<String>> {
         val netexReader: XMLStreamReader = createReader(netexXml, xmlInputFactory)
 
         moveToStartElement(netexReader, "stopPlaces")
-        val categories = mutableMapOf<String, List<String>>()
+        val types = mutableMapOf<String, List<String>>()
         for (stopPlace in elementSequence<StopPlace>(netexReader, xmlMapper, "StopPlace", "stopPlaces")) {
             if (stopPlace.parentSiteRef?.ref != null && stopPlace.stopPlaceType != null) {
                 val key = stopPlace.parentSiteRef.ref
                 val newValue = stopPlace.stopPlaceType
-                categories.compute(key) { _, existingValue ->
+                types.compute(key) { _, existingValue ->
                     existingValue?.plus(newValue) ?: listOf(newValue)
                 }
             }
         }
         netexReader.close()
-        return categories
+        return types
     }
 
     internal fun extractFareZones(netexXml: File): Map<String, FareZone> {
@@ -135,7 +135,7 @@ class NetexParser {
         val stopPlaces: Sequence<StopPlace>,
         val groupOfStopPlaces: Sequence<GroupOfStopPlaces>,
         val topoPlaces: Map<String, TopographicPlace>,
-        val categories: Map<String, List<String>>,
+        val stopPlaceTypes: Map<String, List<String>>,
         val fareZones: Map<String, FareZone>,
     )
 }

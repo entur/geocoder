@@ -28,11 +28,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
     private val groupOfStopPlacesPopularityCalculator = GroupOfStopPlacesPopularityCalculator(config.groupOfStopPlaces)
     private val importanceCalculator = ImportanceCalculator(config.importance)
 
-    override fun convert(
-        input: File,
-        output: File,
-        isAppending: Boolean,
-    ) {
+    override fun convert(input: File, output: File, isAppending: Boolean) {
         val parser = NetexParser()
         val result: NetexParser.ParseResult = parser.parseXml(input)
         val entries: Sequence<NominatimPlace> = convertNetexParseResult(result)
@@ -44,7 +40,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
     fun convertStopPlaceToNominatim(
         stopPlace: StopPlace,
         topoPlaces: Map<String, TopographicPlace>,
-        categories: Map<String, List<String>>,
+        stopPlaceTypes: Map<String, List<String>>,
         fareZones: Map<String, FareZone>,
         popularity: Long,
         childStopNames: List<String> = emptyList(),
@@ -61,8 +57,8 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val countyGid = topoPlaces[stopPlace.topographicPlaceRef?.ref]?.parentTopographicPlaceRef?.ref
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
         val country = determineCountry(topoPlaces, stopPlace, coord)
-        val childStopTypes = categories.getOrDefault(stopPlace.id, emptyList())
-        val stopPlaceTypes = createStopPlaceTypes(childStopTypes, stopPlace)
+        val childStopTypes = stopPlaceTypes.getOrDefault(stopPlace.id, emptyList())
+        val inferredStopPlaceTypes = inferStopPlaceTypes(childStopTypes, stopPlace)
 
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
@@ -80,7 +76,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         val tags: List<String> =
             listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE)
-                .plus(stopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
+                .plus(inferredStopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
                 .plus(if (isParentStopPlace) LEGACY_SOURCE_OPENSTREETMAP else LEGACY_SOURCE_WHOSONFIRST)
 
         val categories: List<String> =
@@ -151,8 +147,6 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         return entries
     }
 
-    val includeTransportModeAsStopPlaceType = listOf("funicular")
-
     private fun otherStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
         val alternativeNames =
             stopPlace.alternativeNames
@@ -172,10 +166,16 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         return childStopNamesMap
     }
 
-    private fun createStopPlaceTypes(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
+    val includeTransportModeAsStopPlaceType = listOf("funicular")
+
+    private fun inferStopPlaceTypes(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
         val transportMode = includeTransportModeAsStopPlaceType.firstOrNull { it == stopPlace.transportMode }
 
-        return childStopTypes.plus(transportMode).plus(stopPlace.stopPlaceType).filterNotNull()
+        return childStopTypes
+            .plus(transportMode)
+            .plus(stopPlace.stopPlaceType)
+            .filterNot { !transportMode.isNullOrBlank() && it == "other" }
+            .filterNotNull()
     }
 
     private fun descriptionWithTranslation(desc: StopPlace.LocalizedText?): String? {
@@ -329,7 +329,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         val stopPlacePopularities =
             stopPlacesList.associate { stopPlace ->
-                val childStopTypes = result.categories.getOrDefault(stopPlace.id, emptyList())
+                val childStopTypes = result.stopPlaceTypes.getOrDefault(stopPlace.id, emptyList())
                 val popularity = stopPlacePopularityCalculator.calculatePopularity(stopPlace, childStopTypes)
                 stopPlace.id to popularity
             }
@@ -344,7 +344,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 convertStopPlaceToNominatim(
                     stopPlace,
                     result.topoPlaces,
-                    result.categories,
+                    result.stopPlaceTypes,
                     result.fareZones,
                     popularity,
                     childStopNames,

@@ -37,7 +37,7 @@ class StopPlaceConverterTest {
                 .first()
                 .categories
         assertTrue(categories.contains("legacy.category.funicular"), "Should include funicular from transportMode")
-        assertTrue(categories.contains("legacy.category.other"), "Should include stopPlaceType")
+        assertFalse(categories.contains("legacy.category.other"), "Should not include other if funicular is set")
     }
 
     @Test
@@ -99,6 +99,48 @@ class StopPlaceConverterTest {
     }
 
     @Test
+    fun `parent stop place should include child stop types in categories`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val parentStopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:Parent",
+                name = "Multimodal Hub",
+                transportMode = "funicular",
+                stopPlaceType = "other",
+            )
+
+        // Map of parent ID -> child stop types (simulating what NetexParser.extractCategories produces)
+        val childStopTypesMap =
+            mapOf(
+                "NSR:StopPlace:Parent" to listOf("onstreetBus", "railStation", "metroStation"),
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                parentStopPlace,
+                emptyMap(),
+                childStopTypesMap,
+                emptyMap(),
+                0L,
+                emptyList(),
+            )
+
+        val categories =
+            result
+                .first()
+                .content
+                .first()
+                .categories
+
+        assertTrue(categories.contains("legacy.category.funicular"), "Should include funicular from transportMode")
+        assertFalse(categories.contains("legacy.category.other"), "Should not include other if funicular is set")
+        assertTrue(categories.contains("legacy.category.onstreetBus"), "Should include child stop type onstreetBus")
+        assertTrue(categories.contains("legacy.category.railStation"), "Should include child stop type railStation")
+        assertTrue(categories.contains("legacy.category.metroStation"), "Should include child stop type metroStation")
+        assertTrue(categories.contains("multimodal.parent"), "Should be marked as multimodal parent")
+    }
+
+    @Test
     fun `parent stop place should include child stop names in altNames`() {
         val converter = StopPlaceConverter(ConverterConfig())
         val stopPlace =
@@ -129,7 +171,7 @@ class StopPlaceConverterTest {
                 .name
                 ?.alt_name
         assertTrue(nameAltName?.contains("Child Stop A") == true, "Should include child stop name A in alt_name")
-        assertTrue(nameAltName?.contains("Child Stop B") == true, "Should include child stop name B in alt_name")
+        assertTrue(nameAltName.contains("Child Stop B") == true, "Should include child stop name B in alt_name")
     }
 
     @Test
@@ -160,8 +202,8 @@ class StopPlaceConverterTest {
                 .content
                 .first()
                 .extra
-        assertTrue(extra?.alt_name?.contains("Existing Alt Name") == true, "Should include existing alt name")
-        assertTrue(extra?.alt_name?.contains("Child Stop A") == true, "Should include child stop name")
+        assertTrue(extra.alt_name?.contains("Existing Alt Name") == true, "Should include existing alt name")
+        assertTrue(extra.alt_name?.contains("Child Stop A") == true, "Should include child stop name")
     }
 
     @Test
@@ -191,7 +233,7 @@ class StopPlaceConverterTest {
                 .content
                 .first()
                 .extra
-        assertEquals(null, extra?.alt_name, "alt_name should be null when no alt names exist")
+        assertEquals(null, extra.alt_name, "alt_name should be null when no alt names exist")
     }
 
     @Test
@@ -220,7 +262,7 @@ class StopPlaceConverterTest {
                 .content
                 .first()
                 .extra
-        assertEquals("Alt 1;Alt 2;Child 1", extra?.alt_name, "alt_name should be semicolon-separated")
+        assertEquals("Alt 1;Alt 2;Child 1", extra.alt_name, "alt_name should be semicolon-separated")
     }
 
     private fun createStopPlace(
