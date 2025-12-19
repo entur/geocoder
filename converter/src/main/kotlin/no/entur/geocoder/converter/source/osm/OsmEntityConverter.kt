@@ -8,7 +8,8 @@ import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.Text.createAltNameList
+import no.entur.geocoder.converter.Text.joinToStringNoBlank
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -131,8 +132,11 @@ class OsmEntityConverter(
             listOf(LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
                 .plus(tags.map { LEGACY_CATEGORY_PREFIX + it.value })
 
-        val altName =
-            altName(tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"])
+        val altNames =
+            createAltNameList(
+                tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"],
+                skip = name,
+            )
         val enName = tags["en:name"]
 
         val id = "OSM:TopographicPlace:" + entity.id
@@ -155,7 +159,7 @@ class OsmEntityConverter(
                 locality = locality,
                 locality_gid = localityGid,
                 tags = tagList.joinToString(","),
-                alt_name = altName,
+                alt_name = altNames,
             )
 
         val categories = buildCategories(tagList, country, countyGid, localityGid)
@@ -170,7 +174,7 @@ class OsmEntityConverter(
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,
-                name = Name(name = name, name_en = enName, alt_name = altName(altName, id)),
+                name = Name(name = name, name_en = enName, alt_name = joinToStringNoBlank(altNames, id)),
                 housenumber = null,
                 address = address,
                 postcode = null,

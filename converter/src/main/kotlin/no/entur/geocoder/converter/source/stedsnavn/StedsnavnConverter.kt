@@ -12,7 +12,8 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.Text.createAltNameList
+import no.entur.geocoder.converter.Text.joinToStringNoBlank
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -270,6 +271,9 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 .plus(Category.localityIdsCategory(localityGid))
 
         val id = entry.lokalId
+        val name = entry.stedsnavn
+        val altNames = entry.annenSkrivemåte.createAltNameList(skip = name)
+
         val extra =
             Extra(
                 id = id,
@@ -280,6 +284,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 locality = entry.kommunenavn,
                 locality_gid = localityGid,
                 tags = tags.joinToString(","),
+                alt_name = altNames,
             )
 
         val nominatimId = NominatimId.stedsnavn.create(entry.lokalId)
@@ -299,7 +304,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 name =
                     Name(
                         name = entry.stedsnavn,
-                        alt_name = entry.annenSkrivemåte.plus(id).altName(),
+                        alt_name = joinToStringNoBlank(altNames, id),
                     ),
                 housenumber = null,
                 address =

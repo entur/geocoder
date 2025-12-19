@@ -14,7 +14,8 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.Text.createAltNameList
+import no.entur.geocoder.converter.Text.joinToStringNoBlank
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping
@@ -124,6 +125,8 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         val countyGid = fylkesnummer?.let { "KVE:TopographicPlace:$it" }
         val localityGid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" }
 
+        val altNames = createAltNameList(adresse.adressetilleggsnavn, skip = displayName)
+
         val extra =
             Extra(
                 id = id,
@@ -136,7 +139,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
                 tags = tags.joinToString(","),
-                alt_name = adresse.adressetilleggsnavn,
+                alt_name = altNames,
             )
         val categories =
             tags
@@ -164,7 +167,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                     displayName?.let {
                         Name(
                             name = it,
-                            alt_name = altName(adresse.adressetilleggsnavn, id),
+                            alt_name = joinToStringNoBlank(altNames, id),
                         )
                     },
                 housenumber = housenumber,

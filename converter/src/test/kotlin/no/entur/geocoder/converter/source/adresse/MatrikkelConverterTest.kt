@@ -24,8 +24,7 @@ class MatrikkelConverterTest {
     @BeforeEach
     fun setup() {
         converter = MatrikkelConverter(stedsnavnGmlFile = null, config = ConverterConfig())
-        inputFile =
-            File(javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv").file)
+        inputFile = getTestFile("Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv")
     }
 
     @Test
@@ -78,7 +77,7 @@ class MatrikkelConverterTest {
 
     @Test
     fun `should populate county when stedsnavn GML file is provided`() {
-        val stedsnavnFile = File(javaClass.classLoader.getResource("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml").file)
+        val stedsnavnFile = getTestFile("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml")
         val fullConverter = MatrikkelConverter(stedsnavnGmlFile = stedsnavnFile, config = ConverterConfig())
         val outputFile = tempDir.resolve("output_with_county.json").toFile()
 
@@ -237,5 +236,10 @@ class MatrikkelConverterTest {
             lines.any { it.contains("county_gid.KVE.TopographicPlace.") },
             "Should contain county_gid with KVE TopographicPlace format",
         )
+    }
+
+    private fun getTestFile(file: String): File {
+        val resource = javaClass.classLoader.getResource(file) ?: error("Test file not found")
+        return File(resource.file)
     }
 }

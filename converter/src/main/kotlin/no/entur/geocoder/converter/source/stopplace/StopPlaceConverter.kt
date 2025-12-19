@@ -14,9 +14,10 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
-import no.entur.geocoder.converter.Text.altName
+import no.entur.geocoder.converter.Text.createAltNameList
+import no.entur.geocoder.converter.Text.joinToStringNoBlank
 import no.entur.geocoder.converter.source.ImportanceCalculator
+import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
@@ -93,6 +94,8 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         val otherStopNames = otherStopNames(stopPlace, childStopNames)
         val id = stopPlace.id
+        val name = stopPlace.name.text
+        val altNames = otherStopNames.createAltNameList(skip = name)
 
         val extra =
             Extra(
@@ -109,7 +112,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         ?.mapNotNull { it.ref }
                         ?.joinToString(",")
                 ),
-                alt_name = otherStopNames.altName(),
+                alt_name = altNames,
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = tags.joinToString(","),
             )
@@ -128,7 +131,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     stopPlace.name.text?.let {
                         Name(
                             name = it,
-                            alt_name = otherStopNames.plus(id).altName(),
+                            alt_name = joinToStringNoBlank(altNames, id),
                         )
                     },
                 address =
