@@ -13,10 +13,11 @@ class OsmConverterTest {
         val nodesCoords = CoordinateStore(100)
         val wayCentroids = CoordinateStore(100)
         val adminBoundaryIndex = AdministrativeBoundaryIndex()
+        val streetIndex = StreetIndex()
         val config = ConverterConfig()
         val popularityCalculator = OSMPopularityCalculator(config.osm)
         val importanceCalculator = ImportanceCalculator(config.importance)
-        return OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, popularityCalculator, importanceCalculator)
+        return OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, streetIndex, popularityCalculator, importanceCalculator)
     }
 
     @Test
@@ -422,9 +423,11 @@ class OsmConverterTest {
         adminBoundaryIndex.addBoundary(municipalityBoundary)
 
         val config = ConverterConfig()
+        val streetIndex = StreetIndex()
         val popularityCalculator = OSMPopularityCalculator(config.osm)
         val importanceCalculator = ImportanceCalculator(config.importance)
-        val converter = OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, popularityCalculator, importanceCalculator)
+        val converter =
+            OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, streetIndex, popularityCalculator, importanceCalculator)
 
         val mockNode =
             createMockNode(

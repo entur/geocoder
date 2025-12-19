@@ -10,12 +10,14 @@ import java.io.File
 import java.nio.file.Paths
 
 /**
- * Converts OSM PBF files to Nominatim JSON in 7 passes:
+ * Converts OSM PBF files to Nominatim JSON in multiple passes:
  * 1. Collect admin boundaries
- * 2. Collect node IDs (including from POI relation member ways)
- * 3. Fetch node coordinates
- * 4. Build spatial index
- * 5. Process POI entities:
+ * 2. Collect street ways and their node IDs
+ * 3. Collect node IDs (including from POI relation member ways and streets)
+ * 4. Fetch node coordinates
+ * 5. Build administrative boundary index
+ * 6. Build street index
+ * 7. Process POI entities:
  *    a. Calculate Way POI centroids and collect relation member way IDs
  *    b. Calculate centroids for relation member ways
  *    c. Convert all POI entities to Nominatim format
@@ -24,12 +26,14 @@ class OsmConverter(config: ConverterConfig) : Converter {
     private val nodesCoords = CoordinateStore(500000)
     private val wayCentroids = CoordinateStore(50000)
     private val adminBoundaryIndex = AdministrativeBoundaryIndex()
+    private val streetIndex = StreetIndex()
     private val nodeCollector = NodeCoordinateCollector(nodesCoords, wayCentroids)
     private val boundaryCollector = AdminBoundaryCollector(nodesCoords, wayCentroids)
+    private val streetCollector = StreetCollector(nodesCoords)
     private val popularityCalculator = OSMPopularityCalculator(config.osm)
     private val importanceCalculator = ImportanceCalculator(config.importance)
     private val entityConverter =
-        OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, popularityCalculator, importanceCalculator)
+        OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, streetIndex, popularityCalculator, importanceCalculator)
 
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }
@@ -38,18 +42,29 @@ class OsmConverter(config: ConverterConfig) : Converter {
         val adminRelations = boundaryCollector.collectAdminRelations(input)
         println("  Found ${adminRelations.size} admin boundary relations")
 
-        println("Pass 2: Collecting required node IDs...")
-        val allNeededNodeIds = nodeCollector.collectAllRequiredNodeIds(input, adminRelations, entityConverter)
+        println("Pass 2: Collecting street ways...")
+        val (streetWays, streetNodeIds) = streetCollector.collectStreetWays(input)
+        println("  Found ${streetWays.size} street ways")
+
+        println("Pass 3: Collecting required node IDs...")
+        val allNeededNodeIds =
+            nodeCollector
+                .collectAllRequiredNodeIds(input, adminRelations, entityConverter)
+                .plus(streetNodeIds)
         println("  Total unique node coordinates needed: ${allNeededNodeIds.size}")
 
-        println("Pass 3: Collecting node coordinates...")
+        println("Pass 4: Collecting node coordinates...")
         nodeCollector.collectNodeCoordinates(input, allNeededNodeIds)
 
-        println("Pass 4: Building administrative boundary index...")
+        println("Pass 5: Building administrative boundary index...")
         boundaryCollector.buildAdminBoundaryIndex(input, adminRelations, adminBoundaryIndex)
-        println(adminBoundaryIndex.getStatistics())
+        println("  ${adminBoundaryIndex.getStatistics()}")
 
-        println("Pass 5: Processing POI entities and writing output...")
+        println("Pass 6: Building street index...")
+        streetCollector.buildStreetIndex(streetWays, streetIndex)
+        println("  ${streetIndex.getStatistics()}")
+
+        println("Pass 7: Processing POI entities and writing output...")
         val nominatimEntries = processEntities(input)
         JsonWriter().export(nominatimEntries, Paths.get(output.absolutePath), isAppending)
     }

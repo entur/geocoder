@@ -17,11 +17,12 @@ import no.entur.geocoder.converter.target.NominatimPlace.*
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.math.BigDecimal
 
-/** Converts OSM entities to Nominatim format with admin boundary enrichment */
+/** Converts OSM entities to Nominatim format with admin boundary and street enrichment */
 class OsmEntityConverter(
     private val nodesCoords: CoordinateStore,
     private val wayCentroids: CoordinateStore,
     private val adminBoundaryIndex: AdministrativeBoundaryIndex,
+    private val streetIndex: StreetIndex,
     private val popularityCalculator: OSMPopularityCalculator,
     private val importanceCalculator: ImportanceCalculator,
 ) {
@@ -143,8 +144,10 @@ class OsmEntityConverter(
         val countyGid = county?.refCode?.let { "KVE:TopographicPlace:$it" }
         val localityGid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" }
         val locality = municipality?.name?.titleize()
+        val street = streetIndex.findNearestStreet(centroid)
         val address =
             Address(
+                street = street,
                 city = locality,
                 county = county?.name?.titleize() ?: fallbackCounty,
             )
