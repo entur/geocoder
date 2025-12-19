@@ -118,6 +118,18 @@ object PeliasResultTransformer {
         val source = transformSource(extra)
         val layer = transformLayer(extra)
 
+        val name = transformName(props)
+        var popularName =
+            extra
+                ?.alt_name
+                ?.split(";")
+                ?.firstOrNull()
+                ?.ifBlank { null }
+
+        if (popularName == name) {
+            popularName = null
+        }
+
         return PeliasFeature(
             type = feature.type,
             geometry =
@@ -132,13 +144,8 @@ object PeliasResultTransformer {
                     layer = layer,
                     source = source,
                     source_id = extra?.id,
-                    name = transformName(props),
-                    popular_name =
-                        extra
-                            ?.alt_name
-                            ?.split(";")
-                            ?.firstOrNull()
-                            ?.ifBlank { null },
+                    name = name,
+                    popular_name = popularName,
                     street = transformStreet(props),
                     distance = distance?.toBigDecimalWithScale(3),
                     postalcode = props.postcode,
