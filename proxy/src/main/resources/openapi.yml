@@ -37,6 +37,7 @@ paths:
         - $ref: '#/components/parameters/BoundaryLocalityIds'
         - $ref: '#/components/parameters/TariffZoneIds'
         - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/FareZoneAuthorities'
         - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Categories'
@@ -72,6 +73,7 @@ paths:
         - $ref: '#/components/parameters/BoundaryLocalityIds'
         - $ref: '#/components/parameters/TariffZoneIds'
         - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/FareZoneAuthorities'
         - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Categories'
@@ -93,7 +95,7 @@ components:
       description: Client identifier
       schema:
         type: string
-      example: "entur-reiseplanlegger"
+      example: "my-example-application"
 
     Text:
       name: text
@@ -128,7 +130,7 @@ components:
     BoundaryCountry:
       name: boundary.country
       in: query
-      description: Country code filter
+      description: Country code filter (comma-separated)
       schema:
         type: string
       example: "NO"
@@ -136,7 +138,7 @@ components:
     BoundaryCountyIds:
       name: boundary.county.ids
       in: query
-      description: County IDs filter
+      description: County IDs filter (comma-separated)
       schema:
         type: string
       example: "KVE:County:03"
@@ -144,7 +146,7 @@ components:
     BoundaryLocalityIds:
       name: boundary.locality.ids
       in: query
-      description: Locality IDs filter
+      description: Locality IDs filter (comma-separated)
       schema:
         type: string
       example: "KVE:Locality:0301"
@@ -152,7 +154,7 @@ components:
     TariffZoneIds:
       name: tariff_zone_ids
       in: query
-      description: Tariff zone IDs filter
+      description: Tariff zone IDs filter (comma-separated)
       schema:
         type: string
       example: "RUT:TariffZone:1"
@@ -160,34 +162,45 @@ components:
     TariffZoneAuthorities:
       name: tariff_zone_authorities
       in: query
-      description: Tariff zone authorities filter
+      description: Tariff zone authorities filter (comma-separated)
       schema:
         type: string
       example: "RUT"
 
+    FareZoneAuthorities:
+      name: fare_zone_authorities
+      in: query
+      description: Fare zone authorities filter (comma-separated)
+      schema:
+        type: string
+      example: "RUT:Authority:RUT"
+
     Sources:
       name: sources
       in: query
-      description: Data sources filter
+      description: Data sources filter (comma-separated)
       schema:
         type: string
-      example: "entur"
+        enum: [openstreetmap,openaddresses,whosonfirst]
+      example: "openstreetmap"
+
 
     Layers:
       name: layers
       in: query
-      description: Layer types filter
+      description: Layer types filter (comma-separated)
       schema:
         type: string
+        enum: [venue,address]
       example: "venue"
 
     Categories:
       name: categories
       in: query
-      description: POI categories filter
+      description: Categories filter (comma-separated)
       schema:
         type: string
-      example: "restaurant"
+      example: "onstreetBus"
 
     FocusPointLat:
       name: focus.point.lat
@@ -238,7 +251,7 @@ components:
         type: string
         enum: [parent, child, all]
         default: parent
-      example: "parent"
+      example: "all"
 
     PointLat:
       name: point.lat
@@ -272,7 +285,7 @@ components:
         type: number
         format: double
         minimum: 0
-      example: 1.0
+      example: 2.5
 
   schemas:
     Result:
@@ -355,14 +368,15 @@ components:
               example: "NSR:StopPlace:59872"
             gid:
               type: string
-              example: "entur:stopplace:NSR:StopPlace:59872"
+              example: "whosonfirst:address:NSR:GroupOfStopPlaces:1"
             layer:
               type: string
-              enum: [address, street, venue, locality, borough, county]
+              enum: [venue, address]
               example: "venue"
             source:
               type: string
-              example: "entur"
+              enum: [openstreetmap, openaddresses, whosonfirst]
+              example: "openstreetmap"
             source_id:
               type: string
               example: "NSR:StopPlace:59872"
@@ -383,29 +397,29 @@ components:
               example: "0154"
             accuracy:
               type: string
-              enum: [point, interpolated, centroid]
+              enum: [point, polygon]
               example: "point"
             country_a:
               type: string
-              example: "NO"
+              example: "NOR"
             county:
               type: string
               example: "Oslo"
             county_gid:
               type: string
-              example: "KVE:County:03"
+              example: "whosonfirst:county:KVE:TopographicPlace:03"
             locality:
               type: string
               example: "Oslo"
             locality_gid:
               type: string
-              example: "KVE:Locality:0301"
+              example: "whosonfirst:locality:KVE:TopographicPlace:0301"
             borough:
               type: string
               example: "Sentrum"
             borough_gid:
               type: string
-              example: "KVE:Borough:030101"
+              example: "whosonfirst:borough:34200502"
             label:
               type: string
               example: "Oslo S, Oslo"
@@ -413,7 +427,7 @@ components:
               type: array
               items:
                 type: string
-              example: ["public_transport"]
+              example: ["street"]
             tariff_zones:
               type: array
               items:
