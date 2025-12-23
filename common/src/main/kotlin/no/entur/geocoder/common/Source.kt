@@ -10,4 +10,5 @@ object Source {
     const val LEGACY_WHOSONFIRST = "whosonfirst"
     const val LEGACY_OSM = "openstreetmap"
     const val LEGACY_OPENADDRESSES = "openaddresses"
+    const val LEGACY_GEONAMES = "geonames"
 }

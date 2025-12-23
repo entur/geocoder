@@ -5,6 +5,7 @@ import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
+import no.entur.geocoder.common.Category.LEGACY_SOURCE_GEONAMES
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
@@ -78,7 +79,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val tags: List<String> =
             listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE)
                 .plus(inferredStopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
-                .plus(if (isParentStopPlace) LEGACY_SOURCE_OPENSTREETMAP else LEGACY_SOURCE_WHOSONFIRST)
+                .plus(resolveSource(stopPlace, isParentStopPlace))
 
         val categories: List<String> =
             tags
@@ -149,6 +150,18 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         return entries
     }
+
+    private fun resolveSource(stopPlace: StopPlace, isParentStopPlace: Boolean): String =
+        when {
+            // Child stops
+            stopPlace.parentSiteRef?.ref != null -> LEGACY_SOURCE_GEONAMES
+
+            // Parent stops
+            isParentStopPlace -> LEGACY_SOURCE_OPENSTREETMAP
+
+            // Neither parent nor child
+            else -> LEGACY_SOURCE_WHOSONFIRST
+        }
 
     private fun otherStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
         val alternativeNames =
