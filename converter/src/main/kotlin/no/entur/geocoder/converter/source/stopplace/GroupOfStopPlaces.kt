@@ -13,18 +13,11 @@ class GroupOfStopPlaces(
     @JacksonXmlProperty(isAttribute = true) val modification: String?,
     @JacksonXmlProperty(isAttribute = true) val created: String?,
     @JacksonXmlProperty(isAttribute = true) val changed: String?,
-    val keyList: KeyList? = null,
     val name: LocalizedText,
     val description: LocalizedText? = null,
-    val purposeOfGroupingRef: PurposeOfGroupingRef? = null,
     val members: Members? = null,
     val centroid: Centroid,
 ) {
-    class KeyList {
-        @JacksonXmlElementWrapper(useWrapping = false)
-        var keyValue: List<KeyValue>? = null
-    }
-
     data class KeyValue(
         val key: String?,
         val value: String?,
