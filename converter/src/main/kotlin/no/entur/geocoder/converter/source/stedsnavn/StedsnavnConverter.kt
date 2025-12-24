@@ -4,9 +4,9 @@ import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Category.SOURCE_STEDSNAVN
+import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
@@ -257,7 +257,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
 
         val tags =
             listOf(
-                OSM_POI, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS,
+                OSM_POI, whosonfirst.category(), LEGACY_LAYER_ADDRESS,
                 LEGACY_CATEGORY_PREFIX + entry.navneobjekttype,
             )
 

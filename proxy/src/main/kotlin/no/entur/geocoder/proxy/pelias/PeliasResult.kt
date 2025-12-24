@@ -1,7 +1,8 @@
 package no.entur.geocoder.proxy.pelias
 
 import no.entur.geocoder.common.Layer
-import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.LegacySource
+import no.entur.geocoder.common.LegacySource.openstreetmap
 import java.math.BigDecimal
 
 data class PeliasResult(
@@ -65,7 +66,7 @@ data class PeliasResult(
             val tokens: List<String>? = null,
             val size: Int = 10,
             val layers: List<String> = listOf(Layer.LEGACY_ADDRESS, Layer.LEGACY_VENUE),
-            val sources: List<String> = listOf(Source.LEGACY_OSM, Source.LEGACY_WHOSONFIRST),
+            val sources: List<String> = listOf(openstreetmap.name, LegacySource.whosonfirst.name),
             val private: Boolean = false,
             val lang: LangMetadata? = null,
             val querySize: Int = 20,

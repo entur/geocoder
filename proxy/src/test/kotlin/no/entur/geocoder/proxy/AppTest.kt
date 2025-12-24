@@ -12,8 +12,8 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.common.LegacySource.openstreetmap
 import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
@@ -45,7 +45,7 @@ class AppTest {
                   "locality": "Oslo",
                   "locality_gid": "locality:1",
                   "tariff_zones": "zone1,zone2",
-                  "tags": "$LEGACY_SOURCE_OPENSTREETMAP,$LEGACY_LAYER_ADDRESS,${LEGACY_CATEGORY_PREFIX}poi,${LEGACY_CATEGORY_PREFIX}transport,${LEGACY_CATEGORY_PREFIX}city"
+                  "tags": "${openstreetmap.category()},$LEGACY_LAYER_ADDRESS,${LEGACY_CATEGORY_PREFIX}poi,${LEGACY_CATEGORY_PREFIX}transport,${LEGACY_CATEGORY_PREFIX}city"
                 }
               }
             }

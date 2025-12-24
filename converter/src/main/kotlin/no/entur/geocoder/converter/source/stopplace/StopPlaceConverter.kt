@@ -5,12 +5,10 @@ import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_GEONAMES
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENSTREETMAP
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
+import no.entur.geocoder.common.LegacySource.*
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
@@ -154,13 +152,13 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
     private fun resolveSource(stopPlace: StopPlace, isParentStopPlace: Boolean): String =
         when {
             // Child stops
-            stopPlace.parentSiteRef?.ref != null -> LEGACY_SOURCE_GEONAMES
+            stopPlace.parentSiteRef?.ref != null -> geonames.category()
 
             // Parent stops
-            isParentStopPlace -> LEGACY_SOURCE_OPENSTREETMAP
+            isParentStopPlace -> openstreetmap.category()
 
             // Neither parent nor child
-            else -> LEGACY_SOURCE_WHOSONFIRST
+            else -> whosonfirst.category()
         }
 
     private fun otherStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
@@ -291,7 +289,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tags =
-            listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, LEGACY_SOURCE_WHOSONFIRST)
+            listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, whosonfirst.category())
                 .plus(LEGACY_CATEGORY_PREFIX + "GroupOfStopPlaces")
 
         val country = Geo.getCountry(coord) ?: Country.no

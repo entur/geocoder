@@ -4,11 +4,11 @@ import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_OPENADDRESSES
-import no.entur.geocoder.common.Category.LEGACY_SOURCE_WHOSONFIRST
 import no.entur.geocoder.common.Category.OSM_ADDRESS
 import no.entur.geocoder.common.Category.OSM_STREET
 import no.entur.geocoder.common.Category.SOURCE_ADRESSE
+import no.entur.geocoder.common.LegacySource.openaddresses
+import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
@@ -17,9 +17,9 @@ import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.Text.createAltNameList
 import no.entur.geocoder.converter.Text.joinToStringNoBlank
 import no.entur.geocoder.converter.source.ImportanceCalculator
-import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping.KommuneInfo
+import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.BufferedReader
@@ -83,7 +83,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
             utm = UtmCoordinate(adresse.ost, adresse.nord),
             placeId = NominatimId.address.create(adresse.lokalid),
             id = adresse.lokalid, // This is the only numeric id type. All others are colon separated.
-            tags = listOf(OSM_ADDRESS, LEGACY_SOURCE_OPENADDRESSES, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
+            tags = listOf(OSM_ADDRESS, openaddresses.category(), LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
             popularity = popularityCalculator.calculateAddressPopularity(),
             displayName = null, // Addresses proper are considered to be "nameless" in Photon
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
@@ -100,7 +100,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
             utm = coord,
             placeId = NominatimId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            tags = listOf(OSM_STREET, LEGACY_SOURCE_WHOSONFIRST, LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
+            tags = listOf(OSM_STREET, whosonfirst.category(), LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
             popularity = popularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,

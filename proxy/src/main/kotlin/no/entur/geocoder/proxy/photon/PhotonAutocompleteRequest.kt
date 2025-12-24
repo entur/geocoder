@@ -4,7 +4,7 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.Lang.handleLang
@@ -52,7 +52,7 @@ data class PhotonAutocompleteRequest(
                 zoom = zoom,
                 locationBiasScale = locationBiasScale,
                 debug = req.debug,
-                includeHousenumbers = req.sources.contains(Source.LEGACY_OPENADDRESSES) && !req.text.contains("\\s\\d".toRegex()),
+                includeHousenumbers = req.sources.contains(openaddresses.name) && !req.text.contains("\\s\\d".toRegex()),
             )
         }
 
