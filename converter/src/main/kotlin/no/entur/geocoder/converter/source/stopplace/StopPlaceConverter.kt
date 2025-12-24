@@ -3,11 +3,11 @@ package no.entur.geocoder.converter.source.stopplace
 import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
-import no.entur.geocoder.common.Category.LEGACY_LAYER_VENUE
 import no.entur.geocoder.common.Category.OSM_GOSP
 import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
+import no.entur.geocoder.common.LegacyLayer.address
+import no.entur.geocoder.common.LegacyLayer.venue
 import no.entur.geocoder.common.LegacySource.*
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
@@ -75,7 +75,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
             }
 
         val tags: List<String> =
-            listOf(OSM_STOP_PLACE, LEGACY_LAYER_VENUE)
+            listOf(OSM_STOP_PLACE, venue.category())
                 .plus(inferredStopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
                 .plus(resolveSource(stopPlace, isParentStopPlace))
 
@@ -289,7 +289,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tags =
-            listOf(OSM_GOSP, LEGACY_LAYER_ADDRESS, whosonfirst.category())
+            listOf(OSM_GOSP, address.category(), whosonfirst.category())
                 .plus(LEGACY_CATEGORY_PREFIX + "GroupOfStopPlaces")
 
         val country = Geo.getCountry(coord) ?: Country.no

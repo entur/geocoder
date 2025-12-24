@@ -3,8 +3,8 @@ package no.entur.geocoder.converter.source.osm
 import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.OSM_POI
+import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
@@ -130,7 +130,7 @@ class OsmEntityConverter(
 
         val country = determineCountry(county, municipality, tags, centroid)
         val tagList: List<String> =
-            listOf(whosonfirst.category(), LEGACY_LAYER_ADDRESS, OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
+            listOf(whosonfirst.category(), address.category(), OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
                 .plus(tags.map { LEGACY_CATEGORY_PREFIX + it.value })
 
         val altNames =

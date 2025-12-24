@@ -3,10 +3,10 @@ package no.entur.geocoder.converter.source.adresse
 import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.common.Category.LEGACY_LAYER_ADDRESS
 import no.entur.geocoder.common.Category.OSM_ADDRESS
 import no.entur.geocoder.common.Category.OSM_STREET
 import no.entur.geocoder.common.Category.SOURCE_ADRESSE
+import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.openaddresses
 import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
@@ -83,7 +83,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
             utm = UtmCoordinate(adresse.ost, adresse.nord),
             placeId = NominatimId.address.create(adresse.lokalid),
             id = adresse.lokalid, // This is the only numeric id type. All others are colon separated.
-            tags = listOf(OSM_ADDRESS, openaddresses.category(), LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "vegadresse"),
+            tags = listOf(OSM_ADDRESS, openaddresses.category(), address.category(), LEGACY_CATEGORY_PREFIX + "vegadresse"),
             popularity = popularityCalculator.calculateAddressPopularity(),
             displayName = null, // Addresses proper are considered to be "nameless" in Photon
             housenumber = adresse.nummer + (adresse.bokstav ?: ""),
@@ -100,7 +100,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
             utm = coord,
             placeId = NominatimId.street.create(adresse.lokalid),
             id = "KVE:TopographicPlace:${adresse.kommunenummer}-$streetName",
-            tags = listOf(OSM_STREET, whosonfirst.category(), LEGACY_LAYER_ADDRESS, LEGACY_CATEGORY_PREFIX + "street"),
+            tags = listOf(OSM_STREET, whosonfirst.category(), address.category(), LEGACY_CATEGORY_PREFIX + "street"),
             popularity = popularityCalculator.calculateStreetPopularity(),
             displayName = streetName,
             housenumber = null,
