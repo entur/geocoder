@@ -118,7 +118,6 @@ class PeliasResultTest {
 
         assertEquals("0.2", metadata.version)
         assertEquals("http://pelias.mapzen.com/v1/attribution", metadata.attribution)
-        assertEquals(null, metadata.query)
         assertNotNull(metadata.engine)
         assertNotNull(metadata.timestamp)
     }
@@ -130,32 +129,6 @@ class PeliasResultTest {
         assertEquals("Photon", engine.name)
         assertEquals("Komoot", engine.author)
         assertEquals("0.7.0", engine.version)
-    }
-
-    @Test
-    fun `QueryMetadata creates with all fields`() {
-        val query =
-            PeliasResult.GeocodingMetadata.QueryMetadata(
-                text = "Oslo",
-                parser = "addressit",
-                tokens = listOf("oslo"),
-                size = 20,
-                layers = listOf("address", "venue"),
-                sources = listOf("osm", "kartverket"),
-                private = false,
-                lang = PeliasResult.GeocodingMetadata.LangMetadata(),
-                querySize = 50,
-            )
-
-        assertEquals("Oslo", query.text)
-        assertEquals("addressit", query.parser)
-        assertEquals(listOf("oslo"), query.tokens)
-        assertEquals(20, query.size)
-        assertEquals(listOf("address", "venue"), query.layers)
-        assertEquals(listOf("osm", "kartverket"), query.sources)
-        assertEquals(false, query.private)
-        assertNotNull(query.lang)
-        assertEquals(50, query.querySize)
     }
 
     @Test

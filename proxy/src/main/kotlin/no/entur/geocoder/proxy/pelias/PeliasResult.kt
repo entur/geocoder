@@ -1,9 +1,5 @@
 package no.entur.geocoder.proxy.pelias
 
-import no.entur.geocoder.common.LegacyLayer.address
-import no.entur.geocoder.common.LegacyLayer.venue
-import no.entur.geocoder.common.LegacySource.openstreetmap
-import no.entur.geocoder.common.LegacySource.whosonfirst
 import java.math.BigDecimal
 
 data class PeliasResult(
@@ -55,24 +51,11 @@ data class PeliasResult(
     data class GeocodingMetadata(
         val version: String = "0.2",
         val attribution: String = "http://pelias.mapzen.com/v1/attribution",
-        val query: QueryMetadata? = null,
         val errors: List<String>? = null,
         val engine: EngineMetadata = EngineMetadata(),
         val timestamp: Long = System.currentTimeMillis(),
         val debug: Map<String, Any>? = null,
     ) {
-        data class QueryMetadata(
-            val text: String? = null,
-            val parser: String = "addressit",
-            val tokens: List<String>? = null,
-            val size: Int = 10,
-            val layers: List<String> = listOf(address.name, venue.name),
-            val sources: List<String> = listOf(openstreetmap.name, whosonfirst.name),
-            val private: Boolean = false,
-            val lang: LangMetadata? = null,
-            val querySize: Int = 20,
-        )
-
         data class LangMetadata(
             val name: String = "Norwegian Bokmål",
             val iso6391: String = "nb",
