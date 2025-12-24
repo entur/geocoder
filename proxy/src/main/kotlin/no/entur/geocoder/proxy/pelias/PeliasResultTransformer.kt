@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
+import no.entur.geocoder.common.Category.GOSP
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Coordinate.Companion.coordOrNull
@@ -75,7 +76,7 @@ object PeliasResultTransformer {
     private fun filterCityIfGospIsPresent(features: List<PeliasFeature>, expectedSize: Int): List<PeliasFeature> {
         val gospList =
             features
-                .filter { it.properties.category?.contains("GroupOfStopPlaces") == true }
+                .filter { it.properties.category?.contains(GOSP) == true }
                 .map { it.properties.name }
         val filtered =
             features.filter {

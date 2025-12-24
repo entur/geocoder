@@ -11,6 +11,8 @@ object Category {
     const val SOURCE_STEDSNAVN = "source.kartverket.stedsnavn"
     const val SOURCE_NSR = "source.nsr"
 
+    const val GOSP = "GroupOfStopPlaces"
+
     const val COUNTRY_PREFIX = "country."
 
     const val TARIFF_ZONE_ID_PREFIX = "tariff_zone_id."

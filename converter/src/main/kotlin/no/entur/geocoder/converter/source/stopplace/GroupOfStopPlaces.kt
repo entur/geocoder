@@ -4,8 +4,9 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
+import no.entur.geocoder.common.Category.GOSP
 
-@JacksonXmlRootElement(localName = "GroupOfStopPlaces")
+@JacksonXmlRootElement(localName = GOSP)
 class GroupOfStopPlaces(
     @JacksonXmlProperty(isAttribute = true) val id: String,
     @JacksonXmlProperty(isAttribute = true) val version: String?,

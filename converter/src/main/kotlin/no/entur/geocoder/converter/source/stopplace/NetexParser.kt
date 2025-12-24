@@ -1,6 +1,7 @@
 package no.entur.geocoder.converter.source.stopplace
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import no.entur.geocoder.common.Category.GOSP
 import no.entur.geocoder.converter.FileUtil.streamToFile
 import no.entur.geocoder.converter.source.stopplace.Xml.createReader
 import no.entur.geocoder.converter.source.stopplace.Xml.elementSequence
@@ -61,7 +62,7 @@ class NetexParser {
                     for (groupOfStopPlaces in elementSequence<GroupOfStopPlaces>(
                         netexReader,
                         xmlMapper,
-                        "GroupOfStopPlaces",
+                        GOSP,
                         "groupsOfStopPlaces",
                     )) {
                         yield(groupOfStopPlaces)

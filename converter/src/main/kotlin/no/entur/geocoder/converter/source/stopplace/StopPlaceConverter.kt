@@ -297,8 +297,8 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
         val tags =
-            listOf(OSM_GOSP, address.category(), whosonfirst.category())
-                .plus(LEGACY_CATEGORY_PREFIX + "GroupOfStopPlaces")
+            listOf(Category.OSM_GOSP, address.category(), whosonfirst.category())
+                .plus(LEGACY_CATEGORY_PREFIX + GOSP)
 
         val country = Geo.getCountry(coord) ?: Country.no
         val categories =
