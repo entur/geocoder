@@ -2,9 +2,8 @@ package no.entur.geocoder.converter.source.stopplace
 
 import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
+import no.entur.geocoder.common.Category.GOSP
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.common.Category.OSM_GOSP
-import no.entur.geocoder.common.Category.OSM_STOP_PLACE
 import no.entur.geocoder.common.Category.SOURCE_NSR
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacyLayer.venue
@@ -17,6 +16,7 @@ import no.entur.geocoder.converter.Text.createAltNameList
 import no.entur.geocoder.converter.Text.joinToStringNoBlank
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
+import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter.StopPlaceRole.*
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
 import no.entur.geocoder.converter.target.NominatimPlace.*
@@ -58,7 +58,6 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val county = topoPlaces[countyGid]?.descriptor?.name?.text
         val country = determineCountry(topoPlaces, stopPlace, coord)
         val childStopTypes = stopPlaceTypes.getOrDefault(stopPlace.id, emptyList())
-        val inferredStopPlaceTypes = inferStopPlaceTypes(childStopTypes, stopPlace)
 
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
@@ -66,18 +65,15 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val tariffZoneAuthorities = tariffZoneAuthorityCategories(stopPlace)
         val fareZoneAuthorities = fareZoneAuthorityCategories(stopPlace, fareZones)
 
-        val isParentStopPlace = childStopTypes.isNotEmpty()
-        val multimodalityCategory =
-            when {
-                isParentStopPlace -> "multimodal.parent"
-                stopPlace.parentSiteRef?.ref != null -> "multimodal.child"
-                else -> null
-            }
+        val stopPlaceRole = resolveStopPlaceRole(childStopTypes, stopPlace)
+        val multimodalityCategory = resolveModalityCategory(stopPlaceRole)
+        val inferredStopPlaceTypeCategories = inferStopPlaceTypeCategories(childStopTypes, stopPlace)
+        val sourceCategory = resolveSourceCategory(stopPlaceRole)
 
         val tags: List<String> =
-            listOf(OSM_STOP_PLACE, venue.category())
-                .plus(inferredStopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
-                .plus(resolveSource(stopPlace, isParentStopPlace))
+            listOf(Category.OSM_STOP_PLACE, venue.category())
+                .plus(inferredStopPlaceTypeCategories)
+                .plus(sourceCategory)
 
         val categories: List<String> =
             tags
@@ -95,6 +91,11 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val id = stopPlace.id
         val name = stopPlace.name.text
         val altNames = otherStopNames.createAltNameList(skip = name)
+        val tariffZoneList =
+            stopPlace.tariffZones
+                ?.tariffZoneRef
+                ?.mapNotNull { it.ref }
+                ?.joinToString(",")
 
         val extra =
             Extra(
@@ -105,12 +106,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                tariff_zones = (
-                    stopPlace.tariffZones
-                        ?.tariffZoneRef
-                        ?.mapNotNull { it.ref }
-                        ?.joinToString(",")
-                ),
+                tariff_zones = tariffZoneList,
                 alt_name = altNames,
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = tags.joinToString(","),
@@ -149,16 +145,25 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         return entries
     }
 
-    private fun resolveSource(stopPlace: StopPlace, isParentStopPlace: Boolean): String =
+    private fun resolveStopPlaceRole(childStopTypes: List<String>, stopPlace: StopPlace): StopPlaceRole =
         when {
-            // Child stops
-            stopPlace.parentSiteRef?.ref != null -> geonames.category()
+            childStopTypes.isNotEmpty() -> parent
+            stopPlace.parentSiteRef?.ref != null -> child
+            else -> standalone
+        }
 
-            // Parent stops
-            isParentStopPlace -> openstreetmap.category()
+    private fun resolveModalityCategory(stopPlaceRole: StopPlaceRole): String? =
+        when (stopPlaceRole) {
+            parent -> "multimodal.parent"
+            child -> "multimodal.child"
+            standalone -> null
+        }
 
-            // Neither parent nor child
-            else -> whosonfirst.category()
+    private fun resolveSourceCategory(stopPlaceRole: StopPlaceRole): String =
+        when (stopPlaceRole) {
+            parent -> openstreetmap.category()
+            child -> geonames.category()
+            standalone -> whosonfirst.category()
         }
 
     private fun otherStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
@@ -182,14 +187,17 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
     val includeTransportModeAsStopPlaceType = listOf("funicular")
 
-    private fun inferStopPlaceTypes(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
+    private fun inferStopPlaceTypeCategories(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
         val transportMode = includeTransportModeAsStopPlaceType.firstOrNull { it == stopPlace.transportMode }
 
-        return childStopTypes
-            .plus(transportMode)
-            .plus(stopPlace.stopPlaceType)
-            .filterNot { !transportMode.isNullOrBlank() && it == "other" }
-            .filterNotNull()
+        val stopPlaceTypes =
+            childStopTypes
+                .plus(transportMode)
+                .plus(stopPlace.stopPlaceType)
+                .filterNot { !transportMode.isNullOrBlank() && it == "other" }
+                .filterNotNull()
+
+        return stopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it }
     }
 
     private fun descriptionWithTranslation(desc: StopPlace.LocalizedText?): String? {
@@ -377,4 +385,6 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
 
         return stopPlaceEntries + groupOfStopPlacesEntries
     }
+
+    enum class StopPlaceRole { child, parent, standalone }
 }
