@@ -75,7 +75,7 @@ class App {
                         val incomingSecret = context.call.request.header("x-apigee-secret")
 
                         logger.warn("Debug: " + context.call.request.headers.toMap())
-                        logger.warn("Debug2: " + expectedSecret + " -- " + incomingSecret)
+//                        logger.warn("Debug2: " + expectedSecret + " -- " + incomingSecret)
                         val isIngressRequest = context.call.request.header("X-Forwarded-For") != null
 
 //                        if (!isIngressRequest) {
