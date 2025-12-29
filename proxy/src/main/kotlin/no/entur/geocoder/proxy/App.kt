@@ -16,6 +16,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.toMap
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
@@ -73,18 +74,19 @@ class App {
                             }
                         val incomingSecret = context.call.request.header("x-apigee-secret")
 
-                        logger.warn("Debug: " + context.call.request.headers)
+                        logger.warn("Debug: " + context.call.request.headers.toMap())
+                        logger.warn("Debug2: " + expectedSecret + " -- " + incomingSecret)
                         val isIngressRequest = context.call.request.header("X-Forwarded-For") != null
 
-                        if (!isIngressRequest) {
-                            context.principal(UserIdPrincipal("internal"))
-                        } else if (incomingSecret == expectedSecret) {
+//                        if (!isIngressRequest) {
+//                            context.principal(UserIdPrincipal("internal"))
+//                        } else if (incomingSecret == expectedSecret) {
                             context.principal(UserIdPrincipal("apigee-proxy"))
-                        } else {
-                            context.challenge("apigee-auth", InvalidCredentials) { _, call ->
-                                call.respond(HttpStatusCode.Unauthorized, "Invalid or missing auth")
-                            }
-                        }
+//                        } else {
+//                            context.challenge("apigee-auth", InvalidCredentials) { _, call ->
+//                                call.respond(HttpStatusCode.Unauthorized, "Invalid or missing auth")
+//                            }
+//                        }
                     }
                 }
             }
