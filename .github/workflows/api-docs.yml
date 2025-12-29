@@ -33,7 +33,7 @@ jobs:
       spec: proxy/src/main/resources/openapi.yml
 
   api-publish:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
     needs: api-lint
     uses: entur/gha-api/.github/workflows/publish.yml@v4
     secrets: inherit
@@ -41,7 +41,7 @@ jobs:
       spec: proxy/src/main/resources/openapi.yml
 
   docs-publish:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
     needs: api-lint
     uses: entur/gha-docs/.github/workflows/publish.yml@v1
     secrets: inherit
