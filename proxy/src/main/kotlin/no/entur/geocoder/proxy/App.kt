@@ -6,11 +6,14 @@ import io.ktor.client.engine.cio.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.AuthenticationFailedCause.*
 import io.ktor.server.engine.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
@@ -60,6 +63,25 @@ class App {
                 allowHeader("x-correlation-id")
                 allowHeader("x-requested-with")
             }
+            install(Authentication) {
+                provider("apigee-auth") {
+                    authenticate { context ->
+                        val expectedSecret: String = System.getenv("APIGEE_SECRET") ?: run {
+                            logger.warn("Couldn't find APIGEE_SECRET env var, using default dummy secret")
+                            "dummy-secret"
+                        }
+                        val incomingSecret = context.call.request.header("x-apigee-secret")
+
+                        if (incomingSecret == expectedSecret) {
+                            context.principal(UserIdPrincipal("apigee-proxy"))
+                        } else {
+                            context.challenge("apigee-auth", InvalidCredentials) { _, call ->
+                                call.respond(HttpStatusCode.Unauthorized, "Invalid or missing auth")
+                            }
+                        }
+                    }
+                }
+            }
             install(ServerContentNegotiation) {
                 jackson {
                     setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
@@ -91,41 +113,42 @@ class App {
             }
 
             routing {
-                get("/v2/autocomplete") {
-                    val result = api.autocomplete(call.request.queryParameters)
-                    call.respond(result)
-                }
+                authenticate("apigee-auth") {
+                    get("/v2/autocomplete") {
+                        val result = api.autocomplete(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v2/search") {
-                    val result = api.autocomplete(call.request.queryParameters)
-                    call.respond(result)
-                }
+                    get("/v2/search") {
+                        val result = api.autocomplete(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v2/reverse") {
-                    val result = api.reverse(call.request.queryParameters)
-                    call.respond(result)
-                }
+                    get("/v2/reverse") {
+                        val result = api.reverse(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v2/nearby") {
-                    val result = api.reverse(call.request.queryParameters)
-                    call.respond(result)
-                }
+                    get("/v2/nearby") {
+                        val result = api.reverse(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v2/place") {
-                    val result = api.place(call.request.queryParameters)
-                    call.respond(result)
-                }
+                    get("/v2/place") {
+                        val result = api.place(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v3/autocomplete") {
-                    val result = v3api.autocomplete(call.request.queryParameters)
-                    call.respond(result)
-                }
+                    get("/v3/autocomplete") {
+                        val result = v3api.autocomplete(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v3/reverse") {
-                    val result = v3api.reverse(call.request.queryParameters)
-                    call.respond(result)
+                    get("/v3/reverse") {
+                        val result = v3api.reverse(call.request.queryParameters)
+                        call.respond(result)
+                    }
                 }
-
                 get("/") {
                     val indexHtml = readFile("index.html")
                     call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
@@ -170,7 +193,7 @@ class App {
                 .getResourceAsStream(name)
                 ?.readBytes()
                 ?: throw IllegalStateException("$name not found")
-        )
+            )
 
         private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
