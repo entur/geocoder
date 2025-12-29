@@ -66,13 +66,19 @@ class App {
             install(Authentication) {
                 provider("apigee-auth") {
                     authenticate { context ->
-                        val expectedSecret: String = System.getenv("APIGEE_SECRET") ?: run {
-                            logger.warn("Couldn't find APIGEE_SECRET env var, using default dummy secret")
-                            "dummy-secret"
-                        }
+                        val expectedSecret: String =
+                            System.getenv("APIGEE_SECRET") ?: run {
+                                logger.warn("Couldn't find APIGEE_SECRET env var, using default dummy secret")
+                                "dummy-secret"
+                            }
                         val incomingSecret = context.call.request.header("x-apigee-secret")
 
-                        if (incomingSecret == expectedSecret) {
+                        logger.warn("Debug: " + context.call.request.headers)
+                        val isIngressRequest = context.call.request.header("X-Forwarded-For") != null
+
+                        if (!isIngressRequest) {
+                            context.principal(UserIdPrincipal("internal"))
+                        } else if (incomingSecret == expectedSecret) {
                             context.principal(UserIdPrincipal("apigee-proxy"))
                         } else {
                             context.challenge("apigee-auth", InvalidCredentials) { _, call ->
