@@ -102,7 +102,7 @@ object PhotonFilterBuilder {
         } else {
             // Typically takes care of "Oslo C" returning addresses.
             req.text
-                .takeIf { !it.contains("\\s\\d".toRegex()) }
+                .takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }
                 ?.let { Category.OSM_ADDRESS }
         }
 

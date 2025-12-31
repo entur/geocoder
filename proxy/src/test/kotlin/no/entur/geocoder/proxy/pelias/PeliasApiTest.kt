@@ -60,6 +60,23 @@ class PeliasApiTest {
             assertEquals("Oslo", req.url.parameters["q"])
             assertEquals("${(1 + RESULT_PRUNING_HEADROOM)}", req.url.parameters["limit"])
             assertEquals("en", req.url.parameters["lang"])
+            assertEquals(listOf("multimodal.child", "osm.public_transport.address"), req.url.parameters.getAll("exclude"))
+        }
+
+    @Test
+    fun `autocomplete endpoint returns expected response with housenumber`() =
+        testApplication {
+            recordedRequests.clear()
+            application { setupRouting() }
+            val response =
+                client.get("/v2/autocomplete?text=10+Oslo+gate") {
+                    header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                }
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val req = recordedRequests.first()
+            assertEquals("Oslo gate 10", req.url.parameters["q"])
         }
 
     @Test
