@@ -51,7 +51,6 @@ class PeliasApiTest {
                 client.get("/v2/autocomplete?text=Oslo&size=1&lang=en&multiModal=parent") {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    header("x-apigee-secret", "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 
@@ -72,7 +71,6 @@ class PeliasApiTest {
                 client.get("/v2/reverse?point.lat=59.91&point.lon=10.75&lang=no&limit=10&multiModal=parent") {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    header("x-apigee-secret", "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 
@@ -94,7 +92,6 @@ class PeliasApiTest {
                 client.get("/v2/place?ids=foo:bar:baz,abc:def:xyz&multiModal=parent") {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    header("x-apigee-secret", "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 

@@ -84,7 +84,6 @@ class AppTest {
                     parameter("focus.point.lat", "59")
                     parameter("focus.point.lon", "10")
                     header(HttpHeaders.Accept, Json.toString())
-                    header("x-apigee-secret", "dummy-secret")
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -138,7 +137,6 @@ class AppTest {
                     parameter("size", "3")
                     parameter("lang", "no")
                     header(HttpHeaders.Accept, Json.toString())
-                    header("x-apigee-secret", "dummy-secret")
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
