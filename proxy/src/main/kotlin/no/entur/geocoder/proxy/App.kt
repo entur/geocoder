@@ -65,13 +65,17 @@ class App {
             install(Authentication) {
                 provider("apigee-auth") {
                     authenticate { context ->
-                        // Just testing for now
-                        System.getenv("APIGEE_SECRET") ?: run {
-                            logger.warn("Couldn't find APIGEE_SECRET env var, using default dummy secret")
-                            "dummy-secret"
-                        }
+                        val headers = context.call.request.headers
+                        logger.warn("Debug: ${headers.toMap()}")
 
-                        logger.warn("Debug: ${context.call.request.headers.toMap()}")
+                        if (headers["x-forwarded-for"]?.contains("traefik-public") == true) {
+                            if (headers["x-apigee.messageid"].isNullOrBlank()) {
+                                logger.warn("Debug: Would have blocked access")
+//                                context.challenge("apigee-auth", AuthenticationFailedCause.InvalidCredentials) { _, call ->
+//                                    call.respond(HttpStatusCode.Unauthorized, "service needs to be called through apigee")
+//                                }
+                            }
+                        }
                         context.principal(UserIdPrincipal("apigee-proxy"))
                     }
                 }
