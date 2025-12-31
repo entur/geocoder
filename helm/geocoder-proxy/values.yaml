@@ -55,3 +55,6 @@ common:
           command: ["/bin/sh", "-c", "sleep 5"]  # Allow time for connections to drain
   postgres: # sets up a postgres proxy so you can connect to your postgresql instance via localhost on the pod
     enabled: false
+  secrets:
+    app-secrets:
+      - APIGEE_SECRET

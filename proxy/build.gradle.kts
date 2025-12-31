@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.server.auth)
     implementation(libs.logback)
     implementation(libs.logback.encoder)
     implementation(libs.ktor.server.status.pages)

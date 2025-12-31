@@ -15,6 +15,7 @@ import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.openstreetmap
 import no.entur.geocoder.proxy.App.Companion.configureApp
+import no.entur.geocoder.proxy.App.Companion.sharedApigeeToken
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Test
@@ -84,6 +85,7 @@ class AppTest {
                     parameter("focus.point.lat", "59")
                     parameter("focus.point.lon", "10")
                     header(HttpHeaders.Accept, Json.toString())
+                    header(sharedApigeeToken, "dummy-secret")
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -137,6 +139,7 @@ class AppTest {
                     parameter("size", "3")
                     parameter("lang", "no")
                     header(HttpHeaders.Accept, Json.toString())
+                    header(sharedApigeeToken, "dummy-secret")
                 }
 
             assertEquals(HttpStatusCode.OK, response.status)
