@@ -2,3 +2,4 @@ common:
   env: dev
   ingress:
     host: geocoder-proxy.dev.entur.io
+    trafficType: api

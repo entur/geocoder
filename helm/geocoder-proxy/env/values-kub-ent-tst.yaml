@@ -2,3 +2,4 @@ common:
   env: tst
   ingress:
     host: geocoder-proxy.staging.entur.io
+    trafficType: public
