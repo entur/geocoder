@@ -11,6 +11,7 @@ on:
       - '.github/workflows/proxy-dev.yml'
       - '.github/actions/**'
       - '!**/*.md'
+      - 'helm/geocoder-proxy/**'
   pull_request:
     paths:
       - 'proxy/**'
@@ -20,6 +21,7 @@ on:
       - '.github/workflows/proxy-dev.yml'
       - '.github/actions/**'
       - '!**/*.md'
+      - 'helm/geocoder-proxy/**'
   workflow_dispatch:
     inputs:
       image_tag:
