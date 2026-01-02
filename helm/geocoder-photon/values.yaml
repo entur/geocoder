@@ -3,7 +3,7 @@ common:
   shortname: geocoder # Defined in https://github.com/entur/ror-tf-gcp-common-infrastructure/blob/main/.entur/geocoder/app-geocoder.yml shared with geocoder-proxy
   team: team-ror
   ingress:
-    enabled: true
+    enabled: false
     trafficType: public
   service:
     internalPort: 2322  # What TCP port the application listens on the pod, must match the port in the Dockerfile

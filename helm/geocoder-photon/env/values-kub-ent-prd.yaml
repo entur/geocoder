@@ -4,8 +4,6 @@ common:
   container:
     cpu: 1
     memory: 1536
-  ingress:
-    enabled: false
   hpa:
     spec:
       metrics:
