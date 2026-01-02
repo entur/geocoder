@@ -140,11 +140,7 @@ class App {
                     call.respond(readiness.status, readiness.message)
                 }
 
-                get("/info") {
-                    val info = healthCheck.info()
-                    call.respond(info)
-                }
-
+                // Under /v2 to expose it through apigee to .github/workflows/monitor-photon-data.yml
                 get("/v2/info") {
                     val info = healthCheck.info()
                     call.respond(info)
