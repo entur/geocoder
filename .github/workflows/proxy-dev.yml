@@ -108,7 +108,7 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   helm-lint:
-    name: Lint
+    name: Helm Lint
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
     strategy:
       matrix:
