@@ -44,7 +44,6 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  # Photon image jobs
   lint:
     name: Lint
     if: |
@@ -105,11 +104,23 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
+  helm-lint:
+    name: Lint
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    strategy:
+      matrix:
+        chart: [geocoder-photon]
+        environment: [dev]
+    with:
+      environment: ${{ matrix.environment }}
+      chart: helm/${{ matrix.chart }}
+
   deploy-dev:
     name: Dev
-    needs: [ photon, scan ]
+    needs: [ photon, scan, helm-lint ]
     if: |
       !cancelled() &&
+      needs.helm-lint.result == 'success' &&
       (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image')
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:

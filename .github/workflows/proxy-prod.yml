@@ -99,11 +99,23 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
+  helm-lint:
+    name: Lint
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    strategy:
+      matrix:
+        chart: [geocoder-proxy]
+        environment: [tst,prd]
+    with:
+      environment: ${{ matrix.environment }}
+      chart: helm/${{ matrix.chart }}
+
   deploy-tst:
     name: Staging
-    needs: [ build-push, scan ]
+    needs: [ build-push, scan, helm-lint ]
     if: |
       !cancelled() &&
+      needs.helm-lint.result == 'success' &&
       (needs.scan.result == 'success' || github.event_name == 'workflow_dispatch')
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
