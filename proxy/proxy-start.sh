@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-java -jar proxy.jar
+java --enable-native-access=ALL-UNNAMED -jar proxy.jar
