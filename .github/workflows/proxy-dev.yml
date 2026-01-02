@@ -110,13 +110,9 @@ jobs:
   helm-lint:
     name: Helm Lint
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
-    strategy:
-      matrix:
-        chart: [geocoder-proxy]
-        environment: [dev]
     with:
-      environment: ${{ matrix.environment }}
-      chart: helm/${{ matrix.chart }}
+      environment: dev
+      chart: helm/geocoder-proxy
 
   deploy-dev:
     name: Dev

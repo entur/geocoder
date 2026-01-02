@@ -105,11 +105,10 @@ jobs:
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
     strategy:
       matrix:
-        chart: [geocoder-proxy]
         environment: [tst,prd]
     with:
       environment: ${{ matrix.environment }}
-      chart: helm/${{ matrix.chart }}
+      chart: helm/geocoder-proxy
 
   deploy-tst:
     name: Staging
