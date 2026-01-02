@@ -6,7 +6,7 @@ common:
     memory: 1536
   ingress:
     host: geocoder-proxy.entur.io
-    trafficType: public
+    trafficType: api
   hpa:
     spec:
       metrics:
