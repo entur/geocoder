@@ -13,9 +13,11 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.micrometer.core.instrument.Meter
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+import io.micrometer.core.instrument.config.MeterFilter
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -170,10 +172,24 @@ class App {
                 .getResourceAsStream(name)
                 ?.readBytes()
                 ?: throw IllegalStateException("$name not found")
-        )
+            )
 
         private val logger = LoggerFactory.getLogger("App")
-        private val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+        private val appMicrometerRegistry =
+            PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+                .apply {
+                    config().meterFilter(
+                        object : MeterFilter {
+                            override fun map(id: Meter.Id): Meter.Id {
+                                return if (id.name == "ktor.http.server.requests") {
+                                    id.withName("http.server.requests")
+                                } else {
+                                    id
+                                }
+                            }
+                        },
+                    )
+                }
 
         // milliseconds in nanoseconds
         private val Int.millis: Double get() = this * 1_000_000.0
