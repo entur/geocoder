@@ -1,4 +1,6 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 PHOTON_JAR=https://github.com/entur/photon/releases/download/2025-12-16/photon-0.7.0.jar
 
