@@ -74,6 +74,7 @@ class App {
                 }
             }
             install(MicrometerMetrics) {
+                metricName = "http.server.requests"
                 registry = micrometerRegistry
                 meterBinders =
                     listOf(
@@ -81,6 +82,15 @@ class App {
                         JvmGcMetrics(),
                         ProcessorMetrics(),
                     )
+                distributionStatisticConfig =
+                    DistributionStatisticConfig
+                        .Builder()
+                        .percentilesHistogram(true)
+                        .serviceLevelObjectives(
+                            5.millis, 10.millis, 25.millis, 50.millis, 75.millis,
+                            100.millis, 250.millis, 500.millis, 750.millis,
+                            1.0.seconds, 2.5.seconds, 5.0.seconds, 7.5.seconds, 10.0.seconds,
+                        ).build()
             }
 
             routing {
@@ -168,33 +178,6 @@ class App {
         private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry =
             PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-                .apply {
-                    config().meterFilter(
-                        object : MeterFilter {
-                            override fun map(id: Meter.Id): Meter.Id =
-                                if (id.name == "ktor.http.server.requests") {
-                                    id.withName("http.server.requests")
-                                } else {
-                                    id
-                                }
-
-                            override fun configure(id: Meter.Id, config: DistributionStatisticConfig): DistributionStatisticConfig {
-                                if (id.name == "http.server.requests") {
-                                    return DistributionStatisticConfig
-                                        .builder()
-                                        .percentilesHistogram(true)
-                                        .serviceLevelObjectives(
-                                            5.millis, 10.millis, 25.millis, 50.millis, 75.millis,
-                                            100.millis, 250.millis, 500.millis, 750.millis,
-                                            1.0.seconds, 2.5.seconds, 5.0.seconds, 7.5.seconds, 10.0.seconds,
-                                        ).build()
-                                        .merge(config)
-                                }
-                                return config
-                            }
-                        },
-                    )
-                }
 
         // milliseconds in nanoseconds
         private val Int.millis: Double get() = this * 1_000_000.0
