@@ -203,7 +203,7 @@ class StopPlaceConverterTest {
                 .first()
                 .extra
         assertTrue(extra.alt_name?.contains("Existing Alt Name") == true, "Should include existing alt name")
-        assertTrue(extra.alt_name?.contains("Child Stop A") == true, "Should include child stop name")
+        assertFalse(extra.alt_name?.contains("Child Stop A") == true, "Should include child stop name")
     }
 
     @Test
@@ -243,7 +243,7 @@ class StopPlaceConverterTest {
             createStopPlaceWithAltNames(
                 id = "NSR:StopPlace:1",
                 name = "Station",
-                altNames = listOf("Alt 1", "Alt 2"),
+                altNames = listOf("Alt 1", "Alt 2", "Alt 3"),
             )
 
         val result =
@@ -262,7 +262,7 @@ class StopPlaceConverterTest {
                 .content
                 .first()
                 .extra
-        assertEquals("Alt 1;Alt 2;Child 1", extra.alt_name, "alt_name should be semicolon-separated")
+        assertEquals("Alt 1;Alt 2;Alt 3", extra.alt_name, "alt_name should be semicolon-separated")
     }
 
     private fun createStopPlace(

@@ -8,8 +8,8 @@ import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.converter.Text.createAltNameList
-import no.entur.geocoder.converter.Text.joinToStringNoBlank
+import no.entur.geocoder.converter.Text.REGULAR_SEPARATOR
+import no.entur.geocoder.converter.Text.joinAltNamesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -133,14 +133,15 @@ class OsmEntityConverter(
             listOf(whosonfirst.category(), address.category(), OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
                 .plus(tags.map { LEGACY_CATEGORY_PREFIX + it.value })
 
-        val altNames =
-            createAltNameList(
-                tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"],
-                skip = name,
-            )
-        val enName = tags["en:name"]
-
         val id = "OSM:TopographicPlace:" + entity.id
+
+        val visibleAltNames: Set<String> =
+            setOfNotNull(
+                tags["alt_name"], tags["old_name"], tags["no:name"], tags["loc_name"], tags["short_name"],
+            ).filter { it != name }.toSet()
+        val indexedAltNames: Set<String> = visibleAltNames + id
+        val enName: String? = tags["en:name"]
+
         val countyGid = county?.refCode?.let { "KVE:TopographicPlace:$it" }
         val localityGid = municipality?.refCode?.let { "KVE:TopographicPlace:$it" }
         val locality = municipality?.name?.titleize()
@@ -161,8 +162,8 @@ class OsmEntityConverter(
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                tags = tagList.joinToString(","),
-                alt_name = altNames,
+                tags = tagList.joinToString(REGULAR_SEPARATOR),
+                alt_name = visibleAltNames.joinAltNamesToString(),
             )
 
         val categories = buildCategories(tagList, country, countyGid, localityGid)
@@ -177,7 +178,7 @@ class OsmEntityConverter(
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,
-                name = Name(name = name, name_en = enName, alt_name = joinToStringNoBlank(altNames, id)),
+                name = Name(name = name, name_en = enName, alt_name = indexedAltNames.joinAltNamesToString()),
                 housenumber = null,
                 address = address,
                 postcode = null,

@@ -14,8 +14,8 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.createAltNameList
-import no.entur.geocoder.converter.Text.joinToStringNoBlank
+import no.entur.geocoder.converter.Text.REGULAR_SEPARATOR
+import no.entur.geocoder.converter.Text.joinAltNamesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping.KommuneInfo
@@ -125,7 +125,8 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         val countyGid = fylkesnummer?.let { "KVE:TopographicPlace:$it" }
         val localityGid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" }
 
-        val altNames = createAltNameList(adresse.adressetilleggsnavn, skip = displayName)
+        val visibleAltNames: String? = adresse.adressetilleggsnavn
+        val indexedAltNames: Set<String> = setOfNotNull(visibleAltNames, id)
 
         val extra =
             Extra(
@@ -138,8 +139,8 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 locality_gid = localityGid,
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
-                tags = tags.joinToString(","),
-                alt_name = altNames,
+                tags = tags.joinToString(REGULAR_SEPARATOR),
+                alt_name = visibleAltNames,
             )
         val categories =
             tags
@@ -167,7 +168,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                     displayName?.let {
                         Name(
                             name = it,
-                            alt_name = joinToStringNoBlank(altNames, id),
+                            alt_name = indexedAltNames.joinAltNamesToString(),
                         )
                     },
                 housenumber = housenumber,

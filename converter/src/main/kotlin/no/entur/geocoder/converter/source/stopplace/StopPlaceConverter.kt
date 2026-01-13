@@ -12,8 +12,8 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.createAltNameList
-import no.entur.geocoder.converter.Text.joinToStringNoBlank
+import no.entur.geocoder.converter.Text.REGULAR_SEPARATOR
+import no.entur.geocoder.converter.Text.joinAltNamesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
 import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter.StopPlaceRole.*
@@ -87,19 +87,18 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(multimodalityCategory)
                 .filterNotNull()
 
-        val otherStopNames = otherStopNames(stopPlace, childStopNames)
-        val id = stopPlace.id
-        val name = stopPlace.name.text
-        val altNames = otherStopNames.createAltNameList(skip = name)
+        val visibleAltStopNames: Set<String> = altStopNames(stopPlace)
+        val indexedAltStopNames: Set<String> = visibleAltStopNames + childStopNames + stopPlace.id
+
         val tariffZoneList =
             stopPlace.tariffZones
                 ?.tariffZoneRef
                 ?.mapNotNull { it.ref }
-                ?.joinToString(",")
+                ?.joinToString(REGULAR_SEPARATOR)
 
         val extra =
             Extra(
-                id = id,
+                id = stopPlace.id,
                 source = Source.NSR,
                 accuracy = "point",
                 country_a = country.threeLetterCode,
@@ -107,9 +106,9 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 locality = locality,
                 locality_gid = localityGid,
                 tariff_zones = tariffZoneList,
-                alt_name = altNames,
+                alt_name = visibleAltStopNames.joinAltNamesToString(),
                 description = descriptionWithTranslation(stopPlace.description),
-                tags = tags.joinToString(","),
+                tags = tags.joinToString(REGULAR_SEPARATOR),
             )
 
         val nominatimId = NominatimId.stopplace.create(stopPlace.id)
@@ -126,7 +125,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     stopPlace.name.text?.let {
                         Name(
                             name = it,
-                            alt_name = joinToStringNoBlank(altNames, id),
+                            alt_name = indexedAltStopNames.joinAltNamesToString(),
                         )
                     },
                 address =
@@ -166,20 +165,21 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
             standalone -> whosonfirst.category()
         }
 
-    private fun otherStopNames(stopPlace: StopPlace, childStopNames: List<String>): List<String> {
-        val alternativeNames =
-            stopPlace.alternativeNames
-                ?.alternativeName
-                ?.mapNotNull { it.name?.text }
-                ?: emptyList()
-        return alternativeNames + childStopNames
-    }
+    private fun altStopNames(stopPlace: StopPlace): Set<String> =
+        stopPlace.alternativeNames
+            ?.alternativeName
+            ?.mapNotNull { it.name?.text }
+            ?.filter { stopPlace.name.text != it }
+            ?.filter { it.isNotBlank() }
+            ?.toSet()
+            ?: emptySet()
 
     private fun buildChildStopNamesMap(stopPlaces: List<StopPlace>): Map<String, List<String>> {
         val childStopNamesMap = mutableMapOf<String, MutableList<String>>()
         for (stopPlace in stopPlaces) {
             val parentRef = stopPlace.parentSiteRef?.ref ?: continue
             val name = stopPlace.name.text ?: continue
+
             childStopNamesMap.getOrPut(parentRef) { mutableListOf() }.add(name)
         }
         return childStopNamesMap
@@ -218,10 +218,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
             ?: emptySet()
     )
 
-    private fun fareZoneAuthorityCategories(
-        stopPlace: StopPlace,
-        fareZones: Map<String, FareZone>,
-    ): Set<String> = (
+    private fun fareZoneAuthorityCategories(stopPlace: StopPlace, fareZones: Map<String, FareZone>): Set<String> = (
         stopPlace.tariffZones
             ?.tariffZoneRef
             ?.mapNotNull { tariffZoneRef ->
@@ -339,7 +336,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,
-                        tags = tags.joinToString(","),
+                        tags = tags.joinToString(REGULAR_SEPARATOR),
                     ),
             )
 
