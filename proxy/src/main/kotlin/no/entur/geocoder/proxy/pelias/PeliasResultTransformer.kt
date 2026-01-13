@@ -161,7 +161,7 @@ object PeliasResultTransformer {
                     borough_gid = transformBoroughGid(extra?.borough_gid),
                     label = createLabel(props),
                     category = transformCategory(extra),
-                    tariff_zones = extra?.tariff_zones?.split(',')?.map { it.trim() },
+                    tariff_zones = extra?.tariff_zones?.split(",", ";")?.map { it.trim() },
                     description = transformDescription(extra),
                 ),
         )
