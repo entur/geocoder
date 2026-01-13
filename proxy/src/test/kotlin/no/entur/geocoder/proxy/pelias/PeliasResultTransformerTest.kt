@@ -47,7 +47,7 @@ class PeliasResultTransformerTest {
 
     @ParameterizedTest
     @CsvSource(
-        "legacy.category.transport,legacy.category.education,legacy.source.osm | transport;education",
+        "legacy.category.transport;legacy.category.education;legacy.source.osm | transport;education",
         "legacy.source.osm,legacy.category.transport | transport",
         "legacy.source.osm,legacy.layer.venue | ", // empty list
         delimiter = '|',

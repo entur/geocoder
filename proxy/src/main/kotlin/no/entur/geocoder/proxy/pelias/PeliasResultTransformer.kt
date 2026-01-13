@@ -226,7 +226,7 @@ object PeliasResultTransformer {
     fun transformCategory(extra: Extra?): List<String> =
         extra
             ?.tags
-            ?.split(",")
+            ?.split(",", ";")
             ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
             ?.map { it.substringAfterLast(".") }
             ?: emptyList()
@@ -234,14 +234,14 @@ object PeliasResultTransformer {
     fun transformSource(extra: Extra?): String? =
         extra
             ?.tags
-            ?.split(",")
+            ?.split(",", ";")
             ?.firstOrNull { it.startsWith(LEGACY_SOURCE_PREFIX) }
             ?.substringAfterLast(".")
 
     fun transformLayer(extra: Extra?): String? =
         extra
             ?.tags
-            ?.split(",")
+            ?.split(",", ";")
             ?.firstOrNull { it.startsWith(LEGACY_LAYER_PREFIX) }
             ?.substringAfterLast(".")
 

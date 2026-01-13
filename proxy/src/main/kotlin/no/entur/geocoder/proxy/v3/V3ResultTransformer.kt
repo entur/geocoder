@@ -113,13 +113,13 @@ object V3ResultTransformer {
             categories =
                 extra
                     ?.tags
-                    ?.split(",")
+                    ?.split(",", ";")
                     ?.map { it.substringAfter('.') }
                     ?.filter { it.isNotBlank() },
             tariffZones =
                 extra
                     ?.tariff_zones
-                    ?.split(',')
+                    ?.split(",", ";")
                     ?.map { it.trim() }
                     ?.filter { it.isNotBlank() },
             source =
