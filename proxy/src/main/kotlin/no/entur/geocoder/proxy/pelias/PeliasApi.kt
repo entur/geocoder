@@ -42,6 +42,7 @@ class PeliasApi(private val photonApi: PhotonApi) {
             PhotonResult(
                 type = "FeatureCollection",
                 features = photonResults.mapNotNull { it.features.firstOrNull() },
+                properties = photonResults.firstOrNull()?.properties ?: emptyMap()
             )
         return PeliasResultTransformer.parseAndTransform(photonResult, req)
     }
