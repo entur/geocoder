@@ -8,6 +8,7 @@ import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.LegacyLayer.Companion.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.common.LegacySource.Companion.LEGACY_SOURCE_PREFIX
 import no.entur.geocoder.common.LegacySource.openaddresses
+import no.entur.geocoder.common.LegacySource.openstreetmap
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 
@@ -109,7 +110,11 @@ object PhotonFilterBuilder {
     fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(
             buildMultiModalExclude(req.multiModal),
-            Category.OSM_ADDRESS, // Always exclude addresses with house numbers in reverse requests
+            if (req.sources.contains(openaddresses.name) || req.sources.contains(openstreetmap.name)) {
+                null
+            } else {
+                Category.OSM_ADDRESS // Exclude addresses with house numbers in reverse requests
+            },
         )
 
     internal fun buildMultiModalExclude(multiModal: String): String? =
