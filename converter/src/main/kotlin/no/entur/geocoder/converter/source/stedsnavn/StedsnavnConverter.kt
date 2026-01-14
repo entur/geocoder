@@ -254,7 +254,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
             }
         val country = Geo.getCountry(coord) ?: Country.no
 
-        val tags =
+        val visibleTags =
             listOf(
                 OSM_POI, whosonfirst.category(), address.category(),
                 LEGACY_CATEGORY_PREFIX + entry.navneobjekttype,
@@ -262,8 +262,8 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
 
         val countyGid = "KVE:TopographicPlace:${entry.fylkesnummer}"
         val localityGid = "KVE:TopographicPlace:${entry.kommunenummer}"
-        val categories =
-            tags
+        val indexedTags =
+            visibleTags
                 .plus(SOURCE_STEDSNAVN)
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(Category.countyIdsCategory(countyGid))
@@ -283,7 +283,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 county_gid = countyGid,
                 locality = entry.kommunenavn,
                 locality_gid = localityGid,
-                tags = tags.joinOsmValuesToString(),
+                tags = visibleTags.joinOsmValuesToString(),
                 alt_name = visibleAltNames.joinOsmValuesToString(),
             )
 
@@ -293,7 +293,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 place_id = nominatimId,
                 object_type = "N",
                 object_id = nominatimId,
-                categories = categories,
+                categories = indexedTags,
                 rank_address = 16,
                 importance =
                     importanceCalculator

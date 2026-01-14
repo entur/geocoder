@@ -51,11 +51,14 @@ class PoiConverter(config: ConverterConfig) : Converter {
                         topoPlace.centroid?.location?.latitude ?: 0.0,
                     )
                 val country = Geo.getCountry(coord) ?: Country.no
+                val visibleTag = OSM_CUSTOM_POI
+                val indexedTags = listOf(visibleTag, COUNTRY_PREFIX + country.name)
+
                 val extra =
                     Extra(
                         id = id,
                         source = CUSTOM_POI,
-                        tags = OSM_CUSTOM_POI,
+                        tags = visibleTag,
                         country_a = country.threeLetterCode,
                     )
                 val nominatimId = NominatimId.poi.create(id)
@@ -64,7 +67,7 @@ class PoiConverter(config: ConverterConfig) : Converter {
                         place_id = nominatimId,
                         object_type = "N",
                         object_id = nominatimId,
-                        categories = listOf(OSM_CUSTOM_POI, COUNTRY_PREFIX + country.name),
+                        categories = indexedTags,
                         rank_address = 30,
                         importance = 0.5.toBigDecimal(),
                         name = Name(name = name),

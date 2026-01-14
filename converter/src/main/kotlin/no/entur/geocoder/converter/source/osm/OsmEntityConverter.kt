@@ -128,7 +128,7 @@ class OsmEntityConverter(
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(centroid)
 
         val country = determineCountry(county, municipality, tags, centroid)
-        val tagList: List<String> =
+        val visibleTags: List<String> =
             listOf(whosonfirst.category(), address.category(), OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
                 .plus(tags.map { LEGACY_CATEGORY_PREFIX + it.value })
 
@@ -161,11 +161,11 @@ class OsmEntityConverter(
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                tags = tagList.joinOsmValuesToString(),
+                tags = visibleTags.joinOsmValuesToString(),
                 alt_name = visibleAltNames.joinOsmValuesToString(),
             )
 
-        val categories = buildCategories(tagList, country, countyGid, localityGid)
+        val indexedTags = buildCategories(visibleTags, country, countyGid, localityGid)
 
         val nominatimId = NominatimId.osm.create(entity.id)
         val content =
@@ -173,7 +173,7 @@ class OsmEntityConverter(
                 place_id = nominatimId,
                 object_type = objectType,
                 object_id = nominatimId,
-                categories = categories,
+                categories = indexedTags,
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,

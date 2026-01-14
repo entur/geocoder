@@ -141,7 +141,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 tags = tags.joinOsmValuesToString(),
                 alt_name = visibleAltNames,
             )
-        val categories =
+        val indexedTags =
             tags
                 .plus(SOURCE_ADRESSE)
                 .plus(COUNTRY_PREFIX + country.name)
@@ -159,7 +159,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 place_id = placeId,
                 object_type = "N",
                 object_id = placeId,
-                categories = categories.plus(tags),
+                categories = indexedTags,
                 rank_address = 26,
                 importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale(),
                 parent_place_id = 0,
