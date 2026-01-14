@@ -14,8 +14,7 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.REGULAR_SEPARATOR
-import no.entur.geocoder.converter.Text.joinAltNamesToString
+import no.entur.geocoder.converter.Text.joinOsmValuesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping.KommuneInfo
@@ -139,7 +138,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 locality_gid = localityGid,
                 borough = adresse.grunnkretsnavn?.titleize(),
                 borough_gid = adresse.grunnkretsnummer?.let { "borough:$it" },
-                tags = tags.joinToString(REGULAR_SEPARATOR),
+                tags = tags.joinOsmValuesToString(),
                 alt_name = visibleAltNames,
             )
         val categories =
@@ -168,7 +167,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                     displayName?.let {
                         Name(
                             name = it,
-                            alt_name = indexedAltNames.joinAltNamesToString(),
+                            alt_name = indexedAltNames.joinOsmValuesToString(),
                         )
                     },
                 housenumber = housenumber,

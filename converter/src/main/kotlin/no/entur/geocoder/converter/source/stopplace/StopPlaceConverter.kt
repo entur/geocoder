@@ -12,8 +12,7 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.REGULAR_SEPARATOR
-import no.entur.geocoder.converter.Text.joinAltNamesToString
+import no.entur.geocoder.converter.Text.joinOsmValuesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
 import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter.StopPlaceRole.*
@@ -94,7 +93,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
             stopPlace.tariffZones
                 ?.tariffZoneRef
                 ?.mapNotNull { it.ref }
-                ?.joinToString(REGULAR_SEPARATOR)
+                ?.joinOsmValuesToString()
 
         val extra =
             Extra(
@@ -106,9 +105,9 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 locality = locality,
                 locality_gid = localityGid,
                 tariff_zones = tariffZoneList,
-                alt_name = visibleAltStopNames.joinAltNamesToString(),
+                alt_name = visibleAltStopNames.joinOsmValuesToString(),
                 description = descriptionWithTranslation(stopPlace.description),
-                tags = tags.joinToString(REGULAR_SEPARATOR),
+                tags = tags.joinOsmValuesToString(),
             )
 
         val nominatimId = NominatimId.stopplace.create(stopPlace.id)
@@ -125,7 +124,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                     stopPlace.name.text?.let {
                         Name(
                             name = it,
-                            alt_name = indexedAltStopNames.joinAltNamesToString(),
+                            alt_name = indexedAltStopNames.joinOsmValuesToString(),
                         )
                     },
                 address =
@@ -336,7 +335,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,
-                        tags = tags.joinToString(REGULAR_SEPARATOR),
+                        tags = tags.joinOsmValuesToString(),
                     ),
             )
 

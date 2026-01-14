@@ -8,8 +8,7 @@ import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
-import no.entur.geocoder.converter.Text.REGULAR_SEPARATOR
-import no.entur.geocoder.converter.Text.joinAltNamesToString
+import no.entur.geocoder.converter.Text.joinOsmValuesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -162,8 +161,8 @@ class OsmEntityConverter(
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                tags = tagList.joinToString(REGULAR_SEPARATOR),
-                alt_name = visibleAltNames.joinAltNamesToString(),
+                tags = tagList.joinOsmValuesToString(),
+                alt_name = visibleAltNames.joinOsmValuesToString(),
             )
 
         val categories = buildCategories(tagList, country, countyGid, localityGid)
@@ -178,7 +177,7 @@ class OsmEntityConverter(
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,
-                name = Name(name = name, name_en = enName, alt_name = indexedAltNames.joinAltNamesToString()),
+                name = Name(name = name, name_en = enName, alt_name = indexedAltNames.joinOsmValuesToString()),
                 housenumber = null,
                 address = address,
                 postcode = null,
