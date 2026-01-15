@@ -125,7 +125,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         val localityGid = adresse.kommunenummer?.let { "KVE:TopographicPlace:$it" }
 
         val visibleAltNames: String? = adresse.adressetilleggsnavn
-        val indexedAltNames: Set<String> = setOfNotNull(visibleAltNames, resolveSearchableId(id))
+        val indexedAltNames: Set<String> = setOfNotNull(visibleAltNames, id)
 
         val extra =
             Extra(
@@ -141,10 +141,11 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 tags = tags.joinOsmValuesToString(),
                 alt_name = visibleAltNames,
             )
-        val indexedTags =
+        val indexedCategories =
             tags
                 .plus(SOURCE_ADRESSE)
                 .plus(COUNTRY_PREFIX + country.name)
+                .plus(idCategory(id))
                 .plus(
                     listOfNotNull(
                         countyGid?.let { Category.countyIdsCategory(it) },
@@ -159,15 +160,17 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 place_id = placeId,
                 object_type = "N",
                 object_id = placeId,
-                categories = indexedTags,
+                categories = indexedCategories,
                 rank_address = 26,
                 importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale(),
                 parent_place_id = 0,
                 name =
-                    Name(
-                        name = displayName,
-                        alt_name = indexedAltNames.joinOsmValuesToString(),
-                    ),
+                    displayName?.let {
+                        Name(
+                            name = displayName,
+                            alt_name = indexedAltNames.joinOsmValuesToString(),
+                        )
+                    },
                 housenumber = housenumber,
                 address =
                     Address(
@@ -185,12 +188,12 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         return NominatimPlace("Place", listOf(properties))
     }
 
-    private fun resolveSearchableId(id: String): String =
+    private fun idCategory(id: String): String =
         // An address only has a numeric id
         if (id.isNumeric()) {
-            "${openaddresses.name}:${address.name}:$id"
+            "${openaddresses.name}.${address.name}.$id"
         } else {
-            id
+            id.replace(":", ".")
         }
 
     private fun String.isNumeric() = this.all { it.isDigit() }

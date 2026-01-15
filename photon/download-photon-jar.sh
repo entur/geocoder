@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PHOTON_JAR=https://github.com/entur/photon/releases/download/2026-01-12/photon-0.7.0.jar
+PHOTON_JAR=https://github.com/entur/photon/releases/download/2026-01-15-allow-empty-query/photon-0.7.0.jar
 
 curl -sfL --retry 2 -o photon.jar $PHOTON_JAR && echo photon.jar downloaded successfully && exit 0
 

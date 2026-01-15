@@ -254,7 +254,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
             }
         val country = Geo.getCountry(coord) ?: Country.no
 
-        val visibleTags =
+        val visibleCategories =
             listOf(
                 OSM_POI, whosonfirst.category(), address.category(),
                 LEGACY_CATEGORY_PREFIX + entry.navneobjekttype,
@@ -262,14 +262,15 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
 
         val countyGid = "KVE:TopographicPlace:${entry.fylkesnummer}"
         val localityGid = "KVE:TopographicPlace:${entry.kommunenummer}"
-        val indexedTags =
-            visibleTags
+        val id = entry.lokalId
+        val indexedCategories =
+            visibleCategories
                 .plus(SOURCE_STEDSNAVN)
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(Category.countyIdsCategory(countyGid))
                 .plus(Category.localityIdsCategory(localityGid))
+                .plus(id.replace(":", "."))
 
-        val id = entry.lokalId
         val name = entry.stedsnavn
         val visibleAltNames: Set<String> = entry.annenSkrivemåte.filter { it != name }.toSet()
         val indexedAltNames: Set<String> = visibleAltNames + id
@@ -283,7 +284,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 county_gid = countyGid,
                 locality = entry.kommunenavn,
                 locality_gid = localityGid,
-                tags = visibleTags.joinOsmValuesToString(),
+                tags = visibleCategories.joinOsmValuesToString(),
                 alt_name = visibleAltNames.joinOsmValuesToString(),
             )
 
@@ -293,7 +294,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 place_id = nominatimId,
                 object_type = "N",
                 object_id = nominatimId,
-                categories = indexedTags,
+                categories = indexedCategories,
                 rank_address = 16,
                 importance =
                     importanceCalculator

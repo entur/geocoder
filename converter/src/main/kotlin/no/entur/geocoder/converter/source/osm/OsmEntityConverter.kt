@@ -128,7 +128,7 @@ class OsmEntityConverter(
         val (county, municipality) = adminBoundaryIndex.findCountyAndMunicipality(centroid)
 
         val country = determineCountry(county, municipality, tags, centroid)
-        val visibleTags: List<String> =
+        val visibleCategories: List<String> =
             listOf(whosonfirst.category(), address.category(), OSM_POI, LEGACY_CATEGORY_PREFIX + "poi")
                 .plus(tags.map { LEGACY_CATEGORY_PREFIX + it.value })
 
@@ -161,11 +161,11 @@ class OsmEntityConverter(
                 county_gid = countyGid,
                 locality = locality,
                 locality_gid = localityGid,
-                tags = visibleTags.joinOsmValuesToString(),
+                tags = visibleCategories.joinOsmValuesToString(),
                 alt_name = visibleAltNames.joinOsmValuesToString(),
             )
 
-        val indexedTags = buildCategories(visibleTags, country, countyGid, localityGid)
+        val indexedCategories = buildCategories(visibleCategories, country, countyGid, localityGid, id)
 
         val nominatimId = NominatimId.osm.create(entity.id)
         val content =
@@ -173,7 +173,7 @@ class OsmEntityConverter(
                 place_id = nominatimId,
                 object_type = objectType,
                 object_id = nominatimId,
-                categories = indexedTags,
+                categories = indexedCategories,
                 rank_address = determineRankAddress(tags),
                 importance = calculateImportance(tags),
                 parent_place_id = 0,
@@ -203,12 +203,14 @@ class OsmEntityConverter(
         country: Country?,
         countyGid: String?,
         localityGid: String?,
+        id: String,
     ): List<String> =
         buildList {
             addAll(tags)
             country?.let { add(COUNTRY_PREFIX + it.name) }
             countyGid?.let { add(Category.countyIdsCategory(it)) }
             localityGid?.let { add(Category.localityIdsCategory(it)) }
+            id.replace(":", ".")
         }
 
     private fun determineRankAddress(tags: Map<String, String>): Int =

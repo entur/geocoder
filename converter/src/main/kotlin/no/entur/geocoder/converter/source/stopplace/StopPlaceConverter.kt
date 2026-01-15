@@ -69,13 +69,13 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val inferredStopPlaceTypeCategories = inferStopPlaceTypeCategories(childStopTypes, stopPlace)
         val sourceCategory = resolveSourceCategory(stopPlaceRole)
 
-        val visibleTags: List<String> =
+        val visibleCategories: List<String> =
             listOf(Category.OSM_STOP_PLACE, venue.category())
                 .plus(inferredStopPlaceTypeCategories)
                 .plus(sourceCategory)
 
-        val indexedTags: List<String> =
-            visibleTags
+        val indexedCategories: List<String> =
+            visibleCategories
                 .plus(SOURCE_NSR + "." + stopPlaceRole.name)
                 .plus(tariffZoneIds)
                 .plus(tariffZoneAuthorities)
@@ -84,6 +84,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(countyGid?.let { Category.countyIdsCategory(it) })
                 .plus(localityGid?.let { Category.localityIdsCategory(it) })
                 .plus(multimodalityCategory)
+                .plus(stopPlace.id.replace(":", "."))
                 .filterNotNull()
 
         val visibleAltStopNames: Set<String> = altStopNames(stopPlace)
@@ -107,7 +108,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 tariff_zones = tariffZoneList,
                 alt_name = visibleAltStopNames.joinOsmValuesToString(),
                 description = descriptionWithTranslation(stopPlace.description),
-                tags = visibleTags.joinOsmValuesToString(),
+                tags = visibleCategories.joinOsmValuesToString(),
             )
 
         val nominatimId = NominatimId.stopplace.create(stopPlace.id)
@@ -116,7 +117,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 place_id = nominatimId,
                 object_type = "N",
                 object_id = nominatimId,
-                categories = indexedTags,
+                categories = indexedCategories,
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
@@ -290,27 +291,28 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val popularity = groupOfStopPlacesPopularityCalculator.calculatePopularity(memberPopularities)
         val importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale()
 
-        val visibleTags =
+        val visibleCategories =
             listOf(Category.OSM_GOSP, address.category(), whosonfirst.category())
                 .plus(LEGACY_CATEGORY_PREFIX + GOSP)
 
         val country = Geo.getCountry(coord) ?: Country.no
-        val indexedTags =
-            visibleTags
+        val id = groupOfStopPlaces.id
+        val indexedCategories =
+            visibleCategories
                 .plus(SOURCE_NSR)
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(countyGid?.let { Category.countyIdsCategory(it) })
                 .plus(localityGid?.let { Category.localityIdsCategory(it) })
+                .plus(id.replace(":", "."))
                 .filterNotNull()
 
-        val id = groupOfStopPlaces.id
         val nominatimId = NominatimId.gosp.create(id)
         val placeContent =
             PlaceContent(
                 place_id = nominatimId,
                 object_type = "N",
                 object_id = nominatimId,
-                categories = indexedTags,
+                categories = indexedCategories,
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
@@ -333,7 +335,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                         county_gid = countyGid,
                         locality = locality,
                         locality_gid = localityGid,
-                        tags = visibleTags.joinOsmValuesToString(),
+                        tags = visibleCategories.joinOsmValuesToString(),
                     ),
             )
 
