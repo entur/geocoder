@@ -70,7 +70,7 @@ class PoiConverter(config: ConverterConfig) : Converter {
                         categories = indexedTags,
                         rank_address = 30,
                         importance = 0.5.toBigDecimal(),
-                        name = Name(name = name),
+                        name = Name(name = name, alt_name = id),
                         address = Address(),
                         postcode = null,
                         country_code = country.name,

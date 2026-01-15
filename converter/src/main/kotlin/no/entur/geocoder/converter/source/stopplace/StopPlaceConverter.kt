@@ -121,12 +121,10 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 importance = importance,
                 parent_place_id = 0,
                 name =
-                    stopPlace.name.text?.let {
-                        Name(
-                            name = it,
-                            alt_name = indexedAltStopNames.joinOsmValuesToString(),
-                        )
-                    },
+                    Name(
+                        name = stopPlace.name.text,
+                        alt_name = indexedAltStopNames.joinOsmValuesToString(),
+                    ),
                 address =
                     Address(
                         city = locality,
@@ -316,7 +314,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 rank_address = 30,
                 importance = importance,
                 parent_place_id = 0,
-                name = groupName?.let { Name(name = it, alt_name = id) },
+                name = Name(name = groupName, alt_name = id),
                 address =
                     Address(
                         city = locality,

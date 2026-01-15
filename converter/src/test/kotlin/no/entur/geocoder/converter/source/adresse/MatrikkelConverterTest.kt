@@ -69,7 +69,7 @@ class MatrikkelConverterTest {
         assertEquals("Ildervegen", placeContent.address.street)
         assertEquals("Innlandet", placeContent.address.county)
         assertEquals("2406", placeContent.postcode)
-        assertEquals(null, placeContent.name, "Name should be null for addresses")
+        assertEquals(null, placeContent.name?.name, "Name should be null for addresses")
 
         assertEquals(BigDecimal("11.527525"), placeContent.centroid[0])
         assertEquals(BigDecimal("60.892175"), placeContent.centroid[1])

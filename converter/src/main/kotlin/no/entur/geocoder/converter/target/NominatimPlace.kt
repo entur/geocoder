@@ -34,7 +34,7 @@ data class NominatimPlace(
 
     // https://github.com/komoot/photon/blob/master/src/main/java/de/komoot/photon/nominatim/model/NameMap.java#L16
     data class Name(
-        val name: String,
+        val name: String? = null,
         @JsonProperty("name:en") val name_en: String? = null,
         val alt_name: String? = null,
     )
