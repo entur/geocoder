@@ -4,6 +4,7 @@ import no.entur.geocoder.common.*
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.OSM_POI
+import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
@@ -210,7 +211,7 @@ class OsmEntityConverter(
             country?.let { add(COUNTRY_PREFIX + it.name) }
             countyGid?.let { add(Category.countyIdsCategory(it)) }
             localityGid?.let { add(Category.localityIdsCategory(it)) }
-            id.replace(":", ".")
+            id.asCategory()
         }
 
     private fun determineRankAddress(tags: Map<String, String>): Int =

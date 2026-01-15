@@ -5,6 +5,7 @@ import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.GOSP
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.SOURCE_NSR
+import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacyLayer.venue
 import no.entur.geocoder.common.LegacySource.*
@@ -84,7 +85,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(countyGid?.let { Category.countyIdsCategory(it) })
                 .plus(localityGid?.let { Category.localityIdsCategory(it) })
                 .plus(multimodalityCategory)
-                .plus(stopPlace.id.replace(":", "."))
+                .plus(stopPlace.id.asCategory())
                 .filterNotNull()
 
         val visibleAltStopNames: Set<String> = altStopNames(stopPlace)
@@ -303,7 +304,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(countyGid?.let { Category.countyIdsCategory(it) })
                 .plus(localityGid?.let { Category.localityIdsCategory(it) })
-                .plus(id.replace(":", "."))
+                .plus(id.asCategory())
                 .filterNotNull()
 
         val nominatimId = NominatimId.gosp.create(id)

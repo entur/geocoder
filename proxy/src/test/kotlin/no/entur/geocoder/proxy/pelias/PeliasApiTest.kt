@@ -116,14 +116,10 @@ class PeliasApiTest {
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 
-            assertEquals(2, recordedRequests.size)
+            assertEquals(1, recordedRequests.size)
             val req1 = recordedRequests[0]
-            val req2 = recordedRequests[1]
             assertTrue(req1.url.encodedPath.endsWith("/api"))
-            assertTrue(req2.url.encodedPath.endsWith("/api"))
-            assertEquals("foo:bar:baz", req1.url.parameters["q"])
-            assertEquals("1", req1.url.parameters["limit"])
-            assertEquals("abc:def:xyz", req2.url.parameters["q"])
-            assertEquals("1", req2.url.parameters["limit"])
+            assertEquals("foo.bar.baz,abc.def.xyz", req1.url.parameters["include"])
+            assertEquals("5", req1.url.parameters["limit"])
         }
 }

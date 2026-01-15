@@ -126,21 +126,14 @@ class PhotonAutocompleteRequestTest {
                 ids = listOf("osm:venue:123", "kartverket:address:456", "whosonfirst:locality:789"),
             )
 
-        val requests = PhotonAutocompleteRequest.from(req)
+        val request = PhotonAutocompleteRequest.from(req)
 
-        assertEquals(3, requests.size)
-        assertEquals("osm:venue:123", requests[0].query)
-        assertEquals("kartverket:address:456", requests[1].query)
-        assertEquals("whosonfirst:locality:789", requests[2].query)
-
-        requests.forEach { request ->
-            assertEquals(1, request.limit)
-            assertEquals("no", request.language)
-            assertNull(request.lat)
-            assertNull(request.lon)
-            assertNull(request.zoom)
-            assertNull(request.locationBiasScale)
-        }
+        assertEquals(6, request.limit)
+        assertEquals("no", request.language)
+        assertNull(request.lat)
+        assertNull(request.lon)
+        assertNull(request.zoom)
+        assertNull(request.locationBiasScale)
     }
 
     @Test

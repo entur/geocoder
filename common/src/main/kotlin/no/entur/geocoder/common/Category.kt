@@ -51,11 +51,13 @@ object Category {
      */
     const val LEGACY_CATEGORY_PREFIX = "legacy.category."
 
-    fun tariffZoneIdCategory(ref: String) = TARIFF_ZONE_ID_PREFIX + ref.replace(":", ".")
+    fun tariffZoneIdCategory(ref: String) = TARIFF_ZONE_ID_PREFIX + ref.asCategory()
 
-    fun fareZoneAuthorityCategory(ref: String) = FARE_ZONE_PREFIX + ref.replace(":", ".")
+    fun fareZoneAuthorityCategory(ref: String) = FARE_ZONE_PREFIX + ref.asCategory()
 
-    fun countyIdsCategory(ref: String) = COUNTY_ID_PREFIX + ref.replace(":", ".")
+    fun countyIdsCategory(ref: String) = COUNTY_ID_PREFIX + ref.asCategory()
 
-    fun localityIdsCategory(ref: String) = LOCALITY_ID_PREFIX + ref.replace(":", ".")
+    fun localityIdsCategory(ref: String) = LOCALITY_ID_PREFIX + ref.asCategory()
+
+    fun String.asCategory() = this.replace(":", ".")
 }

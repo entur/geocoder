@@ -2,6 +2,7 @@ package no.entur.geocoder.converter.source.poi
 
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.OSM_CUSTOM_POI
+import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
@@ -52,7 +53,7 @@ class PoiConverter(config: ConverterConfig) : Converter {
                     )
                 val country = Geo.getCountry(coord) ?: Country.no
                 val visibleTag = OSM_CUSTOM_POI
-                val indexedCategories = listOf(visibleTag, COUNTRY_PREFIX + country.name, id.replace(":", "."))
+                val indexedCategories = listOf(visibleTag, COUNTRY_PREFIX + country.name, id.asCategory())
 
                 val extra =
                     Extra(

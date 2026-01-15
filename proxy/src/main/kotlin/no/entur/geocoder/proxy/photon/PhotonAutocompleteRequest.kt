@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.photon
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
+import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
@@ -70,14 +71,13 @@ data class PhotonAutocompleteRequest(
             }
         }
 
-        fun from(req: PeliasPlaceRequest): List<PhotonAutocompleteRequest> =
-            req.ids.map { id ->
-                PhotonAutocompleteRequest(
-                    query = id,
-                    limit = 1,
-                    debug = req.debug,
-                )
-            }
+        fun from(req: PeliasPlaceRequest): PhotonAutocompleteRequest =
+            PhotonAutocompleteRequest(
+                query = "",
+                includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
+                limit = req.ids.size + RESULT_PRUNING_HEADROOM,
+                debug = req.debug,
+            )
 
         fun from(req: V3AutocompleteRequest): PhotonAutocompleteRequest {
             val includes =

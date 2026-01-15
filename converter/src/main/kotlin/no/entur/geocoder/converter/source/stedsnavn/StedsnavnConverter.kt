@@ -5,6 +5,7 @@ import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.OSM_POI
 import no.entur.geocoder.common.Category.SOURCE_STEDSNAVN
+import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
@@ -269,7 +270,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 .plus(COUNTRY_PREFIX + country.name)
                 .plus(Category.countyIdsCategory(countyGid))
                 .plus(Category.localityIdsCategory(localityGid))
-                .plus(id.replace(":", "."))
+                .plus(id.asCategory())
 
         val name = entry.stedsnavn
         val visibleAltNames: Set<String> = entry.annenSkrivemåte.filter { it != name }.toSet()

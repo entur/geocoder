@@ -6,6 +6,7 @@ import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
 import no.entur.geocoder.common.Category.OSM_ADDRESS
 import no.entur.geocoder.common.Category.OSM_STREET
 import no.entur.geocoder.common.Category.SOURCE_ADRESSE
+import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacySource.openaddresses
 import no.entur.geocoder.common.LegacySource.whosonfirst
@@ -193,7 +194,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
         if (id.isNumeric()) {
             "${openaddresses.name}.${address.name}.$id"
         } else {
-            id.replace(":", ".")
+            id.asCategory()
         }
 
     private fun String.isNumeric() = this.all { it.isDigit() }

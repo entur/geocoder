@@ -3,7 +3,6 @@ package no.entur.geocoder.proxy.pelias
 import io.ktor.http.*
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
-import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonReverseRequest
 import org.slf4j.LoggerFactory
 
@@ -32,18 +31,9 @@ class PeliasApi(private val photonApi: PhotonApi) {
         logger.debug("/v2/place: {}", params.formUrlEncode())
         val req = PeliasPlaceRequest.from(params)
 
-        val photonRequests = PhotonAutocompleteRequest.from(req)
+        val photonRequest = PhotonAutocompleteRequest.from(req)
 
-        val photonResults =
-            photonRequests.map { photonRequest ->
-                photonApi.request(photonRequest)
-            }
-        val photonResult =
-            PhotonResult(
-                type = "FeatureCollection",
-                features = photonResults.mapNotNull { it.features.firstOrNull() },
-                properties = photonResults.firstOrNull()?.properties ?: emptyMap(),
-            )
+        val photonResult = photonApi.request(photonRequest)
         return PeliasResultTransformer.parseAndTransform(photonResult, req)
     }
 
