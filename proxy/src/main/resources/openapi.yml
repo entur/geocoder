@@ -16,6 +16,7 @@ servers:
 tags:
   - name: Autocomplete
   - name: Reverse
+  - name: Place
 
 security:
   - {}
@@ -86,6 +87,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+  /v1/place:
+    get:
+      tags:
+        - Place
+      summary: Place lookup
+      description: Lookup places by ID
+      operationId: placeV2
+      parameters:
+        - $ref: '#/components/parameters/Ids'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Matching places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
 
 components:
   parameters:
@@ -96,6 +115,15 @@ components:
       schema:
         type: string
       example: "my-example-application"
+
+    Ids:
+      name: ids
+      in: query
+      required: true
+      description: Place IDs (comma-separated)
+      schema:
+        type: string
+      example: "NSR:StopPlace:59872"
 
     Text:
       name: text
@@ -375,7 +403,7 @@ components:
               example: "venue"
             source:
               type: string
-              enum: [openstreetmap, openaddresses, whosonfirst]
+              enum: [openstreetmap, openaddresses, whosonfirst, geonames]
               example: "openstreetmap"
             source_id:
               type: string
