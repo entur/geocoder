@@ -58,6 +58,16 @@ runs:
       with:
         image_name: ${{ inputs.image_name }}
 
+    - name: Check if image already exists
+      if: ${{ inputs.push == 'true' }}
+      shell: bash
+      run: |
+        if gcloud container images describe "${{ steps.set-tag.outputs.full_image }}" > /dev/null 2>&1; then
+          echo "::error::Image ${{ steps.set-tag.outputs.full_image }} already exists in registry"
+          exit 1
+        fi
+        echo "Image ${{ steps.set-tag.outputs.full_image }} does not exist, will build and push"
+
     - name: Build and push to GCR
       uses: docker/build-push-action@v6
       id: build-push
