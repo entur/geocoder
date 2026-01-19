@@ -25,6 +25,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  log-inputs:
+    name: Log Inputs
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual inputs
+        run: |
+          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Build:** \`${{ inputs.build }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
+
   # Run import and create artifacts
   nominatim-data:
     name: Nominatim Data
