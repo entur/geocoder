@@ -1,4 +1,4 @@
-name: Photon - DEV
+name: DEV - Import+Photon
 
 on:
   workflow_dispatch:

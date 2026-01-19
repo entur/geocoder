@@ -1,4 +1,4 @@
-name: Proxy - TST→PRD
+name: PROD - Proxy
 
 on:
   push:

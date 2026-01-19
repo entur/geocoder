@@ -1,4 +1,4 @@
-name: Photon - TST→PRD
+name: PROD - Import+Photon
 
 on:
   schedule:
