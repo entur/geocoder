@@ -28,9 +28,10 @@ runs:
       id: generate
       shell: bash
       run: |
+        SHA=$(git rev-parse HEAD)
         BRANCH=$(git branch --show-current)
-        echo "GITHUB_SHA=$GITHUB_SHA, BRANCH=$BRANCH (GITHUB_REF_NAME=$GITHUB_REF_NAME)"
-        IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$GITHUB_SHA" "$BRANCH")
+        echo "SHA=$SHA, BRANCH=$BRANCH (GITHUB_SHA=$GITHUB_SHA, GITHUB_REF_NAME=$GITHUB_REF_NAME)"
+        IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$SHA" "$BRANCH")
 
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
