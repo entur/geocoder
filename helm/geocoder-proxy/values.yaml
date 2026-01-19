@@ -19,6 +19,7 @@ common:
     minReadySeconds: 10  # Wait 10 seconds after pod is ready before marking it available
   container:
     image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
+    imagePullPolicy: Always
     cpu: 0.3
     memory: 512
     probes:
