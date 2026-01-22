@@ -21,8 +21,8 @@ common:
   container:
     image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
     imagePullPolicy: Always
-    cpu: 500m
-    memory: 1536Mi
+    cpu: 0.5
+    memory: 1536
     probes:
       enabled: true
       spec:
