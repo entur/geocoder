@@ -43,6 +43,15 @@ dependencies {
     testImplementation(libs.kotlin.test)
 }
 
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "io.netty") {
+            useVersion("4.2.9.Final")
+            because("force latest version to fix CVE-2025-67735")
+        }
+    }
+}
+
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
