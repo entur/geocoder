@@ -1,6 +1,6 @@
 common:
   env: prd
-  replicas: 4
+  replicas: 6
   container:
     cpu: 0.5
     memory: 1536
@@ -14,4 +14,4 @@ common:
               type: Utilization
               averageUtilization: 80
       maxReplicas: 10
-      minReplicas: 4
+      minReplicas: 6
