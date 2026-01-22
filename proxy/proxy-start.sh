@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
-java -Xms256m -Xmx256m -XX:+UseZGC \
-     --enable-native-access=ALL-UNNAMED -jar proxy.jar
+# Align memory with helm/geocoder-proxy/values.yaml.  Helm values should be at least 25% higher.
+java -Xms384m -Xmx384m --enable-native-access=ALL-UNNAMED -jar proxy.jar

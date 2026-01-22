@@ -1,9 +1,6 @@
 common:
   env: prd
   replicas: 6
-  container:
-    cpu: 0.5
-    memory: 1536
   hpa:
     spec:
       metrics:

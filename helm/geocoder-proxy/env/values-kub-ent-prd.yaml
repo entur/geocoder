@@ -1,9 +1,6 @@
 common:
   env: prd
   replicas: 4
-  container:
-    cpu: 0.25
-    memory: 640
   ingress:
     host: geocoder-proxy.entur.io
     trafficType: api
