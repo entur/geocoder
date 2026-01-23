@@ -20,6 +20,9 @@ outputs:
   full_image:
     description: 'Full image reference (e.g., eu.gcr.io/entur-system-1287/my-image:main.20251103-SHA1234567)'
     value: ${{ steps.generate.outputs.full_image }}
+  latest_tag:
+    description: 'Branch-specific "latest" tag'
+    value: ${{ steps.generate.outputs.latest_tag }}
 
 runs:
   using: 'composite'
@@ -39,6 +42,7 @@ runs:
         echo "base_image=${BASE_IMAGE}" >> "$GITHUB_OUTPUT"
         echo "full_image=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
         echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+        echo "latest_tag=latest-${$BRANCH}" >> "$GITHUB_OUTPUT"
         
         echo "Base image: ${BASE_IMAGE}"
         echo "Full image reference: ${FULL_IMAGE}"
@@ -50,3 +54,4 @@ runs:
           echo "### Generated Docker Image Tag" >> "$GITHUB_STEP_SUMMARY"
           echo "**In:** image_name=\`${{ inputs.image_name }}\` registry=\`${{ inputs.registry }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Out:** image_tag=\`${{ steps.generate.outputs.image_tag }}\` base_image=\`${{ steps.generate.outputs.base_image }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "         latest_tag=\`${{ steps.generate.outputs.latest_tag }}\`" >> "$GITHUB_STEP_SUMMARY"

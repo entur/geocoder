@@ -77,7 +77,7 @@ runs:
         push: ${{ inputs.push }}
         tags: |
           ${{ steps.set-tag.outputs.full_image }}
-          ${{ steps.set-tag.outputs.base_image }}:latest
+          ${{ steps.set-tag.outputs.base_image }}:${{ steps.set-tag.outputs.latest_tag }}
         build-args: ${{ inputs.build_args }}
         provenance: false
 

@@ -94,7 +94,7 @@ jobs:
         id: build
         uses: ./.github/actions/build-photon-image
         with:
-          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || 'latest' }}
+          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || 'latest-prod' }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
