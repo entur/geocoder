@@ -13,11 +13,11 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.micrometer.core.instrument.Meter
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
-import io.micrometer.core.instrument.config.MeterFilter
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -78,8 +78,10 @@ class App {
                 registry = micrometerRegistry
                 meterBinders =
                     listOf(
-                        JvmMemoryMetrics(),
+                        ClassLoaderMetrics(),
                         JvmGcMetrics(),
+                        JvmMemoryMetrics(),
+                        JvmThreadMetrics(),
                         ProcessorMetrics(),
                     )
                 distributionStatisticConfig =
@@ -173,7 +175,7 @@ class App {
                 .getResourceAsStream(name)
                 ?.readBytes()
                 ?: throw IllegalStateException("$name not found")
-        )
+            )
 
         private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry =
