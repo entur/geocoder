@@ -21,7 +21,7 @@ common:
   container:
     image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
     imagePullPolicy: Always
-    cpu: 0.5
+    cpu: 2
     memory: 2560 # This is request mem. Limit is 20% higher.
     probes:
       enabled: true
