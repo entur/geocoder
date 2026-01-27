@@ -63,6 +63,47 @@ class PeliasResultTransformerTest {
         assertEquals(emptyList(), PeliasResultTransformer.transformCategory(null))
     }
 
+    @Test
+    fun `transformTransportExtra returns PeliasExtra with transport_mode and transport_submode`() {
+        val extra = Extra(transport_mode = "bus", transport_submode = "localBus")
+        val result = PeliasResultTransformer.transformTransportExtra(extra)
+
+        assertNotNull(result)
+        assertEquals("bus", result.transport_mode)
+        assertEquals("localBus", result.transport_submode)
+    }
+
+    @Test
+    fun `transformTransportExtra returns PeliasExtra with only transport_mode`() {
+        val extra = Extra(transport_mode = "rail")
+        val result = PeliasResultTransformer.transformTransportExtra(extra)
+
+        assertNotNull(result)
+        assertEquals("rail", result.transport_mode)
+        assertNull(result.transport_submode)
+    }
+
+    @Test
+    fun `transformTransportExtra returns PeliasExtra with only transport_submode`() {
+        val extra = Extra(transport_submode = "highSpeedRail")
+        val result = PeliasResultTransformer.transformTransportExtra(extra)
+
+        assertNotNull(result)
+        assertNull(result.transport_mode)
+        assertEquals("highSpeedRail", result.transport_submode)
+    }
+
+    @Test
+    fun `transformTransportExtra returns null when no transport data`() {
+        val extra = Extra(id = "123", tags = "legacy.source.osm")
+        assertNull(PeliasResultTransformer.transformTransportExtra(extra))
+    }
+
+    @Test
+    fun `transformTransportExtra returns null for null extra`() {
+        assertNull(PeliasResultTransformer.transformTransportExtra(null))
+    }
+
     @ParameterizedTest
     @CsvSource(
         "borough, 123456, whosonfirst:123456",
@@ -170,6 +211,37 @@ class PeliasResultTransformerTest {
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, distance)
 
         assertEquals(distance, peliasFeature.properties.distance?.toDouble())
+    }
+
+    @Test
+    fun `transformFeature includes extra with transport data for stop places`() {
+        val extra =
+            Extra(
+                id = "NSR:StopPlace:123",
+                tags = "legacy.source.nsr,legacy.layer.venue",
+                transport_mode = "bus",
+                transport_submode = "localBus",
+            )
+        val photonFeature = createPhotonFeature(name = "Bus Stop", extra = extra)
+        val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
+
+        val peliasExtra = peliasFeature.properties.extra
+        assertNotNull(peliasExtra)
+        assertEquals("bus", peliasExtra.transport_mode)
+        assertEquals("localBus", peliasExtra.transport_submode)
+    }
+
+    @Test
+    fun `transformFeature excludes extra when no transport data`() {
+        val extra =
+            Extra(
+                id = "W123",
+                tags = "legacy.source.osm,legacy.layer.venue",
+            )
+        val photonFeature = createPhotonFeature(name = "POI", extra = extra)
+        val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
+
+        assertNull(peliasFeature.properties.extra)
     }
 
     @ParameterizedTest

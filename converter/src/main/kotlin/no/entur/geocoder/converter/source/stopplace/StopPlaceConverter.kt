@@ -110,6 +110,8 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 alt_name = visibleAltStopNames.joinOsmValuesToString(),
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = visibleCategories.joinOsmValuesToString(),
+                transport_mode = stopPlace.transportMode,
+                transport_submode = extractTransportSubMode(stopPlace),
             )
 
         val nominatimId = NominatimId.stopplace.create(stopPlace.id)
@@ -204,6 +206,15 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
         val englishText = NorwegianToEnglishTranslator.translate(norwegianText)
         return "nor:$norwegianText;eng:$englishText"
     }
+
+    private fun extractTransportSubMode(stopPlace: StopPlace): String? =
+        stopPlace.busSubmode
+            ?: stopPlace.tramSubmode
+            ?: stopPlace.railSubmode
+            ?: stopPlace.metroSubmode
+            ?: stopPlace.airSubmode
+            ?: stopPlace.waterSubmode
+            ?: stopPlace.telecabinSubmode
 
     private fun tariffZoneAuthorityCategories(stopPlace: StopPlace): Set<String> = (
         stopPlace.tariffZones

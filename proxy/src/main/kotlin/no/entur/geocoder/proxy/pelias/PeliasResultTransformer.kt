@@ -161,6 +161,7 @@ object PeliasResultTransformer {
                     borough_gid = transformBoroughGid(extra?.borough_gid),
                     label = createLabel(props),
                     category = transformCategory(extra),
+                    extra = transformTransportExtra(extra),
                     tariff_zones = extra?.tariff_zones?.split(",", ";")?.map { it.trim() },
                     description = transformDescription(extra),
                 ),
@@ -230,6 +231,19 @@ object PeliasResultTransformer {
             ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
             ?.map { it.substringAfterLast(".") }
             ?: emptyList()
+
+    fun transformTransportExtra(extra: Extra?): PeliasExtra? {
+        val mode = extra?.transport_mode
+        val submode = extra?.transport_submode
+        return if (mode != null || submode != null) {
+            PeliasExtra(
+                transport_mode = mode,
+                transport_submode = submode,
+            )
+        } else {
+            null
+        }
+    }
 
     fun transformSource(extra: Extra?): String? =
         extra

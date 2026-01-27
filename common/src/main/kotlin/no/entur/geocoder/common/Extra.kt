@@ -14,4 +14,6 @@ data class Extra(
     val alt_name: String? = null,
     val description: String? = null,
     val tags: String? = null,
+    val transport_mode: String? = null,
+    val transport_submode: String? = null,
 )

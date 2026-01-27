@@ -561,4 +561,177 @@ class StopPlaceConverterTest {
             "Should contain authority category from FareZone AuthorityRef for RUT",
         )
     }
+
+    @Test
+    fun `transport_sub_mode should be extracted from BusSubmode`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlaceWithSubmode(
+                id = "NSR:StopPlace:1",
+                transportMode = "bus",
+                busSubmode = "localBus",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals("localBus", extra.transport_submode, "Should extract busSubmode as transport_sub_mode")
+    }
+
+    @Test
+    fun `transport_sub_mode should be extracted from RailSubmode`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlaceWithSubmode(
+                id = "NSR:StopPlace:2",
+                transportMode = "rail",
+                railSubmode = "highSpeedRail",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals("highSpeedRail", extra.transport_submode, "Should extract railSubmode as transport_sub_mode")
+    }
+
+    @Test
+    fun `transport_sub_mode should be null when no submode is present`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlace(
+                id = "NSR:StopPlace:3",
+                transportMode = "bus",
+                stopPlaceType = "onstreetBus",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals(null, extra.transport_submode, "transport_sub_mode should be null when no submode is present")
+    }
+
+    @Test
+    fun `stop places with BusSubmode in XML should have transport_submode in output`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
+        requireNotNull(xmlStream)
+
+        val input = streamToFile(xmlStream)
+        val output = File.createTempFile("transport_submode", ".json")
+        converter.convert(input, output)
+
+        val content = output.readText()
+
+        assertTrue(
+            content.contains("\"transport_submode\":\"localBus\""),
+            "Should contain transport_submode for stop place with BusSubmode",
+        )
+    }
+
+    @Test
+    fun `transport_mode should be extracted from TransportMode`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val stopPlace =
+            createStopPlaceWithSubmode(
+                id = "NSR:StopPlace:1",
+                transportMode = "bus",
+                busSubmode = "localBus",
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                stopPlace,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals("bus", extra.transport_mode, "Should extract transportMode as transport_mode")
+    }
+
+    @Test
+    fun `stop places should have transport_mode in output`() {
+        val converter = StopPlaceConverter(ConverterConfig())
+        val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
+        requireNotNull(xmlStream)
+
+        val input = streamToFile(xmlStream)
+        val output = File.createTempFile("transport_mode", ".json")
+        converter.convert(input, output)
+
+        val content = output.readText()
+
+        assertTrue(
+            content.contains("\"transport_mode\":\"bus\""),
+            "Should contain transport_mode for stop place with TransportMode",
+        )
+    }
+
+    private fun createStopPlaceWithSubmode(
+        id: String,
+        transportMode: String?,
+        busSubmode: String? = null,
+        railSubmode: String? = null,
+        name: String = "Test Stop",
+    ): StopPlace {
+        val nameText = StopPlace.LocalizedText().apply { text = name }
+        val location = StopPlace.Location(10.0, 60.0)
+        val centroid = StopPlace.Centroid(location)
+
+        return StopPlace(
+            id = id,
+            version = "1",
+            modification = "new",
+            created = null,
+            changed = null,
+            name = nameText,
+            centroid = centroid,
+            transportMode = transportMode,
+            busSubmode = busSubmode,
+            railSubmode = railSubmode,
+        )
+    }
 }
