@@ -225,7 +225,7 @@ class PeliasResultTransformerTest {
         val photonFeature = createPhotonFeature(name = "Bus Stop", extra = extra)
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
-        val peliasExtra = peliasFeature.properties.extra
+        val peliasExtra = peliasFeature.properties.mode
         assertNotNull(peliasExtra)
         assertEquals("bus", peliasExtra.transport_mode)
         assertEquals("localBus", peliasExtra.transport_submode)
@@ -241,7 +241,7 @@ class PeliasResultTransformerTest {
         val photonFeature = createPhotonFeature(name = "POI", extra = extra)
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
-        assertNull(peliasFeature.properties.extra)
+        assertNull(peliasFeature.properties.mode)
     }
 
     @ParameterizedTest

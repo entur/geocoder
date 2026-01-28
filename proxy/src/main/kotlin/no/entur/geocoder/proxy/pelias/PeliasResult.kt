@@ -43,13 +43,13 @@ data class PeliasResult(
         val borough_gid: String? = null,
         val label: String? = null,
         val category: List<String>? = null,
-        val extra: PeliasExtra? = null,
+        val mode: Mode? = null,
         val city: String? = null,
         val tariff_zones: List<String>? = null,
         val description: List<Map<String, String>>? = null,
     )
 
-    data class PeliasExtra(
+    data class Mode(
         val transport_mode: String? = null,
         val transport_submode: String? = null,
     )
