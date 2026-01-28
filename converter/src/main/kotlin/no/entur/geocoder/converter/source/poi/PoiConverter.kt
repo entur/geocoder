@@ -19,7 +19,7 @@ import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDateTime
 
-class PoiConverter(config: ConverterConfig) : Converter {
+class PoiConverter(private val config: ConverterConfig) : Converter {
     override fun convert(
         input: File,
         output: File,
@@ -69,8 +69,8 @@ class PoiConverter(config: ConverterConfig) : Converter {
                         object_type = "N",
                         object_id = nominatimId,
                         categories = indexedCategories,
-                        rank_address = 30,
-                        importance = 0.5.toBigDecimal(),
+                        rank_address = config.poi.rankAddress,
+                        importance = config.poi.importance.toBigDecimal(),
                         name = Name(name = name),
                         address = Address(),
                         postcode = null,

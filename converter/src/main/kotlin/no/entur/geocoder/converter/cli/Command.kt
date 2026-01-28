@@ -203,19 +203,11 @@ class Command(private val args: Array<String>) {
             if (configPath != null) {
                 File(configPath)
             } else {
-                val defaultConfig = File("converter.json")
-                if (defaultConfig.exists()) defaultConfig else null
+                File("converter.json")
             }
 
         val config = ConverterConfig.load(configFile)
-
-        if (configFile != null) {
-            if (configFile.exists()) {
-                println("Loaded configuration from: ${configFile.absolutePath}")
-            } else {
-                println("Config file not found: ${configFile.absolutePath}, using default configuration")
-            }
-        }
+        println("Loaded configuration from: ${configFile.absolutePath}")
         return config
     }
 

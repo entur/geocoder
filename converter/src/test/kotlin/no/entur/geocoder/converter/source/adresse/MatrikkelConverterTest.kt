@@ -2,7 +2,7 @@ package no.entur.geocoder.converter.source.adresse
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import no.entur.geocoder.converter.target.NominatimPlace
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -23,7 +23,7 @@ class MatrikkelConverterTest {
 
     @BeforeEach
     fun setup() {
-        converter = MatrikkelConverter(stedsnavnGmlFile = null, config = ConverterConfig())
+        converter = MatrikkelConverter(stedsnavnGmlFile = null, config = TestConfig.config)
         inputFile = getTestFile("Basisdata_3420_Elverum_25833_MatrikkelenAdresse.csv")
     }
 
@@ -78,7 +78,7 @@ class MatrikkelConverterTest {
     @Test
     fun `should populate county when stedsnavn GML file is provided`() {
         val stedsnavnFile = getTestFile("Basisdata_3420_Elverum_25833_Stedsnavn_GML.gml")
-        val fullConverter = MatrikkelConverter(stedsnavnGmlFile = stedsnavnFile, config = ConverterConfig())
+        val fullConverter = MatrikkelConverter(stedsnavnGmlFile = stedsnavnFile, config = TestConfig.config)
         val outputFile = tempDir.resolve("output_with_county.json").toFile()
 
         fullConverter.convert(inputFile, outputFile)

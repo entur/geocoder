@@ -24,7 +24,7 @@ import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamReader
 
-class StedsnavnConverter(config: ConverterConfig) : Converter {
+class StedsnavnConverter(private val config: ConverterConfig) : Converter {
     private val popularityCalculator = StedsnavnPopularityCalculator(config.stedsnavn)
     private val importanceCalculator = ImportanceCalculator(config.importance)
 
@@ -296,7 +296,7 @@ class StedsnavnConverter(config: ConverterConfig) : Converter {
                 object_type = "N",
                 object_id = nominatimId,
                 categories = indexedCategories,
-                rank_address = 16,
+                rank_address = config.stedsnavn.rankAddress,
                 importance =
                     importanceCalculator
                         .calculateImportance(

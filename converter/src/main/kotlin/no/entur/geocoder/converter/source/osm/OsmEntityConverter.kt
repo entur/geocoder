@@ -10,6 +10,7 @@ import no.entur.geocoder.common.LegacySource.whosonfirst
 import no.entur.geocoder.common.Util.titleize
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Text.joinOsmValuesToString
+import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimId
 import no.entur.geocoder.converter.target.NominatimPlace
@@ -25,6 +26,7 @@ class OsmEntityConverter(
     private val streetIndex: StreetIndex,
     private val popularityCalculator: OSMPopularityCalculator,
     private val importanceCalculator: ImportanceCalculator,
+    private val osmConfig: ConverterConfig.OsmConfig,
 ) {
     companion object {
         private const val OBJECT_TYPE_NODE = "N"
@@ -32,11 +34,6 @@ class OsmEntityConverter(
         private const val OBJECT_TYPE_RELATION = "R"
         private const val ACCURACY_POINT = "point"
         private const val ACCURACY_POLYGON = "polygon"
-        private const val RANK_BOUNDARY = 10
-        private const val RANK_PLACE = 20
-        private const val RANK_ROAD = 26
-        private const val RANK_BUILDING = 28
-        private const val RANK_POI = 30
     }
 
     fun convert(entity: Entity): NominatimPlace? {
@@ -216,14 +213,14 @@ class OsmEntityConverter(
 
     private fun determineRankAddress(tags: Map<String, String>): Int =
         when {
-            tags.containsKey("boundary") -> RANK_BOUNDARY
-            tags.containsKey("place") -> RANK_PLACE
-            tags.containsKey("road") -> RANK_ROAD
-            tags.containsKey("building") -> RANK_BUILDING
-            tags.containsKey("amenity") -> RANK_POI
-            tags.containsKey("shop") -> RANK_POI
-            tags.containsKey("tourism") -> RANK_POI
-            else -> RANK_POI
+            tags.containsKey("boundary") -> osmConfig.rankAddress.boundary
+            tags.containsKey("place") -> osmConfig.rankAddress.place
+            tags.containsKey("road") -> osmConfig.rankAddress.road
+            tags.containsKey("building") -> osmConfig.rankAddress.building
+            tags.containsKey("amenity") -> osmConfig.rankAddress.poi
+            tags.containsKey("shop") -> osmConfig.rankAddress.poi
+            tags.containsKey("tourism") -> osmConfig.rankAddress.poi
+            else -> osmConfig.rankAddress.poi
         }
 
     private fun calculateImportance(tags: Map<String, String>): BigDecimal {

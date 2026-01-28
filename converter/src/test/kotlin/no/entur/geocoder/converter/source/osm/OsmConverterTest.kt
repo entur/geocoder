@@ -2,7 +2,7 @@ package no.entur.geocoder.converter.source.osm
 
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Country
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import org.openstreetmap.osmosis.core.domain.v0_6.*
 import java.util.*
@@ -14,10 +14,18 @@ class OsmConverterTest {
         val wayCentroids = CoordinateStore(100)
         val adminBoundaryIndex = AdministrativeBoundaryIndex()
         val streetIndex = StreetIndex()
-        val config = ConverterConfig()
+        val config = TestConfig.config
         val popularityCalculator = OSMPopularityCalculator(config.osm)
         val importanceCalculator = ImportanceCalculator(config.importance)
-        return OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, streetIndex, popularityCalculator, importanceCalculator)
+        return OsmEntityConverter(
+            nodesCoords,
+            wayCentroids,
+            adminBoundaryIndex,
+            streetIndex,
+            popularityCalculator,
+            importanceCalculator,
+            config.osm,
+        )
     }
 
     @Test
@@ -422,12 +430,20 @@ class OsmConverterTest {
             )
         adminBoundaryIndex.addBoundary(municipalityBoundary)
 
-        val config = ConverterConfig()
+        val config = TestConfig.config
         val streetIndex = StreetIndex()
         val popularityCalculator = OSMPopularityCalculator(config.osm)
         val importanceCalculator = ImportanceCalculator(config.importance)
         val converter =
-            OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, streetIndex, popularityCalculator, importanceCalculator)
+            OsmEntityConverter(
+                nodesCoords,
+                wayCentroids,
+                adminBoundaryIndex,
+                streetIndex,
+                popularityCalculator,
+                importanceCalculator,
+                config.osm,
+            )
 
         val mockNode =
             createMockNode(

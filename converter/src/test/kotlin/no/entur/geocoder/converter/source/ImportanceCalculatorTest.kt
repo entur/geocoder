@@ -1,12 +1,12 @@
 package no.entur.geocoder.converter.source
 
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ImportanceCalculatorTest {
-    private val calculator = ImportanceCalculator(ConverterConfig().importance)
+    private val calculator = ImportanceCalculator(TestConfig.config.importance)
 
     @Test
     fun `output is always within valid range`() {

@@ -23,7 +23,7 @@ import no.entur.geocoder.converter.target.NominatimPlace.*
 import java.io.File
 import java.nio.file.Paths
 
-class StopPlaceConverter(config: ConverterConfig) : Converter {
+class StopPlaceConverter(private val config: ConverterConfig) : Converter {
     private val stopPlacePopularityCalculator = StopPlacePopularityCalculator(config.stopPlace)
     private val groupOfStopPlacesPopularityCalculator = GroupOfStopPlacesPopularityCalculator(config.groupOfStopPlaces)
     private val importanceCalculator = ImportanceCalculator(config.importance)
@@ -121,7 +121,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 object_type = "N",
                 object_id = nominatimId,
                 categories = indexedCategories,
-                rank_address = 30,
+                rank_address = config.stopPlace.rankAddress,
                 importance = importance,
                 parent_place_id = 0,
                 name =
@@ -325,7 +325,7 @@ class StopPlaceConverter(config: ConverterConfig) : Converter {
                 object_type = "N",
                 object_id = nominatimId,
                 categories = indexedCategories,
-                rank_address = 30,
+                rank_address = config.groupOfStopPlaces.rankAddress,
                 importance = importance,
                 parent_place_id = 0,
                 name = Name(name = groupName, alt_name = id),

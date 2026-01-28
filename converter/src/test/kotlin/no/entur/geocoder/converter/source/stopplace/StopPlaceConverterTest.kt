@@ -1,7 +1,7 @@
 package no.entur.geocoder.converter.source.stopplace
 
-import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.FileUtil.streamToFile
+import no.entur.geocoder.converter.TestConfig
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class StopPlaceConverterTest {
     @Test
     fun `funicular transportMode should be included in categories`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:1",
@@ -42,7 +42,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `bus transportMode should not be included in categories`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:2",
@@ -71,7 +71,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stopPlaceType should always be included in categories`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:3",
@@ -100,7 +100,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `parent stop place should include child stop types in categories`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val parentStopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:Parent",
@@ -142,7 +142,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `parent stop place should include child stop names in altNames`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:Parent",
@@ -176,7 +176,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `child stop names should be combined with existing alternative names`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlaceWithAltNames(
                 id = "NSR:StopPlace:Parent",
@@ -208,7 +208,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `altNames should be null when no alternative names and no child stops`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:1",
@@ -238,7 +238,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `altNames should use semicolon separator`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlaceWithAltNames(
                 id = "NSR:StopPlace:1",
@@ -321,7 +321,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `convert stopPlaces xml to nominatimDumpFile json`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream) { "stopPlaces.xml not found in test resources" }
 
@@ -339,7 +339,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `convert GroupOfStopPlaces to nominatim format`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream) { "stopPlaces.xml not found in test resources" }
 
@@ -361,7 +361,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `output file should contain valid JSON on each line`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -381,7 +381,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `all stop places should have coordinates`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -399,7 +399,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have transport mode categories`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -416,7 +416,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `output should have header as first line`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -437,7 +437,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have valid IDs`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -454,7 +454,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `GroupOfStopPlaces should have higher importance than individual stops`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream)
 
@@ -473,7 +473,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have names`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -490,7 +490,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `converted file should have multiple entries`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -504,7 +504,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have county_gid and locality_gid categories`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -524,7 +524,7 @@ class StopPlaceConverterTest {
     @ParameterizedTest
     @ValueSource(strings = ["nor:ved spor 19;eng:at track 19", "nor:foran Oslo S;eng:in front of Oslo S", "nor:i Storgata;eng:in Storgata"])
     fun `descriptions should be translated to both Norwegian and English`(text: String) {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/oslo.xml")
         requireNotNull(xmlStream)
 
@@ -542,7 +542,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have authority categories from FareZone AuthorityRef`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream)
 
@@ -564,7 +564,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `transport_sub_mode should be extracted from BusSubmode`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlaceWithSubmode(
                 id = "NSR:StopPlace:1",
@@ -592,7 +592,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `transport_sub_mode should be extracted from RailSubmode`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlaceWithSubmode(
                 id = "NSR:StopPlace:2",
@@ -620,7 +620,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `transport_sub_mode should be null when no submode is present`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlace(
                 id = "NSR:StopPlace:3",
@@ -648,7 +648,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places with BusSubmode in XML should have transport_submode in output`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream)
 
@@ -666,7 +666,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `transport_mode should be extracted from TransportMode`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
             createStopPlaceWithSubmode(
                 id = "NSR:StopPlace:1",
@@ -694,7 +694,7 @@ class StopPlaceConverterTest {
 
     @Test
     fun `stop places should have transport_mode in output`() {
-        val converter = StopPlaceConverter(ConverterConfig())
+        val converter = StopPlaceConverter(TestConfig.config)
         val xmlStream = this::class.java.getResourceAsStream("/stopPlaces.xml")
         requireNotNull(xmlStream)
 

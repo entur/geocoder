@@ -1,11 +1,11 @@
 package no.entur.geocoder.converter.source.stedsnavn
 
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class StedsnavnPopularityCalculatorTest {
-    private val calculator = StedsnavnPopularityCalculator(ConverterConfig().stedsnavn)
+    private val calculator = StedsnavnPopularityCalculator(TestConfig.config.stedsnavn)
 
     @Test
     fun `returns flat popularity value of 40`() {

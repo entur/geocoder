@@ -5,60 +5,26 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class CommandConfigTest {
     @TempDir
     lateinit var tempDir: Path
 
     @Test
-    fun `uses default config when no file exists and no -c flag`() {
+    fun `loads converter json from working directory when no -c flag`() {
+        // This test assumes converter.json exists in the working directory (converter module)
         val command = Command(emptyArray())
         val config = command.readConfig(null)
 
-        assertEquals(1.0, config.osm.defaultValue)
-        assertEquals(40.0, config.stedsnavn.defaultValue)
-    }
-
-    @Test
-    fun `loads converter json from working directory automatically when it exists`() {
-        val configFile = tempDir.resolve("auto-config.json").toFile()
-        configFile.writeText(
-            """
-            {
-              "osm": {
-                "defaultValue": 7.0
-              },
-              "stedsnavn": {
-                "defaultValue": 80.0
-              }
-            }
-            """.trimIndent(),
-        )
-
-        val command = Command(emptyArray())
-
-        val config = command.readConfig(configFile.absolutePath)
-
-        assertEquals(7.0, config.osm.defaultValue)
-        assertEquals(80.0, config.stedsnavn.defaultValue)
+        // Just verify it loaded successfully - values come from converter.json
+        assert(config.osm.filters.isNotEmpty()) { "Should have loaded OSM filters from converter.json" }
     }
 
     @Test
     fun `loads explicit config file when specified`() {
         val explicitConfig = tempDir.resolve("custom.json").toFile()
-        explicitConfig.writeText(
-            """
-            {
-              "osm": {
-                "defaultValue": 99.0
-              },
-              "matrikkel": {
-                "addressPopularity": 35.0,
-                "streetPopularity": 30.0
-              }
-            }
-            """.trimIndent(),
-        )
+        explicitConfig.writeText(FULL_CONFIG_JSON)
 
         val command = Command(emptyArray())
         val config = command.readConfig(explicitConfig.absolutePath)
@@ -69,12 +35,11 @@ class CommandConfigTest {
     }
 
     @Test
-    fun `falls back to defaults when specified config file does not exist`() {
+    fun `throws when specified config file does not exist`() {
         val command = Command(emptyArray())
-        val config = command.readConfig("/nonexistent/config.json")
-
-        assertEquals(1.0, config.osm.defaultValue)
-        assertEquals(40.0, config.stedsnavn.defaultValue)
+        assertFailsWith<IllegalArgumentException> {
+            command.readConfig("/nonexistent/config.json")
+        }
     }
 
     @Test
@@ -91,5 +56,52 @@ class CommandConfigTest {
         assert(converterJson.exists()) {
             "converter.json should exist at ${converterJson.absolutePath} for automatic loading"
         }
+    }
+
+    companion object {
+        private val FULL_CONFIG_JSON =
+            """
+            {
+              "osm": {
+                "defaultValue": 99.0,
+                "rankAddress": {
+                  "boundary": 10,
+                  "place": 20,
+                  "road": 26,
+                  "building": 28,
+                  "poi": 30
+                },
+                "filters": []
+              },
+              "stedsnavn": {
+                "defaultValue": 40.0,
+                "rankAddress": 16
+              },
+              "matrikkel": {
+                "addressPopularity": 35.0,
+                "streetPopularity": 30.0,
+                "rankAddress": 26
+              },
+              "poi": {
+                "importance": 0.5,
+                "rankAddress": 30
+              },
+              "stopPlace": {
+                "defaultValue": 50,
+                "rankAddress": 30,
+                "stopTypeFactors": {},
+                "interchangeFactors": {}
+              },
+              "groupOfStopPlaces": {
+                "gosBoostFactor": 10.0,
+                "rankAddress": 30
+              },
+              "importance": {
+                "minPopularity": 1.0,
+                "maxPopularity": 1000000000.0,
+                "floor": 0.1
+              }
+            }
+            """.trimIndent()
     }
 }

@@ -27,7 +27,7 @@ import java.io.File
 import java.io.FileReader
 import java.nio.file.Paths
 
-class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterConfig) : Converter {
+class MatrikkelConverter(val stedsnavnGmlFile: File? = null, private val config: ConverterConfig) : Converter {
     private val popularityCalculator = MatrikkelPopularityCalculator(config.matrikkel)
     private val importanceCalculator = ImportanceCalculator(config.importance)
     val kommuneFylkeMapping: Map<String, KommuneInfo> by lazy {
@@ -162,7 +162,7 @@ class MatrikkelConverter(val stedsnavnGmlFile: File? = null, config: ConverterCo
                 object_type = "N",
                 object_id = placeId,
                 categories = indexedCategories,
-                rank_address = 26,
+                rank_address = config.matrikkel.rankAddress,
                 importance = importanceCalculator.calculateImportance(popularity).toBigDecimalWithScale(),
                 parent_place_id = 0,
                 name =

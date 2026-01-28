@@ -1,6 +1,6 @@
 package no.entur.geocoder.converter.source.stopplace
 
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.Test
@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GroupOfStopPlacesPopularityCalculatorTest {
-    private val calculator = GroupOfStopPlacesPopularityCalculator(ConverterConfig().groupOfStopPlaces)
+    private val calculator = GroupOfStopPlacesPopularityCalculator(TestConfig.config.groupOfStopPlaces)
 
     @Test
     fun `single member group has boosted popularity`() {

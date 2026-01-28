@@ -5,7 +5,10 @@ import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.target.NominatimPlace
-import org.openstreetmap.osmosis.core.domain.v0_6.*
+import org.openstreetmap.osmosis.core.domain.v0_6.Entity
+import org.openstreetmap.osmosis.core.domain.v0_6.EntityType
+import org.openstreetmap.osmosis.core.domain.v0_6.Relation
+import org.openstreetmap.osmosis.core.domain.v0_6.Way
 import java.io.File
 import java.nio.file.Paths
 
@@ -33,7 +36,15 @@ class OsmConverter(config: ConverterConfig) : Converter {
     private val popularityCalculator = OSMPopularityCalculator(config.osm)
     private val importanceCalculator = ImportanceCalculator(config.importance)
     private val entityConverter =
-        OsmEntityConverter(nodesCoords, wayCentroids, adminBoundaryIndex, streetIndex, popularityCalculator, importanceCalculator)
+        OsmEntityConverter(
+            nodesCoords,
+            wayCentroids,
+            adminBoundaryIndex,
+            streetIndex,
+            popularityCalculator,
+            importanceCalculator,
+            config.osm,
+        )
 
     override fun convert(input: File, output: File, isAppending: Boolean) {
         require(input.exists()) { "Input file does not exist: ${input.absolutePath}" }

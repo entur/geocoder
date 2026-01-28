@@ -1,6 +1,6 @@
 package no.entur.geocoder.converter.source.stopplace
 
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import no.entur.geocoder.converter.source.stopplace.StopPlace.Centroid
 import no.entur.geocoder.converter.source.stopplace.StopPlace.Location
 import kotlin.test.Test
@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class StopPlacePopularityCalculatorTest {
-    private val calculator = StopPlacePopularityCalculator(ConverterConfig().stopPlace)
+    private val calculator = StopPlacePopularityCalculator(TestConfig.config.stopPlace)
 
     @Test
     fun `basic stop place returns expected popularity`() {

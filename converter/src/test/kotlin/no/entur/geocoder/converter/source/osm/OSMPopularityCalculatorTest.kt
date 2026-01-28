@@ -1,13 +1,13 @@
 package no.entur.geocoder.converter.source.osm
 
-import no.entur.geocoder.converter.ConverterConfig
+import no.entur.geocoder.converter.TestConfig
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OSMPopularityCalculatorTest {
-    private val calculator = OSMPopularityCalculator(ConverterConfig().osm)
+    private val calculator = OSMPopularityCalculator(TestConfig.config.osm)
 
     @Test
     fun `calculates popularity as base times priority`() {

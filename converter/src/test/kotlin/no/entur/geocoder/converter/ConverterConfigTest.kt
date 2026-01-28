@@ -4,6 +4,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -12,70 +13,24 @@ class ConverterConfigTest {
     lateinit var tempDir: Path
 
     @Test
-    fun `loads default config when file is null`() {
-        val config = ConverterConfig.load(null)
-
-        assertNotNull(config)
-        assertEquals(1.0, config.osm.defaultValue)
-        assertEquals(40.0, config.stedsnavn.defaultValue)
-        assertEquals(20.0, config.matrikkel.addressPopularity)
-        assertEquals(20.0, config.matrikkel.streetPopularity)
-        assertEquals(50, config.stopPlace.defaultValue)
-        assertEquals(10.0, config.groupOfStopPlaces.gosBoostFactor)
-        assertEquals(1.0, config.importance.minPopularity)
-        assertEquals(1_000_000_000.0, config.importance.maxPopularity)
-        assertEquals(0.1, config.importance.floor)
+    fun `throws when config file is null`() {
+        assertFailsWith<IllegalArgumentException> {
+            ConverterConfig.load(null)
+        }
     }
 
     @Test
-    fun `loads default config when file does not exist`() {
+    fun `throws when config file does not exist`() {
         val nonExistentFile = tempDir.resolve("nonexistent.json").toFile()
-        val config = ConverterConfig.load(nonExistentFile)
-
-        assertNotNull(config)
-        assertEquals(1.0, config.osm.defaultValue)
-        assertEquals(40.0, config.stedsnavn.defaultValue)
+        assertFailsWith<IllegalArgumentException> {
+            ConverterConfig.load(nonExistentFile)
+        }
     }
 
     @Test
     fun `loads config from valid JSON file`() {
         val configFile = tempDir.resolve("test-config.json").toFile()
-        configFile.writeText(
-            """
-            {
-              "osm": {
-                "defaultValue": 2.0,
-                "filters": [
-                  {"key": "amenity", "value": "hospital", "priority": 9}
-                ]
-              },
-              "stedsnavn": {
-                "defaultValue": 50.0
-              },
-              "matrikkel": {
-                "addressPopularity": 30.0,
-                "streetPopularity": 25.0
-              },
-              "stopPlace": {
-                "defaultValue": 60,
-                "stopTypeFactors": {
-                  "busStation": 3.0
-                },
-                "interchangeFactors": {
-                  "recommendedInterchange": 4.0
-                }
-              },
-              "groupOfStopPlaces": {
-                "gosBoostFactor": 15.0
-              },
-              "importance": {
-                "minPopularity": 2.0,
-                "maxPopularity": 500000000.0,
-                "floor": 0.2
-              }
-            }
-            """.trimIndent(),
-        )
+        configFile.writeText(FULL_CONFIG_JSON)
 
         val config = ConverterConfig.load(configFile)
 
@@ -98,99 +53,135 @@ class ConverterConfigTest {
     }
 
     @Test
-    fun `uses defaults for missing config sections`() {
+    fun `throws on missing required section`() {
         val configFile = tempDir.resolve("partial-config.json").toFile()
         configFile.writeText(
             """
             {
               "osm": {
-                "defaultValue": 3.0
+                "defaultValue": 3.0,
+                "rankAddress": {"boundary": 10, "place": 20, "road": 26, "building": 28, "poi": 30},
+                "filters": []
               }
             }
             """.trimIndent(),
         )
 
-        val config = ConverterConfig.load(configFile)
-
-        // Custom osm value
-        assertEquals(3.0, config.osm.defaultValue)
-
-        // Default values for other sections
-        assertEquals(40.0, config.stedsnavn.defaultValue)
-        assertEquals(20.0, config.matrikkel.addressPopularity)
-        assertEquals(50, config.stopPlace.defaultValue)
+        assertFailsWith<Exception> {
+            ConverterConfig.load(configFile)
+        }
     }
 
     @Test
-    fun `fallback to defaults on malformed JSON`() {
+    fun `throws on malformed JSON`() {
         val configFile = tempDir.resolve("malformed.json").toFile()
         configFile.writeText("{ invalid json }")
 
-        val config = ConverterConfig.load(configFile)
-
-        // Should fall back to defaults
-        assertEquals(1.0, config.osm.defaultValue)
-        assertEquals(40.0, config.stedsnavn.defaultValue)
+        assertFailsWith<Exception> {
+            ConverterConfig.load(configFile)
+        }
     }
 
     @Test
-    fun `OSM filters are loaded correctly`() {
-        val config = ConverterConfig.load(null)
+    fun `throws on unknown property in JSON (ensures all JSON values are used)`() {
+        val configFile = tempDir.resolve("unknown-prop.json").toFile()
+        configFile.writeText(
+            FULL_CONFIG_JSON.replace(
+                "\"osm\":",
+                "\"unknownSection\": {}, \"osm\":",
+            ),
+        )
 
-        assertTrue(config.osm.filters.isNotEmpty(), "Should have default filters")
+        assertFailsWith<Exception> {
+            ConverterConfig.load(configFile)
+        }
+    }
+
+    @Test
+    fun `loads rankAddress values from JSON`() {
+        val configFile = tempDir.resolve("rankaddress-config.json").toFile()
+        configFile.writeText(FULL_CONFIG_JSON)
+
+        val config = ConverterConfig.load(configFile)
+
+        // OSM rank address
+        assertEquals(5, config.osm.rankAddress.boundary)
+        assertEquals(15, config.osm.rankAddress.place)
+        assertEquals(22, config.osm.rankAddress.road)
+        assertEquals(25, config.osm.rankAddress.building)
+        assertEquals(28, config.osm.rankAddress.poi)
+
+        // Other converter rank address
+        assertEquals(12, config.stedsnavn.rankAddress)
+        assertEquals(24, config.matrikkel.rankAddress)
+        assertEquals(0.6, config.poi.importance)
+        assertEquals(29, config.poi.rankAddress)
+        assertEquals(28, config.stopPlace.rankAddress)
+        assertEquals(27, config.groupOfStopPlaces.rankAddress)
+    }
+
+    @Test
+    fun `loads actual converter json successfully`() {
+        val config = TestConfig.config
+
+        assertNotNull(config)
+        assertTrue(config.osm.filters.isNotEmpty(), "Should have filters")
         assertTrue(
             config.osm.filters.any { it.key == "amenity" && it.value == "hospital" },
             "Should include hospital filter",
         )
-        assertTrue(
-            config.osm.filters.any { it.key == "amenity" && it.value == "restaurant" },
-            "Should include restaurant filter",
-        )
     }
 
-    @Test
-    fun `config is used by popularity calculators`() {
-        val configFile = tempDir.resolve("calculator-test.json").toFile()
-        configFile.writeText(
+    companion object {
+        private val FULL_CONFIG_JSON =
             """
             {
               "osm": {
-                "defaultValue": 5.0,
+                "defaultValue": 2.0,
+                "rankAddress": {
+                  "boundary": 5,
+                  "place": 15,
+                  "road": 22,
+                  "building": 25,
+                  "poi": 28
+                },
                 "filters": [
-                  {"key": "amenity", "value": "hospital", "priority": 8}
+                  {"key": "amenity", "value": "hospital", "priority": 9}
                 ]
               },
               "stedsnavn": {
-                "defaultValue": 100.0
+                "defaultValue": 50.0,
+                "rankAddress": 12
               },
               "matrikkel": {
-                "addressPopularity": 50.0,
-                "streetPopularity": 45.0
+                "addressPopularity": 30.0,
+                "streetPopularity": 25.0,
+                "rankAddress": 24
+              },
+              "poi": {
+                "importance": 0.6,
+                "rankAddress": 29
+              },
+              "stopPlace": {
+                "defaultValue": 60,
+                "rankAddress": 28,
+                "stopTypeFactors": {
+                  "busStation": 3.0
+                },
+                "interchangeFactors": {
+                  "recommendedInterchange": 4.0
+                }
+              },
+              "groupOfStopPlaces": {
+                "gosBoostFactor": 15.0,
+                "rankAddress": 27
+              },
+              "importance": {
+                "minPopularity": 2.0,
+                "maxPopularity": 500000000.0,
+                "floor": 0.2
               }
             }
-            """.trimIndent(),
-        )
-
-        val config = ConverterConfig.load(configFile)
-
-        // Test OSM popularity calculator
-        val osmCalc =
-            no.entur.geocoder.converter.source.osm
-                .OSMPopularityCalculator(config.osm)
-        val hospitalPop = osmCalc.calculatePopularity(mapOf("amenity" to "hospital"))
-        assertEquals(40.0, hospitalPop) // 5.0 * 8 = 40.0
-
-        // Test Stedsnavn popularity calculator
-        val stedsnavnCalc =
-            no.entur.geocoder.converter.source.stedsnavn
-                .StedsnavnPopularityCalculator(config.stedsnavn)
-        assertEquals(100.0, stedsnavnCalc.calculatePopularity())
-
-        // Test Matrikkel popularity calculator
-        val matrikkelCalc =
-            no.entur.geocoder.converter.source.adresse
-                .MatrikkelPopularityCalculator(config.matrikkel)
-        assertEquals(50.0, matrikkelCalc.calculateAddressPopularity())
-        assertEquals(45.0, matrikkelCalc.calculateStreetPopularity())
+            """.trimIndent()
     }
 }

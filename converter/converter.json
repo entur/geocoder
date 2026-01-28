@@ -1,6 +1,13 @@
 {
   "osm": {
     "defaultValue": 1.0,
+    "rankAddress": {
+      "boundary": 10,
+      "place": 20,
+      "road": 26,
+      "building": 28,
+      "poi": 30
+    },
     "filters": [
       {"key": "amenity", "value": "hospital", "priority": 9},
       {"key": "amenity", "value": "school", "priority": 9},
@@ -60,14 +67,21 @@
     ]
   },
   "stedsnavn": {
-    "defaultValue": 40.0
+    "defaultValue": 40.0,
+    "rankAddress": 16
   },
   "matrikkel": {
     "addressPopularity": 20.0,
-    "streetPopularity": 20.0
+    "streetPopularity": 20.0,
+    "rankAddress": 26
+  },
+  "poi": {
+    "importance": 0.5,
+    "rankAddress": 30
   },
   "stopPlace": {
     "defaultValue": 50,
+    "rankAddress": 30,
     "stopTypeFactors": {
       "busStation": 2.0,
       "metroStation": 2.0,
@@ -79,7 +93,8 @@
     }
   },
   "groupOfStopPlaces": {
-    "gosBoostFactor": 10.0
+    "gosBoostFactor": 10.0,
+    "rankAddress": 30
   },
   "importance": {
     "minPopularity": 1.0,
