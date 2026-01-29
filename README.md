@@ -17,8 +17,10 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 
 ### TST/PRD Environments (`prod` branch)
 
-**Proxy** - Automatic deployment:
-- Push to `prod` branch → Builds → Deploys to **TST** → Tests → Deploys to **PRD** → Tests
+**Proxy** - Manual deployment:
+- Push to `prod` branch, and go to [photon-prod.yml](https://github.com/entur/geocoder/actions/workflows/photon-prod.yml) → Run workflow:
+  - `Build and deploy` - Full build and deploy
+  - `Deploy specified image` - Deploy an existing image tag
 
 **Photon** - Automatic scheduled deployment:
 - **Daily at 07:32 UTC** - Automatic download and deployment (TST → PRD) of the `prod` branch.

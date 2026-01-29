@@ -15,7 +15,7 @@ IMAGE="${REGISTRY}/${IMAGE_NAME}"
 TAGS=$(gcloud container images list-tags "$IMAGE" --filter "$IMAGE_TAG" --format="get(tags)" --limit=1)
 
 # Extract the semantic tag
-RESOLVED_TAG=$(echo "$TAGS" | tr ';' '\n' | grep -v "^${IMAGE_TAG}$" | head -n 1)
+RESOLVED_TAG=$(echo "$TAGS" | tr ';' '\n' | grep -v "^latest" | head -n 1)
 
 if [ -z "$RESOLVED_TAG" ]; then
   echo "Error: Could not resolve '$IMAGE_TAG' to a semantic tag" >&2

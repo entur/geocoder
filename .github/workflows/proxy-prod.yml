@@ -1,21 +1,17 @@
 name: PROD - Proxy
 
 on:
-  push:
-    branches: [ prod ]
-    paths:
-      - 'proxy/**'
-      - 'common/**'
-      - 'gradle/**'
-      - '*gradle*'
-      - '.github/workflows/proxy-prod.yml'
-      - '.github/actions/**'
-      - '!**/*.md'
-      - 'helm/geocoder-proxy/**'
   workflow_dispatch:
     inputs:
+      mode:
+        description: 'PROD Deployment'
+        required: true
+        type: choice
+        options:
+          - 'Build and deploy'
+          - 'Deploy specified image'
       image_tag:
-        description: 'Image tag to deploy to TST→PRD'
+        description: 'Image tag (only for "Deploy specified image")'
         required: false
         type: string
 
@@ -26,18 +22,40 @@ concurrency:
 jobs:
   log-inputs:
     name: Log Inputs
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Log manual inputs
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Mode:** \`${{ inputs.mode }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
 
+  resolve-tag:
+    name: Resolve Tag
+    if: inputs.mode == 'Deploy specified image'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.resolve.outputs.resolved_tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: prod
+
+      - name: Resolve image tag
+        id: resolve
+        uses: ./.github/actions/resolve-image-tag
+        with:
+          image_name: geocoder-proxy
+          image_tag: ${{ inputs.image_tag }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
   lint:
-    if: |
-      github.event_name == 'push'
     name: Lint
+    if: inputs.mode == 'Build and deploy'
     uses: entur/gha-docker/.github/workflows/lint.yml@v1
     with:
       dockerfile: proxy/Dockerfile
@@ -48,7 +66,7 @@ jobs:
     needs: lint
     if: |
       !cancelled() &&
-      github.event_name == 'push' &&
+      inputs.mode == 'Build and deploy' &&
       needs.lint.result == 'success'
     runs-on: ubuntu-latest
     permissions:
@@ -78,7 +96,7 @@ jobs:
         with:
           image_name: geocoder-proxy
           context: proxy
-          push: ${{ github.ref == 'refs/heads/prod' }}
+          push: true
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -87,8 +105,8 @@ jobs:
     needs: build-push
     if: |
       !cancelled() &&
-      needs.build-push.result == 'success' &&
-      github.event_name == 'push'
+      inputs.mode == 'Build and deploy' &&
+      needs.build-push.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -122,15 +140,15 @@ jobs:
 
   deploy-tst:
     name: Staging
-    needs: [ build-push, scan, helm-lint ]
+    needs: [ build-push, scan, helm-lint, resolve-tag ]
     if: |
       !cancelled() &&
       needs.helm-lint.result == 'success' &&
-      (needs.scan.result == 'success' || github.event_name == 'workflow_dispatch')
+      (needs.scan.result == 'success' || needs.resolve-tag.result == 'success')
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: tst
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -151,11 +169,11 @@ jobs:
     if: |
       !cancelled() &&
       needs.acceptance-tests-tst.result == 'success'
-    needs: [ build-push, acceptance-tests-tst ]
+    needs: [ build-push, resolve-tag, acceptance-tests-tst ]
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
       environment: prd
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
