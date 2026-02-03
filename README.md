@@ -39,20 +39,21 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 cd photon
 ./download-photon-jar.sh
 
-# EITHER download source data, convert to nominatim.ndjson, and create the photon index
-../converter/create-nominatim-data.sh
-./create-photon-data.sh
+# EITHER download source data, convert to nominatim.ndjson
+../converter/create-nominatim-data.sh -z
 
-# OR download the latest nominatim.ndjson build by Github Actions and create the photon index
+# OR download the latest nominatim.ndjson build by Github Actions
 ../converter/download-latest-nominatim-data.sh
-./create-photon-data.sh
+
+# Create the photon index
+./create-photon-data.sh nominatim.ndjson.gz
 
 # OR just download the latest Photon search index built by Github Actions
 rm -rf photon_data
 ./download-latest-photon-data.sh
 
 # Run Photon
-java -jar photon.jar
+./photon-start.sh
 
 # Switch to a different terminal and start the proxy (or just run `no.entur.geocoder.proxy.AppKt` from your IDE)
 cd ../proxy

@@ -7,7 +7,7 @@ STEDSNAVN_URL=https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Ba
 TIAMAT_URL=https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip
 POI_URL=https://raw.githubusercontent.com/entur/geocoder-data/refs/heads/main/festivals_netex_poi.xml
 
-SCRIPTDIR=$(cd $(dirname $0); pwd)
+SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 CONVERT="$SCRIPTDIR/convert.sh"
 
 COMPRESS=false
@@ -70,7 +70,7 @@ echo "Created nominatim.ndjson in $((END_TIME - START_TIME)) seconds."
 if $COMPRESS; then
   echo "Creating compressed nominatim.ndjson.gz..."
   START_TIME=$(date +%s)
-  gzip -k nominatim.ndjson
+  gzip -k -1 nominatim.ndjson
   END_TIME=$(date +%s)
   echo "Done in $((END_TIME - START_TIME)) seconds."
 fi

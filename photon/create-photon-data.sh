@@ -2,7 +2,7 @@
 
 set -eu
 
-NOMINATIM_FILE=nominatim.ndjson
+NOMINATIM_FILE="${1:-nominatim.ndjson}"
 PHOTON_JAR=photon.jar
 
 fail() {
@@ -19,14 +19,20 @@ if [ ! -f "$PHOTON_JAR" ]; then
   fail "PHOTON_JAR must be a valid file path"
 fi
 
-[ -f "$NOMINATIM_FILE.gz" ] && gzip -d $NOMINATIM_FILE.gz
-[ -f "$NOMINATIM_FILE" ] || fail "$NOMINATIM_FILE not found. Please run create-nominatim-data.sh in converter first."
+[ -f "$NOMINATIM_FILE" ] || fail "Nominatim file '$NOMINATIM_FILE' not found. Please run create-nominatim-data.sh in converter/ first."
+
+IMPORT_FILE="$NOMINATIM_FILE"
+if echo "$NOMINATIM_FILE" | grep -q '\.gz$'; then
+  echo "Decompressing $NOMINATIM_FILE..."
+  gzip -d -f -k "$NOMINATIM_FILE"
+  IMPORT_FILE="${NOMINATIM_FILE%.gz}"
+fi
 
 START_TIME=$(date +%s)
 java -jar "$PHOTON_JAR" \
         import \
         -j 4 \
-        -import-file nominatim.ndjson \
+        -import-file "$IMPORT_FILE" \
         -languages no,en \
         -extra-tags ALL
 END_TIME=$(date +%s)
