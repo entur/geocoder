@@ -38,7 +38,7 @@ runs:
 
     - name: Run create-nominatim-data.sh
       shell: bash
-      run: ./create-nominatim-data.sh -z
+      run: ./create-nominatim-data.sh config/prod.conf -z
       working-directory: converter
 
     - name: Generate stats summary

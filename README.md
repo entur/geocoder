@@ -40,7 +40,7 @@ cd photon
 ./download-photon-jar.sh
 
 # EITHER download source data, convert to nominatim.ndjson
-../converter/create-nominatim-data.sh -z
+../converter/create-nominatim-data.sh config/prod.conf -z
 
 # OR download the latest nominatim.ndjson build by Github Actions
 ../converter/download-latest-nominatim-data.sh
