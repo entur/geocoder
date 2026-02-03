@@ -67,7 +67,7 @@ class NetexParser {
                     )) {
                         yield(groupOfStopPlaces)
                     }
-                } catch (_: IllegalStateException) {
+                } catch (_: NoSuchElementException) {
                     // Element not found, return empty sequence
                 } finally {
                     netexReader.close()
@@ -79,17 +79,21 @@ class NetexParser {
     internal fun extractTopoPlaces(netexXml: File): MutableMap<String, TopographicPlace> {
         val netexReader: XMLStreamReader = createReader(netexXml, xmlInputFactory)
 
-        moveToStartElement(netexReader, "topographicPlaces")
-        val topoPlaces = mutableMapOf<String, TopographicPlace>()
-        for (topoPlace in elementSequence<TopographicPlace>(
-            netexReader,
-            xmlMapper,
-            "TopographicPlace",
-            "topographicPlaces",
-        )) {
-            topoPlace.id?.let { topoPlaces[it] = topoPlace }
+        try {
+            moveToStartElement(netexReader, "topographicPlaces")
+            val topoPlaces = mutableMapOf<String, TopographicPlace>()
+            for (topoPlace in elementSequence<TopographicPlace>(
+                netexReader,
+                xmlMapper,
+                "TopographicPlace",
+                "topographicPlaces",
+            )) {
+                topoPlace.id?.let { topoPlaces[it] = topoPlace }
+            }
+            return topoPlaces
+        } catch (_: NoSuchElementException) {
+            return mutableMapOf()
         }
-        return topoPlaces
     }
 
     private fun extractStopPlaceTypes(netexXml: File): MutableMap<String, List<String>> {
@@ -124,7 +128,7 @@ class NetexParser {
             )) {
                 fareZone.id?.let { fareZones[it] = fareZone }
             }
-        } catch (_: IllegalStateException) {
+        } catch (_: NoSuchElementException) {
             // Element not found, return empty map
         } finally {
             netexReader.close()

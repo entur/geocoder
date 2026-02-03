@@ -3,8 +3,8 @@ package no.entur.geocoder.converter.source.stopplace
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -56,7 +56,7 @@ object Xml {
                 return
             }
         }
-        throw IllegalStateException("Element <$elementName> not found in XML stream.")
+        throw NoSuchElementException("Element <$elementName> not found in XML stream.")
     }
 
     inline fun <reified C> elementSequence(
