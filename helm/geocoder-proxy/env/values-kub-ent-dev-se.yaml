@@ -1,0 +1,9 @@
+common:
+  env: dev
+  ingress:
+    host: geocoder-proxy-se.dev.entur.io
+    trafficType: public
+  container:
+    env:
+      - name: PHOTON_URL
+        value: http://geocoder-photon-se:2322

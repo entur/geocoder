@@ -31,7 +31,10 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientCon
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
 
 class App {
-    val photonBaseUrl = if (Environment.detect() == CONSOLE) "http://localhost:2322" else "http://geocoder-photon"
+    val photonBaseUrl = when {
+        Environment.detect() == CONSOLE -> "http://localhost:2322"
+        else -> System.getenv("PHOTON_URL") ?: "http://geocoder-photon"
+    }
     val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
 
     fun startServer() {

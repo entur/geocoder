@@ -1,0 +1,65 @@
+name: DEV - Variant Proxy
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Variant'
+        required: true
+        type: choice
+        options:
+          - 'se'
+      image_tag:
+        description: 'Proxy image tag (defaults to latest-main)'
+        required: false
+        type: string
+        default: 'latest-main'
+
+concurrency:
+  group: "${{ github.workflow }}-${{ inputs.variant }}"
+  cancel-in-progress: true
+
+jobs:
+  log-inputs:
+    name: Log Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual inputs
+        run: |
+          echo "### Variant Proxy Inputs" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Variant:** \`${{ inputs.variant }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Image tag:** \`${{ inputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  helm-lint:
+    name: Helm Lint
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    with:
+      environment: dev
+      chart: helm/geocoder-proxy
+      values: values-kub-ent-dev-${{ inputs.variant }}.yaml
+
+  deploy:
+    name: Deploy
+    needs: helm-lint
+    if: needs.helm-lint.result == 'success'
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: dev
+      image: "geocoder-proxy:${{ inputs.image_tag }}"
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy-${{ inputs.variant }}
+      values: values-kub-ent-dev-${{ inputs.variant }}.yaml
+    secrets: inherit
+
+  notify-slack:
+    needs: deploy
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* (${{ inputs.variant }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

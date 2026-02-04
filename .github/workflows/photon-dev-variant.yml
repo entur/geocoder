@@ -1,0 +1,166 @@
+name: DEV - Variant Import+Photon
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Variant'
+        required: true
+        type: choice
+        options:
+          - 'se'
+      config:
+        description: 'Config file for import'
+        required: true
+        type: choice
+        options:
+          - 'config/sweden-test.conf'
+      build:
+        description: 'Build mode'
+        required: true
+        type: choice
+        options:
+          - 'Download data -> Photon image -> deploy'
+          - 'Use latest data -> Photon image -> deploy'
+          - 'Deploy specified Photon image'
+      photon_image_tag:
+        description: 'Photon image tag (only for "Deploy specified")'
+        required: false
+        type: string
+
+concurrency:
+  group: "${{ github.workflow }}-${{ inputs.variant }}"
+  cancel-in-progress: true
+
+jobs:
+  log-inputs:
+    name: Log Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual inputs
+        run: |
+          echo "### Variant Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Variant:** \`${{ inputs.variant }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Config:** \`${{ inputs.config }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Build:** \`${{ inputs.build }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  nominatim-data:
+    name: Nominatim Data
+    if: inputs.build == 'Download data -> Photon image -> deploy'
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build nominatim data
+        id: build
+        uses: ./.github/actions/build-nominatim-data
+        with:
+          config: ${{ inputs.config }}
+          suffix: -${{ inputs.variant }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  lint:
+    name: Lint
+    if: "!cancelled()"
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: photon/Dockerfile
+      ignore: "DL3018,DL3059"
+
+  photon:
+    name: Photon Image
+    needs: [ nominatim-data, lint ]
+    if: |
+      !cancelled() &&
+      needs.lint.result == 'success' &&
+      (needs.nominatim-data.result == 'success' || inputs.build == 'Use latest data -> Photon image -> deploy')
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build Photon image
+        id: build
+        uses: ./.github/actions/build-photon-image
+        with:
+          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || format('latest-{0}', inputs.variant) }}
+          suffix: -${{ inputs.variant }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  scan:
+    name: Scan
+    needs: photon
+    if: |
+      !cancelled() &&
+      needs.photon.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Security Scan
+        uses: ./.github/actions/docker-scan
+        with:
+          image: "geocoder-photon-${{ inputs.variant }}:${{ needs.photon.outputs.image_tag }}"
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  helm-lint:
+    name: Helm Lint
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    with:
+      environment: dev
+      chart: helm/geocoder-photon
+      values: values-kub-ent-dev-${{ inputs.variant }}.yaml
+
+  deploy-photon:
+    name: Deploy Photon
+    needs: [ photon, scan, helm-lint ]
+    if: |
+      !cancelled() &&
+      needs.helm-lint.result == 'success' &&
+      (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image')
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: dev
+      image: "geocoder-photon-${{ inputs.variant }}:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon-${{ inputs.variant }}
+      values: values-kub-ent-dev-${{ inputs.variant }}.yaml
+    secrets: inherit
+
+  notify-slack:
+    needs: deploy-photon
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* (${{ inputs.variant }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
