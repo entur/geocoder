@@ -6,4 +6,4 @@ common:
   container:
     env:
       - name: PHOTON_URL
-        value: http://geocoder-photon-se:2322
+        value: http://geocoder-photon-se
