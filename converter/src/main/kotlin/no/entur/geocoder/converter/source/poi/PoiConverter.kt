@@ -32,7 +32,7 @@ class PoiConverter(private val config: ConverterConfig) : Converter {
 
     private fun extractTopographicPlaces(input: File): List<NominatimPlace> {
         val topoPlaces = NetexParser().extractTopoPlaces(input)
-        val now = LocalDateTime.of(2025, 11, 14, 0, 0, 0)
+        val now = LocalDateTime.now()
         return topoPlaces.values
             .filter { topoPlace ->
                 val validFrom = topoPlace.validBetween?.fromDate
