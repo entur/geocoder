@@ -114,8 +114,8 @@ esac
 . "$CONFIG_FILE"
 
 # Verify at least one source is configured
-if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
-    fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, STOPPLACE_URL, OSM_URL"
+if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
+    fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
 fi
 
 # Check dependencies
@@ -146,6 +146,11 @@ fi
 if [ -n "${POI_URL:-}" ]; then
     download "$POI_URL" "$BUILDDIR/poi.xml"
     $CONVERT -a -x "$BUILDDIR/poi.xml" -o nominatim.ndjson
+fi
+
+if [ -n "${POI2_URL:-}" ]; then
+    download "$POI2_URL" "$BUILDDIR/poi2.xml"
+    $CONVERT -a -x "$BUILDDIR/poi2.xml" -o nominatim.ndjson
 fi
 
 # Stop places
