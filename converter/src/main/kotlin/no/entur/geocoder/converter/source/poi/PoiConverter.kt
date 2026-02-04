@@ -48,8 +48,8 @@ class PoiConverter(private val config: ConverterConfig) : Converter {
                 val name = topoPlace.descriptor?.name?.text ?: ""
                 val coord =
                     Coordinate(
-                        topoPlace.centroid?.location?.longitude ?: 0.0,
                         topoPlace.centroid?.location?.latitude ?: 0.0,
+                        topoPlace.centroid?.location?.longitude ?: 0.0,
                     )
                 val country = Geo.getCountry(coord) ?: Country.no
                 val visibleTag = OSM_CUSTOM_POI
