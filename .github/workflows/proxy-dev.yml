@@ -25,19 +25,19 @@ on:
   workflow_dispatch:
     inputs:
       variant:
-        description: 'Variant'
+        description: 'Variant suffix (empty for Norway, -se for Sweden)'
         required: true
         type: choice
         options:
-          - 'no'
-          - 'se'
+          - ''
+          - '-se'
       image_tag:
         description: 'Image tag to deploy (defaults to latest-main for proxy)'
         required: false
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}-${{ inputs.variant || 'no' }}"
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}${{ inputs.variant }}"
   cancel-in-progress: true
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
       - name: Log manual inputs
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Variant:** \`${{ inputs.variant }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Variant:** \`${{ inputs.variant || '(default)' }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Image tag:** \`${{ inputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
 
   lint:
@@ -131,7 +131,7 @@ jobs:
     with:
       environment: dev
       chart: helm/geocoder-proxy
-      values: values-kub-ent-dev-${{ inputs.variant || 'no' }}.yaml
+      values: values-kub-ent-dev${{ inputs.variant }}.yaml
 
   deploy-dev:
     name: Dev
@@ -146,8 +146,8 @@ jobs:
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag || 'latest-main' }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
-      release_name: geocoder-proxy-${{ inputs.variant || 'no' }}
-      values: values-kub-ent-dev-${{ inputs.variant || 'no' }}.yaml
+      release_name: geocoder-proxy${{ inputs.variant }}
+      values: values-kub-ent-dev${{ inputs.variant }}.yaml
     secrets: inherit
 
   acceptance-tests-dev:
@@ -155,7 +155,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.deploy-dev.result == 'success' &&
-      (inputs.variant || 'no') == 'no'
+      inputs.variant == ''
     needs: deploy-dev
     uses: "./.github/workflows/acceptance-tests.yml"
     with:
@@ -171,4 +171,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
           payload: |
-            text: "❌ *${{ github.workflow }}* (${{ inputs.variant || 'no' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "❌ *${{ github.workflow }}* (${{ inputs.variant || 'default' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

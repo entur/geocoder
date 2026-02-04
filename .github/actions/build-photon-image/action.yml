@@ -67,6 +67,5 @@ runs:
         image_name: geocoder-photon${{ inputs.suffix }}
         context: photon
         push: true
-        suffix: ${{ inputs.suffix }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}

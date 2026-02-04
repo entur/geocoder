@@ -73,6 +73,5 @@ runs:
         image_name: geocoder-nominatim-data${{ inputs.suffix }}
         file_path: converter/nominatim.ndjson.gz
         min_size_mb: 1
-        suffix: ${{ inputs.suffix }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
