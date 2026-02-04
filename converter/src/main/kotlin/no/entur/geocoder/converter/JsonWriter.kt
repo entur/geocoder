@@ -20,7 +20,9 @@ class JsonWriter {
     ) {
         Files.createDirectories(outputPath.parent)
 
-        if (!isAppending) {
+        val needsHeader = !isAppending || !Files.exists(outputPath) || Files.size(outputPath) == 0L
+
+        if (needsHeader) {
             val headerContent =
                 HeaderContent(
                     version = "0.1.0",

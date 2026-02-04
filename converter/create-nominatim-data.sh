@@ -132,11 +132,14 @@ mkdir -p "$BUILDDIR"
 
 START_TIME=$(date +%s)
 
+# Remove existing output file to start fresh
+rm -f nominatim.ndjson
+
 # Matrikkel addresses + Stedsnavn (Norwegian cadastre data)
 if [ -n "${ADRESSE_URL:-}" ] && [ -n "${STEDSNAVN_URL:-}" ]; then
     download "$ADRESSE_URL" "$BUILDDIR/adresse.csv" '*.csv'
     download "$STEDSNAVN_URL" "$BUILDDIR/stedsnavn.gml" '*.gml'
-    $CONVERT -m "$BUILDDIR/adresse.csv" -g "$BUILDDIR/stedsnavn.gml" -o nominatim.ndjson
+    $CONVERT -a -m "$BUILDDIR/adresse.csv" -g "$BUILDDIR/stedsnavn.gml" -o nominatim.ndjson
 fi
 
 # POI data
