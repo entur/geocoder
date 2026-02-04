@@ -26,10 +26,6 @@ inputs:
     description: 'Docker registry URL'
     required: false
     default: 'eu.gcr.io/entur-system-1287'
-  suffix:
-    description: 'Optional suffix for latest tag (e.g., -no for latest-main-no)'
-    required: false
-    default: ''
 
 outputs:
   image_tag:
@@ -61,7 +57,6 @@ runs:
       uses: ./.github/actions/generate-image-tag
       with:
         image_name: ${{ inputs.image_name }}
-        suffix: ${{ inputs.suffix }}
 
     - name: Check if image already exists
       if: ${{ inputs.push == 'true' }}

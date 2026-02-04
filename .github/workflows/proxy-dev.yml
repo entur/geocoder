@@ -26,7 +26,7 @@ on:
     inputs:
       variant:
         description: 'Variant suffix (empty for Norway, -se for Sweden)'
-        required: true
+        required: false
         type: choice
         options:
           - ''

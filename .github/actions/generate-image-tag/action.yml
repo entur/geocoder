@@ -9,10 +9,6 @@ inputs:
   image_name:
     description: 'Docker image name'
     required: true
-  suffix:
-    description: 'Optional suffix for latest tag (e.g., -no for latest-main-no)'
-    required: false
-    default: ''
 
 outputs:
   image_tag:
@@ -42,19 +38,17 @@ runs:
 
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
-        
-        SUFFIX="${{ inputs.suffix }}"
-        LATEST_TAG="latest-${BRANCH}${SUFFIX}"
+        LATEST_TAG="latest-${BRANCH}"
 
         echo "base_image=${BASE_IMAGE}" >> "$GITHUB_OUTPUT"
         echo "full_image=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
         echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
         echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
-        
+
         echo "Base image: ${BASE_IMAGE}"
         echo "Full image reference: ${FULL_IMAGE}"
         echo "Generated image tag: ${IMAGE_TAG}"
-        
+
     - name: Summary
       shell: bash
       run: |
