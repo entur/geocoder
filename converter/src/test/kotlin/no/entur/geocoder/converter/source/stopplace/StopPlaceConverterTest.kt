@@ -713,6 +713,33 @@ class StopPlaceConverterTest {
     }
 
     @Test
+    fun `parent stop place should preserve duplicate mode keys with different submodes`() {
+        val converter = StopPlaceConverter(TestConfig.config)
+
+        val parentStop = createStopPlaceWithSubmode("NSR:StopPlace:1", "tram", tramSubmode = "cityTram")
+        val childTram = createStopPlaceWithSubmode("NSR:StopPlace:2", "tram", tramSubmode = null)
+
+        val result =
+            converter.convertStopPlaceToNominatim(
+                parentStop,
+                emptyMap(),
+                emptyMap(),
+                emptyMap(),
+                0L,
+                emptyList(),
+                listOf(childTram),
+            )
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        assertEquals("tram:cityTram;tram", extra.transport_mode, "Should preserve both tram:cityTram and tram")
+    }
+
+    @Test
     fun `standalone stop place should have only its own transport mode`() {
         val converter = StopPlaceConverter(TestConfig.config)
 
@@ -743,6 +770,7 @@ class StopPlaceConverterTest {
         transportMode: String?,
         busSubmode: String? = null,
         railSubmode: String? = null,
+        tramSubmode: String? = null,
         name: String = "Test Stop",
     ): StopPlace {
         val nameText = StopPlace.LocalizedText().apply { text = name }
@@ -760,6 +788,7 @@ class StopPlaceConverterTest {
             transportMode = transportMode,
             busSubmode = busSubmode,
             railSubmode = railSubmode,
+            tramSubmode = tramSubmode,
         )
     }
 }

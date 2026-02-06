@@ -1,6 +1,9 @@
 package no.entur.geocoder.proxy.pelias
 
-import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.math.BigDecimal
 
 data class PeliasResult(
@@ -44,15 +47,21 @@ data class PeliasResult(
         val borough_gid: String? = null,
         val label: String? = null,
         val category: List<String>? = null,
-        @get:JsonInclude(JsonInclude.Include.NON_EMPTY)
-        val mode: Mode? = null,
+        @get:JsonSerialize(contentUsing = PairAsObjectSerializer::class)
+        val mode: List<Pair<String, String?>>? = null,
         val city: String? = null,
         val tariff_zones: List<String>? = null,
         val description: List<Map<String, String>>? = null,
     )
 
-    // Map of transport mode to submode, e.g. {"bus": "localBus", "rail": null}
-    typealias Mode = Map<String, String?>
+    class PairAsObjectSerializer : JsonSerializer<Pair<String, String?>>() {
+        override fun serialize(value: Pair<String, String?>, gen: JsonGenerator, serializers: SerializerProvider) {
+            gen.writeStartObject()
+            gen.writeFieldName(value.first)
+            if (value.second != null) gen.writeString(value.second) else gen.writeNull()
+            gen.writeEndObject()
+        }
+    }
 
     data class GeocodingMetadata(
         val version: String = "0.2",

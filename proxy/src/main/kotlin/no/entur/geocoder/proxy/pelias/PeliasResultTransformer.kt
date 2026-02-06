@@ -233,20 +233,19 @@ object PeliasResultTransformer {
             ?.map { it.substringAfterLast(".") }
             ?: emptyList()
 
-    /**
-     * Parse transport_mode string like "bus:localBus;rail" into a map like {"bus": "localBus", "rail": null}
-     */
-    fun transformTransportExtra(extra: Extra?): Mode? {
+    fun transformTransportExtra(extra: Extra?): List<Pair<String, String?>>? {
         val transportMode = extra?.transport_mode?.takeIf { it.isNotBlank() } ?: return null
-        val result = mutableMapOf<String, String?>()
-        transportMode.split(OSM_TAG_SEPARATOR).forEach { entry ->
-            val mode = entry.substringBefore(":")
-            if (mode.isNotBlank()) {
-                val submode = entry.substringAfter(":", "").takeIf { it.isNotBlank() }
-                result[mode] = submode
+        val pairs =
+            transportMode.split(OSM_TAG_SEPARATOR).mapNotNull { entry ->
+                val mode = entry.substringBefore(":")
+                if (mode.isNotBlank()) {
+                    val submode = entry.substringAfter(":", "").takeIf { it.isNotBlank() }
+                    mode to submode
+                } else {
+                    null
+                }
             }
-        }
-        return result.ifEmpty { null }
+        return pairs.ifEmpty { null }
     }
 
     fun transformSource(extra: Extra?): String? =
