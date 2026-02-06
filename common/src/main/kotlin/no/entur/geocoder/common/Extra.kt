@@ -14,6 +14,6 @@ data class Extra(
     val alt_name: String? = null,
     val description: String? = null,
     val tags: String? = null,
+    // Semicolon-separated list of mode:subMode pairs, e.g. "bus:localBus;rail"
     val transport_mode: String? = null,
-    val transport_submode: String? = null,
 )

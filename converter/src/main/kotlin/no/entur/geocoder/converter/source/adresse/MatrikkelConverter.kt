@@ -15,7 +15,7 @@ import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.joinOsmValuesToString
+import no.entur.geocoder.common.Text.joinOsmValuesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping
 import no.entur.geocoder.converter.source.stedsnavn.KommuneFylkeMapping.KommuneInfo

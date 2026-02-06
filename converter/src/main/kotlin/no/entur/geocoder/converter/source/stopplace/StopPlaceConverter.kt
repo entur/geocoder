@@ -9,11 +9,12 @@ import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.LegacyLayer.address
 import no.entur.geocoder.common.LegacyLayer.venue
 import no.entur.geocoder.common.LegacySource.*
+import no.entur.geocoder.common.Text.OSM_TAG_SEPARATOR
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.JsonWriter
-import no.entur.geocoder.converter.Text.joinOsmValuesToString
+import no.entur.geocoder.common.Text.joinOsmValuesToString
 import no.entur.geocoder.converter.source.ImportanceCalculator
 import no.entur.geocoder.converter.source.NorwegianToEnglishTranslator
 import no.entur.geocoder.converter.source.stopplace.StopPlaceConverter.StopPlaceRole.*
@@ -44,6 +45,7 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
         fareZones: Map<String, FareZone>,
         popularity: Long,
         childStopNames: List<String> = emptyList(),
+        childStops: List<StopPlace> = emptyList(),
     ): List<NominatimPlace> {
         val entries = mutableListOf<NominatimPlace>()
         val coord =
@@ -110,8 +112,7 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
                 alt_name = visibleAltStopNames.joinOsmValuesToString(),
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = visibleCategories.joinOsmValuesToString(),
-                transport_mode = stopPlace.transportMode,
-                transport_submode = extractTransportSubMode(stopPlace),
+                transport_mode = collectTransportModes(stopPlace, childStops),
             )
 
         val nominatimId = NominatimId.stopplace.create(stopPlace.id)
@@ -186,6 +187,15 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
         return childStopNamesMap
     }
 
+    private fun buildChildStopsMap(stopPlaces: List<StopPlace>): Map<String, List<StopPlace>> {
+        val childStopsMap = mutableMapOf<String, MutableList<StopPlace>>()
+        for (stopPlace in stopPlaces) {
+            val parentRef = stopPlace.parentSiteRef?.ref ?: continue
+            childStopsMap.getOrPut(parentRef) { mutableListOf() }.add(stopPlace)
+        }
+        return childStopsMap
+    }
+
     val includeTransportModeAsStopPlaceType = listOf("funicular")
 
     private fun inferStopPlaceTypeCategories(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
@@ -205,6 +215,19 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
         val norwegianText = desc?.text ?: return null
         val englishText = NorwegianToEnglishTranslator.translate(norwegianText)
         return "nor:$norwegianText;eng:$englishText"
+    }
+
+    private fun formatTransportMode(stopPlace: StopPlace): String? {
+        val mode = stopPlace.transportMode ?: return null
+        val submode = extractTransportSubMode(stopPlace)
+        return if (submode != null) "$mode:$submode" else mode
+    }
+
+    private fun collectTransportModes(stopPlace: StopPlace, childStops: List<StopPlace>): String? {
+        val ownMode = formatTransportMode(stopPlace)
+        val childModes = childStops.mapNotNull { formatTransportMode(it) }
+        val allModes = (listOfNotNull(ownMode) + childModes).distinct()
+        return allModes.ifEmpty { null }?.joinToString(OSM_TAG_SEPARATOR)
     }
 
     private fun extractTransportSubMode(stopPlace: StopPlace): String? =
@@ -364,13 +387,15 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
                 stopPlace.id to popularity
             }
 
-        // Build map of parent stop place ID -> list of child stop names
+        // Build maps for parent stop places
         val childStopNamesMap = buildChildStopNamesMap(stopPlacesList)
+        val childStopsMap = buildChildStopsMap(stopPlacesList)
 
         val stopPlaceEntries =
             stopPlacesList.asSequence().flatMap { stopPlace ->
                 val popularity = stopPlacePopularities[stopPlace.id] ?: 0L
                 val childStopNames = childStopNamesMap[stopPlace.id] ?: emptyList()
+                val childStops = childStopsMap[stopPlace.id] ?: emptyList()
                 convertStopPlaceToNominatim(
                     stopPlace,
                     result.topoPlaces,
@@ -378,6 +403,7 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
                     result.fareZones,
                     popularity,
                     childStopNames,
+                    childStops,
                 ).asSequence()
             }
 

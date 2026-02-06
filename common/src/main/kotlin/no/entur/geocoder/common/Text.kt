@@ -1,4 +1,4 @@
-package no.entur.geocoder.converter
+package no.entur.geocoder.common
 
 object Text {
     fun Collection<String>?.joinOsmValuesToString(): String? {
@@ -8,5 +8,5 @@ object Text {
     }
 
     // the OSM standard separator for multiple values within a single tag
-    private const val OSM_TAG_SEPARATOR = ";"
+    const val OSM_TAG_SEPARATOR = ";"
 }

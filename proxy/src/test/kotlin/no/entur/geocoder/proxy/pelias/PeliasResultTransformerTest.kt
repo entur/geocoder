@@ -64,33 +64,33 @@ class PeliasResultTransformerTest {
     }
 
     @Test
-    fun `transformTransportExtra returns PeliasExtra with transport_mode and transport_submode`() {
-        val extra = Extra(transport_mode = "bus", transport_submode = "localBus")
+    fun `transformTransportExtra parses mode with submode`() {
+        val extra = Extra(transport_mode = "bus:localBus")
         val result = PeliasResultTransformer.transformTransportExtra(extra)
 
         assertNotNull(result)
-        assertEquals("bus", result.transport_mode)
-        assertEquals("localBus", result.transport_submode)
+        assertEquals(mapOf("bus" to "localBus"), result)
     }
 
     @Test
-    fun `transformTransportExtra returns PeliasExtra with only transport_mode`() {
+    fun `transformTransportExtra parses mode without submode`() {
         val extra = Extra(transport_mode = "rail")
         val result = PeliasResultTransformer.transformTransportExtra(extra)
 
         assertNotNull(result)
-        assertEquals("rail", result.transport_mode)
-        assertNull(result.transport_submode)
+        assertEquals(mapOf("rail" to null), result)
     }
 
     @Test
-    fun `transformTransportExtra returns PeliasExtra with only transport_submode`() {
-        val extra = Extra(transport_submode = "highSpeedRail")
+    fun `transformTransportExtra parses multiple modes`() {
+        val extra = Extra(transport_mode = "bus:localBus;rail;metro:urbanRail")
         val result = PeliasResultTransformer.transformTransportExtra(extra)
 
         assertNotNull(result)
-        assertNull(result.transport_mode)
-        assertEquals("highSpeedRail", result.transport_submode)
+        assertEquals(
+            mapOf("bus" to "localBus", "rail" to null, "metro" to "urbanRail"),
+            result,
+        )
     }
 
     @Test
@@ -219,16 +219,14 @@ class PeliasResultTransformerTest {
             Extra(
                 id = "NSR:StopPlace:123",
                 tags = "legacy.source.nsr,legacy.layer.venue",
-                transport_mode = "bus",
-                transport_submode = "localBus",
+                transport_mode = "bus:localBus",
             )
         val photonFeature = createPhotonFeature(name = "Bus Stop", extra = extra)
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
-        val peliasExtra = peliasFeature.properties.mode
-        assertNotNull(peliasExtra)
-        assertEquals("bus", peliasExtra.transport_mode)
-        assertEquals("localBus", peliasExtra.transport_submode)
+        val mode = peliasFeature.properties.mode
+        assertNotNull(mode)
+        assertEquals(mapOf("bus" to "localBus"), mode)
     }
 
     @Test

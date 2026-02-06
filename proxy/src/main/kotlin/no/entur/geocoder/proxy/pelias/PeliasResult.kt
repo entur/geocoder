@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.pelias
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import java.math.BigDecimal
 
 data class PeliasResult(
@@ -43,16 +44,15 @@ data class PeliasResult(
         val borough_gid: String? = null,
         val label: String? = null,
         val category: List<String>? = null,
+        @get:JsonInclude(JsonInclude.Include.NON_EMPTY)
         val mode: Mode? = null,
         val city: String? = null,
         val tariff_zones: List<String>? = null,
         val description: List<Map<String, String>>? = null,
     )
 
-    data class Mode(
-        val transport_mode: String? = null,
-        val transport_submode: String? = null,
-    )
+    // Map of transport mode to submode, e.g. {"bus": "localBus", "rail": null}
+    typealias Mode = Map<String, String?>
 
     data class GeocodingMetadata(
         val version: String = "0.2",

@@ -9,6 +9,7 @@ import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.LegacyLayer.Companion.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.common.LegacySource.Companion.LEGACY_SOURCE_PREFIX
 import no.entur.geocoder.common.Source
+import no.entur.geocoder.common.Text.OSM_TAG_SEPARATOR
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.pelias.PeliasResult.*
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -232,17 +233,20 @@ object PeliasResultTransformer {
             ?.map { it.substringAfterLast(".") }
             ?: emptyList()
 
+    /**
+     * Parse transport_mode string like "bus:localBus;rail" into a map like {"bus": "localBus", "rail": null}
+     */
     fun transformTransportExtra(extra: Extra?): Mode? {
-        val mode = extra?.transport_mode
-        val submode = extra?.transport_submode
-        return if (mode != null || submode != null) {
-            Mode(
-                transport_mode = mode,
-                transport_submode = submode,
-            )
-        } else {
-            null
+        val transportMode = extra?.transport_mode?.takeIf { it.isNotBlank() } ?: return null
+        val result = mutableMapOf<String, String?>()
+        transportMode.split(OSM_TAG_SEPARATOR).forEach { entry ->
+            val mode = entry.substringBefore(":")
+            if (mode.isNotBlank()) {
+                val submode = entry.substringAfter(":", "").takeIf { it.isNotBlank() }
+                result[mode] = submode
+            }
         }
+        return result.ifEmpty { null }
     }
 
     fun transformSource(extra: Extra?): String? =
