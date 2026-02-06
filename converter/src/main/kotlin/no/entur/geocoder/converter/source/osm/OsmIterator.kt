@@ -59,21 +59,6 @@ class OsmIterator(inputFile: File, private val filter: ((Entity) -> Boolean)? = 
                 entity.tags.any { tag -> popularityCalculator.hasFilter(tag.key, tag.value) }
         }
 
-        /** Filter for administrative boundary relations only */
-        val ADMIN_BOUNDARY_FILTER: (Entity) -> Boolean = { entity ->
-            if (entity is Relation) {
-                val tags = entity.tags.associate { it.key to it.value }
-                tags["boundary"] == "administrative" &&
-                    tags["admin_level"] in
-                    listOf(
-                        AdministrativeBoundaryIndex.ADMIN_LEVEL_COUNTY.toString(),
-                        AdministrativeBoundaryIndex.ADMIN_LEVEL_MUNICIPALITY.toString(),
-                    )
-            } else {
-                false
-            }
-        }
-
         /** Filter for ways only (used when collecting way node IDs) */
         val WAY_FILTER: (Entity) -> Boolean = { entity ->
             entity is Way
@@ -82,6 +67,11 @@ class OsmIterator(inputFile: File, private val filter: ((Entity) -> Boolean)? = 
         /** Filter for nodes only (used when collecting node coordinates) */
         val NODE_FILTER: (Entity) -> Boolean = { entity ->
             entity is Node
+        }
+
+        /** Filter for relations only (used when collecting admin boundaries and POI relations) */
+        val RELATION_FILTER: (Entity) -> Boolean = { entity ->
+            entity is Relation
         }
     }
 }
