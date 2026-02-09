@@ -4,14 +4,16 @@ set -eu
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 CONVERT="$SCRIPTDIR/convert.sh"
+BUILDDIR="$SCRIPTDIR/build/create-nominatim-data"
 
 usage() {
-    echo "Usage: $0 <config-file> [-z] [-f]"
+    echo "Usage: $0 <config-file> [-z] [-f] [-k]"
     echo ""
     echo "Arguments:"
     echo "  config-file    Path to config file (e.g., config/prod.conf)"
     echo "  -z             Compress output with gzip"
     echo "  -f             Force download even if files exist locally"
+    echo "  -k             Keep downloaded files"
     echo ""
     echo "Available configs:"
     for f in "$SCRIPTDIR"/config/*.conf; do
@@ -74,20 +76,26 @@ download() {
 }
 
 cleanup() {
-    for f in $DOWNLOADED_FILES; do
-        rm -f "$f"
-    done
+  if [ "$KEEP" = "true" ]; then
+    echo "Downloaded files kept in $BUILDDIR"
+    return
+  fi
+  for f in $DOWNLOADED_FILES; do
+      rm -f "$f"
+  done
 }
 
 # Parse arguments
 CONFIG_FILE=""
 COMPRESS=false
 FORCE=false
+KEEP=false
 
 for arg in "$@"; do
     case "$arg" in
         -z) COMPRESS=true ;;
         -f|--force) FORCE=true ;;
+        -k|--keep) KEEP=true ;;
         -h|--help) usage ;;
         *)
             if [ -z "$CONFIG_FILE" ]; then
@@ -127,7 +135,6 @@ which java >/dev/null 2>&1 || fail "java not found. Please install java to proce
 
 echo "Using config: $CONFIG_FILE"
 
-BUILDDIR="$SCRIPTDIR/build/create-nominatim-data"
 mkdir -p "$BUILDDIR"
 
 START_TIME=$(date +%s)
