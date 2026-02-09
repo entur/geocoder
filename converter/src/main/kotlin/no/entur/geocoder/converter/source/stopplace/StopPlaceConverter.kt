@@ -226,7 +226,7 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
     private fun collectTransportModes(stopPlace: StopPlace, childStops: List<StopPlace>): String? {
         val ownMode = formatTransportMode(stopPlace)
         val childModes = childStops.mapNotNull { formatTransportMode(it) }
-        val allModes = (listOfNotNull(ownMode) + childModes).distinct()
+        val allModes = listOfNotNull(ownMode) + childModes
         return allModes.ifEmpty { null }?.joinToString(OSM_TAG_SEPARATOR)
     }
 
