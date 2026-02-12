@@ -13,6 +13,7 @@ data class ConverterConfig(
     val osm: OsmConfig,
     val stedsnavn: StedsnavnConfig,
     val matrikkel: MatrikkelConfig,
+    val lantmateriet: LantmaterietConfig,
     val poi: PoiConfig,
     val stopPlace: StopPlaceConfig,
     val groupOfStopPlaces: GroupOfStopPlacesConfig,
@@ -44,6 +45,12 @@ data class ConverterConfig(
     )
 
     data class MatrikkelConfig(
+        val addressPopularity: Double,
+        val streetPopularity: Double,
+        val rankAddress: Int,
+    )
+
+    data class LantmaterietConfig(
         val addressPopularity: Double,
         val streetPopularity: Double,
         val rankAddress: Int,

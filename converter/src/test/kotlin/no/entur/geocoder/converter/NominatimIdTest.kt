@@ -27,7 +27,7 @@ class NominatimIdTest {
     @Test
     fun `different prefixes create different IDs`() {
         val ids = NominatimId.entries.map { it.create(100L) }.toSet()
-        assertEquals(7, ids.size)
+        assertEquals(NominatimId.entries.size, ids.size)
     }
 
     @Test

@@ -15,6 +15,7 @@ class FileTypeDetector {
         PBF,
         GML,
         GZIP,
+        GPKG,
         UNKNOWN,
     }
 
@@ -40,6 +41,15 @@ class FileTypeDetector {
         // Check for GZIP magic number (1f 8b)
         if (bytes[0] == 0x1f.toByte() && bytes[1] == 0x8b.toByte()) {
             return FileType.GZIP
+        }
+
+        // Check for SQLite/GeoPackage magic bytes ("SQLite format 3\0")
+        val sqliteMagic = "SQLite format 3"
+        if (bytesRead >= sqliteMagic.length) {
+            val header = String(bytes, 0, sqliteMagic.length, Charsets.US_ASCII)
+            if (header == sqliteMagic) {
+                return FileType.GPKG
+            }
         }
 
         // Check for PBF magic bytes

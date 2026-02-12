@@ -4,6 +4,7 @@ import no.entur.geocoder.converter.Converter
 import no.entur.geocoder.converter.ConverterConfig
 import no.entur.geocoder.converter.cli.FileTypeDetector.FileType.*
 import no.entur.geocoder.converter.source.adresse.MatrikkelConverter
+import no.entur.geocoder.converter.source.lantmateriet.LantmaterietConverter
 import no.entur.geocoder.converter.source.osm.OsmConverter
 import no.entur.geocoder.converter.source.poi.PoiConverter
 import no.entur.geocoder.converter.source.stedsnavn.StedsnavnConverter
@@ -28,6 +29,7 @@ class Command(private val args: Array<String>) {
         var osmInputPath: String? = null
         var stedsnavnInputPath: String? = null
         var poiInputPath: String? = null
+        var lantmaterietInputPath: String? = null
         var outputPath: String? = null
         var configPath: String? = null
         var forceOverwrite = false
@@ -75,6 +77,14 @@ class Command(private val args: Array<String>) {
                         exit("Error: -x flag requires <input-poi-xml-file> argument.")
                     }
                     poiInputPath = args[i + 1]
+                    i += 2
+                }
+
+                "-w" -> {
+                    if (i + 1 >= args.size) {
+                        exit("Error: -w flag requires <input-gpkg-file-or-dir> argument.")
+                    }
+                    lantmaterietInputPath = args[i + 1]
                     i += 2
                 }
 
@@ -128,7 +138,8 @@ class Command(private val args: Array<String>) {
             matrikkelInputPath == null &&
             osmInputPath == null &&
             stedsnavnInputPath == null &&
-            poiInputPath == null
+            poiInputPath == null &&
+            lantmaterietInputPath == null
         ) {
             exit("Error: No conversion specified.")
         }
@@ -169,6 +180,7 @@ class Command(private val args: Array<String>) {
                 ConversionTask("OSM PBF", osmInputPath, OsmConverter(config), PBF, "-p"),
                 ConversionTask("Stedsnavn GML", stedsnavnConversionPath, StedsnavnConverter(config), GML, "-g"),
                 ConversionTask("POI XML", poiInputPath, PoiConverter(config), XML, "-x"),
+                ConversionTask("Lantmäteriet", lantmaterietInputPath, LantmaterietConverter(config), GPKG, "-w"),
             )
 
         for (task in conversionTasks) {
@@ -225,10 +237,13 @@ class Command(private val args: Array<String>) {
             exit("Error: Input file does not exist: ${inputFile.absolutePath}")
         }
 
-        try {
-            fileTypeDetector.validateFileType(inputFile, expectedType, flagName)
-        } catch (e: IllegalArgumentException) {
-            exit(e.message ?: "Error: File validation failed")
+        // Skip file type validation for directories (e.g. Lantmäteriet .gpkg directory input)
+        if (!inputFile.isDirectory) {
+            try {
+                fileTypeDetector.validateFileType(inputFile, expectedType, flagName)
+            } catch (e: IllegalArgumentException) {
+                exit(e.message ?: "Error: File validation failed")
+            }
         }
 
         return inputFile
@@ -251,6 +266,7 @@ class Command(private val args: Array<String>) {
               -p <input-pbf-file>     Convert OSM PBF data
               -g <input-gml-file>     Convert Stedsnavn GML data
               -x <input-poi-file>     Convert POI NeTEx data
+              -w <input-gpkg>         Convert Lantmäteriet GeoPackage data (file or directory)
               -o <output-file>        Specify the output file (required)
               -c <config-file>        Configuration file (defaults to converter.json if it exists, otherwise built-in values)
               -f                      Force overwrite if output file exists

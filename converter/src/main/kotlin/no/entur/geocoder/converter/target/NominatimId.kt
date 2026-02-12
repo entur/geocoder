@@ -11,6 +11,8 @@ enum class NominatimId(val prefix: Int) {
     gosp(450),
     osm(500),
     poi(600),
+    sweAddress(700),
+    sweStreet(800),
     ;
 
     fun create(id: Long): Long = create("" + id)

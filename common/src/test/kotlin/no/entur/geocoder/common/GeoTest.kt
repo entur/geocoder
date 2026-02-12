@@ -17,6 +17,15 @@ class GeoTest {
     }
 
     @Test
+    fun `convert SWEREF 99 TM to LatLon`() {
+        // Stockholm Central Station: approximately 674,032 E, 6,580,994 N in SWEREF 99 TM
+        val coord = Geo.convertSweref99TmToLatLon(674032.0, 6580994.0)
+
+        assertEquals(59.33, coord.lat, 0.01)
+        assertEquals(18.06, coord.lon, 0.01)
+    }
+
+    @Test
     fun `haversine distance calculation`() {
         val coord1 = Coordinate(60.39126, 5.32205)
         val coord2 = Coordinate(59.91386, 10.75224)

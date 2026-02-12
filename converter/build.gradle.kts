@@ -14,6 +14,8 @@ dependencies {
     implementation(libs.osmosis.core)
     implementation(libs.osmosis.pbf)
     implementation(libs.osmosis.xml)
+    implementation(libs.sqlite.jdbc)
+    implementation(libs.geotools.main)
 
     testImplementation(libs.kotlin.test)
 }

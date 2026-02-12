@@ -10,6 +10,7 @@ object Category {
     const val SOURCE_ADRESSE = "source.kartverket.matrikkelenadresse"
     const val SOURCE_STEDSNAVN = "source.kartverket.stedsnavn"
     const val SOURCE_NSR = "source.nsr"
+    const val SOURCE_LANTMATERIET = "source.lantmateriet.belagenhetsadress"
 
     const val GOSP = "GroupOfStopPlaces"
 

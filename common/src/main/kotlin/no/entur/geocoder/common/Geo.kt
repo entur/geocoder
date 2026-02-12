@@ -15,6 +15,9 @@ object Geo {
     private val wgs84: CoordinateReferenceSystem = DefaultGeographicCRS.WGS84 // https://epsg.io/3857
     private val utm33nToWgs84: MathTransform = CRS.findMathTransform(utm33n, wgs84, true)
 
+    private val sweref99tm: CoordinateReferenceSystem = CRS.decode("EPSG:3006") // https://epsg.io/3006
+    private val sweref99tmToWgs84: MathTransform = CRS.findMathTransform(sweref99tm, wgs84, true)
+
     fun convertUtm33ToLatLon(coord: UtmCoordinate): Coordinate {
         val srcCoord =
             org.locationtech.jts.geom
@@ -25,6 +28,14 @@ object Geo {
         val lon = dstCoord.x
 
         return Coordinate(lat, lon)
+    }
+
+    fun convertSweref99TmToLatLon(easting: Double, northing: Double): Coordinate {
+        val srcCoord =
+            org.locationtech.jts.geom
+                .Coordinate(easting, northing)
+        val dstCoord = JTS.transform(srcCoord, null, sweref99tmToWgs84)
+        return Coordinate(dstCoord.y, dstCoord.x)
     }
 
     /**

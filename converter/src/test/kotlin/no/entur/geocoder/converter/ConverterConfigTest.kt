@@ -158,6 +158,11 @@ class ConverterConfigTest {
                 "streetPopularity": 25.0,
                 "rankAddress": 24
               },
+              "lantmateriet": {
+                "addressPopularity": 20.0,
+                "streetPopularity": 20.0,
+                "rankAddress": 26
+              },
               "poi": {
                 "importance": 0.6,
                 "rankAddress": 29
