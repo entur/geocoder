@@ -122,8 +122,8 @@ esac
 . "$CONFIG_FILE"
 
 # Verify at least one source is configured
-if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
-    fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
+if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ] && [ -z "${LANTMATERIET_DIR:-}" ]; then
+    fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL, LANTMATERIET_DIR"
 fi
 
 # Check dependencies
@@ -170,6 +170,16 @@ fi
 if [ -n "${OSM_URL:-}" ]; then
     download "$OSM_URL" "$BUILDDIR/osm.pbf"
     $CONVERT -a -p "$BUILDDIR/osm.pbf" -o nominatim.ndjson
+fi
+
+# Lantmäteriet Swedish addresses (pre-downloaded directory of .gpkg files)
+if [ -n "${LANTMATERIET_DIR:-}" ]; then
+    case "$LANTMATERIET_DIR" in
+        /*) LM_PATH="$LANTMATERIET_DIR" ;;
+        *) LM_PATH="$SCRIPTDIR/$LANTMATERIET_DIR" ;;
+    esac
+    [ -d "$LM_PATH" ] || fail "Lantmäteriet directory not found: $LM_PATH"
+    $CONVERT -a -w "$LM_PATH" -o nominatim.ndjson
 fi
 
 cleanup
