@@ -38,7 +38,8 @@ runs:
 
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"
-        LATEST_TAG="latest-${BRANCH}"
+        SANITIZED_BRANCH=$(echo "$BRANCH" | sed -E 's/[^a-zA-Z0-9_.-]+/-/g')
+        LATEST_TAG="latest-${SANITIZED_BRANCH}"
 
         echo "base_image=${BASE_IMAGE}" >> "$GITHUB_OUTPUT"
         echo "full_image=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
