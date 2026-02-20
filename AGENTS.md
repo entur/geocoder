@@ -2,6 +2,14 @@
 
 Guidelines for AI coding assistants working on the Geocoder project.
 
+## Entur Standards
+
+Read and follow the Entur platform standards at:
+https://github.com/entur/ai/blob/main/AGENTS.md
+
+When working on a specific task, also read the relevant docs
+linked from that file (e.g. java.md, helm.md, docker.md).
+
 ## Project Overview
 
 Geocoder is a Norwegian geocoding service with three modules:
