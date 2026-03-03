@@ -225,13 +225,22 @@ object PeliasResultTransformer {
             else -> props.street
         }
 
-    fun transformCategory(extra: Extra?): List<String> =
-        extra
-            ?.tags
-            ?.split(",", ";")
-            ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
-            ?.map { it.substringAfterLast(".") }
-            ?: emptyList()
+    fun transformCategory(extra: Extra?): List<String> {
+        val fromTags =
+            extra
+                ?.tags
+                ?.split(",", ";")
+                ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
+                ?.map { it.substringAfterLast(".") }
+                .orEmpty()
+        val fromStopPlaceType =
+            extra
+                ?.stop_place_type
+                ?.split(";")
+                ?.filter { it.isNotBlank() }
+                .orEmpty()
+        return (fromTags + fromStopPlaceType)
+    }
 
     fun transformTransportExtra(extra: Extra?): List<Pair<String, String?>>? {
         val transportMode = extra?.transport_mode?.takeIf { it.isNotBlank() } ?: return null

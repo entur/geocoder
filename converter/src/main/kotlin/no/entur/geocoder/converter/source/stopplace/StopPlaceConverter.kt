@@ -69,16 +69,17 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
 
         val stopPlaceRole = resolveStopPlaceRole(childStopTypes, stopPlace)
         val multimodalityCategory = resolveModalityCategory(stopPlaceRole)
-        val inferredStopPlaceTypeCategories = inferStopPlaceTypeCategories(childStopTypes, stopPlace)
+        val inferredStopPlaceTypes = inferStopPlaceTypes(childStopTypes, stopPlace)
         val sourceCategory = resolveSourceCategory(stopPlaceRole)
 
         val visibleCategories: List<String> =
             listOf(Category.OSM_STOP_PLACE, venue.category())
-                .plus(inferredStopPlaceTypeCategories)
+                .plus(legacyTransportModeCategories(stopPlace))
                 .plus(sourceCategory)
 
         val indexedCategories: List<String> =
             visibleCategories
+                .plus(inferredStopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it })
                 .plus(SOURCE_NSR + "." + stopPlaceRole.name)
                 .plus(tariffZoneIds)
                 .plus(tariffZoneAuthorities)
@@ -113,6 +114,7 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
                 description = descriptionWithTranslation(stopPlace.description),
                 tags = visibleCategories.joinOsmValuesToString(),
                 transport_mode = collectTransportModes(stopPlace, childStops),
+                stop_place_type = inferredStopPlaceTypes.joinToString(OSM_TAG_SEPARATOR).ifBlank { null },
             )
 
         val nominatimId = NominatimId.stopplace.create(stopPlace.id)
@@ -196,20 +198,17 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
         return childStopsMap
     }
 
+    private fun inferStopPlaceTypes(childStopTypes: List<String>, stopPlace: StopPlace): List<String> =
+        childStopTypes
+            .plus(stopPlace.stopPlaceType)
+            .filterNotNull()
+
     val includeTransportModeAsStopPlaceType = listOf("funicular")
 
-    private fun inferStopPlaceTypeCategories(childStopTypes: List<String>, stopPlace: StopPlace): List<String> {
-        val transportMode = includeTransportModeAsStopPlaceType.firstOrNull { it == stopPlace.transportMode }
-
-        val stopPlaceTypes =
-            childStopTypes
-                .plus(transportMode)
-                .plus(stopPlace.stopPlaceType)
-                .filterNot { !transportMode.isNullOrBlank() && it == "other" }
-                .filterNotNull()
-
-        return stopPlaceTypes.map { LEGACY_CATEGORY_PREFIX + it }
-    }
+    private fun legacyTransportModeCategories(stopPlace: StopPlace): List<String> =
+        includeTransportModeAsStopPlaceType
+            .filter { it == stopPlace.transportMode }
+            .map { LEGACY_CATEGORY_PREFIX + it }
 
     private fun descriptionWithTranslation(desc: StopPlace.LocalizedText?): String? {
         val norwegianText = desc?.text ?: return null

@@ -14,9 +14,7 @@ object V3ResultTransformer {
         result: PhotonResult,
         req: V3AutocompleteRequest,
     ): V3Result {
-        val places = result.features.map { transformFeature(it) }
-
-        val boundingBox = calculateBoundingBox(places)
+        val features = result.features.map { transformFeature(it) }
 
         val filters =
             if (req.placeTypes.isNotEmpty() ||
@@ -41,21 +39,19 @@ object V3ResultTransformer {
             }
 
         return V3Result(
-            results = places,
+            features = features,
+            bbox = calculateBbox(features),
             metadata =
                 Metadata(
                     query =
                         QueryInfo(
                             text = req.query,
-                            latitude = null,
-                            longitude = null,
                             limit = req.limit,
                             language = req.language,
                             filters = filters,
                         ),
-                    resultCount = places.size,
+                    resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
-                    boundingBox = boundingBox,
                 ),
         )
     }
@@ -64,31 +60,47 @@ object V3ResultTransformer {
         result: PhotonResult,
         req: V3ReverseRequest,
     ): V3Result {
-        val places = result.features.map { transformFeature(it) }
-
-        val boundingBox = calculateBoundingBox(places)
+        val features = result.features.map { transformFeature(it) }
 
         return V3Result(
-            results = places,
+            features = features,
+            bbox = calculateBbox(features),
             metadata =
                 Metadata(
                     query =
                         QueryInfo(
-                            text = null,
                             latitude = req.lat,
                             longitude = req.lon,
                             limit = req.limit,
                             language = req.language,
-                            filters = null,
                         ),
-                    resultCount = places.size,
+                    resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
-                    boundingBox = boundingBox,
                 ),
         )
     }
 
-    private fun transformFeature(feature: PhotonFeature): V3Result.Place {
+    fun parseAndTransform(
+        result: PhotonResult,
+        req: V3PlaceRequest,
+    ): V3Result {
+        val features = result.features.map { transformFeature(it) }
+        return V3Result(
+            features = features,
+            metadata =
+                Metadata(
+                    query =
+                        QueryInfo(
+                            limit = req.ids.size,
+                            language = "no",
+                        ),
+                    resultCount = features.size,
+                    timestamp = System.currentTimeMillis(),
+                ),
+        )
+    }
+
+    private fun transformFeature(feature: PhotonFeature): V3Result.Feature {
         val props = feature.properties
         val extra = props.extra
         val coords = feature.geometry.coordinates
@@ -97,36 +109,51 @@ object V3ResultTransformer {
         val accuracy = parseAccuracy(extra?.accuracy)
 
         val label = props.name + extra?.locality?.let { ", $it" }.orEmpty()
-        return V3Result.Place(
-            id =
-                extra?.id
-                    ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
-            name = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed",
-            displayName = label,
-            placeType = placeType,
-            location =
-                V3Result.Location(
-                    latitude = coords.getOrNull(1)?.toBigDecimalWithScale() ?: BigDecimal.ZERO,
-                    longitude = coords.getOrNull(0)?.toBigDecimalWithScale() ?: BigDecimal.ZERO,
+
+        return V3Result.Feature(
+            geometry =
+                V3Result.Geometry(
+                    coordinates =
+                        listOf(
+                            coords.getOrNull(0)?.toBigDecimalWithScale() ?: BigDecimal.ZERO, // lon
+                            coords.getOrNull(1)?.toBigDecimalWithScale() ?: BigDecimal.ZERO, // lat
+                        ),
                 ),
-            address = buildAddress(props, extra),
-            categories =
-                extra
-                    ?.tags
-                    ?.split(",", ";")
-                    ?.map { it.substringAfter('.') }
-                    ?.filter { it.isNotBlank() },
-            tariffZones =
-                extra
-                    ?.tariff_zones
-                    ?.split(",", ";")
-                    ?.map { it.trim() }
-                    ?.filter { it.isNotBlank() },
-            source =
-                V3Result.DataSource(
-                    provider = mapProviderName(extra?.source),
-                    sourceId = buildSourceId(extra?.source, extra?.id, props.osm_type, props.osm_id),
-                    accuracy = accuracy,
+            properties =
+                V3Result.Place(
+                    id =
+                        extra?.id
+                            ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
+                    name = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed",
+                    displayName = label,
+                    placeType = placeType,
+                    address = buildAddress(props, extra),
+                    categories =
+                        extra
+                            ?.tags
+                            ?.split(",", ";")
+                            ?.filter { it.startsWith("legacy.category.") }
+                            ?.map { it.substringAfterLast('.') }
+                            ?.filter { it.isNotBlank() },
+                    tariffZones =
+                        extra
+                            ?.tariff_zones
+                            ?.split(",", ";")
+                            ?.map { it.trim() }
+                            ?.filter { it.isNotBlank() },
+                    transportModes = parseTransportModes(extra?.transport_mode),
+                    stopPlaceTypes =
+                        extra
+                            ?.stop_place_type
+                            ?.split(";")
+                            ?.filter { it.isNotBlank() }
+                            ?.takeIf { it.isNotEmpty() },
+                    source =
+                        V3Result.DataSource(
+                            provider = mapProviderName(extra?.source),
+                            sourceId = buildSourceId(extra?.source, extra?.id, props.osm_type, props.osm_id),
+                            accuracy = accuracy,
+                        ),
                 ),
         )
     }
@@ -151,7 +178,6 @@ object V3ResultTransformer {
             boroughId = extra?.borough_gid,
             county = props.county,
             countyId = extra?.county_gid,
-            country = null, // Not provided in Photon response
             countryCode = extra?.country_a,
         )
     }
@@ -168,21 +194,22 @@ object V3ResultTransformer {
 
     private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): V3Result.PlaceType =
         when {
-            source == Source.KARTVERKET_ADRESSE -> V3Result.PlaceType.ADDRESS
-            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.PlaceType.STOP_PLACE
-            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.PlaceType.STATION
-            source == Source.NSR -> V3Result.PlaceType.VENUE
-            osmKey == "highway" -> V3Result.PlaceType.STREET
-            osmKey == "place" && osmValue == "city" -> V3Result.PlaceType.LOCALITY
-            osmKey == "place" && osmValue == "town" -> V3Result.PlaceType.LOCALITY
-            osmKey == "place" && osmValue == "village" -> V3Result.PlaceType.LOCALITY
-            osmKey == "place" && osmValue == "suburb" -> V3Result.PlaceType.BOROUGH
-            osmKey == "boundary" && osmValue == "administrative" -> V3Result.PlaceType.COUNTY
-            osmKey == "amenity" -> V3Result.PlaceType.POI
-            osmKey == "shop" -> V3Result.PlaceType.POI
-            osmKey == "tourism" -> V3Result.PlaceType.POI
-            else -> V3Result.PlaceType.UNKNOWN
+            source == Source.KARTVERKET_ADRESSE -> V3Result.PlaceType.address
+            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.PlaceType.stop_place
+            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.PlaceType.stop_place
+            source == Source.NSR -> V3Result.PlaceType.poi
+            osmKey == "highway" -> V3Result.PlaceType.street
+            else -> V3Result.PlaceType.poi
         }
+
+    private fun parseTransportModes(transportMode: String?): List<V3Result.TransportMode>? =
+        transportMode
+            ?.split(";")
+            ?.filter { it.isNotBlank() }
+            ?.map { entry ->
+                val parts = entry.trim().split(":")
+                V3Result.TransportMode(mode = parts[0], subMode = parts.getOrNull(1))
+            }?.takeIf { it.isNotEmpty() }
 
     private fun parseAccuracy(accuracy: String?): V3Result.Accuracy? =
         when (accuracy?.lowercase()) {
@@ -203,22 +230,23 @@ object V3ResultTransformer {
 
     private fun mapToPlaceType(type: String): V3Result.PlaceType? =
         try {
-            V3Result.PlaceType.valueOf(type.uppercase())
+            V3Result.PlaceType.valueOf(type.lowercase())
         } catch (_: IllegalArgumentException) {
             null
         }
 
-    private fun calculateBoundingBox(places: List<V3Result.Place>): V3Result.BoundingBox? {
-        if (places.isEmpty()) return null
+    private fun calculateBbox(features: List<V3Result.Feature>): List<BigDecimal>? {
+        if (features.isEmpty()) return null
 
         var minLon = BigDecimal(Double.MAX_VALUE)
         var minLat = BigDecimal(Double.MAX_VALUE)
         var maxLon = BigDecimal(Double.MIN_VALUE)
         var maxLat = BigDecimal(Double.MIN_VALUE)
 
-        places.forEach { place ->
-            val lon = place.location.longitude
-            val lat = place.location.latitude
+        features.forEach { feature ->
+            val coords = feature.geometry.coordinates
+            val lon = coords.getOrNull(0) ?: return@forEach
+            val lat = coords.getOrNull(1) ?: return@forEach
 
             minLon = minOf(minLon, lon)
             minLat = minOf(minLat, lat)
@@ -227,10 +255,7 @@ object V3ResultTransformer {
         }
 
         return if (minLon != BigDecimal(Double.MAX_VALUE)) {
-            V3Result.BoundingBox(
-                southwest = V3Result.Location(latitude = minLat, longitude = minLon),
-                northeast = V3Result.Location(latitude = maxLat, longitude = maxLon),
-            )
+            listOf(minLon, minLat, maxLon, maxLat)
         } else {
             null
         }

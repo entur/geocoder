@@ -1,0 +1,529 @@
+openapi: 3.0.3
+info:
+  title: Geocoder
+  version: 3.0.0
+  description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
+  contact:
+    name: Team Ruter og reiseplanlegging
+    url: https://developer.entur.org
+  license:
+    name: EUPL-1.2
+    url: https://opensource.org/licenses/EUPL-1.2
+
+servers:
+  - url: https://api.entur.io/geocoder
+
+tags:
+  - name: Autocomplete
+  - name: Reverse
+  - name: Place
+
+security:
+  - {}
+
+paths:
+  /v3/autocomplete:
+    get:
+      tags:
+        - Autocomplete
+      summary: Autocomplete search
+      description: Search for places by text query
+      operationId: autocompleteV3
+      parameters:
+        - $ref: '#/components/parameters/Query'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Language'
+        - $ref: '#/components/parameters/PlaceTypes'
+        - $ref: '#/components/parameters/Sources'
+        - $ref: '#/components/parameters/Countries'
+        - $ref: '#/components/parameters/CountyIds'
+        - $ref: '#/components/parameters/LocalityIds'
+        - $ref: '#/components/parameters/TariffZones'
+        - $ref: '#/components/parameters/TariffZoneAuthorities'
+        - $ref: '#/components/parameters/FareZoneAuthorities'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Matching places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v3/reverse:
+    get:
+      tags:
+        - Reverse
+      summary: Reverse geocode
+      description: Convert coordinates to places
+      operationId: reverseV3
+      parameters:
+        - $ref: '#/components/parameters/Latitude'
+        - $ref: '#/components/parameters/Longitude'
+        - $ref: '#/components/parameters/Radius'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Language'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Nearby places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v3/place:
+    get:
+      tags:
+        - Place
+      summary: Place lookup
+      description: Look up one or more places by ID
+      operationId: placeV3
+      parameters:
+        - $ref: '#/components/parameters/Ids'
+        - $ref: '#/components/parameters/ETClientName'
+      responses:
+        '200':
+          description: Matching places
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  parameters:
+    ETClientName:
+      name: ET-Client-Name
+      in: header
+      description: Client identifier
+      schema:
+        type: string
+      example: "my-example-application"
+
+    Ids:
+      name: ids
+      in: query
+      required: true
+      description: Place IDs to look up (comma-separated)
+      schema:
+        type: string
+      example: "NSR:StopPlace:337,NSR:StopPlace:59872"
+
+    Query:
+      name: query
+      in: query
+      required: true
+      description: Search query
+      schema:
+        type: string
+        minLength: 1
+      example: "Oslo S"
+
+    Limit:
+      name: limit
+      in: query
+      description: Maximum number of results
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      example: 10
+
+    Language:
+      name: language
+      in: query
+      description: Language code for result names
+      schema:
+        type: string
+        default: "no"
+      example: "no"
+
+    PlaceTypes:
+      name: placeTypes
+      in: query
+      description: Place type filter (comma-separated)
+      schema:
+        type: string
+        enum: [address, street, stop_place, poi]
+      example: "stop_place,address"
+
+    Sources:
+      name: sources
+      in: query
+      description: Data source filter (comma-separated)
+      schema:
+        type: string
+        enum: [openstreetmap, kartverket-matrikkelenadresse, kartverket-stedsnavn, nsr, custom-poi]
+      example: "openstreetmap"
+
+    Countries:
+      name: countries
+      in: query
+      description: Country code filter (comma-separated)
+      schema:
+        type: string
+      example: "NO"
+
+    CountyIds:
+      name: countyIds
+      in: query
+      description: County IDs filter (comma-separated)
+      schema:
+        type: string
+      example: "KVE:County:03"
+
+    LocalityIds:
+      name: localityIds
+      in: query
+      description: Locality IDs filter (comma-separated)
+      schema:
+        type: string
+      example: "KVE:Locality:0301"
+
+    TariffZones:
+      name: tariffZones
+      in: query
+      description: Tariff zone IDs filter (comma-separated)
+      schema:
+        type: string
+      example: "RUT:TariffZone:1"
+
+    TariffZoneAuthorities:
+      name: tariffZoneAuthorities
+      in: query
+      description: Tariff zone authorities filter (comma-separated)
+      schema:
+        type: string
+      example: "RUT"
+
+    FareZoneAuthorities:
+      name: fareZoneAuthorities
+      in: query
+      description: Fare zone authorities filter (comma-separated)
+      schema:
+        type: string
+      example: "RUT:Authority:RUT"
+
+    Latitude:
+      name: latitude
+      in: query
+      required: true
+      description: Latitude
+      schema:
+        type: number
+        format: double
+        minimum: -90
+        maximum: 90
+      example: 59.9110
+
+    Longitude:
+      name: longitude
+      in: query
+      required: true
+      description: Longitude
+      schema:
+        type: number
+        format: double
+        minimum: -180
+        maximum: 180
+      example: 10.7522
+
+    Radius:
+      name: radius
+      in: query
+      description: Search radius in meters
+      schema:
+        type: number
+        format: double
+        minimum: 0
+        default: 10.0
+      example: 500.0
+
+  schemas:
+    Result:
+      type: object
+      required:
+        - type
+        - features
+        - metadata
+      properties:
+        type:
+          type: string
+          enum: [FeatureCollection]
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        bbox:
+          type: array
+          description: "[minLon, minLat, maxLon, maxLat]"
+          items:
+            type: number
+          minItems: 4
+          maxItems: 4
+          example: [10.7335, 59.9110, 10.7522, 59.9144]
+
+    Feature:
+      type: object
+      required:
+        - type
+        - geometry
+        - properties
+      properties:
+        type:
+          type: string
+          enum: [Feature]
+        geometry:
+          $ref: '#/components/schemas/Geometry'
+        properties:
+          $ref: '#/components/schemas/Place'
+
+    Geometry:
+      type: object
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum: [Point]
+        coordinates:
+          type: array
+          description: "[longitude, latitude]"
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+          example: [10.7522, 59.9110]
+
+    Place:
+      type: object
+      required:
+        - id
+        - name
+        - displayName
+        - placeType
+        - source
+      properties:
+        id:
+          type: string
+          example: "NSR:StopPlace:59872"
+        name:
+          type: string
+          example: "Oslo S"
+        displayName:
+          type: string
+          example: "Oslo S, Oslo"
+        placeType:
+          $ref: '#/components/schemas/PlaceType'
+        address:
+          $ref: '#/components/schemas/Address'
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["restaurant"]
+        tariffZones:
+          type: array
+          items:
+            type: string
+          example: ["RUT:TariffZone:1"]
+        transportModes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransportMode'
+        stopPlaceTypes:
+          type: array
+          description: NeTEx StopPlaceType values (e.g. onstreetBus, railStation)
+          items:
+            type: string
+          example: ["onstreetBus"]
+        source:
+          $ref: '#/components/schemas/DataSource'
+
+    Address:
+      type: object
+      properties:
+        streetName:
+          type: string
+          example: "Jernbanetorget"
+        houseNumber:
+          type: string
+          example: "1"
+        postalCode:
+          type: string
+          example: "0154"
+        locality:
+          type: string
+          example: "Oslo"
+        localityId:
+          type: string
+          example: "KVE:Locality:0301"
+        borough:
+          type: string
+          example: "Sentrum"
+        boroughId:
+          type: string
+          example: "whosonfirst:borough:34200502"
+        county:
+          type: string
+          example: "Oslo"
+        countyId:
+          type: string
+          example: "KVE:County:03"
+        countryCode:
+          type: string
+          example: "NOR"
+
+    TransportMode:
+      type: object
+      required:
+        - mode
+      properties:
+        mode:
+          type: string
+          example: "bus"
+        subMode:
+          type: string
+          example: "localBus"
+
+    DataSource:
+      type: object
+      required:
+        - provider
+      properties:
+        provider:
+          type: string
+          example: "openstreetmap"
+        sourceId:
+          type: string
+          example: "NSR:StopPlace:59872"
+        accuracy:
+          $ref: '#/components/schemas/Accuracy'
+
+    PlaceType:
+      type: string
+      enum:
+        - address
+        - street
+        - stop_place
+        - poi
+      example: "stop_place"
+
+    Accuracy:
+      type: string
+      enum:
+        - EXACT
+        - INTERPOLATED
+        - APPROXIMATE
+        - UNKNOWN
+      example: "EXACT"
+
+    Metadata:
+      type: object
+      required:
+        - query
+        - resultCount
+        - timestamp
+      properties:
+        query:
+          $ref: '#/components/schemas/QueryInfo'
+        resultCount:
+          type: integer
+          example: 5
+        timestamp:
+          type: integer
+          format: int64
+          example: 1740998400000
+
+    QueryInfo:
+      type: object
+      required:
+        - limit
+        - language
+      properties:
+        text:
+          type: string
+          example: "Oslo S"
+        latitude:
+          type: number
+          format: double
+          example: 59.9110
+        longitude:
+          type: number
+          format: double
+          example: 10.7522
+        limit:
+          type: integer
+          example: 10
+        language:
+          type: string
+          example: "no"
+        filters:
+          $ref: '#/components/schemas/Filters'
+
+    Filters:
+      type: object
+      properties:
+        placeTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceType'
+        sources:
+          type: array
+          items:
+            type: string
+        countries:
+          type: array
+          items:
+            type: string
+        countyIds:
+          type: array
+          items:
+            type: string
+        localityIds:
+          type: array
+          items:
+            type: string
+        tariffZones:
+          type: array
+          items:
+            type: string
+        tariffZoneAuthorities:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Parameter 'latitude' is required"

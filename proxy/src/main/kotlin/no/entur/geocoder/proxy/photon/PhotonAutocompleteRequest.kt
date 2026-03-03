@@ -11,6 +11,7 @@ import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.Lang.handleLang
 import no.entur.geocoder.proxy.photon.LocationBiasCalculator.calculateLocationBias
 import no.entur.geocoder.proxy.v3.V3AutocompleteRequest
+import no.entur.geocoder.proxy.v3.V3PlaceRequest
 
 data class PhotonAutocompleteRequest(
     val query: String,
@@ -77,6 +78,13 @@ data class PhotonAutocompleteRequest(
                 includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
                 limit = req.ids.size + RESULT_PRUNING_HEADROOM,
                 debug = req.debug,
+            )
+
+        fun from(req: V3PlaceRequest): PhotonAutocompleteRequest =
+            PhotonAutocompleteRequest(
+                query = "",
+                includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
+                limit = req.ids.size + RESULT_PRUNING_HEADROOM,
             )
 
         fun from(req: V3AutocompleteRequest): PhotonAutocompleteRequest {

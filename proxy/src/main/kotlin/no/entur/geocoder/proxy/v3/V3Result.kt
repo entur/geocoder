@@ -5,24 +5,38 @@ import java.math.BigDecimal
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class V3Result(
-    val results: List<Place>,
+    val type: String = "FeatureCollection",
+    val features: List<Feature>,
     val metadata: Metadata,
+    val bbox: List<BigDecimal>? = null,
 ) {
+    data class Feature(
+        val type: String = "Feature",
+        val geometry: Geometry,
+        val properties: Place,
+    )
+
+    data class Geometry(
+        val type: String = "Point",
+        val coordinates: List<BigDecimal>, // [lon, lat]
+    )
+
     data class Place(
         val id: String,
         val name: String,
         val displayName: String,
         val placeType: PlaceType,
-        val location: Location,
         val address: Address? = null,
         val categories: List<String>? = null,
         val tariffZones: List<String>? = null,
+        val transportModes: List<TransportMode>? = null,
+        val stopPlaceTypes: List<String>? = null,
         val source: DataSource,
     )
 
-    data class Location(
-        val latitude: BigDecimal,
-        val longitude: BigDecimal,
+    data class TransportMode(
+        val mode: String,
+        val subMode: String? = null,
     )
 
     data class Address(
@@ -35,7 +49,6 @@ data class V3Result(
         val boroughId: String? = null,
         val county: String? = null,
         val countyId: String? = null,
-        val country: String? = null,
         val countryCode: String? = null,
     )
 
@@ -46,16 +59,10 @@ data class V3Result(
     )
 
     enum class PlaceType {
-        ADDRESS,
-        STREET,
-        LOCALITY,
-        BOROUGH,
-        COUNTY,
-        VENUE,
-        STOP_PLACE,
-        STATION,
-        POI,
-        UNKNOWN,
+        address,
+        street,
+        stop_place,
+        poi,
     }
 
     enum class Accuracy {
@@ -69,7 +76,6 @@ data class V3Result(
         val query: QueryInfo,
         val resultCount: Int,
         val timestamp: Long = System.currentTimeMillis(),
-        val boundingBox: BoundingBox? = null,
     )
 
     data class QueryInfo(
@@ -89,10 +95,5 @@ data class V3Result(
         val localityIds: List<String>? = null,
         val tariffZones: List<String>? = null,
         val tariffZoneAuthorities: List<String>? = null,
-    )
-
-    data class BoundingBox(
-        val southwest: Location,
-        val northeast: Location,
     )
 }

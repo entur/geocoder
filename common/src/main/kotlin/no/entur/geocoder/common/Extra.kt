@@ -16,4 +16,6 @@ data class Extra(
     val tags: String? = null,
     // Semicolon-separated list of mode:subMode pairs, e.g. "bus:localBus;rail"
     val transport_mode: String? = null,
+    // Semicolon-separated list of NeTEx StopPlaceType values, e.g. "onstreetBus;busStation"
+    val stop_place_type: String? = null,
 )

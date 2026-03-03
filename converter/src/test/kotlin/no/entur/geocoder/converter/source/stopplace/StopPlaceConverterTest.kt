@@ -37,7 +37,7 @@ class StopPlaceConverterTest {
                 .first()
                 .categories
         assertTrue(categories.contains("legacy.category.funicular"), "Should include funicular from transportMode")
-        assertFalse(categories.contains("legacy.category.other"), "Should not include other if funicular is set")
+        assertTrue(categories.contains("legacy.category.other"), "Should include other stopPlaceType even when funicular is set")
     }
 
     @Test
@@ -133,7 +133,7 @@ class StopPlaceConverterTest {
                 .categories
 
         assertTrue(categories.contains("legacy.category.funicular"), "Should include funicular from transportMode")
-        assertFalse(categories.contains("legacy.category.other"), "Should not include other if funicular is set")
+        assertTrue(categories.contains("legacy.category.other"), "Should include other stopPlaceType even when funicular is set")
         assertTrue(categories.contains("legacy.category.onstreetBus"), "Should include child stop type onstreetBus")
         assertTrue(categories.contains("legacy.category.railStation"), "Should include child stop type railStation")
         assertTrue(categories.contains("legacy.category.metroStation"), "Should include child stop type metroStation")

@@ -27,5 +27,15 @@ class V3Api(private val photonApi: PhotonApi) {
         return V3ResultTransformer.parseAndTransform(photonResult, req)
     }
 
+    suspend fun place(params: Parameters): V3Result {
+        val req = V3PlaceRequest.from(params)
+        val photonRequest = PhotonAutocompleteRequest.from(req)
+        logger.debug("V3 place lookup with ids=${req.ids}")
+
+        val photonResult = photonApi.request(photonRequest)
+
+        return V3ResultTransformer.parseAndTransform(photonResult, req)
+    }
+
     private val logger = LoggerFactory.getLogger(V3Api::class.java)
 }
