@@ -46,7 +46,7 @@ dependencies {
 configurations.configureEach {
     resolutionStrategy.eachDependency {
         if (requested.group == "io.netty") {
-            useVersion("4.2.9.Final")
+            useVersion("4.2.10.Final")
             because("force latest version to fix CVE-2025-67735")
         }
     }

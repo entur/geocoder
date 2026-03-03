@@ -28,3 +28,11 @@ tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
         isNonStable(candidate.version)
     }
 }
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.pinterest.ktlint") {
+            useVersion("1.8.0")
+        }
+    }
+}
