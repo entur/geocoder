@@ -49,6 +49,10 @@ configurations.configureEach {
             useVersion("4.2.10.Final")
             because("force latest version to fix CVE-2025-67735")
         }
+        if (requested.group.startsWith("tools.jackson")) {
+            useVersion("3.1.0")
+            because("force latest version to fix GHSA-72hv-8253-57qq")
+        }
     }
 }
 
