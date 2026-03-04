@@ -91,8 +91,8 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
                 .plus(stopPlace.id.asCategory())
                 .filterNotNull()
 
-        val visibleAltStopNames: Set<String> = altStopNames(stopPlace)
-        val indexedAltStopNames: Set<String> = visibleAltStopNames + childStopNames + stopPlace.id
+        val visibleAltStopNames: Set<String> = altStopNames(stopPlace, nameType = "label")
+        val indexedAltStopNames: Set<String> = altStopNames(stopPlace) + childStopNames + stopPlace.id
 
         val tariffZoneList =
             stopPlace.tariffZones
@@ -169,9 +169,10 @@ class StopPlaceConverter(private val config: ConverterConfig) : Converter {
             standalone -> whosonfirst.category()
         }
 
-    private fun altStopNames(stopPlace: StopPlace): Set<String> =
+    private fun altStopNames(stopPlace: StopPlace, nameType: String? = null): Set<String> =
         stopPlace.alternativeNames
             ?.alternativeName
+            ?.filter { nameType == null || it.nameType == nameType }
             ?.mapNotNull { it.name?.text }
             ?.filter { stopPlace.name.text != it }
             ?.filter { it.isNotBlank() }

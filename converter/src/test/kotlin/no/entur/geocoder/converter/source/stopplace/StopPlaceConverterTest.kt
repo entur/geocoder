@@ -207,6 +207,47 @@ class StopPlaceConverterTest {
     }
 
     @Test
+    fun `only label nameType should be visible in extra alt_name`() {
+        val converter = StopPlaceConverter(TestConfig.config)
+        val stopPlace =
+            createStopPlaceWithTypedAltNames(
+                id = "NSR:StopPlace:1",
+                name = "Oslo S",
+                altNames =
+                    listOf(
+                        "Oslo Sentralstasjon" to "label",
+                        "Oslo Central Station" to "translation",
+                        "Jernbanetorget" to null,
+                    ),
+            )
+
+        val result =
+            converter.convertStopPlaceToNominatim(stopPlace, emptyMap(), emptyMap(), emptyMap(), 0L)
+
+        val extra =
+            result
+                .first()
+                .content
+                .first()
+                .extra
+        val nameAltName =
+            result
+                .first()
+                .content
+                .first()
+                .name
+                ?.alt_name
+
+        assertTrue(extra.alt_name?.contains("Oslo Sentralstasjon") == true, "label should be visible")
+        assertFalse(extra.alt_name?.contains("Oslo Central Station") == true, "translation should not be visible")
+        assertFalse(extra.alt_name?.contains("Jernbanetorget") == true, "untyped name should not be visible")
+
+        assertTrue(nameAltName?.contains("Oslo Sentralstasjon") == true, "label should be indexed")
+        assertTrue(nameAltName?.contains("Oslo Central Station") == true, "translation should be indexed")
+        assertTrue(nameAltName?.contains("Jernbanetorget") == true, "untyped name should be indexed")
+    }
+
+    @Test
     fun `altNames should be null when no alternative names and no child stops`() {
         val converter = StopPlaceConverter(TestConfig.config)
         val stopPlace =
@@ -292,6 +333,12 @@ class StopPlaceConverterTest {
         id: String,
         name: String,
         altNames: List<String>,
+    ): StopPlace = createStopPlaceWithTypedAltNames(id, name, altNames.map { it to "label" })
+
+    private fun createStopPlaceWithTypedAltNames(
+        id: String,
+        name: String,
+        altNames: List<Pair<String, String?>>, // name to nameType
     ): StopPlace {
         val nameText = StopPlace.LocalizedText().apply { text = name }
         val location = StopPlace.Location(10.0, 60.0)
@@ -300,9 +347,10 @@ class StopPlaceConverterTest {
         val alternativeNames =
             StopPlace.AlternativeNames().apply {
                 alternativeName =
-                    altNames.map { altName ->
+                    altNames.map { (altName, nameType) ->
                         StopPlace.AlternativeName().apply {
                             this.name = StopPlace.LocalizedText().apply { text = altName }
+                            this.nameType = nameType
                         }
                     }
             }
