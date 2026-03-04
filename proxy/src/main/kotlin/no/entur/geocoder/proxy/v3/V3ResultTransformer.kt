@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.v3
 
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.Util.toBigDecimalWithScale
@@ -178,7 +179,7 @@ object V3ResultTransformer {
             boroughId = extra?.borough_gid,
             county = props.county,
             countyId = extra?.county_gid,
-            countryCode = extra?.country_a,
+            countryCode = iso3ToIso2(extra?.country_a),
         )
     }
 
@@ -211,22 +212,11 @@ object V3ResultTransformer {
                 V3Result.TransportMode(mode = parts[0], subMode = parts.getOrNull(1))
             }?.takeIf { it.isNotEmpty() }
 
-    private fun parseAccuracy(accuracy: String?): V3Result.Accuracy? =
-        when (accuracy?.lowercase()) {
-            "point" -> V3Result.Accuracy.EXACT
-            "centroid" -> V3Result.Accuracy.APPROXIMATE
-            "interpolated" -> V3Result.Accuracy.INTERPOLATED
-            else -> null
-        }
+    private fun parseAccuracy(accuracy: String?): String? = accuracy?.lowercase()?.takeIf { it.isNotBlank() }
 
-    private fun mapProviderName(source: String?): String =
-        when (source?.lowercase()) {
-            Source.OSM -> "OpenStreetMap"
-            Source.NSR -> "National Stop Register"
-            Source.KARTVERKET_ADRESSE -> "Kartverket MatrikkelenAdresse"
-            Source.KARTVERKET_STEDSNAVN -> "Kartverket Stedsnavn"
-            else -> source ?: "Unknown"
-        }
+    private fun mapProviderName(source: String?): String = source ?: "unknown"
+
+    private fun iso3ToIso2(iso3: String?): String? = Country.fromThreeLetterCode(iso3)?.name
 
     private fun mapToPlaceType(type: String): V3Result.PlaceType? =
         try {

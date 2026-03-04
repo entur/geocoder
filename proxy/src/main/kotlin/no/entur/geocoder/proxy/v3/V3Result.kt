@@ -55,7 +55,7 @@ data class V3Result(
     data class DataSource(
         val provider: String,
         val sourceId: String? = null,
-        val accuracy: Accuracy? = null,
+        val accuracy: String? = null,
     )
 
     enum class PlaceType {
@@ -63,13 +63,6 @@ data class V3Result(
         street,
         stop_place,
         poi,
-    }
-
-    enum class Accuracy {
-        EXACT,
-        INTERPOLATED,
-        APPROXIMATE,
-        UNKNOWN,
     }
 
     data class Metadata(

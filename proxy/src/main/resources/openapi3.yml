@@ -394,7 +394,7 @@ components:
           example: "KVE:County:03"
         countryCode:
           type: string
-          example: "NOR"
+          example: "no"
 
     TransportMode:
       type: object
@@ -415,7 +415,8 @@ components:
       properties:
         provider:
           type: string
-          example: "openstreetmap"
+          description: Data source identifier (same values as the sources filter)
+          example: "nsr"
         sourceId:
           type: string
           example: "NSR:StopPlace:59872"
@@ -434,11 +435,10 @@ components:
     Accuracy:
       type: string
       enum:
-        - EXACT
-        - INTERPOLATED
-        - APPROXIMATE
-        - UNKNOWN
-      example: "EXACT"
+        - point
+        - centroid
+        - interpolated
+      example: "point"
 
     Metadata:
       type: object
