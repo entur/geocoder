@@ -11,7 +11,7 @@ info:
     url: https://opensource.org/licenses/EUPL-1.2
 
 servers:
-  - url: https://api.entur.io/geocoder
+  - url: https://api.dev.entur.io/geocoder
 
 tags:
   - name: Autocomplete
