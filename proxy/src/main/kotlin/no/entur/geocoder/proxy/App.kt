@@ -170,7 +170,7 @@ class App {
                     call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
                 }
 
-                get("/v3/openapi.yaml") {
+                get("/v2/openapi3.yaml") {
                     val openapi = readFile("openapi3.yml")
                     call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
                 }
