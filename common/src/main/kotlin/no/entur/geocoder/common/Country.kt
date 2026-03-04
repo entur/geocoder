@@ -1,65 +1,37 @@
 package no.entur.geocoder.common
 
-enum class Country(
-    val threeLetterCode: String,
+import java.util.Locale
+
+data class Country(
+    val name: String, // 2-letter lowercase (e.g. "no")
+    val threeLetterCode: String, // 3-letter uppercase (e.g. "NOR")
 ) {
-    al("ALB"), // Albania
-    ad("AND"), // Andorra
-    at("AUT"), // Austria
-    by("BLR"), // Belarus
-    be("BEL"), // Belgium
-    ba("BIH"), // Bosnia and Herzegovina
-    bg("BGR"), // Bulgaria
-    hr("HRV"), // Croatia
-    cy("CYP"), // Cyprus
-    cz("CZE"), // Czech Republic
-    dk("DNK"), // Denmark
-    ee("EST"), // Estonia
-    fo("FRO"), // Faroe Islands
-    fi("FIN"), // Finland
-    fr("FRA"), // France
-    de("DEU"), // Germany
-    gi("GIB"), // Gibraltar
-    gr("GRC"), // Greece
-    gg("GGY"), // Guernsey
-    hu("HUN"), // Hungary
-    `is`("ISL"), // Iceland
-    ie("IRL"), // Ireland
-    im("IMN"), // Isle of Man
-    it("ITA"), // Italy
-    je("JEY"), // Jersey
-    lv("LVA"), // Latvia
-    li("LIE"), // Liechtenstein
-    lt("LTU"), // Lithuania
-    lu("LUX"), // Luxembourg
-    mk("MKD"), // North Macedonia
-    mt("MLT"), // Malta
-    md("MDA"), // Moldova
-    mc("MCO"), // Monaco
-    me("MNE"), // Montenegro
-    nl("NLD"), // Netherlands
-    no("NOR"), // Norway
-    pl("POL"), // Poland
-    pt("PRT"), // Portugal
-    ro("ROU"), // Romania
-    ru("RUS"), // Russia
-    sm("SMR"), // San Marino
-    rs("SRB"), // Serbia
-    sk("SVK"), // Slovakia
-    si("SVN"), // Slovenia
-    es("ESP"), // Spain
-    sj("SJM"), // Svalbard and Jan Mayen
-    se("SWE"), // Sweden
-    ch("CHE"), // Switzerland
-    ua("UKR"), // Ukraine
-    gb("GBR"), // United Kingdom
-    va("VAT"), // Vatican City
-    ;
-
     companion object {
-        fun parse(twoLetterCode: String?): Country? =
-            entries.firstOrNull { it.name == twoLetterCode?.lowercase() }
+        private val byIso2: Map<String, Country> by lazy {
+            Locale
+                .getISOCountries()
+                .mapNotNull { iso2 ->
+                    try {
+                        val iso3 = Locale("", iso2).isO3Country
+                        if (iso3.isNotBlank()) {
+                            Country(iso2.lowercase(), iso3.uppercase())
+                        } else {
+                            null
+                        }
+                    } catch (_: Exception) {
+                        null
+                    }
+                }.associateBy { it.name }
+        }
 
-        fun fromThreeLetterCode(threeLetterCode: String?) = entries.firstOrNull { it.threeLetterCode == threeLetterCode?.uppercase() }
+        private val byIso3: Map<String, Country> by lazy {
+            byIso2.values.associateBy { it.threeLetterCode }
+        }
+
+        val no = Country("no", "NOR")
+
+        fun parse(twoLetterCode: String?): Country? = byIso2[twoLetterCode?.lowercase()]
+
+        fun fromThreeLetterCode(threeLetterCode: String?): Country? = byIso3[threeLetterCode?.uppercase()]
     }
 }

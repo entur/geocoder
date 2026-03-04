@@ -72,7 +72,7 @@ class GeoTest {
         "60.146179, 12.518511, no", // Østerbyvegen (NO)
     )
     fun `getCountryCode returns correct country for border coordinates`(lat: Double, lon: Double, countryCode: String) {
-        val expectedCountry = Country.valueOf(countryCode)
+        val expectedCountry = Country.parse(countryCode)
         val actualCountry = Geo.getCountry(Coordinate(lat, lon))
         assertEquals(expectedCountry, actualCountry, "Expected $expectedCountry for ($lat, $lon), got $actualCountry")
     }
