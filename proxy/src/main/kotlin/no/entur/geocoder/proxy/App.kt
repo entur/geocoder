@@ -125,19 +125,31 @@ class App {
                     call.respond(result)
                 }
 
-                get("/v3/autocomplete") {
-                    val result = v3api.autocomplete(call.request.queryParameters)
-                    call.respond(result)
+                get("/v2/openapi.yaml") {
+                    val openapi = readFile("openapi.yml")
+                    call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
                 }
 
-                get("/v3/reverse") {
-                    val result = v3api.reverse(call.request.queryParameters)
-                    call.respond(result)
-                }
+                if (System.getenv("COMMON_ENV") != "prd") {
+                    get("/v3/autocomplete") {
+                        val result = v3api.autocomplete(call.request.queryParameters)
+                        call.respond(result)
+                    }
 
-                get("/v3/place") {
-                    val result = v3api.place(call.request.queryParameters)
-                    call.respond(result)
+                    get("/v3/reverse") {
+                        val result = v3api.reverse(call.request.queryParameters)
+                        call.respond(result)
+                    }
+
+                    get("/v3/place") {
+                        val result = v3api.place(call.request.queryParameters)
+                        call.respond(result)
+                    }
+
+                    get("/v3/openapi.yaml") {
+                        val openapi = readFile("openapi3.yml")
+                        call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
+                    }
                 }
                 get("/") {
                     val indexHtml = readFile("index.html")
@@ -163,16 +175,6 @@ class App {
                 get("/metrics") {
                     val metrics = micrometerRegistry.scrape()
                     call.respond(metrics)
-                }
-
-                get("/v2/openapi.yaml") {
-                    val openapi = readFile("openapi.yml")
-                    call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
-                }
-
-                get("/v3/openapi.yaml") {
-                    val openapi = readFile("openapi3.yml")
-                    call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
                 }
             }
         }
