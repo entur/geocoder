@@ -322,7 +322,6 @@ components:
       required:
         - id
         - name
-        - displayName
         - placeType
         - source
       properties:
@@ -330,11 +329,7 @@ components:
           type: string
           example: "NSR:StopPlace:59872"
         name:
-          type: string
-          example: "Oslo S"
-        displayName:
-          type: string
-          example: "Oslo S, Oslo"
+          $ref: '#/components/schemas/Names'
         placeType:
           $ref: '#/components/schemas/PlaceType'
         address:
@@ -361,6 +356,25 @@ components:
           example: ["onstreetBus"]
         source:
           $ref: '#/components/schemas/DataSource'
+
+    Names:
+      type: object
+      required:
+        - default
+        - display
+      properties:
+        default:
+          type: string
+          description: Official name
+          example: "Oslo S"
+        label:
+          type: string
+          description: Common or colloquial name
+          example: "Oslo Sentralstasjon"
+        display:
+          type: string
+          description: Formatted name with locality context, suitable for display
+          example: "Oslo S, Oslo"
 
     Address:
       type: object

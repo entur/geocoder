@@ -109,7 +109,9 @@ object V3ResultTransformer {
         val placeType = determinePlaceType(extra?.source, props.osm_key, props.osm_value)
         val accuracy = parseAccuracy(extra?.accuracy)
 
-        val label = props.name + extra?.locality?.let { ", $it" }.orEmpty()
+        val defaultName = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed"
+        val labelName = extra?.alt_name?.split(";")?.firstOrNull()?.ifBlank { null }?.takeIf { it != defaultName }
+        val displayName = defaultName + extra?.locality?.let { ", $it" }.orEmpty()
 
         return V3Result.Feature(
             geometry =
@@ -125,8 +127,11 @@ object V3ResultTransformer {
                     id =
                         extra?.id
                             ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
-                    name = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed",
-                    displayName = label,
+                    name = V3Result.Names(
+                        default = defaultName,
+                        label = labelName,
+                        display = displayName,
+                    ),
                     placeType = placeType,
                     address = buildAddress(props, extra),
                     categories =

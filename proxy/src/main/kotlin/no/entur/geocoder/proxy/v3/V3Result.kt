@@ -23,8 +23,7 @@ data class V3Result(
 
     data class Place(
         val id: String,
-        val name: String,
-        val displayName: String,
+        val name: Names,
         val placeType: PlaceType,
         val address: Address? = null,
         val categories: List<String>? = null,
@@ -32,6 +31,12 @@ data class V3Result(
         val transportModes: List<TransportMode>? = null,
         val stopPlaceTypes: List<String>? = null,
         val source: DataSource,
+    )
+
+    data class Names(
+        val default: String,
+        val label: String? = null,
+        val display: String,
     )
 
     data class TransportMode(
