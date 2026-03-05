@@ -146,30 +146,30 @@ rm -f nominatim.ndjson
 if [ -n "${ADRESSE_URL:-}" ] && [ -n "${STEDSNAVN_URL:-}" ]; then
     download "$ADRESSE_URL" "$BUILDDIR/adresse.csv" '*.csv'
     download "$STEDSNAVN_URL" "$BUILDDIR/stedsnavn.gml" '*.gml'
-    $CONVERT -a -m "$BUILDDIR/adresse.csv" -g "$BUILDDIR/stedsnavn.gml" -o nominatim.ndjson
+    $CONVERT matrikkel -i "$BUILDDIR/adresse.csv" -g "$BUILDDIR/stedsnavn.gml" -o nominatim.ndjson -a
 fi
 
 # POI data
 if [ -n "${POI_URL:-}" ]; then
     download "$POI_URL" "$BUILDDIR/poi.xml"
-    $CONVERT -a -x "$BUILDDIR/poi.xml" -o nominatim.ndjson
+    $CONVERT poi -i "$BUILDDIR/poi.xml" -o nominatim.ndjson -a
 fi
 
 if [ -n "${POI2_URL:-}" ]; then
     download "$POI2_URL" "$BUILDDIR/poi2.xml"
-    $CONVERT -a -x "$BUILDDIR/poi2.xml" -o nominatim.ndjson
+    $CONVERT poi -i "$BUILDDIR/poi2.xml" -o nominatim.ndjson -a
 fi
 
 # Stop places
 if [ -n "${STOPPLACE_URL:-}" ]; then
     download "$STOPPLACE_URL" "$BUILDDIR/stopplace.xml" '*.xml'
-    $CONVERT -a -s "$BUILDDIR/stopplace.xml" -o nominatim.ndjson
+    $CONVERT stopplace -i "$BUILDDIR/stopplace.xml" -o nominatim.ndjson -a
 fi
 
 # OSM data
 if [ -n "${OSM_URL:-}" ]; then
     download "$OSM_URL" "$BUILDDIR/osm.pbf"
-    $CONVERT -a -p "$BUILDDIR/osm.pbf" -o nominatim.ndjson
+    $CONVERT osm -i "$BUILDDIR/osm.pbf" -o nominatim.ndjson -a
 fi
 
 cleanup

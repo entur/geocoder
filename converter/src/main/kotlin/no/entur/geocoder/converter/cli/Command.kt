@@ -12,251 +12,212 @@ import java.io.File
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
-    Command(args).init()
+    Command(args).run()
 }
 
 class Command(private val args: Array<String>) {
     private val fileTypeDetector = FileTypeDetector()
 
-    fun init() {
+    fun run() {
         if (args.isEmpty()) {
-            exit("Error: No arguments provided.")
+            printUsage()
+            exitProcess(0)
         }
 
-        var stopplaceInputPath: String? = null
-        var matrikkelInputPath: String? = null
-        var osmInputPath: String? = null
-        var stedsnavnInputPath: String? = null
-        var poiInputPath: String? = null
-        var outputPath: String? = null
-        var configPath: String? = null
-        var forceOverwrite = false
-        var appendMode = false
-        var noCounty = false
-        var noStedsnavn = false
+        val action = args[0]
+        val rest = args.drop(1).toTypedArray()
 
-        var i = 0
-        while (i < args.size) {
-            when (args[i].lowercase()) {
-                "-s" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -s flag requires <input-xml-file> argument.")
-                    }
-                    stopplaceInputPath = args[i + 1]
-                    i += 2
-                }
+        when (action.lowercase()) {
+            "-h", "--help" -> { printUsage(); exitProcess(0) }
+            "stopplace" -> runStopPlace(rest)
+            "matrikkel" -> runMatrikkel(rest)
+            "osm" -> runOsm(rest)
+            "stedsnavn" -> runStedsnavn(rest)
+            "poi" -> runPoi(rest)
+            else -> exit("Unknown action '$action'.")
+        }
+    }
 
-                "-m" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -m flag requires <input-csv-file> argument.")
-                    }
-                    matrikkelInputPath = args[i + 1]
-                    i += 2
-                }
+    private fun runStopPlace(args: Array<String>) {
+        val opts = parseOptions(args)
+        val config = readConfig(opts.configPath)
+        val inputFile = validateInput(opts.inputPath, XML, "stopplace")
+        runConversion("StopPlace", StopPlaceConverter(config), inputFile, opts)
+    }
 
-                "-p" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -p flag requires <input-pbf-file> argument.")
-                    }
-                    osmInputPath = args[i + 1]
-                    i += 2
-                }
+    private fun runMatrikkel(args: Array<String>) {
+        val opts = parseOptions(args, valueFlags = setOf("-g"), booleanFlags = setOf("--no-county"))
+        val stedsnavnPath = opts.extra["-g"]
+        val noCounty = opts.extra.containsKey("--no-county")
 
-                "-g" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -g flag requires <input-gml-file> argument.")
-                    }
-                    stedsnavnInputPath = args[i + 1]
-                    i += 2
-                }
-
-                "-x" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -x flag requires <input-poi-xml-file> argument.")
-                    }
-                    poiInputPath = args[i + 1]
-                    i += 2
-                }
-
-                "-o" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -o flag requires <output-file> argument.")
-                    }
-                    outputPath = args[i + 1]
-                    i += 2
-                }
-
-                "-c" -> {
-                    if (i + 1 >= args.size) {
-                        exit("Error: -c flag requires <config-file> argument.")
-                    }
-                    configPath = args[i + 1]
-                    i += 2
-                }
-
-                "-f" -> {
-                    forceOverwrite = true
-                    i += 1
-                }
-
-                "-a" -> {
-                    appendMode = true
-                    i += 1
-                }
-
-                "--no-county" -> {
-                    noCounty = true
-                    i += 1
-                }
-
-                "--no-stedsnavn" -> {
-                    noStedsnavn = true
-                    i += 1
-                }
-
-                else -> {
-                    exit("Error: Unknown option ${args[i]}")
-                }
-            }
+        if (stedsnavnPath == null && !noCounty) {
+            exit("matrikkel requires -g <stedsnavn.gml> for county data, or --no-county to skip it.")
         }
 
-        if (outputPath == null) {
-            exit("Error: Output file must be specified with -o <output-file>.")
+        val stedsnavnFile = stedsnavnPath?.let {
+            val f = File(it)
+            if (!f.exists()) exit("Stedsnavn file does not exist: ${f.absolutePath}")
+            fileTypeDetector.validateFileType(f, GML, "-g")
+            f
         }
 
-        if (stopplaceInputPath == null &&
-            matrikkelInputPath == null &&
-            osmInputPath == null &&
-            stedsnavnInputPath == null &&
-            poiInputPath == null
-        ) {
-            exit("Error: No conversion specified.")
-        }
+        val config = readConfig(opts.configPath)
+        val inputFile = validateInput(opts.inputPath, CSV, "matrikkel")
+        runConversion("Matrikkel", MatrikkelConverter(stedsnavnFile, config), inputFile, opts)
+    }
 
-        if (matrikkelInputPath != null && stedsnavnInputPath == null && !noCounty) {
-            exit("Error: Matrikkel conversion requires either -g <stedsnavn-gml> to populate county data, or --no-county to skip it.")
-        }
+    private fun runOsm(args: Array<String>) {
+        val opts = parseOptions(args)
+        val config = readConfig(opts.configPath)
+        val inputFile = validateInput(opts.inputPath, PBF, "osm")
+        runConversion("OSM PBF", OsmConverter(config), inputFile, opts)
+    }
 
-        if (forceOverwrite && appendMode) {
-            exit("Error: Cannot use both -f (force overwrite) and -a (append) flags together.")
-        }
+    private fun runStedsnavn(args: Array<String>) {
+        val opts = parseOptions(args)
+        val config = readConfig(opts.configPath)
+        val inputFile = validateInput(opts.inputPath, GML, "stedsnavn")
+        runConversion("Stedsnavn", StedsnavnConverter(config), inputFile, opts)
+    }
 
-        val outputFile = File(outputPath)
+    private fun runPoi(args: Array<String>) {
+        val opts = parseOptions(args)
+        val config = readConfig(opts.configPath)
+        val inputFile = validateInput(opts.inputPath, XML, "poi")
+        runConversion("POI", PoiConverter(config), inputFile, opts)
+    }
+
+    private fun runConversion(name: String, converter: Converter, inputFile: File, opts: Options) {
+        val outputFile = File(opts.outputPath)
 
         if (outputFile.exists()) {
-            if (!forceOverwrite && !appendMode) {
-                exit("Error: Output file '${outputFile.absolutePath}' already exists. Use -f to overwrite or -a to append.")
+            if (!opts.forceOverwrite && !opts.append) {
+                exit("Output file '${outputFile.absolutePath}' already exists. Use -f to overwrite or -a to append.")
             }
-            if (forceOverwrite) {
+            if (opts.forceOverwrite) {
                 println("Overwriting existing file: ${outputFile.absolutePath}")
                 outputFile.delete()
-            }
-            if (appendMode) {
+            } else if (opts.append) {
                 println("Appending to existing file: ${outputFile.absolutePath}")
             }
         }
 
-        var isFirstConversion = !appendMode
-        val config = readConfig(configPath)
+        println("Starting $name conversion...")
+        val startTime = System.currentTimeMillis()
+        converter.convert(inputFile, outputFile, opts.append)
+        val durationSeconds = (System.currentTimeMillis() - startTime) / 1000.0
+        val fileSizeMB = outputFile.length() / (1024.0 * 1024.0)
+        val action = if (opts.append) "Appended to" else "Output written to"
+        println("$name conversion completed in %.2f seconds. $action ${outputFile.absolutePath}, size: %.2f MB.".format(durationSeconds, fileSizeMB))
+    }
 
-        val stedsnavnFile = stedsnavnInputPath?.let { File(it) }
-        val stedsnavnConversionPath = if (noStedsnavn) null else stedsnavnInputPath
+    private data class Options(
+        val inputPath: String,
+        val outputPath: String,
+        val configPath: String?,
+        val forceOverwrite: Boolean,
+        val append: Boolean,
+        val extra: Map<String, String?>,
+    )
 
-        val conversionTasks =
-            listOf(
-                ConversionTask("StopPlace", stopplaceInputPath, StopPlaceConverter(config), XML, "-s"),
-                ConversionTask("Matrikkel", matrikkelInputPath, MatrikkelConverter(stedsnavnFile, config), CSV, "-m"),
-                ConversionTask("OSM PBF", osmInputPath, OsmConverter(config), PBF, "-p"),
-                ConversionTask("Stedsnavn GML", stedsnavnConversionPath, StedsnavnConverter(config), GML, "-g"),
-                ConversionTask("POI XML", poiInputPath, PoiConverter(config), XML, "-x"),
-            )
+    private fun parseOptions(
+        args: Array<String>,
+        valueFlags: Set<String> = emptySet(),
+        booleanFlags: Set<String> = emptySet(),
+    ): Options {
+        var inputPath: String? = null
+        var outputPath: String? = null
+        var configPath: String? = null
+        var forceOverwrite = false
+        var append = false
+        val extra = mutableMapOf<String, String?>()
 
-        for (task in conversionTasks) {
-            if (task.path != null) {
-                val inputFile = readAndValidateFile(task.path, task.expectedType, task.flagName)
-                if (!isFirstConversion) {
-                    println("\nAppending ${task.name} conversion...")
-                } else {
-                    println("Starting ${task.name} conversion...")
+        var i = 0
+        while (i < args.size) {
+            when (args[i]) {
+                "-i" -> {
+                    if (i + 1 >= args.size) exit("-i requires an argument.")
+                    inputPath = args[i + 1]; i += 2
                 }
-
-                val startTime = System.currentTimeMillis()
-                task.converter.convert(inputFile, outputFile, !isFirstConversion)
-                val endTime = System.currentTimeMillis()
-                val durationSeconds = (endTime - startTime) / 1000.0
-
-                val action = if (isFirstConversion) "Output written to" else "Appended to"
-                val fileSizeMB = outputFile.length() / (1024.0 * 1024.0)
-                println(
-                    "${task.name} conversion completed in %.2f seconds. $action ${outputFile.absolutePath}, size: %.2f MB.".format(
-                        durationSeconds,
-                        fileSizeMB,
-                    ),
-                )
-                isFirstConversion = false
+                "-o" -> {
+                    if (i + 1 >= args.size) exit("-o requires an argument.")
+                    outputPath = args[i + 1]; i += 2
+                }
+                "-c" -> {
+                    if (i + 1 >= args.size) exit("-c requires an argument.")
+                    configPath = args[i + 1]; i += 2
+                }
+                "-f" -> { forceOverwrite = true; i += 1 }
+                "-a" -> { append = true; i += 1 }
+                "-h", "--help" -> { printUsage(); exitProcess(0) }
+                in valueFlags -> {
+                    val flag = args[i]
+                    if (i + 1 >= args.size) exit("$flag requires an argument.")
+                    extra[flag] = args[i + 1]; i += 2
+                }
+                in booleanFlags -> {
+                    extra[args[i]] = null; i += 1
+                }
+                else -> exit("Unknown option: ${args[i]}")
             }
         }
+
+        if (outputPath == null) exit("-o <output-file> is required.")
+        if (inputPath == null) exit("-i <input-file> is required.")
+        if (forceOverwrite && append) exit("Cannot use both -f and -a together.")
+
+        return Options(inputPath, outputPath, configPath, forceOverwrite, append, extra)
+    }
+
+    private fun validateInput(path: String, expectedType: FileTypeDetector.FileType, action: String): File {
+        val inputFile = File(path)
+        if (!inputFile.exists()) {
+            exit("Input file does not exist: ${inputFile.absolutePath}")
+        }
+        try {
+            fileTypeDetector.validateFileType(inputFile, expectedType, action)
+        } catch (e: IllegalArgumentException) {
+            exit(e.message ?: "File validation failed")
+        }
+        return inputFile
     }
 
     internal fun readConfig(configPath: String?): ConverterConfig {
-        val configFile =
-            if (configPath != null) {
-                File(configPath)
-            } else {
-                File("converter.json")
-            }
-
+        val configFile = if (configPath != null) File(configPath) else File("converter.json")
         val config = ConverterConfig.load(configFile)
         println("Loaded configuration from: ${configFile.absolutePath}")
         return config
     }
 
-    private data class ConversionTask(
-        val name: String,
-        val path: String?,
-        val converter: Converter,
-        val expectedType: FileTypeDetector.FileType,
-        val flagName: String,
-    )
-
-    private fun readAndValidateFile(path: String, expectedType: FileTypeDetector.FileType, flagName: String): File {
-        val inputFile = File(path)
-        if (!inputFile.exists()) {
-            exit("Error: Input file does not exist: ${inputFile.absolutePath}")
-        }
-
-        try {
-            fileTypeDetector.validateFileType(inputFile, expectedType, flagName)
-        } catch (e: IllegalArgumentException) {
-            exit(e.message ?: "Error: File validation failed")
-        }
-
-        return inputFile
-    }
-
     private fun exit(msg: String): Nothing {
-        println(msg + "\n")
-        printUsage()
+        System.err.println("Error: $msg")
+        System.err.println("Run 'convert --help' for usage.")
         exitProcess(1)
     }
 
     fun printUsage() {
         println(
             """
-            Usage: ./convert.sh [options] -o <output-file>
+            Usage: convert <action> -i <input-file> -o <output-file> [options]
+
+            Actions:
+              stopplace    Convert StopPlace NeTEx XML
+              matrikkel    Convert Matrikkel CSV data
+              osm          Convert OSM PBF data
+              stedsnavn    Convert Stedsnavn GML data
+              poi          Convert POI NeTEx XML data
 
             Options:
-              -s <input-xml-file>     Convert StopPlace NeTEx data
-              -m <input-csv-file>     Convert Matrikkel CSV data
-              -p <input-pbf-file>     Convert OSM PBF data
-              -g <input-gml-file>     Convert Stedsnavn GML data
-              -x <input-poi-file>     Convert POI NeTEx data
-              -o <output-file>        Specify the output file (required)
-              -c <config-file>        Configuration file (defaults to converter.json if it exists, otherwise built-in values)
-              -f                      Force overwrite if output file exists
-              -a                      Append to existing output file
-              --no-county             Skip county population for Matrikkel data (when -m is provided and -g is not)
-              --no-stedsnavn          Skip Stedsnavn output when converting Matrikkel (when both -m and -g is provided)
+              -i <file>    Input file (required)
+              -o <file>    Output file (required)
+              -c <file>    Configuration file (defaults to converter.json)
+              -a           Append to existing output file
+              -f           Force overwrite if output file exists
+              -h, --help   Show this help
+
+            Matrikkel-specific options:
+              -g <file>    Stedsnavn GML file for county data
+              --no-county  Skip county population (when -g is not provided)
             """.trimIndent(),
         )
     }
