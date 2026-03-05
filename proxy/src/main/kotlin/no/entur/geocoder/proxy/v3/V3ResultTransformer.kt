@@ -110,7 +110,13 @@ object V3ResultTransformer {
         val accuracy = parseAccuracy(extra?.accuracy)
 
         val defaultName = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed"
-        val labelName = extra?.alt_name?.split(";")?.firstOrNull()?.ifBlank { null }?.takeIf { it != defaultName }
+        val labelName =
+            extra
+                ?.alt_name
+                ?.split(";")
+                ?.firstOrNull()
+                ?.ifBlank { null }
+                ?.takeIf { it != defaultName }
         val displayName = defaultName + extra?.locality?.let { ", $it" }.orEmpty()
 
         return V3Result.Feature(
@@ -127,11 +133,12 @@ object V3ResultTransformer {
                     id =
                         extra?.id
                             ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
-                    name = V3Result.Names(
-                        default = defaultName,
-                        label = labelName,
-                        display = displayName,
-                    ),
+                    name =
+                        V3Result.Names(
+                            default = defaultName,
+                            label = labelName,
+                            display = displayName,
+                        ),
                     placeType = placeType,
                     address = buildAddress(props, extra),
                     categories =

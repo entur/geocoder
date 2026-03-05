@@ -243,8 +243,8 @@ class StopPlaceConverterTest {
         assertFalse(extra.alt_name?.contains("Jernbanetorget") == true, "untyped name should not be visible")
 
         assertTrue(nameAltName?.contains("Oslo Sentralstasjon") == true, "label should be indexed")
-        assertTrue(nameAltName?.contains("Oslo Central Station") == true, "translation should be indexed")
-        assertTrue(nameAltName?.contains("Jernbanetorget") == true, "untyped name should be indexed")
+        assertTrue(nameAltName.contains("Oslo Central Station") == true, "translation should be indexed")
+        assertTrue(nameAltName.contains("Jernbanetorget") == true, "untyped name should be indexed")
     }
 
     @Test
