@@ -4,16 +4,13 @@ set -eu
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 CONVERT="$SCRIPTDIR/convert.sh"
-BUILDDIR="$SCRIPTDIR/build/create-nominatim-data"
 
 usage() {
-    echo "Usage: $0 <config-file> [-z] [-f] [-k]"
+    echo "Usage: $0 <config-file> [-z]"
     echo ""
     echo "Arguments:"
     echo "  config-file    Path to config file (e.g., config/prod.conf)"
     echo "  -z             Compress output with gzip"
-    echo "  -f             Force download even if files exist locally"
-    echo "  -k             Keep downloaded files"
     echo ""
     echo "Available configs:"
     for f in "$SCRIPTDIR"/config/*.conf; do
@@ -27,75 +24,13 @@ fail() {
     exit 1
 }
 
-DOWNLOADED_FILES=""
-
-download() {
-    URL="$1"
-    OUTPUT="$2"
-    EXTRACT_PATTERN="${3:-}"
-
-    # Check if URL is a local file path
-    case "$URL" in
-        http://*|https://*)
-            # Remote URL - download it
-            if [ -f "$OUTPUT" ] && ! $FORCE; then
-                SIZE=$(du -h "$OUTPUT" | awk '{ print $1 }')
-                echo "Using existing $OUTPUT (size: $SIZE)"
-                return
-            fi
-
-            printf "Downloading: %s... " "$URL"
-
-            if [ -n "$EXTRACT_PATTERN" ]; then
-                curl -sfL --retry 2 "$URL" | bsdtar -xOf - "$EXTRACT_PATTERN" > "$OUTPUT"
-            else
-                curl -sfL --retry 2 "$URL" -o "$OUTPUT"
-            fi
-
-            if [ -f "$OUTPUT" ]; then
-                SIZE=$(du -h "$OUTPUT" | awk '{ print $1 }')
-                echo "Downloaded $OUTPUT, size: $SIZE"
-                DOWNLOADED_FILES="$DOWNLOADED_FILES $OUTPUT"
-            else
-                fail "Failed to download $URL"
-            fi
-            ;;
-        *)
-            # Local file path - resolve relative to script dir
-            case "$URL" in
-                /*) LOCAL_PATH="$URL" ;;
-                *) LOCAL_PATH="$SCRIPTDIR/$URL" ;;
-            esac
-            [ -f "$LOCAL_PATH" ] || fail "Local file not found: $LOCAL_PATH"
-            SIZE=$(du -h "$LOCAL_PATH" | awk '{ print $1 }')
-            echo "Using local file: $LOCAL_PATH (size: $SIZE)"
-            cp "$LOCAL_PATH" "$OUTPUT"
-            DOWNLOADED_FILES="$DOWNLOADED_FILES $OUTPUT"
-            ;;
-    esac
-}
-
-cleanup() {
-  if [ "$KEEP" = "true" ]; then
-    echo "Downloaded files kept in $BUILDDIR"
-    return
-  fi
-  for f in $DOWNLOADED_FILES; do
-      rm -f "$f"
-  done
-}
-
 # Parse arguments
 CONFIG_FILE=""
 COMPRESS=false
-FORCE=false
-KEEP=false
 
 for arg in "$@"; do
     case "$arg" in
         -z) COMPRESS=true ;;
-        -f|--force) FORCE=true ;;
-        -k|--keep) KEEP=true ;;
         -h|--help) usage ;;
         *)
             if [ -z "$CONFIG_FILE" ]; then
@@ -126,15 +61,9 @@ if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] 
     fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
 fi
 
-# Check dependencies
-which bsdtar >/dev/null 2>&1 || fail "bsdtar not found. Please install bsdtar to proceed."
-which curl >/dev/null 2>&1 || fail "curl not found. Please install curl to proceed."
-which gzip >/dev/null 2>&1 || fail "gzip not found. Please install gzip to proceed."
 [ -f "$CONVERT" ] || fail "$CONVERT not found."
 
 echo "Using config: $CONFIG_FILE"
-
-mkdir -p "$BUILDDIR"
 
 START_TIME=$(date +%s)
 
@@ -143,35 +72,27 @@ rm -f nominatim.ndjson
 
 # Matrikkel addresses + Stedsnavn (Norwegian cadastre data)
 if [ -n "${ADRESSE_URL:-}" ] && [ -n "${STEDSNAVN_URL:-}" ]; then
-    download "$ADRESSE_URL" "$BUILDDIR/adresse.csv" '*.csv'
-    download "$STEDSNAVN_URL" "$BUILDDIR/stedsnavn.gml" '*.gml'
-    $CONVERT matrikkel -i "$BUILDDIR/adresse.csv" -g "$BUILDDIR/stedsnavn.gml" -o nominatim.ndjson -a
+    $CONVERT matrikkel -i "$ADRESSE_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
 fi
 
 # POI data
 if [ -n "${POI_URL:-}" ]; then
-    download "$POI_URL" "$BUILDDIR/poi.xml"
-    $CONVERT poi -i "$BUILDDIR/poi.xml" -o nominatim.ndjson -a
+    $CONVERT poi -i "$POI_URL" -o nominatim.ndjson -a
 fi
 
 if [ -n "${POI2_URL:-}" ]; then
-    download "$POI2_URL" "$BUILDDIR/poi2.xml"
-    $CONVERT poi -i "$BUILDDIR/poi2.xml" -o nominatim.ndjson -a
+    $CONVERT poi -i "$POI2_URL" -o nominatim.ndjson -a
 fi
 
 # Stop places
 if [ -n "${STOPPLACE_URL:-}" ]; then
-    download "$STOPPLACE_URL" "$BUILDDIR/stopplace.xml" '*.xml'
-    $CONVERT stopplace -i "$BUILDDIR/stopplace.xml" -o nominatim.ndjson -a
+    $CONVERT stopplace -i "$STOPPLACE_URL" -o nominatim.ndjson -a
 fi
 
 # OSM data
 if [ -n "${OSM_URL:-}" ]; then
-    download "$OSM_URL" "$BUILDDIR/osm.pbf"
-    $CONVERT osm -i "$BUILDDIR/osm.pbf" -o nominatim.ndjson -a
+    $CONVERT osm -i "$OSM_URL" -o nominatim.ndjson -a
 fi
-
-cleanup
 
 END_TIME=$(date +%s)
 echo "Created nominatim.ndjson in $((END_TIME - START_TIME)) seconds."

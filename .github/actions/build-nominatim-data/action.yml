@@ -25,14 +25,6 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Install dependencies
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get clean
-        sudo apt-get purge -y needrestart
-        sudo apt-get install -fy libarchive-tools
-
     - name: Run create-nominatim-data.sh
       shell: bash
       run: ./create-nominatim-data.sh ${{ inputs.config }} -z
