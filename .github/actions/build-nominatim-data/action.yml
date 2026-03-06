@@ -1,5 +1,5 @@
 name: 'Build Nominatim Data'
-description: 'Build converter JAR, run import, and upload nominatim data as artifact'
+description: 'Download converter, run import, and upload nominatim data as artifact'
 
 inputs:
   config:
@@ -25,17 +25,6 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set up JDK
-      uses: actions/setup-java@v5
-      with:
-        distribution: liberica
-        java-version: 25
-        cache: gradle
-
-    - name: Build converter JAR
-      shell: bash
-      run: ./gradlew :converter:build
-
     - name: Install dependencies
       shell: bash
       run: |

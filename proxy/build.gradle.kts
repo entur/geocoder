@@ -21,7 +21,14 @@ dependencies {
             because("require at least 1.20.0 to fix CVE-2025-48924 and CVE-2020-15250")
         }
     }
-    implementation(project(":common"))
+    implementation(libs.geotools.referencing)
+    implementation(libs.geotools.main)
+    implementation(libs.geotools.epsg.wkt)
+    implementation(libs.country.boundaries)
+    implementation(libs.jackson.kotlin)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.xml)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cors)

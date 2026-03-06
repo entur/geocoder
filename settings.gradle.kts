@@ -1,6 +1,4 @@
 rootProject.name = "geocoder"
-include("common")
-include("converter")
 include("proxy")
 
 dependencyResolutionManagement {

@@ -39,7 +39,7 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 cd photon
 ./download-photon-jar.sh
 
-# EITHER download source data, convert to nominatim.ndjson
+# EITHER download source data, convert to nominatim.ndjson (downloads Rust binary automatically)
 ../converter/create-nominatim-data.sh config/prod.conf -z
 
 # OR download the latest nominatim.ndjson build by Github Actions

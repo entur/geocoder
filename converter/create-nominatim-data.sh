@@ -130,7 +130,6 @@ fi
 which bsdtar >/dev/null 2>&1 || fail "bsdtar not found. Please install bsdtar to proceed."
 which curl >/dev/null 2>&1 || fail "curl not found. Please install curl to proceed."
 which gzip >/dev/null 2>&1 || fail "gzip not found. Please install gzip to proceed."
-which java >/dev/null 2>&1 || fail "java not found. Please install java to proceed."
 [ -f "$CONVERT" ] || fail "$CONVERT not found."
 
 echo "Using config: $CONFIG_FILE"
