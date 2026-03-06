@@ -39,7 +39,7 @@ data class PhotonReverseRequest(
                 language = handleLang(req.language),
                 limit = req.limit,
                 radius = req.radius,
-                excludes = listOf(Category.OSM_ADDRESS), // Exclude addresses with house numbers in reverse requests
+                excludes = listOfNotNull(Category.OSM_ADDRESS, PhotonFilterBuilder.buildMultiModalExclude(req.stopPlaceMode)),
                 debug = false,
             )
     }

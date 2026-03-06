@@ -116,11 +116,14 @@ data class PhotonAutocompleteRequest(
                     }
                 }
 
+            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(req.stopPlaceMode))
+
             return PhotonAutocompleteRequest(
                 query = req.query,
                 limit = req.limit,
                 language = handleLang(req.language),
                 includes = includes,
+                excludes = excludes,
                 lat = null,
                 lon = null,
                 zoom = null,

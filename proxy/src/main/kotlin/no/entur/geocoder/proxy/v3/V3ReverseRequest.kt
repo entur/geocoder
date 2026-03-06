@@ -8,6 +8,7 @@ data class V3ReverseRequest(
     val radius: Double? = null,
     val limit: Int = 10,
     val language: String = "no",
+    val stopPlaceMode: String = "parent",
 ) {
     init {
         require(lat in -90.0..90.0) { "Parameter 'latitude' must be between -90 and 90" }
@@ -24,6 +25,7 @@ data class V3ReverseRequest(
                 radius = req["radius"]?.toDoubleOrNull() ?: 10.0,
                 limit = req["limit"]?.toIntOrNull() ?: 10,
                 language = req["language"] ?: req["lang"] ?: "no",
+                stopPlaceMode = req["stopPlaceMode"] ?: "parent",
             )
     }
 }

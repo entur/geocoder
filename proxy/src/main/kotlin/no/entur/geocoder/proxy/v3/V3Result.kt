@@ -67,6 +67,7 @@ data class V3Result(
         address,
         street,
         stop_place,
+        group_of_stop_places,
         poi,
     }
 
@@ -93,5 +94,6 @@ data class V3Result(
         val localityIds: List<String>? = null,
         val tariffZones: List<String>? = null,
         val tariffZoneAuthorities: List<String>? = null,
+        val stopPlaceMode: String? = null,
     )
 }

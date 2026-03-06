@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.v3
 
+import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Extra
 import no.entur.geocoder.common.Source
@@ -24,7 +25,8 @@ object V3ResultTransformer {
                 req.countyIds.isNotEmpty() ||
                 req.localityIds.isNotEmpty() ||
                 req.tariffZones.isNotEmpty() ||
-                req.tariffZoneAuthorities.isNotEmpty()
+                req.tariffZoneAuthorities.isNotEmpty() ||
+                req.stopPlaceMode != "parent"
             ) {
                 V3Result.Filters(
                     placeTypes = req.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
@@ -34,6 +36,7 @@ object V3ResultTransformer {
                     localityIds = req.localityIds.takeIf { it.isNotEmpty() },
                     tariffZones = req.tariffZones.takeIf { it.isNotEmpty() },
                     tariffZoneAuthorities = req.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
+                    stopPlaceMode = req.stopPlaceMode.takeIf { it != "parent" },
                 )
             } else {
                 null
@@ -106,7 +109,7 @@ object V3ResultTransformer {
         val extra = props.extra
         val coords = feature.geometry.coordinates
 
-        val placeType = determinePlaceType(extra?.source, props.osm_key, props.osm_value)
+        val placeType = determinePlaceType(extra?.source, props.osm_key, props.osm_value, extra?.tags)
         val accuracy = parseAccuracy(extra?.accuracy)
 
         val defaultName = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed"
@@ -205,9 +208,10 @@ object V3ResultTransformer {
             else -> null
         }
 
-    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?): V3Result.PlaceType =
+    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.PlaceType =
         when {
             source == Source.KARTVERKET_ADRESSE -> V3Result.PlaceType.address
+            source == Source.NSR && tags?.contains(Category.OSM_GOSP) == true -> V3Result.PlaceType.group_of_stop_places
             source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.PlaceType.stop_place
             source == Source.NSR && osmValue?.contains("station") == true -> V3Result.PlaceType.stop_place
             source == Source.NSR -> V3Result.PlaceType.poi
