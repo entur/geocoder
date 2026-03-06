@@ -5,7 +5,7 @@ set -eu
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 BINARY="$SCRIPTDIR/build/nominatim-convert"
 
-VERSION="v0.1"
+VERSION="v0.2.0"
 BASE_URL="https://github.com/entur/nominatim-convert/releases/download/$VERSION"
 
 if [ ! -f "$BINARY" ]; then
