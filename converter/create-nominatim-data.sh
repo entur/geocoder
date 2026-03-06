@@ -73,6 +73,7 @@ rm -f nominatim.ndjson
 # Matrikkel addresses + Stedsnavn (Norwegian cadastre data)
 if [ -n "${ADRESSE_URL:-}" ] && [ -n "${STEDSNAVN_URL:-}" ]; then
     $CONVERT matrikkel -i "$ADRESSE_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
+    $CONVERT stedsnavn -i "$STEDSNAVN_URL" -o nominatim.ndjson -a
 fi
 
 # POI data
