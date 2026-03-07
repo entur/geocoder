@@ -3,7 +3,10 @@
 set -eu
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
-CONVERT="$SCRIPTDIR/convert.sh"
+
+VERSION="v0.2.3"
+BINARY="$SCRIPTDIR/build/nominatim-converter-$VERSION"
+BASE_URL="https://github.com/entur/nominatim-converter/releases/download/$VERSION"
 
 usage() {
     echo "Usage: $0 <config-file> [-z]"
@@ -22,6 +25,24 @@ usage() {
 fail() {
     echo "Error: $*"
     exit 1
+}
+
+# Download converter binary if not present
+if [ ! -f "$BINARY" ]; then
+    mkdir -p "$SCRIPTDIR/build"
+    OS=$(uname -s)
+    case "$OS" in
+        Linux)  ARTIFACT="nominatim-converter-linux-x86_64" ;;
+        Darwin) ARTIFACT="nominatim-converter-macos-aarch64" ;;
+        *) fail "Unsupported OS: $OS" ;;
+    esac
+    echo "Downloading nominatim-converter $VERSION..."
+    curl -sfL --retry 2 "$BASE_URL/$ARTIFACT" -o "$BINARY"
+    chmod +x "$BINARY"
+fi
+
+convert() {
+    "$BINARY" "$@"
 }
 
 # Parse arguments
@@ -56,43 +77,35 @@ esac
 # shellcheck source=/dev/null
 . "$CONFIG_FILE"
 
-# Verify at least one source is configured
 if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
     fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
 fi
-
-[ -f "$CONVERT" ] || fail "$CONVERT not found."
 
 echo "Using config: $CONFIG_FILE"
 
 START_TIME=$(date +%s)
 
-# Remove existing output file to start fresh
 rm -f nominatim.ndjson
 
-# Matrikkel addresses + Stedsnavn (Norwegian cadastre data)
 if [ -n "${ADRESSE_URL:-}" ] && [ -n "${STEDSNAVN_URL:-}" ]; then
-    $CONVERT matrikkel -i "$ADRESSE_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
-    $CONVERT stedsnavn -i "$STEDSNAVN_URL" -o nominatim.ndjson -a
+    convert matrikkel -i "$ADRESSE_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
+    convert stedsnavn -i "$STEDSNAVN_URL" -o nominatim.ndjson -a
 fi
 
-# POI data
 if [ -n "${POI_URL:-}" ]; then
-    $CONVERT poi -i "$POI_URL" -o nominatim.ndjson -a
+    convert poi -i "$POI_URL" -o nominatim.ndjson -a
 fi
 
 if [ -n "${POI2_URL:-}" ]; then
-    $CONVERT poi -i "$POI2_URL" -o nominatim.ndjson -a
+    convert poi -i "$POI2_URL" -o nominatim.ndjson -a
 fi
 
-# Stop places
 if [ -n "${STOPPLACE_URL:-}" ]; then
-    $CONVERT stopplace -i "$STOPPLACE_URL" -o nominatim.ndjson -a
+    convert stopplace -i "$STOPPLACE_URL" -o nominatim.ndjson -a
 fi
 
-# OSM data
 if [ -n "${OSM_URL:-}" ]; then
-    $CONVERT osm -i "$OSM_URL" -o nominatim.ndjson -a
+    convert osm -i "$OSM_URL" -o nominatim.ndjson -a
 fi
 
 END_TIME=$(date +%s)
