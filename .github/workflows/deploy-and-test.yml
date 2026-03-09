@@ -1,0 +1,81 @@
+name: Deploy and Test
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      chart:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      release_name:
+        required: true
+        type: string
+      values:
+        required: false
+        type: string
+        default: ''
+      require_approval:
+        required: false
+        type: boolean
+        default: true
+      run_tests:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  helm-lint:
+    name: Helm Lint
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    with:
+      environment: ${{ inputs.environment }}
+      chart: ${{ inputs.chart }}
+      values: ${{ inputs.values }}
+
+  approval:
+    name: Approve
+    needs: helm-lint
+    if: inputs.require_approval
+    runs-on: ubuntu-latest
+    timeout-minutes: 600
+    environment: Approve
+    steps:
+      - name: Manual approval
+        shell: bash
+        run: echo "Approve ${{ inputs.environment }} deployment"
+
+  deploy:
+    name: Deploy
+    needs: [ helm-lint, approval ]
+    if: |
+      !cancelled() &&
+      needs.helm-lint.result == 'success' &&
+      (needs.approval.result == 'success' || needs.approval.result == 'skipped')
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: ${{ inputs.environment }}
+      image: ${{ inputs.image }}
+      chart: ${{ inputs.chart }}
+      namespace: ${{ inputs.namespace }}
+      release_name: ${{ inputs.release_name }}
+      values: ${{ inputs.values }}
+    secrets: inherit
+
+  acceptance-tests:
+    name: Tests
+    needs: deploy
+    if: |
+      !cancelled() &&
+      needs.deploy.result == 'success' &&
+      inputs.run_tests
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: ${{ inputs.environment }}

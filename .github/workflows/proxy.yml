@@ -122,7 +122,7 @@ jobs:
       needs.build-push.result == 'success' &&
       github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 600
     permissions:
       actions: read
       contents: read
@@ -161,26 +161,16 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  # --- Dev path ---
-
-  helm-lint-dev:
-    name: Helm Lint (dev)
-    if: github.event_name != 'workflow_dispatch' || inputs.target == 'dev'
-    uses: entur/gha-helm/.github/workflows/lint.yml@v1
-    with:
-      environment: dev
-      chart: helm/geocoder-proxy
-      values: values-kub-ent-dev${{ inputs.variant }}.yaml
+  # --- Dev ---
 
   deploy-dev:
     name: Dev
-    needs: [ build-push, scan, helm-lint-dev ]
+    needs: [ build-push, scan ]
     if: |
       !cancelled() &&
       (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.target == 'dev')) &&
-      needs.helm-lint-dev.result == 'success' &&
       (needs.scan.result == 'success' || github.event_name == 'workflow_dispatch')
-    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag || 'latest-main' }}"
@@ -188,56 +178,21 @@ jobs:
       namespace: geocoder
       release_name: geocoder-proxy${{ inputs.variant }}
       values: values-kub-ent-dev${{ inputs.variant }}.yaml
+      require_approval: false
+      run_tests: ${{ inputs.variant == '' }}
     secrets: inherit
 
-  acceptance-tests-dev:
-    name: Dev Tests
-    if: |
-      !cancelled() &&
-      needs.deploy-dev.result == 'success' &&
-      inputs.variant == ''
-    needs: deploy-dev
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: dev
-
-  # --- TST → PRD path ---
-
-  helm-lint-tst-prd:
-    name: Helm Lint
-    if: github.event_name == 'push' || inputs.target == 'tst → prd'
-    uses: entur/gha-helm/.github/workflows/lint.yml@v1
-    strategy:
-      matrix:
-        environment: [tst, prd]
-    with:
-      environment: ${{ matrix.environment }}
-      chart: helm/geocoder-proxy
-
-  approval-tst:
-    name: Approve TST
-    needs: [ build-push, scan, helm-lint-tst-prd, resolve-tag, acceptance-tests-dev ]
-    if: |
-      !cancelled() &&
-      (github.event_name == 'push' || inputs.target == 'tst → prd') &&
-      needs.helm-lint-tst-prd.result == 'success' &&
-      (needs.scan.result == 'success' || needs.resolve-tag.result == 'success') &&
-      (github.event_name != 'push' || needs.acceptance-tests-dev.result == 'success')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: Approve
-    steps:
-      - name: Manual approval
-        shell: bash
-        run: echo "Approve TST deployment"
+  # --- TST → PRD ---
 
   deploy-tst:
     name: Staging
-    needs: [ build-push, resolve-tag, approval-tst ]
+    needs: [ build-push, scan, resolve-tag, deploy-dev ]
     if: |
       !cancelled() &&
-      needs.approval-tst.result == 'success'
-    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+      (github.event_name == 'push' || inputs.target == 'tst → prd') &&
+      (needs.scan.result == 'success' || needs.resolve-tag.result == 'success') &&
+      (github.event_name != 'push' || needs.deploy-dev.result == 'success')
+    uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
@@ -246,37 +201,13 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  acceptance-tests-tst:
-    name: Staging Tests
+  deploy-prd:
+    name: Production
+    needs: [ build-push, resolve-tag, deploy-tst ]
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
-    needs: deploy-tst
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: tst
-
-  approval-prd:
-    name: Approve PRD
-    needs: acceptance-tests-tst
-    if: |
-      !cancelled() &&
-      needs.acceptance-tests-tst.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: Approve
-    steps:
-      - name: Manual approval
-        shell: bash
-        run: echo "Approve PRD deployment"
-
-  deploy-prd:
-    name: Prod
-    needs: [ build-push, resolve-tag, approval-prd ]
-    if: |
-      !cancelled() &&
-      needs.approval-prd.result == 'success'
-    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: prd
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
@@ -285,27 +216,17 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  acceptance-tests-prd:
-    name: Prod Tests
+  publish-api-docs:
+    name: Publish API Docs
+    needs: deploy-prd
     if: |
       !cancelled() &&
       needs.deploy-prd.result == 'success'
-    needs: deploy-prd
-    uses: "./.github/workflows/acceptance-tests.yml"
-    with:
-      environment: prd
-
-  publish-api-docs:
-    name: Publish API Docs
-    needs: acceptance-tests-prd
-    if: |
-      !cancelled() &&
-      needs.acceptance-tests-prd.result == 'success'
     uses: "./.github/workflows/api-docs.yml"
     secrets: inherit
 
   notify-slack:
-    needs: [ deploy-dev, acceptance-tests-dev, deploy-tst, acceptance-tests-tst, deploy-prd, acceptance-tests-prd ]
+    needs: [ deploy-dev, deploy-tst, deploy-prd ]
     if: failure()
     runs-on: ubuntu-latest
     steps:
