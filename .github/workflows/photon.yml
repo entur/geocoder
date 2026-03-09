@@ -8,8 +8,8 @@ on:
         required: true
         type: choice
         options:
-          - 'tst → prd'
           - 'dev'
+          - 'tst → prd'
       variant:
         description: 'Variant suffix (only for dev; empty for Norway, -se for Sweden)'
         required: false
