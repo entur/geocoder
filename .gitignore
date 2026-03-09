@@ -17,3 +17,4 @@ nominatim.ndjson.gz
 nominatim.ndjson
 photon*jar
 Chart.lock
+/converter/tmp
