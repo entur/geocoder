@@ -85,9 +85,13 @@ jobs:
       (github.event_name != 'workflow_dispatch' ||
        (inputs.target == 'tst → prd' && inputs.mode != 'Deploy specified image'))
     runs-on: ubuntu-latest
+    timeout-minutes: 600
     permissions:
+      actions: read
       contents: read
       id-token: write
+      security-events: write
+      pull-requests: write
     outputs:
       image_tag: ${{ steps.build-push.outputs.image_tag }}
 
@@ -114,29 +118,11 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  scan:
-    name: Scan
-    needs: build-push
-    if: |
-      !cancelled() &&
-      needs.build-push.result == 'success' &&
-      github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 600
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-      security-events: write
-      pull-requests: write
-
-    steps:
-      - uses: actions/checkout@v6
-
       - name: Security Scan
+        if: github.event_name != 'pull_request'
         uses: ./.github/actions/docker-scan
         with:
-          image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
+          image: "geocoder-proxy:${{ steps.build-push.outputs.image_tag }}"
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -165,11 +151,11 @@ jobs:
 
   deploy-dev:
     name: Dev
-    needs: [ build-push, scan ]
+    needs: build-push
     if: |
       !cancelled() &&
       (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.target == 'dev')) &&
-      (needs.scan.result == 'success' || github.event_name == 'workflow_dispatch')
+      (needs.build-push.result == 'success' || github.event_name == 'workflow_dispatch')
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
@@ -186,11 +172,11 @@ jobs:
 
   deploy-tst:
     name: Staging
-    needs: [ build-push, scan, resolve-tag, deploy-dev ]
+    needs: [ build-push, resolve-tag, deploy-dev ]
     if: |
       !cancelled() &&
       (github.event_name == 'push' || inputs.target == 'tst → prd') &&
-      (needs.scan.result == 'success' || needs.resolve-tag.result == 'success') &&
+      (needs.build-push.result == 'success' || needs.resolve-tag.result == 'success') &&
       (github.event_name != 'push' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/deploy-and-test.yml
     with:

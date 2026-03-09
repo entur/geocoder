@@ -161,7 +161,7 @@ jobs:
     if: |
       !cancelled() &&
       (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image') &&
-      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
+      (inputs.target == 'tst → prd' || (needs.deploy-dev.result == 'success' && inputs.variant == ''))
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst
