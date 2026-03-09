@@ -1,0 +1,164 @@
+name: Scheduled - Import+Photon
+
+on:
+  schedule:
+    # Run full build every day (7:32 UTC is 8:32 CET / 9:32 CEST)
+    - cron: '32 7 * * *'
+
+concurrency:
+  group: "${{ github.workflow }}"
+  cancel-in-progress: true
+
+jobs:
+  nominatim-data:
+    name: Nominatim Data
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build nominatim data
+        id: build
+        uses: ./.github/actions/build-nominatim-data
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  lint:
+    name: Lint
+    if: |
+      !cancelled()
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: photon/Dockerfile
+      ignore: "DL3018,DL3059"
+
+  photon:
+    name: Photon Image
+    needs: [ nominatim-data, lint ]
+    if: |
+      !cancelled() &&
+      needs.lint.result == 'success' &&
+      needs.nominatim-data.result == 'success'
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build Photon image
+        id: build
+        uses: ./.github/actions/build-photon-image
+        with:
+          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  scan:
+    name: Scan
+    needs: photon
+    if: |
+      !cancelled() &&
+      needs.photon.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Security Scan
+        uses: ./.github/actions/docker-scan
+        with:
+          image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  helm-lint:
+    name: Helm Lint
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    strategy:
+      matrix:
+        environment: [tst, prd]
+    with:
+      environment: ${{ matrix.environment }}
+      chart: helm/geocoder-photon
+
+  deploy-tst:
+    name: Staging
+    needs: [ photon, scan, helm-lint ]
+    if: |
+      !cancelled() &&
+      needs.helm-lint.result == 'success' &&
+      needs.scan.result == 'success'
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: tst
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+    secrets: inherit
+
+  acceptance-tests-tst:
+    name: Staging Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-tst.result == 'success'
+    needs: deploy-tst
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: tst
+
+  deploy-prd:
+    name: Prod
+    needs: [ photon, acceptance-tests-tst ]
+    if: |
+      !cancelled() &&
+      needs.acceptance-tests-tst.result == 'success'
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: prd
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+    secrets: inherit
+
+  acceptance-tests-prd:
+    name: Prod Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-prd.result == 'success'
+    needs: deploy-prd
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: prd
+
+  notify-slack:
+    needs: [ deploy-tst, acceptance-tests-tst, deploy-prd, acceptance-tests-prd ]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

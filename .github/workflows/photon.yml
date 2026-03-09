@@ -1,10 +1,17 @@
-name: DEV - Import+Photon
+name: Import+Photon
 
 on:
   workflow_dispatch:
     inputs:
+      target:
+        description: 'Deploy target'
+        required: true
+        type: choice
+        options:
+          - 'tst → prd'
+          - 'dev'
       variant:
-        description: 'Variant suffix (empty for Norway, -se for Sweden)'
+        description: 'Variant suffix (only for dev; empty for Norway, -se for Sweden)'
         required: false
         type: choice
         options:
@@ -15,8 +22,9 @@ on:
         required: true
         type: choice
         options:
-          - 'Download data -> Photon image -> deploy'
-          - 'Use latest data -> Photon image -> deploy'
+          # Remember that these strings must match further down
+          - 'Download data → Photon image → deploy'
+          - 'Use latest data → Photon image → deploy'
           - 'Deploy specified Photon image'
       photon_image_tag:
         description: 'Photon image tag (only for "Deploy specified")'
@@ -24,7 +32,7 @@ on:
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}${{ inputs.variant }}"
+  group: "${{ github.workflow }}-${{ inputs.target }}${{ inputs.variant }}"
   cancel-in-progress: true
 
 jobs:
@@ -35,13 +43,14 @@ jobs:
       - name: Log manual inputs
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Variant:** \`${{ inputs.variant || '(default)' }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Build:** \`${{ inputs.build }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
 
   nominatim-data:
     name: Nominatim Data
-    if: inputs.build == 'Download data -> Photon image -> deploy'
+    if: inputs.build == 'Download data → Photon image → deploy'
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -57,8 +66,8 @@ jobs:
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
-          config: ${{ inputs.variant == '-se' && 'config/sweden-test.conf' || 'config/dev.conf' }}
-          suffix: ${{ inputs.variant }}
+          config: ${{ inputs.target == 'dev' && (inputs.variant == '-se' && 'config/sweden-test.conf' || 'config/dev.conf') || 'config/prod.conf' }}
+          suffix: ${{ inputs.target == 'dev' && inputs.variant || '' }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -77,7 +86,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.lint.result == 'success' &&
-      (needs.nominatim-data.result == 'success' || inputs.build == 'Use latest data -> Photon image -> deploy')
+      (needs.nominatim-data.result == 'success' || inputs.build == 'Use latest data → Photon image → deploy')
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -94,7 +103,7 @@ jobs:
         uses: ./.github/actions/build-photon-image
         with:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || 'latest-main' }}
-          suffix: ${{ inputs.variant }}
+          suffix: ${{ inputs.target == 'dev' && inputs.variant || '' }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -119,12 +128,15 @@ jobs:
       - name: Security Scan
         uses: ./.github/actions/docker-scan
         with:
-          image: "geocoder-photon${{ inputs.variant }}:${{ needs.photon.outputs.image_tag }}"
+          image: "geocoder-photon${{ inputs.target == 'dev' && inputs.variant || '' }}:${{ needs.photon.outputs.image_tag }}"
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  helm-lint:
-    name: Helm Lint
+  # --- Dev path ---
+
+  helm-lint-dev:
+    name: Helm Lint (dev)
+    if: inputs.target == 'dev'
     uses: entur/gha-helm/.github/workflows/lint.yml@v1
     with:
       environment: dev
@@ -133,10 +145,11 @@ jobs:
 
   deploy-dev:
     name: Dev
-    needs: [ photon, scan, helm-lint ]
+    needs: [ photon, scan, helm-lint-dev ]
     if: |
       !cancelled() &&
-      needs.helm-lint.result == 'success' &&
+      inputs.target == 'dev' &&
+      needs.helm-lint-dev.result == 'success' &&
       (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image')
     uses: entur/gha-helm/.github/workflows/deploy.yml@v1
     with:
@@ -159,8 +172,101 @@ jobs:
     with:
       environment: dev
 
+  # --- TST → PRD path ---
+
+  helm-lint-tst-prd:
+    name: Helm Lint
+    if: inputs.target == 'tst → prd' || inputs.variant == ''
+    uses: entur/gha-helm/.github/workflows/lint.yml@v1
+    strategy:
+      matrix:
+        environment: [tst, prd]
+    with:
+      environment: ${{ matrix.environment }}
+      chart: helm/geocoder-photon
+
+  approval-tst:
+    name: Approve TST
+    needs: [ photon, scan, helm-lint-tst-prd, acceptance-tests-dev ]
+    if: |
+      !cancelled() &&
+      needs.helm-lint-tst-prd.result == 'success' &&
+      (needs.scan.result == 'success' || inputs.build == 'Deploy specified Photon image') &&
+      (inputs.target == 'tst → prd' || needs.acceptance-tests-dev.result == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: Approve
+    steps:
+      - name: Manual approval
+        shell: bash
+        run: echo "Approve TST deployment"
+
+  deploy-tst:
+    name: Staging
+    needs: [ photon, approval-tst ]
+    if: |
+      !cancelled() &&
+      needs.approval-tst.result == 'success'
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: tst
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+    secrets: inherit
+
+  acceptance-tests-tst:
+    name: Staging Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-tst.result == 'success'
+    needs: deploy-tst
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: tst
+
+  approval-prd:
+    name: Approve PRD
+    needs: acceptance-tests-tst
+    if: |
+      !cancelled() &&
+      needs.acceptance-tests-tst.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: Approve
+    steps:
+      - name: Manual approval
+        shell: bash
+        run: echo "Approve PRD deployment"
+
+  deploy-prd:
+    name: Prod
+    needs: [ photon, approval-prd ]
+    if: |
+      !cancelled() &&
+      needs.approval-prd.result == 'success'
+    uses: entur/gha-helm/.github/workflows/deploy.yml@v1
+    with:
+      environment: prd
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+    secrets: inherit
+
+  acceptance-tests-prd:
+    name: Prod Tests
+    if: |
+      !cancelled() &&
+      needs.deploy-prd.result == 'success'
+    needs: deploy-prd
+    uses: "./.github/workflows/acceptance-tests.yml"
+    with:
+      environment: prd
+
   notify-slack:
-    needs: [ deploy-dev, acceptance-tests-dev ]
+    needs: [ deploy-dev, acceptance-tests-dev, deploy-tst, acceptance-tests-tst, deploy-prd, acceptance-tests-prd ]
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -169,4 +275,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
           payload: |
-            text: "❌ *${{ github.workflow }}* (${{ inputs.variant || 'default' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "❌ *${{ github.workflow }}* (${{ inputs.target }}${{ inputs.variant && format(' {0}', inputs.variant) || '' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
