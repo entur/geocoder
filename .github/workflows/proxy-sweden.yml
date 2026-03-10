@@ -26,9 +26,11 @@ jobs:
     steps:
       - name: Log manual inputs
         run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Build:** \`${{ inputs.build }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Build:** \`${{ inputs.build }}\`"
+            echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   build-push:
     name: Proxy

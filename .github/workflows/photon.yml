@@ -28,9 +28,11 @@ jobs:
     steps:
       - name: Log manual inputs
         run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Config:** \`${{ inputs.config }}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Target:** \`${{ inputs.target }}\`"
+            echo "**Config:** \`${{ inputs.config }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   nominatim-data:
     name: Nominatim Data

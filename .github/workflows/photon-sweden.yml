@@ -32,10 +32,12 @@ jobs:
     steps:
       - name: Log manual inputs
         run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Build:** \`${{ inputs.build }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Photon image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Build:** \`${{ inputs.build }}\`"
+            echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag || 'not specified' }}\`"
+            echo "**Photon image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   nominatim-data:
     name: Nominatim Data

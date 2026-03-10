@@ -27,9 +27,11 @@ jobs:
     steps:
       - name: Log manual inputs
         run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Image tag:** \`${{ inputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Target:** \`${{ inputs.target }}\`"
+            echo "**Image tag:** \`${{ inputs.image_tag }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   resolve-tag:
     name: Resolve Tag

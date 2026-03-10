@@ -28,9 +28,11 @@ jobs:
     steps:
       - name: Log manual inputs
         run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Target:** \`${{ inputs.target }}\`"
+            echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   photon:
     name: Photon Image
