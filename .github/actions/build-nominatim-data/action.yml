@@ -3,9 +3,9 @@ description: 'Download converter, run import, and upload nominatim data as artif
 
 inputs:
   config:
-    description: 'Config file for nominatim data (e.g., config/prod.conf)'
+    description: 'Config file name (in config/ directory)'
     required: false
-    default: 'config/prod.conf'
+    default: 'prod.conf'
   suffix:
     description: 'Suffix for image name (e.g., -se for geocoder-nominatim-data-se)'
     required: false
@@ -27,7 +27,7 @@ runs:
   steps:
     - name: Run create-nominatim-data.sh
       shell: bash
-      run: ./create-nominatim-data.sh ${{ inputs.config }} -z
+      run: ./create-nominatim-data.sh config/${{ inputs.config }} -z
       working-directory: converter
 
     - name: Generate stats summary

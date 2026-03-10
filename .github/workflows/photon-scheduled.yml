@@ -30,27 +30,20 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  lint:
-    name: Lint
-    if: |
-      !cancelled()
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: photon/Dockerfile
-      ignore: "DL3018,DL3059"
-
   photon:
     name: Photon Image
-    needs: [ nominatim-data, lint ]
+    needs: nominatim-data
     if: |
       !cancelled() &&
-      needs.lint.result == 'success' &&
       needs.nominatim-data.result == 'success'
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
+      actions: read
       contents: read
       id-token: write
+      security-events: write
+      pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
 
@@ -65,37 +58,12 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  scan:
-    name: Scan
+  deploy-tst:
+    name: Staging
     needs: photon
     if: |
       !cancelled() &&
       needs.photon.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 600
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-      security-events: write
-      pull-requests: write
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Security Scan
-        uses: ./.github/actions/docker-scan
-        with:
-          image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-  deploy-tst:
-    name: Staging
-    needs: [ photon, scan ]
-    if: |
-      !cancelled() &&
-      needs.scan.result == 'success'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst

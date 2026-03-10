@@ -1,0 +1,57 @@
+name: 'Build Proxy Image'
+description: 'Lint, build, push and scan the proxy Docker image'
+
+inputs:
+  push:
+    description: 'Push image to registry'
+    required: false
+    default: 'true'
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+
+outputs:
+  image_tag:
+    description: 'The tag of the built proxy image'
+    value: ${{ steps.docker-image.outputs.image_tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Dockerfile lint
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: proxy/Dockerfile
+        ignore: "DL3018,DL3059"
+
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        distribution: liberica
+        java-version: 25
+        cache: gradle
+
+    - name: Build with Gradle
+      shell: bash
+      run: ./gradlew --no-daemon :proxy:build
+
+    - name: Build and Push
+      id: docker-image
+      uses: ./.github/actions/docker-build-push
+      with:
+        image_name: geocoder-proxy
+        context: proxy
+        push: ${{ inputs.push }}
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: Security Scan
+      if: inputs.push == 'true'
+      uses: ./.github/actions/docker-scan
+      with:
+        image: "geocoder-proxy:${{ steps.docker-image.outputs.image_tag }}"
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}

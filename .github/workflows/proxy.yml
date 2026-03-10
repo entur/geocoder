@@ -29,29 +29,22 @@ on:
         required: true
         type: choice
         options:
-          - 'dev'
+          - 'dev → tst → prd'
           - 'tst → prd'
-      variant:
-        description: 'Variant suffix (only for dev; empty for Norway, -se for Sweden)'
-        required: false
-        type: choice
-        options:
-          - ''
-          - '-se'
-      mode:
-        description: 'Build mode (only for tst → prd)'
+      build:
+        description: 'Build mode (ignored for dev → tst → prd, always builds)'
         required: false
         type: choice
         options:
           - 'Build and deploy'
           - 'Deploy specified image'
       image_tag:
-        description: 'Image tag (for dev dispatch or "Deploy specified image")'
+        description: 'Image tag (only for "Deploy specified image")'
         required: false
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}${{ inputs.variant }}"
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}"
   cancel-in-progress: true
 
 jobs:
@@ -64,28 +57,15 @@ jobs:
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
           echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Variant:** \`${{ inputs.variant || '(default)' }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Mode:** \`${{ inputs.mode || '(default)' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Build:** \`${{ inputs.build || '(default)' }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
-
-  lint:
-    name: Lint
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      (inputs.target == 'tst → prd' && inputs.mode != 'Deploy specified image')
-    uses: entur/gha-docker/.github/workflows/lint.yml@v1
-    with:
-      dockerfile: proxy/Dockerfile
-      ignore: "DL3018,DL3059"
 
   build-push:
     name: Proxy
-    needs: lint
     if: |
-      !cancelled() &&
-      needs.lint.result == 'success' &&
-      (github.event_name != 'workflow_dispatch' ||
-       (inputs.target == 'tst → prd' && inputs.mode != 'Deploy specified image'))
+      github.event_name != 'workflow_dispatch' ||
+      inputs.target == 'dev → tst → prd' ||
+      (inputs.target == 'tst → prd' && inputs.build != 'Deploy specified image')
     runs-on: ubuntu-latest
     timeout-minutes: 600
     permissions:
@@ -95,42 +75,22 @@ jobs:
       security-events: write
       pull-requests: write
     outputs:
-      image_tag: ${{ steps.build-push.outputs.image_tag }}
+      image_tag: ${{ steps.build.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up JDK
-        uses: actions/setup-java@v5
+      - name: Build Proxy image
+        id: build
+        uses: ./.github/actions/build-proxy-image
         with:
-          distribution: liberica
-          java-version: 25
-          cache: gradle
-
-      - name: Build with Gradle
-        run: ./gradlew --no-daemon :proxy:build
-
-      - name: Build and Push
-        id: build-push
-        uses: ./.github/actions/docker-build-push
-        with:
-          image_name: geocoder-proxy
-          context: proxy
           push: ${{ github.event_name != 'pull_request' }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-      - name: Security Scan
-        if: github.event_name != 'pull_request'
-        uses: ./.github/actions/docker-scan
-        with:
-          image: "geocoder-proxy:${{ steps.build-push.outputs.image_tag }}"
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
   resolve-tag:
     name: Resolve Tag
-    if: inputs.mode == 'Deploy specified image'
+    if: inputs.build == 'Deploy specified image'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -156,18 +116,17 @@ jobs:
     needs: build-push
     if: |
       !cancelled() &&
-      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.target == 'dev')) &&
-      (needs.build-push.result == 'success' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'push' || inputs.target == 'dev → tst → prd') &&
+      needs.build-push.result == 'success'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag || 'latest-main' }}"
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
-      release_name: geocoder-proxy${{ inputs.variant }}
-      values: values-kub-ent-dev${{ inputs.variant }}.yaml
+      release_name: geocoder-proxy
+      values: values-kub-ent-dev.yaml
       require_approval: false
-      run_tests: ${{ inputs.variant == '' }}
     secrets: inherit
 
   # --- TST → PRD ---
@@ -177,9 +136,8 @@ jobs:
     needs: [ build-push, resolve-tag, deploy-dev ]
     if: |
       !cancelled() &&
-      (github.event_name == 'push' || inputs.target == 'tst → prd') &&
       (needs.build-push.result == 'success' || needs.resolve-tag.result == 'success') &&
-      (github.event_name != 'push' || needs.deploy-dev.result == 'success')
+      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst
@@ -223,4 +181,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
           payload: |
-            text: "❌ *${{ github.workflow }}* (${{ inputs.target || 'push' }}${{ inputs.variant && format(' {0}', inputs.variant) || '' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "❌ *${{ github.workflow }}* (${{ inputs.target || 'push → all' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

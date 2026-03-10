@@ -1,21 +1,13 @@
-name: Import+Photon
+name: Import+Photon Sweden
 
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: 'Deploy target'
-        required: true
-        type: choice
-        options:
-          - 'dev → tst → prd'
-          - 'tst → prd'
       build:
         description: 'Build mode'
         required: true
         type: choice
         options:
-          # Remember that these strings must match further down
           - 'Download data → Photon image → deploy'
           - 'Use existing data → Photon image → deploy'
           - 'Deploy specified Photon image'
@@ -24,18 +16,13 @@ on:
         required: false
         type: string
         default: 'latest-main'
-      config:
-        description: 'Nominatim config (only for "Download data")'
-        required: false
-        type: string
-        default: 'prod.conf'
       photon_image_tag:
         description: 'Photon image tag (only for "Deploy specified")'
         required: false
         type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ inputs.target }}"
+  group: "${{ github.workflow }}"
   cancel-in-progress: true
 
 jobs:
@@ -46,9 +33,7 @@ jobs:
       - name: Log manual inputs
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Build:** \`${{ inputs.build }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Config:** \`${{ inputs.config }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Photon image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
 
@@ -70,7 +55,8 @@ jobs:
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
-          config: ${{ inputs.config }}
+          config: sweden-test.conf
+          suffix: -se
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -99,85 +85,30 @@ jobs:
         uses: ./.github/actions/build-photon-image
         with:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || inputs.nominatim_data_tag }}
+          suffix: -se
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-  resolve-tag:
-    name: Resolve Tag
-    if: inputs.build == 'Deploy specified Photon image'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      image_tag: ${{ steps.resolve.outputs.resolved_tag }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Resolve image tag
-        id: resolve
-        uses: ./.github/actions/resolve-image-tag
-        with:
-          image_name: geocoder-photon
-          image_tag: ${{ inputs.photon_image_tag }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-  # --- Dev ---
 
   deploy-dev:
     name: Dev
-    needs: [ photon, resolve-tag ]
+    needs: photon
     if: |
       !cancelled() &&
-      inputs.target == 'dev → tst → prd' &&
-      (needs.photon.result == 'success' || needs.resolve-tag.result == 'success')
+      (needs.photon.result == 'success' || inputs.build == 'Deploy specified Photon image')
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
+      image: "geocoder-photon-se:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
-      release_name: geocoder-photon
-      values: values-kub-ent-dev.yaml
+      release_name: geocoder-photon-se
+      values: values-kub-ent-dev-se.yaml
       require_approval: false
-    secrets: inherit
-
-  # --- TST → PRD ---
-
-  deploy-tst:
-    name: Staging
-    needs: [ photon, resolve-tag, deploy-dev ]
-    if: |
-      !cancelled() &&
-      (needs.photon.result == 'success' || needs.resolve-tag.result == 'success') &&
-      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: tst
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-    secrets: inherit
-
-  deploy-prd:
-    name: Production
-    needs: [ photon, resolve-tag, deploy-tst ]
-    if: |
-      !cancelled() &&
-      needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: prd
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
+      run_tests: false
     secrets: inherit
 
   notify-slack:
-    needs: [ deploy-dev, deploy-tst, deploy-prd ]
+    needs: deploy-dev
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -186,4 +117,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
           payload: |
-            text: "❌ *${{ github.workflow }}* (${{ inputs.target }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

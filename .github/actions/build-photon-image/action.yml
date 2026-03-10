@@ -24,6 +24,12 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Dockerfile lint
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: photon/Dockerfile
+        ignore: "DL3018,DL3059"
+
     - name: Set up JDK
       uses: actions/setup-java@v5
       with:
@@ -67,5 +73,13 @@ runs:
         image_name: geocoder-photon${{ inputs.suffix }}
         context: photon
         push: true
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: Security Scan
+      # Always runs — this action always pushes
+      uses: ./.github/actions/docker-scan
+      with:
+        image: "geocoder-photon${{ inputs.suffix }}:${{ steps.docker-image.outputs.image_tag }}"
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
