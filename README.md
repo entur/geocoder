@@ -4,27 +4,29 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 
 ## Deployment
 
-### DEV Environment (`main` branch)
+All deployment runs from the `main` branch.
 
-**Proxy** - Automatic deployment:
-- Push to `main` → Builds and deploys to dev → Runs acceptance tests
+### Proxy
 
-**Photon** - Manual deployment only:
-- Go to [photon-dev.yml](https://github.com/entur/geocoder/actions/workflows/photon-dev.yml) → Run workflow:
-  - `Download data → Photon image → deploy` - Full deployment with fresh OSM/StopPlace/etc data
-  - `Use latest data → Photon image → deploy` - Create Photon image using existing Nominatim data
-  - `Deploy specified Photon image` - Just deploy an existing image tag
+**Automatic** — Push to `main` → builds and deploys to dev → tst → prd, with acceptance tests after each.
 
-### TST/PRD Environments (`prod` branch)
+**Manual:**
+- [proxy-build.yml](https://github.com/entur/geocoder/actions/workflows/proxy-build.yml) — Build and deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`)
+- [proxy-deploy.yml](https://github.com/entur/geocoder/actions/workflows/proxy-deploy.yml) — Deploy an existing image tag
 
-**Proxy** - Manual deployment:
-- Push to `prod` branch, and go to [photon-prod.yml](https://github.com/entur/geocoder/actions/workflows/photon-prod.yml) → Run workflow:
-  - `Build and deploy` - Full build and deploy
-  - `Deploy specified image` - Deploy an existing image tag
+### Photon
 
-**Photon** - Automatic scheduled deployment:
-- **Daily at 07:32 UTC** - Automatic download and deployment (TST → PRD) of the `prod` branch.
-- **Manual** - Go to [photon-prod.yml](https://github.com/entur/geocoder/actions/workflows/photon-prod.yml) → Run workflow with same options as DEV
+**Scheduled** — Daily at 07:27 UTC: full data import + build + deploy to tst → prd.
+
+**Manual:**
+- [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) — Import data, build Photon image, deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`)
+- [photon-rebuild.yml](https://github.com/entur/geocoder/actions/workflows/photon-rebuild.yml) — Rebuild Photon image from existing Nominatim data, deploy
+- [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) — Deploy an existing Photon image tag
+
+### Sweden (dev only)
+
+- [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) — Import/rebuild/deploy Photon for Sweden
+- [proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml) — Build/deploy Proxy for Sweden
 
 
 ## Usage
@@ -39,7 +41,7 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 cd photon
 ./download-photon-jar.sh
 
-# EITHER download source data, convert to nominatim.ndjson (downloads Rust binary automatically)
+# EITHER download source data, convert to nominatim.ndjson (downloads nominatim-convert binary automatically)
 ../converter/create-nominatim-data.sh config/prod.conf -z
 
 # OR download the latest nominatim.ndjson build by Github Actions
