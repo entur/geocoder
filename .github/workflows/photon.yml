@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - 'dev only'
           - 'dev → tst → prd'
           - 'tst → prd'
       config:
@@ -82,7 +83,7 @@ jobs:
   deploy-dev:
     name: Dev
     needs: photon
-    if: inputs.target == 'dev → tst → prd'
+    if: inputs.target != 'tst → prd'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
@@ -99,6 +100,7 @@ jobs:
     needs: [ photon, deploy-dev ]
     if: |
       !cancelled() &&
+      inputs.target != 'dev only' &&
       (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/deploy-and-test.yml
     with:

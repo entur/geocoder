@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - 'dev only'
           - 'dev → tst → prd'
           - 'tst → prd'
 
@@ -53,7 +54,7 @@ jobs:
   deploy-dev:
     name: Dev
     needs: build-push
-    if: inputs.target == 'dev → tst → prd'
+    if: inputs.target != 'tst → prd'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
@@ -70,6 +71,7 @@ jobs:
     needs: [ build-push, deploy-dev ]
     if: |
       !cancelled() &&
+      inputs.target != 'dev only' &&
       (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/deploy-and-test.yml
     with:
