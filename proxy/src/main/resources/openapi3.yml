@@ -33,7 +33,7 @@ paths:
         - $ref: '#/components/parameters/Query'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
-        - $ref: '#/components/parameters/PlaceTypes'
+        - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Countries'
         - $ref: '#/components/parameters/CountyIds'
@@ -157,13 +157,13 @@ components:
         default: "no"
       example: "no"
 
-    PlaceTypes:
-      name: placeTypes
+    Layers:
+      name: layers
       in: query
-      description: Place type filter (comma-separated)
+      description: Layer filter (comma-separated)
       schema:
         type: string
-        enum: [address, street, stop_place, poi]
+        enum: [address, street, stop_place, group_of_stop_places, poi]
       example: "stop_place,address"
 
     Sources:
@@ -322,7 +322,7 @@ components:
       required:
         - id
         - name
-        - placeType
+        - layer
         - source
       properties:
         id:
@@ -330,8 +330,8 @@ components:
           example: "NSR:StopPlace:59872"
         name:
           $ref: '#/components/schemas/Names'
-        placeType:
-          $ref: '#/components/schemas/PlaceType'
+        layer:
+          $ref: '#/components/schemas/Layer'
         address:
           $ref: '#/components/schemas/Address'
         categories:
@@ -437,12 +437,13 @@ components:
         accuracy:
           $ref: '#/components/schemas/Accuracy'
 
-    PlaceType:
+    Layer:
       type: string
       enum:
         - address
         - street
         - stop_place
+        - group_of_stop_places
         - poi
       example: "stop_place"
 
@@ -500,10 +501,10 @@ components:
     Filters:
       type: object
       properties:
-        placeTypes:
+        layers:
           type: array
           items:
-            $ref: '#/components/schemas/PlaceType'
+            $ref: '#/components/schemas/Layer'
         sources:
           type: array
           items:

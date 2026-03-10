@@ -19,24 +19,24 @@ object V3ResultTransformer {
         val features = result.features.map { transformFeature(it) }
 
         val filters =
-            if (req.placeTypes.isNotEmpty() ||
+            if (req.layers.isNotEmpty() ||
                 req.sources.isNotEmpty() ||
                 req.countries.isNotEmpty() ||
                 req.countyIds.isNotEmpty() ||
                 req.localityIds.isNotEmpty() ||
                 req.tariffZones.isNotEmpty() ||
                 req.tariffZoneAuthorities.isNotEmpty() ||
-                req.stopPlaceMode != "parent"
+                req.multiModal != "parent"
             ) {
                 V3Result.Filters(
-                    placeTypes = req.placeTypes.mapNotNull { mapToPlaceType(it) }.takeIf { it.isNotEmpty() },
+                    layers = req.layers.mapNotNull { mapToLayer(it) }.takeIf { it.isNotEmpty() },
                     sources = req.sources.takeIf { it.isNotEmpty() },
                     countries = req.countries.takeIf { it.isNotEmpty() },
                     countyIds = req.countyIds.takeIf { it.isNotEmpty() },
                     localityIds = req.localityIds.takeIf { it.isNotEmpty() },
                     tariffZones = req.tariffZones.takeIf { it.isNotEmpty() },
                     tariffZoneAuthorities = req.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
-                    stopPlaceMode = req.stopPlaceMode.takeIf { it != "parent" },
+                    multiModal = req.multiModal.takeIf { it != "parent" },
                 )
             } else {
                 null
@@ -109,7 +109,7 @@ object V3ResultTransformer {
         val extra = props.extra
         val coords = feature.geometry.coordinates
 
-        val placeType = determinePlaceType(extra?.source, props.osm_key, props.osm_value, extra?.tags)
+        val layer = determineLayer(extra?.source, props.osm_key, props.osm_value, extra?.tags)
         val accuracy = parseAccuracy(extra?.accuracy)
 
         val defaultName = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed"
@@ -142,7 +142,7 @@ object V3ResultTransformer {
                             label = labelName,
                             display = displayName,
                         ),
-                    placeType = placeType,
+                    layer = layer,
                     address = buildAddress(props, extra),
                     categories =
                         extra
@@ -208,15 +208,15 @@ object V3ResultTransformer {
             else -> null
         }
 
-    private fun determinePlaceType(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.PlaceType =
+    private fun determineLayer(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.Layer =
         when {
-            source == Source.KARTVERKET_ADRESSE -> V3Result.PlaceType.address
-            source == Source.NSR && tags?.contains(Category.OSM_GOSP) == true -> V3Result.PlaceType.group_of_stop_places
-            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.PlaceType.stop_place
-            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.PlaceType.stop_place
-            source == Source.NSR -> V3Result.PlaceType.poi
-            osmKey == "highway" -> V3Result.PlaceType.street
-            else -> V3Result.PlaceType.poi
+            source == Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
+            source == Source.NSR && tags?.contains(Category.OSM_GOSP) == true -> V3Result.Layer.group_of_stop_places
+            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.Layer.stop_place
+            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.Layer.stop_place
+            source == Source.NSR -> V3Result.Layer.poi
+            osmKey == "highway" -> V3Result.Layer.street
+            else -> V3Result.Layer.poi
         }
 
     private fun parseTransportModes(transportMode: String?): List<V3Result.TransportMode>? =
@@ -234,9 +234,9 @@ object V3ResultTransformer {
 
     private fun iso3ToIso2(iso3: String?): String? = Country.fromThreeLetterCode(iso3)?.name
 
-    private fun mapToPlaceType(type: String): V3Result.PlaceType? =
+    private fun mapToLayer(type: String): V3Result.Layer? =
         try {
-            V3Result.PlaceType.valueOf(type.lowercase())
+            V3Result.Layer.valueOf(type.lowercase())
         } catch (_: IllegalArgumentException) {
             null
         }

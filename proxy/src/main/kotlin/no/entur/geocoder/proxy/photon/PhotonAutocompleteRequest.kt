@@ -111,12 +111,12 @@ data class PhotonAutocompleteRequest(
                     if (req.sources.isNotEmpty()) {
                         add(req.sources.joinToString(",") { "source.$it" })
                     }
-                    if (req.placeTypes.isNotEmpty()) {
-                        add(req.placeTypes.joinToString(",") { "layer.$it" })
+                    if (req.layers.isNotEmpty()) {
+                        add(req.layers.joinToString(",") { "layer.$it" })
                     }
                 }
 
-            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(req.stopPlaceMode))
+            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(req.multiModal))
 
             return PhotonAutocompleteRequest(
                 query = req.query,

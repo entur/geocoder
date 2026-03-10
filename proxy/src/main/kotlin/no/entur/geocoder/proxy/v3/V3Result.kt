@@ -24,7 +24,7 @@ data class V3Result(
     data class Place(
         val id: String,
         val name: Names,
-        val placeType: PlaceType,
+        val layer: Layer,
         val address: Address? = null,
         val categories: List<String>? = null,
         val tariffZones: List<String>? = null,
@@ -63,7 +63,7 @@ data class V3Result(
         val accuracy: String? = null,
     )
 
-    enum class PlaceType {
+    enum class Layer {
         address,
         street,
         stop_place,
@@ -87,13 +87,13 @@ data class V3Result(
     )
 
     data class Filters(
-        val placeTypes: List<PlaceType>? = null,
+        val layers: List<Layer>? = null,
         val sources: List<String>? = null,
         val countries: List<String>? = null,
         val countyIds: List<String>? = null,
         val localityIds: List<String>? = null,
         val tariffZones: List<String>? = null,
         val tariffZoneAuthorities: List<String>? = null,
-        val stopPlaceMode: String? = null,
+        val multiModal: String? = null,
     )
 }

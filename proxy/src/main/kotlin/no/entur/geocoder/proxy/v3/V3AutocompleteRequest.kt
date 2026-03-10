@@ -6,7 +6,7 @@ data class V3AutocompleteRequest(
     val query: String = "",
     val limit: Int = 10,
     val language: String = "no",
-    val placeTypes: List<String> = emptyList(),
+    val layers: List<String> = emptyList(),
     val sources: List<String> = emptyList(),
     val countries: List<String> = emptyList(),
     val countyIds: List<String> = emptyList(),
@@ -14,7 +14,7 @@ data class V3AutocompleteRequest(
     val tariffZones: List<String> = emptyList(),
     val tariffZoneAuthorities: List<String> = emptyList(),
     val fareZoneAuthorities: List<String> = emptyList(),
-    val stopPlaceMode: String = "parent",
+    val multiModal: String = "parent",
 ) {
     companion object {
         fun from(req: Parameters) =
@@ -22,7 +22,7 @@ data class V3AutocompleteRequest(
                 query = req["query"] ?: req["q"] ?: "",
                 limit = req["limit"]?.toIntOrNull() ?: 10,
                 language = req["language"] ?: req["lang"] ?: "no",
-                placeTypes = req["placeTypes"]?.split(",") ?: emptyList(),
+                layers = req["layers"]?.split(",") ?: emptyList(),
                 sources = req["sources"]?.split(",") ?: emptyList(),
                 countries = req["countries"]?.split(",") ?: emptyList(),
                 countyIds = req["countyIds"]?.split(",") ?: emptyList(),
@@ -30,7 +30,7 @@ data class V3AutocompleteRequest(
                 tariffZones = req["tariffZones"]?.split(",") ?: emptyList(),
                 tariffZoneAuthorities = req["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
                 fareZoneAuthorities = req["fareZoneAuthorities"]?.split(",") ?: emptyList(),
-                stopPlaceMode = req["stopPlaceMode"] ?: "parent",
+                multiModal = req["multiModal"] ?: "parent",
             )
     }
 }
