@@ -16,7 +16,7 @@ All deployment runs from the `main` branch.
 
 ### Photon
 
-**Scheduled** — Daily at 07:27 UTC: full data import + build + deploy to tst → prd.
+**Scheduled** — Daily at 07:27 UTC: full data import + build + deploy to tst → prd. Checks out the `prod-approved` tag (updated by Proxy CI after successful prod deploy) to avoid using untested commits.
 
 **Manual:**
 - [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) — Import data, build Photon image, deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`)

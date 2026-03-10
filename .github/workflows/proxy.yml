@@ -34,7 +34,7 @@ jobs:
     timeout-minutes: 600
     permissions:
       actions: read
-      contents: read
+      contents: write
       id-token: write
       security-events: write
       pull-requests: write
@@ -96,6 +96,22 @@ jobs:
       namespace: geocoder
       release_name: geocoder-proxy
     secrets: inherit
+
+  tag-prod-approved:
+    name: Tag prod-approved
+    needs: deploy-prd
+    if: |
+      !cancelled() &&
+      needs.deploy-prd.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Update prod-approved tag
+        run: |
+          git tag -f prod-approved
+          git push -f origin prod-approved
 
   notify-slack:
     needs: [ deploy-dev, deploy-tst, deploy-prd ]
