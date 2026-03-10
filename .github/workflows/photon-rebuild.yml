@@ -1,4 +1,4 @@
-name: Photon — Import, Build & Deploy
+name: Photon — Rebuild & Deploy
 
 on:
   workflow_dispatch:
@@ -10,14 +10,14 @@ on:
         options:
           - 'dev → tst → prd'
           - 'tst → prd'
-      config:
-        description: 'Nominatim config'
+      nominatim_data_tag:
+        description: 'Nominatim data tag'
         required: false
         type: string
-        default: 'prod.conf'
+        default: 'latest-main'
 
 concurrency:
-  group: "${{ github.workflow }}-${{ inputs.target }}"
+  group: "photon-${{ inputs.target }}"
   cancel-in-progress: true
 
 jobs:
@@ -29,32 +29,10 @@ jobs:
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
           echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Config:** \`${{ inputs.config }}\`" >> "$GITHUB_STEP_SUMMARY"
-
-  nominatim-data:
-    name: Nominatim Data
-    runs-on:
-      group: grp-ubuntu-24.04-8core-x64
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Build nominatim data
-        id: build
-        uses: ./.github/actions/build-nominatim-data
-        with:
-          config: ${{ inputs.config }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+          echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
 
   photon:
     name: Photon Image
-    needs: nominatim-data
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -73,7 +51,7 @@ jobs:
         id: build
         uses: ./.github/actions/build-photon-image
         with:
-          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
+          nominatim_data_tag: ${{ inputs.nominatim_data_tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 

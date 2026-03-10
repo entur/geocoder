@@ -1,4 +1,4 @@
-name: Proxy
+name: Proxy — CI
 
 on:
   push:
@@ -22,50 +22,14 @@ on:
       - '.github/actions/**'
       - '!**/*.md'
       - 'helm/geocoder-proxy/**'
-  workflow_dispatch:
-    inputs:
-      target:
-        description: 'Deploy target'
-        required: true
-        type: choice
-        options:
-          - 'dev → tst → prd'
-          - 'tst → prd'
-      build:
-        description: 'Build mode (ignored for dev → tst → prd, always builds)'
-        required: false
-        type: choice
-        options:
-          - 'Build and deploy'
-          - 'Deploy specified image'
-      image_tag:
-        description: 'Image tag (only for "Deploy specified image")'
-        required: false
-        type: string
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}"
+  group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  log-inputs:
-    name: Log Inputs
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log manual inputs
-        run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Build:** \`${{ inputs.build || '(default)' }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`" >> "$GITHUB_STEP_SUMMARY"
-
   build-push:
     name: Proxy
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      inputs.target == 'dev → tst → prd' ||
-      (inputs.target == 'tst → prd' && inputs.build != 'Deploy specified image')
     runs-on: ubuntu-latest
     timeout-minutes: 600
     permissions:
@@ -88,36 +52,10 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  resolve-tag:
-    name: Resolve Tag
-    if: inputs.build == 'Deploy specified image'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      image_tag: ${{ steps.resolve.outputs.resolved_tag }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Resolve image tag
-        id: resolve
-        uses: ./.github/actions/resolve-image-tag
-        with:
-          image_name: geocoder-proxy
-          image_tag: ${{ inputs.image_tag }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-  # --- Dev ---
-
   deploy-dev:
     name: Dev
     needs: build-push
-    if: |
-      !cancelled() &&
-      (github.event_name == 'push' || inputs.target == 'dev → tst → prd') &&
-      needs.build-push.result == 'success'
+    if: github.event_name == 'push'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
@@ -129,19 +67,16 @@ jobs:
       require_approval: false
     secrets: inherit
 
-  # --- TST → PRD ---
-
   deploy-tst:
     name: Staging
-    needs: [ build-push, resolve-tag, deploy-dev ]
+    needs: [ build-push, deploy-dev ]
     if: |
       !cancelled() &&
-      (needs.build-push.result == 'success' || needs.resolve-tag.result == 'success') &&
-      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
+      needs.deploy-dev.result == 'success'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -149,14 +84,14 @@ jobs:
 
   deploy-prd:
     name: Production
-    needs: [ build-push, resolve-tag, deploy-tst ]
+    needs: [ build-push, deploy-tst ]
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: prd
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || needs.resolve-tag.outputs.image_tag }}"
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-proxy
       namespace: geocoder
       release_name: geocoder-proxy
@@ -181,4 +116,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
           payload: |
-            text: "❌ *${{ github.workflow }}* (${{ inputs.target || 'push → all' }}) failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

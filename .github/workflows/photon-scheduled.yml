@@ -1,4 +1,4 @@
-name: Scheduled - Import+Photon
+name: Photon — Scheduled Import
 
 on:
   schedule:

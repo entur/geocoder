@@ -1,4 +1,4 @@
-name: Photon — Import, Build & Deploy
+name: Photon — Deploy Existing Image
 
 on:
   workflow_dispatch:
@@ -10,14 +10,13 @@ on:
         options:
           - 'dev → tst → prd'
           - 'tst → prd'
-      config:
-        description: 'Nominatim config'
-        required: false
+      image_tag:
+        description: 'Photon image tag'
+        required: true
         type: string
-        default: 'prod.conf'
 
 concurrency:
-  group: "${{ github.workflow }}-${{ inputs.target }}"
+  group: "photon-${{ inputs.target }}"
   cancel-in-progress: true
 
 jobs:
@@ -29,51 +28,25 @@ jobs:
         run: |
           echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
           echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Config:** \`${{ inputs.config }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Image tag:** \`${{ inputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
 
-  nominatim-data:
-    name: Nominatim Data
-    runs-on:
-      group: grp-ubuntu-24.04-8core-x64
+  resolve-tag:
+    name: Resolve Tag
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
-
+      image_tag: ${{ steps.resolve.outputs.resolved_tag }}
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build nominatim data
-        id: build
-        uses: ./.github/actions/build-nominatim-data
+      - name: Resolve image tag
+        id: resolve
+        uses: ./.github/actions/resolve-image-tag
         with:
-          config: ${{ inputs.config }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-  photon:
-    name: Photon Image
-    needs: nominatim-data
-    runs-on:
-      group: grp-ubuntu-24.04-8core-x64
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-      security-events: write
-      pull-requests: write
-    outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Build Photon image
-        id: build
-        uses: ./.github/actions/build-photon-image
-        with:
-          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
+          image_name: geocoder-photon
+          image_tag: ${{ inputs.image_tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -81,12 +54,12 @@ jobs:
 
   deploy-dev:
     name: Dev
-    needs: photon
+    needs: resolve-tag
     if: inputs.target == 'dev → tst → prd'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.resolve-tag.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -96,14 +69,14 @@ jobs:
 
   deploy-tst:
     name: Staging
-    needs: [ photon, deploy-dev ]
+    needs: [ resolve-tag, deploy-dev ]
     if: |
       !cancelled() &&
       (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.resolve-tag.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
@@ -111,14 +84,14 @@ jobs:
 
   deploy-prd:
     name: Production
-    needs: [ photon, deploy-tst ]
+    needs: [ resolve-tag, deploy-tst ]
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: prd
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.resolve-tag.outputs.image_tag }}"
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon

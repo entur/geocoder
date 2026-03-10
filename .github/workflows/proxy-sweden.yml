@@ -1,4 +1,4 @@
-name: Proxy Sweden
+name: Proxy Sweden — Build & Deploy
 
 on:
   workflow_dispatch:

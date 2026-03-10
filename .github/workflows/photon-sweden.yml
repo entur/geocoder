@@ -1,4 +1,4 @@
-name: Import+Photon Sweden
+name: Photon Sweden — Import, Build & Deploy
 
 on:
   workflow_dispatch:
