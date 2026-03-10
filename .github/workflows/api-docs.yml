@@ -3,14 +3,14 @@
 #
 # Api specs end up at https://beta.developer.entur.no/apis/public
 #
-# Lint runs on push/PR. Publish only on workflow_call (from proxy after prd deploy)
-# or manual workflow_dispatch.
+# Lint runs on push/PR. Publish on push to main or manual dispatch.
 #
 
 name: API Docs
 
 on:
   push:
+    branches: [ main ]
     paths:
       - 'proxy/docs/**'
       - 'proxy/src/main/resources/openapi.yml'
@@ -22,7 +22,6 @@ on:
       - 'proxy/src/main/resources/openapi.yml'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
-  workflow_call: {}
   workflow_dispatch:
 
 concurrency:
@@ -37,7 +36,7 @@ jobs:
       spec: proxy/src/main/resources/openapi.yml
 
   api-publish:
-    if: github.event_name != 'push' && github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
     needs: api-lint
     uses: entur/gha-api/.github/workflows/publish.yml@v4
     secrets: inherit
@@ -45,7 +44,7 @@ jobs:
       spec: proxy/src/main/resources/openapi.yml
 
   docs-publish:
-    if: github.event_name != 'push' && github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
     needs: api-lint
     uses: entur/gha-docs/.github/workflows/publish.yml@v1
     secrets: inherit

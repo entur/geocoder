@@ -95,15 +95,6 @@ jobs:
       release_name: geocoder-proxy
     secrets: inherit
 
-  publish-api-docs:
-    name: Publish API Docs
-    needs: deploy-prd
-    if: |
-      !cancelled() &&
-      needs.deploy-prd.result == 'success'
-    uses: "./.github/workflows/api-docs.yml"
-    secrets: inherit
-
   notify-slack:
     needs: [ deploy-dev, deploy-tst, deploy-prd ]
     if: failure()
