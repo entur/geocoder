@@ -3,7 +3,7 @@ name: Scheduled - Import+Photon
 on:
   schedule:
     # Run full build every day (7:32 UTC is 8:32 CET / 9:32 CEST)
-    - cron: '32 7 * * *'
+    - cron: '10 7 * * *'
 
 concurrency:
   group: "${{ github.workflow }}"
