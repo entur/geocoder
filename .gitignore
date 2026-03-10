@@ -18,3 +18,4 @@ nominatim.ndjson
 photon*jar
 Chart.lock
 /converter/tmp
+.claude
