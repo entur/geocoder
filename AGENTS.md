@@ -42,6 +42,8 @@ The proxy forwards requests to Photon (an OpenStreetMap-based search engine) aft
 - All HTTP handlers are suspend functions (coroutine-based)
 - Request transformation pipeline: User Request → Internal Request → Photon → Internal Response → User Response
 - Keep request/response models separate for each API version (v2, v3, photon)
+- v3 API uses camelCase for all JSON keys and query parameters — no snake_case
+- When changing v3 API code, ensure the implementation matches `openapi3.yml` (parameter names, defaults, response schemas)
 
 ### Testing
 - Tests use JUnit Jupiter with Kotlin Test assertions
@@ -62,10 +64,8 @@ Categories use prefixes for filtering:
 - Maintain backward compatibility with legacy prefixes
 
 ### Error Handling
-Centralized in `proxy/src/main/kotlin/no/entur/geocoder/proxy/ErrorHandler.kt`:
-- Client errors → 400
-- Backend parse errors → 502
-- Connection failures → 503
+- v2: Centralized in `ErrorHandler.kt`, returns Pelias-style error responses
+- v3: Route-level error handling in `App.kt` (`v3problem`), returns RFC 9457 `application/problem+json` with `status`, `title`, `detail`
 
 ## Things to Avoid
 
@@ -83,5 +83,6 @@ Centralized in `proxy/src/main/kotlin/no/entur/geocoder/proxy/ErrorHandler.kt`:
 | Photon client | `proxy/src/main/kotlin/no/entur/geocoder/proxy/photon/PhotonApi.kt` |
 | CLI entry point | `converter/src/main/kotlin/no/entur/geocoder/converter/cli/Command.kt` |
 | Boost configuration | `converter/src/main/kotlin/no/entur/geocoder/converter/ConverterConfig.kt` |
-| OpenAPI spec | `proxy/src/main/resources/openapi.yml` |
+| OpenAPI spec (v2) | `proxy/src/main/resources/openapi.yml` |
+| OpenAPI spec (v3) | `proxy/src/main/resources/openapi3.yml` |
 | Dependency versions | `gradle/libs.versions.toml` |

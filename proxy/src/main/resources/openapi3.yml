@@ -52,7 +52,7 @@ paths:
         '400':
           description: Bad request
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Error'
 
@@ -81,7 +81,7 @@ paths:
         '400':
           description: Bad request
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Error'
 
@@ -105,14 +105,14 @@ paths:
         '400':
           description: Bad request
           content:
-            application/json:
+            application/problem+json:
               schema:
                 $ref: '#/components/schemas/Error'
 
 components:
   parameters:
     ETClientName:
-      name: ET-Client-Name
+      name: Et-Client-Name
       in: header
       description: Client identifier
       schema:
@@ -161,11 +161,15 @@ components:
     Layers:
       name: layers
       in: query
-      description: Layer filter (comma-separated)
+      description: Layer filter
+      style: form
+      explode: false
       schema:
-        type: string
-        enum: [address, street, stopPlace, groupOfStopPlaces, poi]
-      example: "stopPlace,address"
+        type: array
+        items:
+          type: string
+          enum: [address, street, stopPlace, groupOfStopPlaces, poi]
+      example: [stopPlace, address]
 
     Sources:
       name: sources
@@ -540,11 +544,14 @@ components:
       type: object
       required:
         - status
-        - message
+        - title
       properties:
         status:
           type: integer
           example: 400
-        message:
+        title:
+          type: string
+          example: "Bad Request"
+        detail:
           type: string
           example: "Parameter 'latitude' is required"

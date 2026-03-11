@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.http.*
@@ -26,6 +27,7 @@ import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.pelias.PeliasApi
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.v3.V3Api
+import no.entur.geocoder.proxy.v3.V3Result
 import org.slf4j.LoggerFactory
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
@@ -132,18 +134,15 @@ class App {
 
                 if (System.getenv("COMMON_ENV") != "prd") {
                     get("/v3/autocomplete") {
-                        val result = v3api.autocomplete(call.request.queryParameters)
-                        call.respond(result)
+                        v3problem(call) { v3api.autocomplete(call.request.queryParameters) }
                     }
 
                     get("/v3/reverse") {
-                        val result = v3api.reverse(call.request.queryParameters)
-                        call.respond(result)
+                        v3problem(call) { v3api.reverse(call.request.queryParameters) }
                     }
 
                     get("/v3/place") {
-                        val result = v3api.place(call.request.queryParameters)
-                        call.respond(result)
+                        v3problem(call) { v3api.place(call.request.queryParameters) }
                     }
 
                     get("/v3/openapi.yaml") {
@@ -202,6 +201,26 @@ class App {
 
         // seconds in nanoseconds
         private val Double.seconds: Double get() = this * 1_000_000_000.0
+
+        private val problemJson = ContentType.parse("application/problem+json")
+        private val objectMapper =
+            ObjectMapper().setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+
+        private suspend fun v3problem(call: ApplicationCall, block: suspend () -> V3Result) {
+            try {
+                call.respond(block())
+            } catch (e: Exception) {
+                val error = ErrorHandler.handleError(e, "Request processing")
+                val status = error.status
+                val body =
+                    mapOf(
+                        "status" to status.value,
+                        "title" to status.description,
+                        "detail" to error.result.geocoding.errors?.firstOrNull(),
+                    )
+                call.respondText(objectMapper.writeValueAsString(body), problemJson, status)
+            }
+        }
 
         const val sharedApigeeToken = "x-shared-token"
     }

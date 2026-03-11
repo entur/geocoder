@@ -93,6 +93,7 @@ data class V3Result(
         val countyIds: List<String>? = null,
         val localityIds: List<String>? = null,
         val tariffZones: List<String>? = null,
+        val fareZoneAuthorities: List<String>? = null,
         val multimodal: String? = null,
     )
 }
