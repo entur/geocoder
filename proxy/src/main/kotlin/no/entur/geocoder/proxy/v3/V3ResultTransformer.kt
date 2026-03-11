@@ -110,7 +110,6 @@ object V3ResultTransformer {
         val coords = feature.geometry.coordinates
 
         val layer = determineLayer(extra?.source, props.osm_key, props.osm_value, extra?.tags)
-        val accuracy = parseAccuracy(extra?.accuracy)
 
         val defaultName = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed"
         val labelName =
@@ -125,6 +124,7 @@ object V3ResultTransformer {
         return V3Result.Feature(
             geometry =
                 V3Result.Geometry(
+                    type = feature.geometry.type,
                     coordinates =
                         listOf(
                             coords.getOrNull(0)?.toBigDecimalWithScale() ?: BigDecimal.ZERO, // lon
@@ -164,12 +164,7 @@ object V3ResultTransformer {
                             ?.split(";")
                             ?.filter { it.isNotBlank() }
                             ?.takeIf { it.isNotEmpty() },
-                    source =
-                        V3Result.DataSource(
-                            provider = mapProviderName(extra?.source),
-                            sourceId = buildSourceId(extra?.source, extra?.id, props.osm_type, props.osm_id),
-                            accuracy = accuracy,
-                        ),
+                    source = mapProviderName(extra?.source),
                 ),
         )
     }
@@ -198,16 +193,6 @@ object V3ResultTransformer {
         )
     }
 
-    private fun buildSourceId(source: String?, id: String?, osmType: String?, osmId: Long?): String? =
-        when {
-            source == Source.OSM && id != null -> id
-            source == Source.NSR && id != null -> "NSR:$id"
-            source == Source.KARTVERKET_ADRESSE && id != null -> "Kartverket:$id"
-            osmType != null && osmId != null -> "OSM:$osmType:$osmId"
-            id != null -> id
-            else -> null
-        }
-
     private fun determineLayer(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.Layer =
         when {
             source == Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
@@ -227,8 +212,6 @@ object V3ResultTransformer {
                 val parts = entry.trim().split(":")
                 V3Result.TransportMode(mode = parts[0], subMode = parts.getOrNull(1))
             }?.takeIf { it.isNotEmpty() }
-
-    private fun parseAccuracy(accuracy: String?): String? = accuracy?.lowercase()?.takeIf { it.isNotBlank() }
 
     private fun mapProviderName(source: String?): String = source ?: "unknown"
 

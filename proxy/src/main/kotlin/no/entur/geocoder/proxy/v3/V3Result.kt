@@ -17,7 +17,7 @@ data class V3Result(
     )
 
     data class Geometry(
-        val type: String = "Point",
+        val type: String,
         val coordinates: List<BigDecimal>, // [lon, lat]
     )
 
@@ -25,12 +25,12 @@ data class V3Result(
         val id: String,
         val name: Names,
         val layer: Layer,
+        val source: String,
         val address: Address? = null,
         val categories: List<String>? = null,
         val tariffZones: List<String>? = null,
         val transportModes: List<TransportMode>? = null,
         val stopPlaceTypes: List<String>? = null,
-        val source: DataSource,
     )
 
     data class Names(
@@ -55,12 +55,6 @@ data class V3Result(
         val county: String? = null,
         val countyId: String? = null,
         val countryCode: String? = null,
-    )
-
-    data class DataSource(
-        val provider: String,
-        val sourceId: String? = null,
-        val accuracy: String? = null,
     )
 
     enum class Layer {

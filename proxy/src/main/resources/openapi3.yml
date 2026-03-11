@@ -362,7 +362,9 @@ components:
             type: string
           example: ["onstreetBus"]
         source:
-          $ref: '#/components/schemas/DataSource'
+          type: string
+          description: Data source identifier (same values as the sources filter)
+          example: "nsr"
 
     Names:
       type: object
@@ -429,21 +431,6 @@ components:
           type: string
           example: "localBus"
 
-    DataSource:
-      type: object
-      required:
-        - provider
-      properties:
-        provider:
-          type: string
-          description: Data source identifier (same values as the sources filter)
-          example: "nsr"
-        sourceId:
-          type: string
-          example: "NSR:StopPlace:59872"
-        accuracy:
-          $ref: '#/components/schemas/Accuracy'
-
     Layer:
       type: string
       enum:
@@ -453,14 +440,6 @@ components:
         - groupOfStopPlaces
         - poi
       example: "stopPlace"
-
-    Accuracy:
-      type: string
-      enum:
-        - point
-        - centroid
-        - interpolated
-      example: "point"
 
     Metadata:
       type: object
