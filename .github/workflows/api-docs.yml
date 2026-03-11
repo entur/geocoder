@@ -33,7 +33,7 @@ jobs:
     uses: entur/gha-api/.github/workflows/lint.yml@v4
     secrets: inherit
     with:
-      spec: proxy/src/main/resources/openapi.yml
+      spec: proxy/src/main/resources/openapi*.yml
 
   api-publish:
     if: github.event_name != 'pull_request'
