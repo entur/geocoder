@@ -25,7 +25,6 @@ object V3ResultTransformer {
                 req.countyIds.isNotEmpty() ||
                 req.localityIds.isNotEmpty() ||
                 req.tariffZones.isNotEmpty() ||
-                req.tariffZoneAuthorities.isNotEmpty() ||
                 req.multiModal != "parent"
             ) {
                 V3Result.Filters(
@@ -35,7 +34,6 @@ object V3ResultTransformer {
                     countyIds = req.countyIds.takeIf { it.isNotEmpty() },
                     localityIds = req.localityIds.takeIf { it.isNotEmpty() },
                     tariffZones = req.tariffZones.takeIf { it.isNotEmpty() },
-                    tariffZoneAuthorities = req.tariffZoneAuthorities.takeIf { it.isNotEmpty() },
                     multiModal = req.multiModal.takeIf { it != "parent" },
                 )
             } else {

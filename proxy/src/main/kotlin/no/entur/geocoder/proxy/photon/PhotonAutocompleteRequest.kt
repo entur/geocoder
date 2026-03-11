@@ -2,7 +2,6 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
-import no.entur.geocoder.common.Category.TARIFF_ZONE_AUTH_PREFIX
 import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.LegacySource.openaddresses
@@ -101,9 +100,6 @@ data class PhotonAutocompleteRequest(
                     }
                     if (req.tariffZones.isNotEmpty()) {
                         add(req.tariffZones.joinToString(",") { Category.tariffZoneIdCategory(it) })
-                    }
-                    if (req.tariffZoneAuthorities.isNotEmpty()) {
-                        add(req.tariffZoneAuthorities.joinToString(",") { TARIFF_ZONE_AUTH_PREFIX + it })
                     }
                     if (req.fareZoneAuthorities.isNotEmpty()) {
                         add(req.fareZoneAuthorities.joinToString(",") { Category.fareZoneAuthorityCategory(it) })

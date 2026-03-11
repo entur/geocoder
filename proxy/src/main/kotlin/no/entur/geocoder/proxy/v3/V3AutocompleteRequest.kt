@@ -12,7 +12,6 @@ data class V3AutocompleteRequest(
     val countyIds: List<String> = emptyList(),
     val localityIds: List<String> = emptyList(),
     val tariffZones: List<String> = emptyList(),
-    val tariffZoneAuthorities: List<String> = emptyList(),
     val fareZoneAuthorities: List<String> = emptyList(),
     val multiModal: String = "parent",
 ) {
@@ -28,7 +27,6 @@ data class V3AutocompleteRequest(
                 countyIds = req["countyIds"]?.split(",") ?: emptyList(),
                 localityIds = req["localityIds"]?.split(",") ?: emptyList(),
                 tariffZones = req["tariffZones"]?.split(",") ?: emptyList(),
-                tariffZoneAuthorities = req["tariffZoneAuthorities"]?.split(",") ?: emptyList(),
                 fareZoneAuthorities = req["fareZoneAuthorities"]?.split(",") ?: emptyList(),
                 multiModal = req["multiModal"] ?: "parent",
             )
