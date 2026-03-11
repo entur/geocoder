@@ -66,8 +66,8 @@ data class V3Result(
     enum class Layer {
         address,
         street,
-        stop_place,
-        group_of_stop_places,
+        stopPlace,
+        groupOfStopPlaces,
         poi,
     }
 

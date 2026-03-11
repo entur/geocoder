@@ -165,8 +165,8 @@ components:
       description: Layer filter (comma-separated)
       schema:
         type: string
-        enum: [address, street, stop_place, group_of_stop_places, poi]
-      example: "stop_place,address"
+        enum: [address, street, stopPlace, groupOfStopPlaces, poi]
+      example: "stopPlace,address"
 
     Sources:
       name: sources
@@ -454,10 +454,10 @@ components:
       enum:
         - address
         - street
-        - stop_place
-        - group_of_stop_places
+        - stopPlace
+        - groupOfStopPlaces
         - poi
-      example: "stop_place"
+      example: "stopPlace"
 
     Accuracy:
       type: string

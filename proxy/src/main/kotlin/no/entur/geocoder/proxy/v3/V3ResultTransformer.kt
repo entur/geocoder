@@ -211,9 +211,9 @@ object V3ResultTransformer {
     private fun determineLayer(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.Layer =
         when {
             source == Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
-            source == Source.NSR && tags?.contains(Category.OSM_GOSP) == true -> V3Result.Layer.group_of_stop_places
-            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.Layer.stop_place
-            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.Layer.stop_place
+            source == Source.NSR && tags?.contains(Category.OSM_GOSP) == true -> V3Result.Layer.groupOfStopPlaces
+            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.Layer.stopPlace
+            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.Layer.stopPlace
             source == Source.NSR -> V3Result.Layer.poi
             osmKey == "highway" -> V3Result.Layer.street
             else -> V3Result.Layer.poi
@@ -235,11 +235,7 @@ object V3ResultTransformer {
     private fun iso3ToIso2(iso3: String?): String? = Country.fromThreeLetterCode(iso3)?.name
 
     private fun mapToLayer(type: String): V3Result.Layer? =
-        try {
-            V3Result.Layer.valueOf(type.lowercase())
-        } catch (_: IllegalArgumentException) {
-            null
-        }
+        V3Result.Layer.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }
 
     private fun calculateBbox(features: List<V3Result.Feature>): List<BigDecimal>? {
         if (features.isEmpty()) return null
