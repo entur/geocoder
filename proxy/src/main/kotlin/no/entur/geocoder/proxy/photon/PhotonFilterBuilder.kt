@@ -91,7 +91,7 @@ object PhotonFilterBuilder {
 
     fun buildExcludes(req: PeliasAutocompleteRequest): List<String> =
         listOfNotNull(
-            buildMultiModalExclude(req.multiModal),
+            buildMultimodalExclude(req.multiModal),
             buildHouseNumberExclude(req),
         )
 
@@ -108,7 +108,7 @@ object PhotonFilterBuilder {
 
     fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(
-            buildMultiModalExclude(req.multiModal),
+            buildMultimodalExclude(req.multiModal),
             if (req.sources.contains(openaddresses.name)) {
                 null
             } else {
@@ -116,8 +116,8 @@ object PhotonFilterBuilder {
             },
         )
 
-    internal fun buildMultiModalExclude(multiModal: String): String? =
-        when (multiModal) {
+    internal fun buildMultimodalExclude(multimodal: String): String? =
+        when (multimodal) {
             "child" -> "multimodal.parent"
             "parent" -> "multimodal.child"
             else -> null

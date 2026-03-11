@@ -96,20 +96,20 @@ class PhotonFilterBuilderTest {
     }
 
     @Test
-    fun `buildMultiModalExclude handles different modes`() {
-        data class MultiModalTest(val mode: String, val expected: String?)
+    fun `buildMultimodalExclude handles different modes`() {
+        data class MultimodalTest(val mode: String, val expected: String?)
 
         val testCases =
             listOf(
-                MultiModalTest("parent", "multimodal.child"),
-                MultiModalTest("child", "multimodal.parent"),
-                MultiModalTest("all", null),
-                MultiModalTest("unknown", null),
-                MultiModalTest("", null),
+                MultimodalTest("parent", "multimodal.child"),
+                MultimodalTest("child", "multimodal.parent"),
+                MultimodalTest("all", null),
+                MultimodalTest("unknown", null),
+                MultimodalTest("", null),
             )
 
         testCases.forEach { test ->
-            assertEquals(test.expected, PhotonFilterBuilder.buildMultiModalExclude(test.mode))
+            assertEquals(test.expected, PhotonFilterBuilder.buildMultimodalExclude(test.mode))
         }
     }
 

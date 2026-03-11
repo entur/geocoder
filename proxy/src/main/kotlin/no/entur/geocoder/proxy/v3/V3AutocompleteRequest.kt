@@ -13,7 +13,7 @@ data class V3AutocompleteRequest(
     val localityIds: List<String> = emptyList(),
     val tariffZones: List<String> = emptyList(),
     val fareZoneAuthorities: List<String> = emptyList(),
-    val multiModal: String = "parent",
+    val multimodal: String = "parent",
 ) {
     companion object {
         fun from(req: Parameters) =
@@ -28,7 +28,7 @@ data class V3AutocompleteRequest(
                 localityIds = req["localityIds"]?.split(",") ?: emptyList(),
                 tariffZones = req["tariffZones"]?.split(",") ?: emptyList(),
                 fareZoneAuthorities = req["fareZoneAuthorities"]?.split(",") ?: emptyList(),
-                multiModal = req["multiModal"] ?: "parent",
+                multimodal = req["multimodal"] ?: "parent",
             )
     }
 }

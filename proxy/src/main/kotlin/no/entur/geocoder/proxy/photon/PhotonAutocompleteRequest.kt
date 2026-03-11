@@ -112,7 +112,7 @@ data class PhotonAutocompleteRequest(
                     }
                 }
 
-            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultiModalExclude(req.multiModal))
+            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultimodalExclude(req.multimodal))
 
             return PhotonAutocompleteRequest(
                 query = req.query,

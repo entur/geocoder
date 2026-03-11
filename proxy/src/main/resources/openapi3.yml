@@ -40,7 +40,7 @@ paths:
         - $ref: '#/components/parameters/LocalityIds'
         - $ref: '#/components/parameters/TariffZones'
         - $ref: '#/components/parameters/FareZoneAuthorities'
-        - $ref: '#/components/parameters/MultiModal'
+        - $ref: '#/components/parameters/Multimodal'
         - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
@@ -69,7 +69,7 @@ paths:
         - $ref: '#/components/parameters/Radius'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
-        - $ref: '#/components/parameters/MultiModal'
+        - $ref: '#/components/parameters/Multimodal'
         - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
@@ -216,8 +216,8 @@ components:
         type: string
       example: "RUT:Authority:RUT"
 
-    MultiModal:
-      name: multiModal
+    Multimodal:
+      name: multimodal
       in: query
       description: "Stop place hierarchy filter: `parent` (default) returns parent stops only, `child` returns child stops only, `all` returns both"
       schema:
@@ -532,7 +532,7 @@ components:
           type: array
           items:
             type: string
-        multiModal:
+        multimodal:
           type: string
           enum: [parent, child, all]
 

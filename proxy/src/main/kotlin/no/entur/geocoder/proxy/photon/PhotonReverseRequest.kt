@@ -39,7 +39,7 @@ data class PhotonReverseRequest(
                 language = handleLang(req.language),
                 limit = req.limit,
                 radius = req.radius,
-                excludes = listOfNotNull(Category.OSM_ADDRESS, PhotonFilterBuilder.buildMultiModalExclude(req.multiModal)),
+                excludes = listOfNotNull(Category.OSM_ADDRESS, PhotonFilterBuilder.buildMultimodalExclude(req.multimodal)),
                 debug = false,
             )
     }
