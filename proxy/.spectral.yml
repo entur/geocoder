@@ -1,2 +1,2 @@
 extends:
-  - https://raw.githubusercontent.com/entur/api-guidelines/v1.5.3/.spectral.yml
+  - https://raw.githubusercontent.com/entur/api-guidelines/refs/tags/v2/.spectral.yml
