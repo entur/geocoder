@@ -13,13 +13,13 @@ on:
     branches: [ main ]
     paths:
       - 'proxy/docs/**'
-      - 'proxy/src/main/resources/openapi.yml'
+      - 'proxy/src/main/resources/openapi*.yml'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
   pull_request:
     paths:
       - 'proxy/docs/**'
-      - 'proxy/src/main/resources/openapi.yml'
+      - 'proxy/src/main/resources/openapi*.yml'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
   workflow_dispatch:
