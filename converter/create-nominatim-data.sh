@@ -4,7 +4,7 @@ set -eu
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 
-VERSION="v0.2.5"
+VERSION="v0.2.6"
 BINARY="$SCRIPTDIR/build/nominatim-converter-$VERSION"
 BASE_URL="https://github.com/entur/nominatim-converter/releases/download/$VERSION"
 
