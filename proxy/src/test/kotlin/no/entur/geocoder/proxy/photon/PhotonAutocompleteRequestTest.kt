@@ -137,6 +137,15 @@ class PhotonAutocompleteRequestTest {
     }
 
     @Test
+    fun `from PeliasPlaceParams expands legacy openaddresses id to both old and new format`() {
+        val req = PeliasPlaceRequest(ids = listOf("openaddresses:address:10855461"))
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(listOf("openaddresses.address.10855461,KVE.PostalAddress.10855461"), request.includes)
+    }
+
+    @Test
     fun `from PeliasAutocompleteParams calculates zoom from scale`() {
         val focus =
             PeliasAutocompleteRequest.FocusParams(

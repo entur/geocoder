@@ -71,10 +71,21 @@ data class PhotonAutocompleteRequest(
             }
         }
 
+        private const val LEGACY_OA_PREFIX = "openaddresses:address:"
+        private const val KVE_ADDRESS_PREFIX = "KVE:PostalAddress:"
+
+        private fun expandId(id: String): List<String> =
+            if (id.startsWith(LEGACY_OA_PREFIX)) {
+                val numericId = id.removePrefix(LEGACY_OA_PREFIX)
+                listOf(id.asCategory(), (KVE_ADDRESS_PREFIX + numericId).asCategory())
+            } else {
+                listOf(id.asCategory())
+            }
+
         fun from(req: PeliasPlaceRequest): PhotonAutocompleteRequest =
             PhotonAutocompleteRequest(
                 query = "",
-                includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
+                includes = listOf(req.ids.flatMap { expandId(it) }.joinToString(",")),
                 limit = req.ids.size + RESULT_PRUNING_HEADROOM,
                 debug = req.debug,
             )

@@ -477,8 +477,8 @@ class PeliasResultTransformerTest {
     @CsvSource(
         // Old Photon format (no prefix) → unchanged
         "12345, 12345",
-        // New KVM prefix → stripped
-        "KVM:PostalAddress:12345, 12345",
+        // New KVE prefix → stripped
+        "KVE:PostalAddress:12345, 12345",
         // Old OSM format → unchanged
         "OSM:TopographicPlace:123, OSM:TopographicPlace:123",
         // New OSM format → reverted to old
