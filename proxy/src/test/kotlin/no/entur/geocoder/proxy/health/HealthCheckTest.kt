@@ -31,7 +31,7 @@ class HealthCheckTest {
         private const val LIVENESS_ENDPOINT = "/liveness"
         private const val READINESS_ENDPOINT = "/readiness"
         private const val SUCCESS_RESPONSE =
-            """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10.75,59.91]},"properties":{"name":"Oslo"}}]}"""
+            """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10.75,59.91]},"properties":{"name":"Oslo","extra":{"id":"KVE:TopographicPlace:1"}}}]}"""
     }
 
     /** Configures test application with health check endpoint. */

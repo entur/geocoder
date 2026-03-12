@@ -32,7 +32,7 @@ class PhotonResultTest {
                             "osm_key": "railway",
                             "osm_value": "station",
                             "extra": {
-                                "id": "W123456789",
+                                "id": "OSM:PointOfInterest:123456789",
                                 "source": "osm",
                                 "locality": "Oslo",
                                 "locality_gid": "0301",
@@ -72,7 +72,7 @@ class PhotonResultTest {
         assertEquals("station", props.osm_value)
 
         assertNotNull(props.extra)
-        assertEquals("W123456789", props.extra.id)
+        assertEquals("OSM:PointOfInterest:123456789", props.extra.id)
         assertEquals("osm", props.extra.source)
         assertEquals("Oslo", props.extra.locality)
         assertEquals("0301", props.extra.locality_gid)
@@ -111,7 +111,8 @@ class PhotonResultTest {
                             "coordinates": [10.0, 60.0]
                         },
                         "properties": {
-                            "name": "Place 1"
+                            "name": "Place 1",
+                            "extra": {"id": "OSM:PointOfInterest:1"}
                         }
                     },
                     {
@@ -120,7 +121,8 @@ class PhotonResultTest {
                             "coordinates": [11.0, 61.0]
                         },
                         "properties": {
-                            "name": "Place 2"
+                            "name": "Place 2",
+                            "extra": {"id": "OSM:PointOfInterest:2"}
                         }
                     },
                     {
@@ -129,7 +131,8 @@ class PhotonResultTest {
                             "coordinates": [12.0, 62.0]
                         },
                         "properties": {
-                            "name": "Place 3"
+                            "name": "Place 3",
+                            "extra": {"id": "OSM:PointOfInterest:3"}
                         }
                     }
                 ]
@@ -156,7 +159,9 @@ class PhotonResultTest {
                             "type": "Point",
                             "coordinates": [10.0, 60.0]
                         },
-                        "properties": {}
+                        "properties": {
+                            "extra": {"id": "OSM:PointOfInterest:1"}
+                        }
                     }
                 ]
             }
@@ -254,7 +259,8 @@ class PhotonResultTest {
                         },
                         "properties": {
                             "name": "Test Place",
-                            "unknown_prop_field": "ignored"
+                            "unknown_prop_field": "ignored",
+                            "extra": {"id": "OSM:PointOfInterest:1"}
                         },
                         "unknown_feature_field": "ignored"
                     }
@@ -289,7 +295,8 @@ class PhotonResultTest {
                             "city": "Oslo",
                             "county": "Oslo",
                             "countrycode": "NO",
-                            "type": "house"
+                            "type": "house",
+                            "extra": {"id": "OSM:PointOfInterest:123456789"}
                         }
                     }
                 ]
@@ -324,7 +331,8 @@ class PhotonResultTest {
                         "properties": {
                             "name": "Ålesund",
                             "street": "Løkkeveien",
-                            "city": "Tromsø"
+                            "city": "Tromsø",
+                            "extra": {"id": "OSM:PointOfInterest:1"}
                         }
                     }
                 ]

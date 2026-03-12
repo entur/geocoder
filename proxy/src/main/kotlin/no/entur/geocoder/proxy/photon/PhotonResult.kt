@@ -47,6 +47,6 @@ data class PhotonResult(
         val city: String? = null,
         val street: String? = null,
         val county: String? = null,
-        val extra: Extra? = null,
+        val extra: Extra,
     )
 }

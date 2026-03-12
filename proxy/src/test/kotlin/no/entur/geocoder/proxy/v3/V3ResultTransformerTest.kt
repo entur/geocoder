@@ -32,7 +32,7 @@ class V3ResultTransformerTest {
         expectedLayer: String,
     ) {
         val place = transformSingle(
-            extra = Extra(id = "1", source = source, tags = tags),
+            extra = Extra(id = "OSM:PointOfInterest:42", source = source, tags = tags),
             osmKey = osmKey,
             osmValue = osmValue,
         )
@@ -41,25 +41,25 @@ class V3ResultTransformerTest {
 
     @Test
     fun `display name appends locality`() {
-        val place = transformSingle(Extra(id = "1", source = Source.OSM, locality = "Oslo"))
+        val place = transformSingle(Extra(id = "OSM:PointOfInterest:42", source = Source.OSM, locality = "Oslo"))
         assertEquals("Test, Oslo", place.name.display)
     }
 
     @Test
     fun `label is null when same as default name`() {
-        val place = transformSingle(Extra(id = "1", source = Source.OSM, alt_name = "Test"))
+        val place = transformSingle(Extra(id = "OSM:PointOfInterest:42", source = Source.OSM, alt_name = "Test"))
         assertNull(place.name.label)
     }
 
     @Test
     fun `label is set when different from default name`() {
-        val place = transformSingle(Extra(id = "1", source = Source.OSM, alt_name = "Alias"))
+        val place = transformSingle(Extra(id = "OSM:PointOfInterest:42", source = Source.OSM, alt_name = "Alias"))
         assertEquals("Alias", place.name.label)
     }
 
     @Test
     fun `transport modes are parsed`() {
-        val place = transformSingle(Extra(id = "1", source = Source.NSR, transport_mode = "bus:localBus;rail"))
+        val place = transformSingle(Extra(id = "OSM:PointOfInterest:42", source = Source.NSR, transport_mode = "bus:localBus;rail"))
         val modes = place.transportModes
         assertEquals(2, modes?.size)
         assertEquals("bus", modes?.get(0)?.mode)
@@ -70,14 +70,14 @@ class V3ResultTransformerTest {
 
     @Test
     fun `address is null when no address fields present`() {
-        val place = transformSingle(Extra(id = "1", source = Source.OSM))
+        val place = transformSingle(Extra(id = "OSM:PointOfInterest:42", source = Source.OSM))
         assertNull(place.address)
     }
 
     @Test
     fun `address is built from photon properties and extra`() {
         val place = transformSingle(
-            extra = Extra(id = "1", source = Source.OSM, locality = "Oslo", county_gid = "03"),
+            extra = Extra(id = "OSM:PointOfInterest:42", source = Source.OSM, locality = "Oslo", county_gid = "03"),
             street = "Storgata",
             housenumber = "1",
         )

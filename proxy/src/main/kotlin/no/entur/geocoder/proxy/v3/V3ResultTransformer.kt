@@ -109,17 +109,16 @@ object V3ResultTransformer {
         val extra = props.extra
         val coords = feature.geometry.coordinates
 
-        val layer = determineLayer(extra?.source, props.osm_key, props.osm_value, extra?.tags)
+        val layer = determineLayer(extra.source, props.osm_key, props.osm_value, extra.tags)
 
-        val defaultName = props.name ?: props.street ?: props.extra?.locality ?: "Unnamed"
+        val defaultName = props.name ?: props.street ?: extra.locality ?: "Unnamed"
         val labelName =
-            extra
-                ?.alt_name
+            extra.alt_name
                 ?.split(";")
                 ?.firstOrNull()
                 ?.ifBlank { null }
                 ?.takeIf { it != defaultName }
-        val displayName = defaultName + extra?.locality?.let { ", $it" }.orEmpty()
+        val displayName = defaultName + extra.locality?.let { ", $it" }.orEmpty()
 
         return V3Result.Feature(
             geometry =
@@ -133,9 +132,7 @@ object V3ResultTransformer {
                 ),
             properties =
                 V3Result.Place(
-                    id =
-                        extra?.id
-                            ?: (if (props.osm_type != null && props.osm_id != null) "${props.osm_type}:${props.osm_id}" else "unknown"),
+                    id = extra.id,
                     name =
                         V3Result.Names(
                             default = defaultName,
@@ -145,35 +142,32 @@ object V3ResultTransformer {
                     layer = layer,
                     address = buildAddress(props, extra),
                     categories =
-                        extra
-                            ?.tags
+                        extra.tags
                             ?.split(",", ";")
                             ?.filter { it.startsWith("legacy.category.") }
                             ?.map { it.substringAfterLast('.') }
                             ?.filter { it.isNotBlank() },
                     tariffZones =
-                        extra
-                            ?.tariff_zones
+                        extra.tariff_zones
                             ?.split(",", ";")
                             ?.map { it.trim() }
                             ?.filter { it.isNotBlank() },
-                    transportModes = parseTransportModes(extra?.transport_mode),
+                    transportModes = parseTransportModes(extra.transport_mode),
                     stopPlaceTypes =
-                        extra
-                            ?.stop_place_type
+                        extra.stop_place_type
                             ?.split(";")
                             ?.filter { it.isNotBlank() }
                             ?.takeIf { it.isNotEmpty() },
-                    source = mapProviderName(extra?.source),
+                    source = mapProviderName(extra.source),
                 ),
         )
     }
 
-    private fun buildAddress(props: PhotonResult.PhotonProperties, extra: Extra?): V3Result.Address? {
+    private fun buildAddress(props: PhotonResult.PhotonProperties, extra: Extra): V3Result.Address? {
         if (props.street == null &&
             props.housenumber == null &&
             props.postcode == null &&
-            props.extra?.locality == null &&
+            extra.locality == null &&
             props.county == null
         ) {
             return null
@@ -183,13 +177,13 @@ object V3ResultTransformer {
             streetName = props.street,
             houseNumber = props.housenumber,
             postalCode = props.postcode,
-            locality = extra?.locality ?: props.city,
-            localityId = extra?.locality_gid,
-            borough = extra?.borough,
-            boroughId = extra?.borough_gid,
+            locality = extra.locality ?: props.city,
+            localityId = extra.locality_gid,
+            borough = extra.borough,
+            boroughId = extra.borough_gid,
             county = props.county,
-            countyId = extra?.county_gid,
-            countryCode = iso3ToIso2(extra?.country_a),
+            countyId = extra.county_gid,
+            countryCode = iso3ToIso2(extra.country_a),
         )
     }
 

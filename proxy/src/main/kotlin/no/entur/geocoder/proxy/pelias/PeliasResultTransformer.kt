@@ -23,9 +23,9 @@ object PeliasResultTransformer {
     private const val OSM_TOPO_PREFIX = "OSM:TopographicPlace:"
 
     /** Normalize IDs so v2 output stays backward-compatible. */
-    private fun normalizeV2Id(id: String?): String? =
-        id?.removePrefix(KVE_PREFIX)
-            ?.replace(OSM_POI_PREFIX, OSM_TOPO_PREFIX)
+    private fun normalizeV2Id(id: String): String =
+        id.removePrefix(KVE_PREFIX)
+            .replace(OSM_POI_PREFIX, OSM_TOPO_PREFIX)
 
     fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteRequest): PeliasResult =
         parseAndTransform(
@@ -130,10 +130,10 @@ object PeliasResultTransformer {
         val layer = transformLayer(extra)
 
         val name = transformName(props)
-        val id = normalizeV2Id(extra?.id)
+        val id = normalizeV2Id(extra.id)
         var popularName =
             extra
-                ?.alt_name
+                .alt_name
                 ?.split(";")
                 ?.firstOrNull()
                 ?.ifBlank { null }
@@ -161,25 +161,25 @@ object PeliasResultTransformer {
                     distance = distance?.toBigDecimalWithScale(3),
                     postalcode = props.postcode,
                     housenumber = props.housenumber,
-                    accuracy = extra?.accuracy,
-                    country_a = extra?.country_a,
+                    accuracy = extra.accuracy,
+                    country_a = extra.country_a,
                     county = props.county,
-                    county_gid = transformCountyGid(extra?.county_gid),
-                    locality = extra?.locality,
-                    locality_gid = transformLocalityGid(extra?.locality_gid),
-                    borough = extra?.borough,
-                    borough_gid = transformBoroughGid(extra?.borough_gid),
+                    county_gid = transformCountyGid(extra.county_gid),
+                    locality = extra.locality,
+                    locality_gid = transformLocalityGid(extra.locality_gid),
+                    borough = extra.borough,
+                    borough_gid = transformBoroughGid(extra.borough_gid),
                     label = createLabel(props),
                     category = transformCategory(extra),
                     mode = transformTransportExtra(extra),
-                    tariff_zones = extra?.tariff_zones?.split(",", ";")?.map { it.trim() },
+                    tariff_zones = extra.tariff_zones?.split(",", ";")?.map { it.trim() },
                     description = transformDescription(extra),
                 ),
         )
     }
 
-    private fun transformDescription(extra: Extra?): List<Map<String, String>>? {
-        val description = extra?.description ?: return null
+    private fun transformDescription(extra: Extra): List<Map<String, String>>? {
+        val description = extra.description ?: return null
 
         return if (description.contains("\\w{3}:".toRegex())) {
             // Parse entries with language prefixes: "nor:text" or "nor:text;eng:text"
@@ -201,14 +201,14 @@ object PeliasResultTransformer {
     private fun createLabel(props: PhotonProperties): String? =
         when {
             props.name.isNullOrBlank() && !props.housenumber.isNullOrEmpty() -> {
-                "${props.street} ${props.housenumber}, ${props.extra?.locality}"
+                "${props.street} ${props.housenumber}, ${props.extra.locality}"
             }
 
             props.name.isNullOrBlank() -> {
-                props.extra?.locality
+                props.extra.locality
             }
 
-            !props.extra?.locality.isNullOrEmpty() && props.name != props.extra.locality -> {
+            !props.extra.locality.isNullOrEmpty() && props.name != props.extra.locality -> {
                 "${props.name}, ${props.extra.locality}"
             }
 
@@ -223,7 +223,7 @@ object PeliasResultTransformer {
     private fun transformStreet(props: PhotonProperties): String? =
         when {
             props.street != null -> props.street
-            props.extra?.source != Source.KARTVERKET_STEDSNAVN -> "NOT_AN_ADDRESS-" + props.extra?.id
+            props.extra.source != Source.KARTVERKET_STEDSNAVN -> "NOT_AN_ADDRESS-" + props.extra.id
             else -> null
         }
 
@@ -234,25 +234,23 @@ object PeliasResultTransformer {
             else -> props.street
         }
 
-    fun transformCategory(extra: Extra?): List<String> {
+    fun transformCategory(extra: Extra): List<String> {
         val fromTags =
-            extra
-                ?.tags
+            extra.tags
                 ?.split(",", ";")
                 ?.filter { it.startsWith(LEGACY_CATEGORY_PREFIX) }
                 ?.map { it.substringAfterLast(".") }
                 .orEmpty()
         val fromStopPlaceType =
-            extra
-                ?.stop_place_type
+            extra.stop_place_type
                 ?.split(";")
                 ?.filter { it.isNotBlank() }
                 .orEmpty()
         return (fromTags + fromStopPlaceType)
     }
 
-    fun transformTransportExtra(extra: Extra?): List<Pair<String, String?>>? {
-        val transportMode = extra?.transport_mode?.takeIf { it.isNotBlank() } ?: return null
+    fun transformTransportExtra(extra: Extra): List<Pair<String, String?>>? {
+        val transportMode = extra.transport_mode?.takeIf { it.isNotBlank() } ?: return null
         val pairs =
             transportMode.split(OSM_TAG_SEPARATOR).mapNotNull { entry ->
                 val mode = entry.substringBefore(":")
@@ -266,16 +264,14 @@ object PeliasResultTransformer {
         return pairs.ifEmpty { null }
     }
 
-    fun transformSource(extra: Extra?): String? =
-        extra
-            ?.tags
+    fun transformSource(extra: Extra): String? =
+        extra.tags
             ?.split(",", ";")
             ?.firstOrNull { it.startsWith(LEGACY_SOURCE_PREFIX) }
             ?.substringAfterLast(".")
 
-    fun transformLayer(extra: Extra?): String? =
-        extra
-            ?.tags
+    fun transformLayer(extra: Extra): String? =
+        extra.tags
             ?.split(",", ";")
             ?.firstOrNull { it.startsWith(LEGACY_LAYER_PREFIX) }
             ?.substringAfterLast(".")

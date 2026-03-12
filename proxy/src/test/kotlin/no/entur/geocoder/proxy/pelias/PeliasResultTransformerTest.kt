@@ -20,13 +20,8 @@ class PeliasResultTransformerTest {
         delimiter = '|',
     )
     fun `transformSource extracts source from tags`(tags: String, expectedSource: String?) {
-        val extra = Extra(tags = tags)
+        val extra = Extra(id = "OSM:PointOfInterest:100", tags = tags)
         assertEquals(expectedSource, PeliasResultTransformer.transformSource(extra))
-    }
-
-    @Test
-    fun `transformSource returns null for null extra`() {
-        assertNull(PeliasResultTransformer.transformSource(null))
     }
 
     @ParameterizedTest
@@ -37,13 +32,8 @@ class PeliasResultTransformerTest {
         delimiter = '|',
     )
     fun `transformLayer extracts layer from tags`(tags: String, expectedLayer: String?) {
-        val extra = Extra(tags = tags)
+        val extra = Extra(id = "OSM:PointOfInterest:100", tags = tags)
         assertEquals(expectedLayer, PeliasResultTransformer.transformLayer(extra))
-    }
-
-    @Test
-    fun `transformLayer returns null for null extra`() {
-        assertNull(PeliasResultTransformer.transformLayer(null))
     }
 
     @ParameterizedTest
@@ -54,31 +44,26 @@ class PeliasResultTransformerTest {
         delimiter = '|',
     )
     fun `transformCategory extracts categories from tags`(tags: String, expectedCategoriesStr: String?) {
-        val extra = Extra(tags = tags)
+        val extra = Extra(id = "OSM:PointOfInterest:100", tags = tags)
         val expected = if (expectedCategoriesStr.isNullOrEmpty()) emptyList() else expectedCategoriesStr.split(";")
         assertEquals(expected, PeliasResultTransformer.transformCategory(extra))
     }
 
     @Test
-    fun `transformCategory returns empty list for null extra`() {
-        assertEquals(emptyList(), PeliasResultTransformer.transformCategory(null))
-    }
-
-    @Test
     fun `transformTransportExtra parses mode with submode`() {
-        val extra = Extra(transport_mode = "bus:localBus")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="bus:localBus")
         assertEquals(listOf("bus" to "localBus"), PeliasResultTransformer.transformTransportExtra(extra))
     }
 
     @Test
     fun `transformTransportExtra parses mode without submode`() {
-        val extra = Extra(transport_mode = "rail")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="rail")
         assertEquals(listOf("rail" to null), PeliasResultTransformer.transformTransportExtra(extra))
     }
 
     @Test
     fun `transformTransportExtra parses multiple modes`() {
-        val extra = Extra(transport_mode = "bus:localBus;rail;metro:urbanRail")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="bus:localBus;rail;metro:urbanRail")
         assertEquals(
             listOf("bus" to "localBus", "rail" to null, "metro" to "urbanRail"),
             PeliasResultTransformer.transformTransportExtra(extra),
@@ -87,7 +72,7 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformTransportExtra preserves duplicate mode keys with different submodes`() {
-        val extra = Extra(transport_mode = "tram:cityTram;tram")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="tram:cityTram;tram")
         assertEquals(
             listOf("tram" to "cityTram", "tram" to null),
             PeliasResultTransformer.transformTransportExtra(extra),
@@ -96,7 +81,7 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformTransportExtra serializes as list of objects via PeliasProperties`() {
-        val extra = Extra(transport_mode = "tram:cityTram;tram")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="tram:cityTram;tram")
         val props = PeliasResult.PeliasProperties(mode = PeliasResultTransformer.transformTransportExtra(extra))
         val json = jacksonMapper.writeValueAsString(props)
         assertContains(json, """[{"tram":"cityTram"},{"tram":null}]""")
@@ -104,13 +89,8 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformTransportExtra returns null when no transport data`() {
-        val extra = Extra(id = "123", tags = "legacy.source.osm")
+        val extra = Extra(id = "OSM:PointOfInterest:123", tags = "legacy.source.osm")
         assertNull(PeliasResultTransformer.transformTransportExtra(extra))
-    }
-
-    @Test
-    fun `transformTransportExtra returns null for null extra`() {
-        assertNull(PeliasResultTransformer.transformTransportExtra(null))
     }
 
     @ParameterizedTest
@@ -163,7 +143,7 @@ class PeliasResultTransformerTest {
     fun `transformFeature creates complete PeliasFeature`() {
         val extra =
             Extra(
-                id = "W123456",
+                id = "OSM:PointOfInterest:123456",
                 source = "osm",
                 tags = "legacy.source.osm,legacy.layer.venue,legacy.category.transport",
                 locality = "Oslo",
@@ -200,8 +180,8 @@ class PeliasResultTransformerTest {
         assertEquals("Point", peliasFeature.geometry.type)
 
         val props = peliasFeature.properties
-        assertEquals("W123456", props.id)
-        assertEquals("osm:venue:W123456", props.gid)
+        assertEquals("OSM:TopographicPlace:123456", props.id)
+        assertEquals("osm:venue:OSM:TopographicPlace:123456", props.gid)
         assertEquals("venue", props.layer)
         assertEquals("osm", props.source)
         assertEquals("Oslo Sentralstasjon", props.name)
@@ -242,7 +222,7 @@ class PeliasResultTransformerTest {
     fun `transformFeature excludes extra when no transport data`() {
         val extra =
             Extra(
-                id = "W123",
+                id = "OSM:PointOfInterest:123",
                 tags = "legacy.source.osm,legacy.layer.venue",
             )
         val photonFeature = createPhotonFeature(name = "POI", extra = extra)
@@ -259,7 +239,7 @@ class PeliasResultTransformerTest {
         delimiter = '|',
     )
     fun `transformFeature creates label correctly`(name: String?, locality: String, expectedLabel: String) {
-        val extra = Extra(id = "123", locality = locality, tags = "legacy.source.osm,legacy.layer.venue")
+        val extra = Extra(id = "OSM:PointOfInterest:123", locality = locality, tags = "legacy.source.osm,legacy.layer.venue")
         val photonFeature = createPhotonFeature(name = name?.takeIf { it.isNotBlank() }, extra = extra)
         val peliasFeature = PeliasResultTransformer.transformFeature(photonFeature, null)
 
@@ -279,7 +259,7 @@ class PeliasResultTransformerTest {
         housenumber: String?,
         expectedName: String,
     ) {
-        val extra = Extra(id = "123", tags = "legacy.source.osm,legacy.layer.venue")
+        val extra = Extra(id = "OSM:PointOfInterest:123", tags = "legacy.source.osm,legacy.layer.venue")
         val photonFeature =
             createPhotonFeature(
                 name = name?.takeIf { it.isNotBlank() },
@@ -378,7 +358,7 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `parseAndTransform includes description and verifies JSON with Jackson`() {
-        val extra = Extra(id = "1", tags = "legacy.source.osm,legacy.layer.venue", description = "foran Oslo S")
+        val extra = Extra(id = "OSM:PointOfInterest:42", tags = "legacy.source.osm,legacy.layer.venue", description = "foran Oslo S")
         val photonResult = createPhotonResult(name = "Oslo S", extra = extra)
         val result = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("foo"))
         val json = jacksonMapper.writeValueAsString(result)
@@ -388,7 +368,7 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformDescription handles null description`() {
-        val extra = Extra(id = "1", tags = "legacy.source.osm,legacy.layer.venue", description = null)
+        val extra = Extra(id = "OSM:PointOfInterest:42", tags = "legacy.source.osm,legacy.layer.venue", description = null)
         val photonResult = createPhotonResult(extra = extra)
         val result = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("foo"))
 
@@ -408,7 +388,7 @@ class PeliasResultTransformerTest {
         delimiter = '|',
     )
     fun `transformDescription handles various formats`(description: String, expectedEntriesStr: String) {
-        val extra = Extra(id = "1", tags = "legacy.source.osm,legacy.layer.venue", description = description)
+        val extra = Extra(id = "OSM:PointOfInterest:42", tags = "legacy.source.osm,legacy.layer.venue", description = description)
         val photonResult = createPhotonResult(extra = extra)
         val result = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("foo"))
         val actualDescription =
@@ -430,7 +410,7 @@ class PeliasResultTransformerTest {
     private fun createPhotonFeature(
         name: String? = "Test",
         coordinates: List<Double> = listOf(10.0, 60.0),
-        extra: Extra? = Extra(id = "1", tags = "legacy.source.osm,legacy.layer.venue"),
+        extra: Extra = Extra(id = "OSM:PointOfInterest:42", tags = "legacy.source.osm,legacy.layer.venue"),
         street: String? = null,
         housenumber: String? = null,
     ) = PhotonFeature(
@@ -502,7 +482,7 @@ class PeliasResultTransformerTest {
     private fun createPhotonResult(
         name: String? = "Test",
         coordinates: List<Double> = listOf(10.0, 60.0),
-        extra: Extra? = Extra(id = "1", tags = "legacy.source.osm,legacy.layer.venue"),
+        extra: Extra = Extra(id = "OSM:PointOfInterest:42", tags = "legacy.source.osm,legacy.layer.venue"),
         street: String? = null,
         housenumber: String? = null,
         postcode: String? = null,
