@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.pelias
 
 import no.entur.geocoder.common.Coordinate
 import no.entur.geocoder.common.Extra
+import no.entur.geocoder.common.Source
 import no.entur.geocoder.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -470,6 +471,32 @@ class PeliasResultTransformerTest {
         val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
 
         assertNull(result.geocoding.errors)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        // Old Photon format (no prefix) → unchanged
+        "12345, 12345",
+        // New KVM prefix → stripped
+        "KVM:PostalAddress:12345, 12345",
+        // Old OSM format → unchanged
+        "OSM:TopographicPlace:123, OSM:TopographicPlace:123",
+        // New OSM format → reverted to old
+        "OSM:PointOfInterest:123, OSM:TopographicPlace:123",
+        // NSR ids → unchanged
+        "RUT:StopPlace:337, RUT:StopPlace:337",
+        delimiter = ',',
+    )
+    fun `v2 IDs are normalized for backward compatibility`(photonId: String, expectedId: String) {
+        val extra = Extra(id = photonId.trim(), source = Source.OSM, tags = "legacy.source.osm,legacy.layer.venue")
+        val photonResult = createPhotonResult(extra = extra)
+        val request = PeliasAutocompleteRequest("test")
+
+        val result = PeliasResultTransformer.parseAndTransform(photonResult, request)
+
+        val props = result.features.first().properties
+        assertEquals(expectedId.trim(), props.id)
+        assertEquals(expectedId.trim(), props.source_id)
     }
 
     private fun createPhotonResult(

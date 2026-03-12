@@ -18,6 +18,15 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 object PeliasResultTransformer {
+    private const val KVM_PREFIX = "KVM:PostalAddress:"
+    private const val OSM_POI_PREFIX = "OSM:PointOfInterest:"
+    private const val OSM_TOPO_PREFIX = "OSM:TopographicPlace:"
+
+    /** Normalize IDs so v2 output stays backward-compatible. */
+    private fun normalizeV2Id(id: String?): String? =
+        id?.removePrefix(KVM_PREFIX)
+            ?.replace(OSM_POI_PREFIX, OSM_TOPO_PREFIX)
+
     fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteRequest): PeliasResult =
         parseAndTransform(
             photonResult = result,
@@ -121,6 +130,7 @@ object PeliasResultTransformer {
         val layer = transformLayer(extra)
 
         val name = transformName(props)
+        val id = normalizeV2Id(extra?.id)
         var popularName =
             extra
                 ?.alt_name
@@ -131,7 +141,6 @@ object PeliasResultTransformer {
         if (popularName == name) {
             popularName = null
         }
-
         return PeliasFeature(
             type = feature.type,
             geometry =
@@ -141,11 +150,11 @@ object PeliasResultTransformer {
                 ),
             properties =
                 PeliasProperties(
-                    id = extra?.id,
-                    gid = transformGid(source, layer, extra?.id),
+                    id = id,
+                    gid = transformGid(source, layer, id),
                     layer = layer,
                     source = source,
-                    source_id = extra?.id,
+                    source_id = id,
                     name = name,
                     popular_name = popularName,
                     street = transformStreet(props),
