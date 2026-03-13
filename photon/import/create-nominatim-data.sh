@@ -2,12 +2,12 @@
 
 set -eu
 
-SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
-PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
-
-VERSION="v0.3.0"
+VERSION="v0.3.1"
 BINARY="$SCRIPTDIR/build/nominatim-converter-$VERSION"
 BASE_URL="https://github.com/entur/nominatim-converter/releases/download/$VERSION"
+
+SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
+PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
 
 usage() {
     echo "Usage: $0 <config-file> [-z]"

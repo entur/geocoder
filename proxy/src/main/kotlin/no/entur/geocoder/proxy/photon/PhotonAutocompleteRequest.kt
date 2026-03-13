@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.photon
 import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.asCategory
+import no.entur.geocoder.common.Country
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
@@ -101,7 +102,8 @@ data class PhotonAutocompleteRequest(
             val includes =
                 buildList {
                     if (req.countries.isNotEmpty()) {
-                        add(req.countries.joinToString(",") { COUNTRY_PREFIX + it })
+                        add(req.countries.mapNotNull { Country.parse(it) }
+                            .joinToString(",") { COUNTRY_PREFIX + it.name })
                     }
                     if (req.countyIds.isNotEmpty()) {
                         add(req.countyIds.joinToString(",") { Category.countyIdsCategory(it) })
@@ -116,14 +118,22 @@ data class PhotonAutocompleteRequest(
                         add(req.fareZoneAuthorities.joinToString(",") { Category.fareZoneAuthorityCategory(it) })
                     }
                     if (req.sources.isNotEmpty()) {
-                        add(req.sources.joinToString(",") { "source.$it" })
+                        add(req.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
                     }
                     if (req.layers.isNotEmpty()) {
                         add(req.layers.joinToString(",") { "layer.$it" })
                     }
                 }
 
-            val excludes = listOfNotNull(PhotonFilterBuilder.buildMultimodalExclude(req.multimodal))
+            val excludeAddresses = if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
+                null
+            } else {
+                req.query.takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }?.let { Category.OSM_ADDRESS }
+            }
+            val excludes = listOfNotNull(
+                PhotonFilterBuilder.buildMultimodalExclude(req.multimodal),
+                excludeAddresses,
+            )
 
             return PhotonAutocompleteRequest(
                 query = req.query,

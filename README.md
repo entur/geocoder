@@ -41,7 +41,7 @@ All deployment runs from the `main` branch.
 cd photon
 ./import/download-photon-jar.sh
 
-# EITHER download source data, convert to nominatim.ndjson (downloads nominatim-convert binary automatically)
+# EITHER download source data, convert to nominatim.ndjson (downloads nominatim-converter binary automatically)
 ./import/create-nominatim-data.sh import/config/sources-prod.conf -z
 
 # OR download the latest nominatim.ndjson build by Github Actions

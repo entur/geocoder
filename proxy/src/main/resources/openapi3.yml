@@ -187,10 +187,10 @@ components:
     Countries:
       name: countries
       in: query
-      description: Country code filter (comma-separated)
+      description: ISO 3166-1 alpha-2 country code filter (comma-separated)
       schema:
         type: string
-      example: "NO"
+      example: "no"
 
     CountyIds:
       name: countyIds
