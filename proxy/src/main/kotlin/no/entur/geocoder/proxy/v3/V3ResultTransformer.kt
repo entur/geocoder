@@ -111,10 +111,15 @@ object V3ResultTransformer {
 
         val layer = determineLayer(extra.source, props.osm_key, props.osm_value, extra.tags)
 
-        val defaultName = props.name
-            ?: if (props.street != null && props.housenumber != null) "${props.street} ${props.housenumber}" else props.street
-            ?: extra.locality
-            ?: "Unnamed"
+        val defaultName =
+            props.name
+                ?: if (props.street != null && props.housenumber != null) {
+                    "${props.street} ${props.housenumber}"
+                } else {
+                    props.street
+                        ?: extra.locality
+                        ?: "Unnamed"
+                }
         val labelName =
             extra.alt_name
                 ?.split(";")

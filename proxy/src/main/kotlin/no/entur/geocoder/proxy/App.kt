@@ -216,7 +216,9 @@ class App {
                     mapOf(
                         "status" to status.value,
                         "title" to status.description,
-                        "detail" to error.result.geocoding.errors?.firstOrNull(),
+                        "detail" to
+                            error.result.geocoding.errors
+                                ?.firstOrNull(),
                     )
                 call.respondText(objectMapper.writeValueAsString(body), problemJson, status)
             }

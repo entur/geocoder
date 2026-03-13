@@ -102,8 +102,11 @@ data class PhotonAutocompleteRequest(
             val includes =
                 buildList {
                     if (req.countries.isNotEmpty()) {
-                        add(req.countries.mapNotNull { Country.parse(it) }
-                            .joinToString(",") { COUNTRY_PREFIX + it.name })
+                        add(
+                            req.countries
+                                .mapNotNull { Country.parse(it) }
+                                .joinToString(",") { COUNTRY_PREFIX + it.name },
+                        )
                     }
                     if (req.countyIds.isNotEmpty()) {
                         add(req.countyIds.joinToString(",") { Category.countyIdsCategory(it) })
@@ -125,15 +128,17 @@ data class PhotonAutocompleteRequest(
                     }
                 }
 
-            val excludeAddresses = if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
-                null
-            } else {
-                req.query.takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }?.let { Category.OSM_ADDRESS }
-            }
-            val excludes = listOfNotNull(
-                PhotonFilterBuilder.buildMultimodalExclude(req.multimodal),
-                excludeAddresses,
-            )
+            val excludeAddresses =
+                if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
+                    null
+                } else {
+                    req.query.takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }?.let { Category.OSM_ADDRESS }
+                }
+            val excludes =
+                listOfNotNull(
+                    PhotonFilterBuilder.buildMultimodalExclude(req.multimodal),
+                    excludeAddresses,
+                )
 
             return PhotonAutocompleteRequest(
                 query = req.query,

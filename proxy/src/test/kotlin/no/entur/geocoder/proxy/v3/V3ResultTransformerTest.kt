@@ -31,11 +31,12 @@ class V3ResultTransformerTest {
         tags: String?,
         expectedLayer: String,
     ) {
-        val place = transformSingle(
-            extra = Extra(id = "OSM:PointOfInterest:42", source = source, tags = tags),
-            osmKey = osmKey,
-            osmValue = osmValue,
-        )
+        val place =
+            transformSingle(
+                extra = Extra(id = "OSM:PointOfInterest:42", source = source, tags = tags),
+                osmKey = osmKey,
+                osmValue = osmValue,
+            )
         assertEquals(V3Result.Layer.valueOf(expectedLayer), place.layer)
     }
 
@@ -76,11 +77,12 @@ class V3ResultTransformerTest {
 
     @Test
     fun `address is built from photon properties and extra`() {
-        val place = transformSingle(
-            extra = Extra(id = "OSM:PointOfInterest:42", source = Source.OSM, locality = "Oslo", county_gid = "03"),
-            street = "Storgata",
-            housenumber = "1",
-        )
+        val place =
+            transformSingle(
+                extra = Extra(id = "OSM:PointOfInterest:42", source = Source.OSM, locality = "Oslo", county_gid = "03"),
+                street = "Storgata",
+                housenumber = "1",
+            )
         assertEquals("Storgata", place.address?.streetName)
         assertEquals("1", place.address?.houseNumber)
         assertEquals("Oslo", place.address?.locality)
@@ -113,6 +115,10 @@ class V3ResultTransformerTest {
                     ),
             )
         val req = V3AutocompleteRequest(query = "test")
-        return V3ResultTransformer.parseAndTransform(photonResult, req).features.first().properties
+        return V3ResultTransformer
+            .parseAndTransform(photonResult, req)
+            .features
+            .first()
+            .properties
     }
 }

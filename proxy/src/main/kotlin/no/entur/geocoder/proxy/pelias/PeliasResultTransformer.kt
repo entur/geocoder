@@ -24,7 +24,8 @@ object PeliasResultTransformer {
 
     /** Normalize IDs so v2 output stays backward-compatible. */
     private fun normalizeV2Id(id: String): String =
-        id.removePrefix(KVE_PREFIX)
+        id
+            .removePrefix(KVE_PREFIX)
             .replace(OSM_POI_PREFIX, OSM_TOPO_PREFIX)
 
     fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteRequest): PeliasResult =

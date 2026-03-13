@@ -51,19 +51,19 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformTransportExtra parses mode with submode`() {
-        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="bus:localBus")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode = "bus:localBus")
         assertEquals(listOf("bus" to "localBus"), PeliasResultTransformer.transformTransportExtra(extra))
     }
 
     @Test
     fun `transformTransportExtra parses mode without submode`() {
-        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="rail")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode = "rail")
         assertEquals(listOf("rail" to null), PeliasResultTransformer.transformTransportExtra(extra))
     }
 
     @Test
     fun `transformTransportExtra parses multiple modes`() {
-        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="bus:localBus;rail;metro:urbanRail")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode = "bus:localBus;rail;metro:urbanRail")
         assertEquals(
             listOf("bus" to "localBus", "rail" to null, "metro" to "urbanRail"),
             PeliasResultTransformer.transformTransportExtra(extra),
@@ -72,7 +72,7 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformTransportExtra preserves duplicate mode keys with different submodes`() {
-        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="tram:cityTram;tram")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode = "tram:cityTram;tram")
         assertEquals(
             listOf("tram" to "cityTram", "tram" to null),
             PeliasResultTransformer.transformTransportExtra(extra),
@@ -81,7 +81,7 @@ class PeliasResultTransformerTest {
 
     @Test
     fun `transformTransportExtra serializes as list of objects via PeliasProperties`() {
-        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode ="tram:cityTram;tram")
+        val extra = Extra(id = "OSM:PointOfInterest:100", transport_mode = "tram:cityTram;tram")
         val props = PeliasResult.PeliasProperties(mode = PeliasResultTransformer.transformTransportExtra(extra))
         val json = jacksonMapper.writeValueAsString(props)
         assertContains(json, """[{"tram":"cityTram"},{"tram":null}]""")
