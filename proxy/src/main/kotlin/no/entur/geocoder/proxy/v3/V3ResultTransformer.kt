@@ -49,9 +49,9 @@ object V3ResultTransformer {
                 Metadata(
                     query =
                         QueryInfo(
-                            text = req.query,
+                            text = req.q,
                             limit = req.limit,
-                            language = req.language,
+                            language = req.lang,
                             filters = filters,
                         ),
                     resultCount = features.size,
@@ -76,7 +76,7 @@ object V3ResultTransformer {
                             latitude = req.lat,
                             longitude = req.lon,
                             limit = req.limit,
-                            language = req.language,
+                            language = req.lang,
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),

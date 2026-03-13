@@ -53,7 +53,7 @@ data class PhotonReverseRequest(
             return PhotonReverseRequest(
                 latitude = req.lat,
                 longitude = req.lon,
-                language = handleLang(req.language),
+                language = handleLang(req.lang),
                 limit = req.limit,
                 radius = req.radius,
                 includes = includes,

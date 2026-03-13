@@ -114,7 +114,7 @@ class V3ResultTransformerTest {
                         ),
                     ),
             )
-        val req = V3AutocompleteRequest(query = "test")
+        val req = V3AutocompleteRequest(q = "test")
         return V3ResultTransformer
             .parseAndTransform(photonResult, req)
             .features

@@ -5,9 +5,9 @@ import kotlin.math.ln
 import kotlin.math.roundToInt
 
 data class V3AutocompleteRequest(
-    val query: String = "",
+    val q: String = "",
     val limit: Int = 10,
-    val language: String = "no",
+    val lang: String = "no",
     val lat: Double? = null,
     val lon: Double? = null,
     val radius: Double? = null,
@@ -40,7 +40,7 @@ data class V3AutocompleteRequest(
         private const val DEFAULT_WEIGHT = 0.8
         private val LN2 = ln(2.0)
 
-        private val ALLOWED_PARAMS =
+        internal val ALLOWED_PARAMS =
             setOf(
                 "q", "limit", "lang", "lat", "lon",
                 "radius", "weight", "layers", "sources", "countries", "countyIds",
@@ -54,9 +54,9 @@ data class V3AutocompleteRequest(
             val lat = req["lat"]?.toDoubleOrNull()
             val lon = req["lon"]?.toDoubleOrNull()
             return V3AutocompleteRequest(
-                query = req["q"] ?: "",
+                q = req["q"] ?: "",
                 limit = req["limit"]?.toIntOrNull() ?: 10,
-                language = req["lang"] ?: "no",
+                lang = req["lang"] ?: "no",
                 lat = lat,
                 lon = lon,
                 radius = req["radius"]?.toDoubleOrNull(),

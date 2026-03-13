@@ -7,7 +7,7 @@ data class V3ReverseRequest(
     val lon: Double,
     val radius: Double? = null,
     val limit: Int = 10,
-    val language: String = "no",
+    val lang: String = "no",
     val layers: List<String> = emptyList(),
     val sources: List<String> = emptyList(),
     val multimodal: String = "parent",
@@ -18,7 +18,7 @@ data class V3ReverseRequest(
     }
 
     companion object {
-        private val ALLOWED_PARAMS =
+        internal val ALLOWED_PARAMS =
             setOf(
                 "lat", "lon", "radius", "limit", "lang",
                 "layers", "sources", "multimodal",
@@ -35,7 +35,7 @@ data class V3ReverseRequest(
                         ?: throw IllegalArgumentException("Parameter 'lon' is required"),
                 radius = req["radius"]?.toDoubleOrNull(),
                 limit = req["limit"]?.toIntOrNull() ?: 10,
-                language = req["lang"] ?: "no",
+                lang = req["lang"] ?: "no",
                 layers = req["layers"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 sources = req["sources"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 multimodal = req["multimodal"] ?: "parent",

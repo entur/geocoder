@@ -132,7 +132,7 @@ data class PhotonAutocompleteRequest(
                 if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
                     null
                 } else {
-                    req.query.takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }?.let { Category.OSM_ADDRESS }
+                    req.q.takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }?.let { Category.OSM_ADDRESS }
                 }
             val excludes =
                 listOfNotNull(
@@ -141,9 +141,9 @@ data class PhotonAutocompleteRequest(
                 )
 
             return PhotonAutocompleteRequest(
-                query = req.query,
+                query = req.q,
                 limit = req.limit,
-                language = handleLang(req.language),
+                language = handleLang(req.lang),
                 includes = includes,
                 excludes = excludes,
                 lat = req.lat,
@@ -151,7 +151,7 @@ data class PhotonAutocompleteRequest(
                 zoom = req.photonZoom(),
                 locationBiasScale = req.photonLocationBiasScale(),
                 includeHousenumbers =
-                    req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") } && !req.query.contains("\\s\\d".toRegex()),
+                    req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") } && !req.q.contains("\\s\\d".toRegex()),
                 debug = false,
             )
         }

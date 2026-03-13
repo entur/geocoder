@@ -8,7 +8,7 @@ data class V3PlaceRequest(val ids: List<String>) {
     }
 
     companion object {
-        private val ALLOWED_PARAMS = setOf("ids")
+        internal val ALLOWED_PARAMS = setOf("ids")
 
         fun from(req: Parameters): V3PlaceRequest {
             val unknown = req.names().filterNot { it in ALLOWED_PARAMS }
