@@ -35,7 +35,11 @@ runs:
         BRANCH=$(git branch --show-current)
         # Detached HEAD (e.g. tag checkout): resolve branch from the commit
         if [[ -z "$BRANCH" ]]; then
-          BRANCH=$(git branch -a --contains HEAD --format='%(refname:short)' | grep -E '^(origin/)?main$' | sed 's|^origin/||' | head -1)
+          BRANCH=$(git branch -a --contains HEAD --format='%(refname:short)' | grep -E '^(origin/)?main$' | sed 's|^origin/||' | head -1 || true)
+        fi
+        # Still empty (e.g. shallow checkout of a tag): fall back to GITHUB_REF_NAME
+        if [[ -z "$BRANCH" ]]; then
+          BRANCH="${GITHUB_REF_NAME:-detached}"
         fi
         echo "SHA=$SHA, BRANCH=$BRANCH (GITHUB_SHA=$GITHUB_SHA, GITHUB_REF_NAME=$GITHUB_REF_NAME)"
         IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$SHA" "$BRANCH")
