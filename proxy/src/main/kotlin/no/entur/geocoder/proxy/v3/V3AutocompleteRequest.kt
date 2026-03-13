@@ -40,11 +40,12 @@ data class V3AutocompleteRequest(
         private const val DEFAULT_WEIGHT = 0.8
         private val LN2 = ln(2.0)
 
-        private val ALLOWED_PARAMS = setOf(
-            "q", "limit", "lang", "lat", "lon",
-            "radius", "weight", "layers", "sources", "countries", "countyIds",
-            "localityIds", "tariffZones", "fareZoneAuthorities", "multimodal",
-        )
+        private val ALLOWED_PARAMS =
+            setOf(
+                "q", "limit", "lang", "lat", "lon",
+                "radius", "weight", "layers", "sources", "countries", "countyIds",
+                "localityIds", "tariffZones", "fareZoneAuthorities", "multimodal",
+            )
 
         fun from(req: Parameters): V3AutocompleteRequest {
             val unknown = req.names().filterNot { it in ALLOWED_PARAMS }

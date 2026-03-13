@@ -150,7 +150,8 @@ data class PhotonAutocompleteRequest(
                 lon = req.lon,
                 zoom = req.photonZoom(),
                 locationBiasScale = req.photonLocationBiasScale(),
-                includeHousenumbers = req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") } && !req.query.contains("\\s\\d".toRegex()),
+                includeHousenumbers =
+                    req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") } && !req.query.contains("\\s\\d".toRegex()),
                 debug = false,
             )
         }

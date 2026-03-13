@@ -116,10 +116,11 @@ object PhotonFilterBuilder {
             },
         )
 
-    private fun mapLayer(layer: String): String = when (layer) {
-        "venue" -> Category.LAYER_STOP_PLACE
-        else -> LEGACY_LAYER_PREFIX + layer
-    }
+    private fun mapLayer(layer: String): String =
+        when (layer) {
+            "venue" -> Category.LAYER_STOP_PLACE
+            else -> LEGACY_LAYER_PREFIX + layer
+        }
 
     internal fun buildMultimodalExclude(multimodal: String): String? =
         when (multimodal) {

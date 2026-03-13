@@ -308,13 +308,12 @@ components:
     Radius:
       name: radius
       in: query
-      description: Search radius in meters
+      description: Search radius in kilometres. If omitted, no radius limit is applied.
       schema:
         type: number
         format: double
         minimum: 0
-        default: 10.0
-      example: 500.0
+      example: 1.0
 
   schemas:
     Result:
