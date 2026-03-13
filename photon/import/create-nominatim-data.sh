@@ -3,6 +3,7 @@
 set -eu
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
+PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
 
 VERSION="v0.3.0"
 BINARY="$SCRIPTDIR/build/nominatim-converter-$VERSION"
@@ -12,12 +13,12 @@ usage() {
     echo "Usage: $0 <config-file> [-z]"
     echo ""
     echo "Arguments:"
-    echo "  config-file    Path to config file (e.g., config/prod.conf)"
+    echo "  config-file    Path to config file (e.g., import/config/sources-prod.conf)"
     echo "  -z             Compress output with gzip"
     echo ""
     echo "Available configs:"
     for f in "$SCRIPTDIR"/config/*.conf; do
-        [ -f "$f" ] && echo "  config/$(basename "$f")"
+        [ -f "$f" ] && echo "  import/config/$(basename "$f")"
     done
     exit 1
 }
@@ -42,7 +43,7 @@ if [ ! -f "$BINARY" ]; then
 fi
 
 convert() {
-    "$BINARY" "$@"
+    "$BINARY" "$@" -c "$SCRIPTDIR/config/nominatim-converter.json"
 }
 
 # Parse arguments
@@ -68,7 +69,7 @@ done
 # Resolve config path relative to script dir if not absolute
 case "$CONFIG_FILE" in
     /*) ;;
-    *) CONFIG_FILE="$SCRIPTDIR/$CONFIG_FILE" ;;
+    *) CONFIG_FILE="$PHOTONDIR/$CONFIG_FILE" ;;
 esac
 
 [ -f "$CONFIG_FILE" ] || fail "Config file not found: $CONFIG_FILE"

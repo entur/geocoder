@@ -1,7 +1,5 @@
 FROM bellsoft/liberica-runtime-container:jre-25-slim-musl
 
-ARG PHOTON_JAR_URL
-
 WORKDIR /srv
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]

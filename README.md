@@ -39,16 +39,16 @@ All deployment runs from the `main` branch.
 
 # Download a photon jar
 cd photon
-./download-photon-jar.sh
+./import/download-photon-jar.sh
 
 # EITHER download source data, convert to nominatim.ndjson (downloads nominatim-convert binary automatically)
-../converter/create-nominatim-data.sh config/prod.conf -z
+./import/create-nominatim-data.sh import/config/sources-prod.conf -z
 
 # OR download the latest nominatim.ndjson build by Github Actions
-../converter/download-latest-nominatim-data.sh
+./download-latest-nominatim-data.sh
 
 # Create the photon index
-./create-photon-data.sh nominatim.ndjson.gz
+./import/create-photon-data.sh nominatim.ndjson.gz
 
 # OR just download the latest Photon search index built by Github Actions
 rm -rf photon_data
@@ -120,7 +120,7 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 #### Update geocoder to use the patched Photon
 
-* Go to [photon/download-photon-jar.sh](photon/download-photon-jar.sh) and
+* Go to [photon/import/download-photon-jar.sh](photon/import/download-photon-jar.sh) and
   update the `PHOTON_JAR` variable with the new link
 * Push your `geocoder` changes
 * Go to https://github.com/entur/geocoder/actions/workflows/photon-dev.yml and trigger the workflow for DEV deployment.

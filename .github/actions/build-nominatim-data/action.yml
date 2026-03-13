@@ -3,9 +3,9 @@ description: 'Download converter, run import, and upload nominatim data as artif
 
 inputs:
   config:
-    description: 'Config file name (in config/ directory)'
+    description: 'Sources config file name (in import/config/ directory)'
     required: false
-    default: 'prod.conf'
+    default: 'sources-prod.conf'
   suffix:
     description: 'Suffix for image name (e.g., -se for geocoder-nominatim-data-se)'
     required: false
@@ -27,12 +27,12 @@ runs:
   steps:
     - name: Run create-nominatim-data.sh
       shell: bash
-      run: ./create-nominatim-data.sh config/${{ inputs.config }} -z
-      working-directory: converter
+      run: ./import/create-nominatim-data.sh import/config/${{ inputs.config }} -z
+      working-directory: photon
 
     - name: Generate stats summary
       shell: bash
-      working-directory: converter
+      working-directory: photon
       run: |
         echo "### Nominatim Data" >> "$GITHUB_STEP_SUMMARY"
 
@@ -52,7 +52,7 @@ runs:
       uses: ./.github/actions/upload-docker-artifact
       with:
         image_name: geocoder-nominatim-data${{ inputs.suffix }}
-        file_path: converter/nominatim.ndjson.gz
+        file_path: photon/nominatim.ndjson.gz
         min_size_mb: 1
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}

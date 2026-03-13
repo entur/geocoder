@@ -15,7 +15,7 @@ on:
         description: 'Nominatim config'
         required: false
         type: string
-        default: 'prod.conf'
+        default: 'sources-prod.conf'
 
 concurrency:
   group: "${{ github.workflow }}-${{ inputs.target }}"

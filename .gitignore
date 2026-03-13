@@ -12,10 +12,10 @@ build
 /Basis*/*csv
 /tmp/*
 photon_data*
-photon_data.tar.gz
 nominatim.ndjson.gz
 nominatim.ndjson
 photon*jar
 Chart.lock
-/converter/tmp
+/photon/import/build
+/photon/import/tmp
 .claude

@@ -49,8 +49,8 @@ runs:
       shell: bash
       working-directory: photon
       run: |
-        ./download-photon-jar.sh
-        ./create-photon-data.sh nominatim.ndjson.gz
+        ./import/download-photon-jar.sh
+        ./import/create-photon-data.sh nominatim.ndjson.gz
 
     - name: Summarize
       shell: bash

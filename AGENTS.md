@@ -14,9 +14,8 @@ linked from that file (e.g. java.md, helm.md, docker.md).
 
 Geocoder is a Norwegian geocoding service with three modules:
 - **proxy/** - Ktor HTTP API server providing v2 (Pelias-compatible) and v3 APIs
-- **converter/** - CLI tool that converts OSM, Matrikkel, Stedsnavn, and transit data to Nominatim format
+- **photon/** - Photon runtime: config, import scripts, Docker build, and dev convenience scripts
 - **common/** - Shared domain models and utilities
-- **photon/** - Photon docker build files
 
 The proxy forwards requests to Photon (an OpenStreetMap-based search engine) after transforming request/response formats.
 
@@ -81,8 +80,8 @@ Categories use prefixes for filtering:
 | Server entry & routing | `proxy/src/main/kotlin/no/entur/geocoder/proxy/App.kt` |
 | Pelias API implementation | `proxy/src/main/kotlin/no/entur/geocoder/proxy/pelias/PeliasApi.kt` |
 | Photon client | `proxy/src/main/kotlin/no/entur/geocoder/proxy/photon/PhotonApi.kt` |
-| CLI entry point | `converter/src/main/kotlin/no/entur/geocoder/converter/cli/Command.kt` |
-| Boost configuration | `converter/src/main/kotlin/no/entur/geocoder/converter/ConverterConfig.kt` |
+| Photon import scripts | `photon/import/` |
+| Import config | `photon/import/config/` |
 | OpenAPI spec (v2) | `proxy/src/main/resources/openapi.yml` |
 | OpenAPI spec (v3) | `proxy/src/main/resources/openapi3.yml` |
 | Dependency versions | `gradle/libs.versions.toml` |

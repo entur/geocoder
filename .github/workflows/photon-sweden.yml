@@ -57,7 +57,7 @@ jobs:
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
-          config: sweden-test.conf
+          config: sources-sweden-test.conf
           suffix: -se
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
