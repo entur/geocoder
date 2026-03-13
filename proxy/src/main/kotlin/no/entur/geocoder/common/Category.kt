@@ -11,6 +11,8 @@ object Category {
     const val SOURCE_STEDSNAVN = "source.kartverket.stedsnavn"
     const val SOURCE_NSR = "source.nsr"
 
+    const val LAYER_STOP_PLACE = "layer.stopPlace"
+
     const val GOSP = "GroupOfStopPlaces"
 
     const val COUNTRY_PREFIX = "country."

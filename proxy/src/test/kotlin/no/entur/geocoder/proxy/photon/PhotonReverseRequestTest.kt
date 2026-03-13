@@ -127,7 +127,7 @@ class PhotonReverseRequestTest {
                 boundaryCountry = "NOR",
                 boundaryCountyIds = listOf("03"),
                 boundaryLocalityIds = listOf("0301"),
-                sources = listOf("osm", "kartverket"),
+                sources = listOf("osm", "openaddresses"),
                 layers = listOf("venue"),
                 categories = listOf("transport"),
                 multiModal = "parent",
@@ -138,8 +138,8 @@ class PhotonReverseRequestTest {
         assertTrue(request.includes.contains("country.no"))
         assertTrue(request.includes.contains("county_gid.KVE.TopographicPlace.03"))
         assertTrue(request.includes.contains("locality_gid.KVE.TopographicPlace.0301"))
-        assertTrue(request.includes.contains("legacy.source.osm,legacy.source.kartverket"))
-        assertTrue(request.includes.contains("legacy.layer.venue"))
+        assertTrue(request.includes.contains("legacy.source.osm,legacy.source.openaddresses"))
+        assertTrue(request.includes.contains("layer.stopPlace"))
         assertTrue(request.includes.contains("legacy.category.transport"))
     }
 

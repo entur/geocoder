@@ -59,7 +59,7 @@ class PhotonAutocompleteRequestTest {
     @ParameterizedTest
     @ValueSource(
         strings = [
-            "country.no", "county_gid.KVE.TopographicPlace.03", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
+            "country.no", "county_gid.KVE.TopographicPlace.03", "legacy.source.osm", "layer.stopPlace", "legacy.category.transport",
         ],
     )
     fun `from PeliasAutocompleteParams builds includes from filters`(expectedInclude: String) {

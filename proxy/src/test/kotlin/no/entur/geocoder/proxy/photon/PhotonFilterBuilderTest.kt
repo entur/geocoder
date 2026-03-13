@@ -42,7 +42,7 @@ class PhotonFilterBuilderTest {
                     boundaryLocalityIds = listOf("4601"),
                     tariffZones = emptyList(),
                     tariffZoneAuthorities = emptyList(),
-                    sources = listOf("kartverket"),
+                    sources = listOf("openaddresses"),
                     layers = listOf("address"),
                     categories = emptyList(),
                     multiModal = "all",
@@ -51,7 +51,7 @@ class PhotonFilterBuilderTest {
                         "country.no",
                         "county_gid.KVE.TopographicPlace.46",
                         "locality_gid.KVE.TopographicPlace.4601",
-                        "legacy.source.kartverket",
+                        "legacy.source.openaddresses",
                         "legacy.layer.address",
                     ),
                 PeliasAutocompleteRequest(
@@ -70,7 +70,7 @@ class PhotonFilterBuilderTest {
                     listOf(
                         "country.no", "county_gid.KVE.TopographicPlace.50",
                         "tariff_zone_id.ATB.TariffZone.A,tariff_zone_id.ATB.TariffZone.B",
-                        "tariff_zone_authority.ATB", "legacy.source.osm", "legacy.layer.venue", "legacy.category.transport",
+                        "tariff_zone_authority.ATB", "legacy.source.osm", "layer.stopPlace", "legacy.category.transport",
                     ),
                 PeliasAutocompleteRequest(
                     text = "NO_FILTER bypass",

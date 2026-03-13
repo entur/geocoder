@@ -80,7 +80,7 @@ object PhotonFilterBuilder {
                 add(sources.joinToString(",") { LEGACY_SOURCE_PREFIX + it })
             }
             if (layers.isNotEmpty()) {
-                add(layers.joinToString(",") { LEGACY_LAYER_PREFIX + it })
+                add(layers.joinToString(",") { mapLayer(it) })
             }
             if (categories.isNotEmpty()) {
                 if (categories.none { it == "NO_FILTER" }) {
@@ -115,6 +115,11 @@ object PhotonFilterBuilder {
                 Category.OSM_ADDRESS // Exclude addresses with house numbers in reverse requests
             },
         )
+
+    private fun mapLayer(layer: String): String = when (layer) {
+        "venue" -> Category.LAYER_STOP_PLACE
+        else -> LEGACY_LAYER_PREFIX + layer
+    }
 
     internal fun buildMultimodalExclude(multimodal: String): String? =
         when (multimodal) {
