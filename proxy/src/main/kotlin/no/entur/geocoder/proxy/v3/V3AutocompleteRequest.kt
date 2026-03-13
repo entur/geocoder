@@ -40,13 +40,22 @@ data class V3AutocompleteRequest(
         private const val DEFAULT_WEIGHT = 0.8
         private val LN2 = ln(2.0)
 
+        private val ALLOWED_PARAMS = setOf(
+            "q", "limit", "lang", "lat", "lon",
+            "radius", "weight", "layers", "sources", "countries", "countyIds",
+            "localityIds", "tariffZones", "fareZoneAuthorities", "multimodal",
+        )
+
         fun from(req: Parameters): V3AutocompleteRequest {
-            val lat = req["latitude"]?.toDoubleOrNull()
-            val lon = req["longitude"]?.toDoubleOrNull()
+            val unknown = req.names().filterNot { it in ALLOWED_PARAMS }
+            require(unknown.isEmpty()) { "Unknown parameter(s): ${unknown.joinToString()}" }
+
+            val lat = req["lat"]?.toDoubleOrNull()
+            val lon = req["lon"]?.toDoubleOrNull()
             return V3AutocompleteRequest(
-                query = req["query"] ?: req["q"] ?: "",
+                query = req["q"] ?: "",
                 limit = req["limit"]?.toIntOrNull() ?: 10,
-                language = req["language"] ?: req["lang"] ?: "no",
+                language = req["lang"] ?: "no",
                 lat = lat,
                 lon = lon,
                 radius = req["radius"]?.toDoubleOrNull(),

@@ -73,6 +73,8 @@ paths:
         - $ref: '#/components/parameters/Radius'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
+        - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Multimodal'
         - $ref: '#/components/parameters/ETClientName'
       responses:
@@ -133,7 +135,7 @@ components:
       example: "NSR:StopPlace:337,NSR:StopPlace:59872"
 
     Query:
-      name: query
+      name: q
       in: query
       required: true
       description: Search query
@@ -154,7 +156,7 @@ components:
       example: 10
 
     Language:
-      name: language
+      name: lang
       in: query
       description: Language code for result names
       schema:
@@ -235,9 +237,9 @@ components:
       example: "parent"
 
     AutocompleteLatitude:
-      name: latitude
+      name: lat
       in: query
-      description: Focus point latitude. When provided with longitude, results near this point are boosted.
+      description: Focus point latitude. When provided with lon, results near this point are boosted.
       schema:
         type: number
         format: double
@@ -246,9 +248,9 @@ components:
       example: 59.9110
 
     AutocompleteLongitude:
-      name: longitude
+      name: lon
       in: query
-      description: Focus point longitude. Must be provided together with latitude.
+      description: Focus point longitude. Must be provided together with lat.
       schema:
         type: number
         format: double
@@ -280,7 +282,7 @@ components:
       example: 0.8
 
     Latitude:
-      name: latitude
+      name: lat
       in: query
       required: true
       description: Latitude
@@ -292,7 +294,7 @@ components:
       example: 59.9110
 
     Longitude:
-      name: longitude
+      name: lon
       in: query
       required: true
       description: Longitude

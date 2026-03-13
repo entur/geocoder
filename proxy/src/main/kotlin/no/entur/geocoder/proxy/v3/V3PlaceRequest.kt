@@ -8,9 +8,15 @@ data class V3PlaceRequest(val ids: List<String>) {
     }
 
     companion object {
-        fun from(req: Parameters) =
-            V3PlaceRequest(
+        private val ALLOWED_PARAMS = setOf("ids")
+
+        fun from(req: Parameters): V3PlaceRequest {
+            val unknown = req.names().filterNot { it in ALLOWED_PARAMS }
+            require(unknown.isEmpty()) { "Unknown parameter(s): ${unknown.joinToString()}" }
+
+            return V3PlaceRequest(
                 ids = req["ids"]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
             )
+        }
     }
 }

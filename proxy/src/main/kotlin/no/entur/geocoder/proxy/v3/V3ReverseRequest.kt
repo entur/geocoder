@@ -8,6 +8,8 @@ data class V3ReverseRequest(
     val radius: Double? = null,
     val limit: Int = 10,
     val language: String = "no",
+    val layers: List<String> = emptyList(),
+    val sources: List<String> = emptyList(),
     val multimodal: String = "parent",
 ) {
     init {
@@ -16,16 +18,27 @@ data class V3ReverseRequest(
     }
 
     companion object {
-        fun from(req: Parameters) =
-            V3ReverseRequest(
-                lat = req["latitude"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'latitude' is required"),
+        private val ALLOWED_PARAMS = setOf(
+            "lat", "lon", "radius", "limit", "lang",
+            "layers", "sources", "multimodal",
+        )
+
+        fun from(req: Parameters): V3ReverseRequest {
+            val unknown = req.names().filterNot { it in ALLOWED_PARAMS }
+            require(unknown.isEmpty()) { "Unknown parameter(s): ${unknown.joinToString()}" }
+
+            return V3ReverseRequest(
+                lat = req["lat"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'lat' is required"),
                 lon =
-                    req["longitude"]?.toDoubleOrNull()
-                        ?: throw IllegalArgumentException("Parameter 'longitude' is required"),
+                    req["lon"]?.toDoubleOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'lon' is required"),
                 radius = req["radius"]?.toDoubleOrNull() ?: 10.0,
                 limit = req["limit"]?.toIntOrNull() ?: 10,
-                language = req["language"] ?: req["lang"] ?: "no",
+                language = req["lang"] ?: "no",
+                layers = req["layers"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                sources = req["sources"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 multimodal = req["multimodal"] ?: "parent",
             )
+        }
     }
 }

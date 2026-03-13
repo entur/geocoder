@@ -32,15 +32,32 @@ data class PhotonReverseRequest(
             )
         }
 
-        fun from(req: V3ReverseRequest): PhotonReverseRequest =
-            PhotonReverseRequest(
+        fun from(req: V3ReverseRequest): PhotonReverseRequest {
+            val includes = buildList {
+                if (req.sources.isNotEmpty()) {
+                    add(req.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
+                }
+                if (req.layers.isNotEmpty()) {
+                    add(req.layers.joinToString(",") { "layer.$it" })
+                }
+            }
+
+            val excludeAddresses = if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
+                null
+            } else {
+                Category.OSM_ADDRESS
+            }
+
+            return PhotonReverseRequest(
                 latitude = req.lat,
                 longitude = req.lon,
                 language = handleLang(req.language),
                 limit = req.limit,
                 radius = req.radius,
-                excludes = listOfNotNull(Category.OSM_ADDRESS, PhotonFilterBuilder.buildMultimodalExclude(req.multimodal)),
+                includes = includes,
+                excludes = listOfNotNull(excludeAddresses, PhotonFilterBuilder.buildMultimodalExclude(req.multimodal)),
                 debug = false,
             )
+        }
     }
 }
