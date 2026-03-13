@@ -31,6 +31,10 @@ paths:
       operationId: autocompleteV3
       parameters:
         - $ref: '#/components/parameters/Query'
+        - $ref: '#/components/parameters/AutocompleteLatitude'
+        - $ref: '#/components/parameters/AutocompleteLongitude'
+        - $ref: '#/components/parameters/AutocompleteRadius'
+        - $ref: '#/components/parameters/AutocompleteWeight'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/Layers'
@@ -229,6 +233,51 @@ components:
         enum: [parent, child, all]
         default: "parent"
       example: "parent"
+
+    AutocompleteLatitude:
+      name: latitude
+      in: query
+      description: Focus point latitude. When provided with longitude, results near this point are boosted.
+      schema:
+        type: number
+        format: double
+        minimum: -90
+        maximum: 90
+      example: 59.9110
+
+    AutocompleteLongitude:
+      name: longitude
+      in: query
+      description: Focus point longitude. Must be provided together with latitude.
+      schema:
+        type: number
+        format: double
+        minimum: -180
+        maximum: 180
+      example: 10.7522
+
+    AutocompleteRadius:
+      name: radius
+      in: query
+      description: Focus radius in kilometres. Results within this distance from the focus point receive the strongest boost.
+      schema:
+        type: number
+        format: double
+        minimum: 0
+        default: 50.0
+      example: 50.0
+
+    AutocompleteWeight:
+      name: weight
+      in: query
+      description: "Focus weight: how strongly to prefer results near the focus point. 0 = no preference, 1 = maximum preference."
+      schema:
+        type: number
+        format: double
+        minimum: 0
+        maximum: 1
+        default: 0.8
+      example: 0.8
 
     Latitude:
       name: latitude

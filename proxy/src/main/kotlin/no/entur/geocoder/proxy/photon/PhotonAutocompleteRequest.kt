@@ -131,10 +131,10 @@ data class PhotonAutocompleteRequest(
                 language = handleLang(req.language),
                 includes = includes,
                 excludes = excludes,
-                lat = null,
-                lon = null,
-                zoom = null,
-                locationBiasScale = null,
+                lat = req.lat,
+                lon = req.lon,
+                zoom = req.photonZoom(),
+                locationBiasScale = req.photonLocationBiasScale(),
                 debug = false,
             )
         }
