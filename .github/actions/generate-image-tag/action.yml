@@ -33,11 +33,6 @@ runs:
       run: |
         SHA=$(git rev-parse HEAD)
         BRANCH=$(git branch --show-current)
-        # Detached HEAD (e.g. tag checkout): resolve branch from the commit
-        if [[ -z "$BRANCH" ]]; then
-          BRANCH=$(git branch -a --contains HEAD --format='%(refname:short)' | grep -E '^(origin/)?main$' | sed 's|^origin/||' | head -1 || true)
-        fi
-        # Still empty (e.g. shallow checkout of a tag): fall back to GITHUB_REF_NAME
         if [[ -z "$BRANCH" ]]; then
           BRANCH="${GITHUB_REF_NAME:-detached}"
         fi
