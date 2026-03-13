@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Download the latest Nominatim NDJSON data from the production Docker image.
+# Useful for local debugging — extracts the data artifact into the current directory.
+# Usage: ./download-latest-nominatim-data.sh [suffix] [tag]
+#   suffix: e.g. '-se' for country-specific data (default: none)
+#   tag:    Docker image tag (default: latest-prod)
 
 set -euo pipefail
 

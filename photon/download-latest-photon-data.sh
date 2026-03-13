@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Download the latest Photon search index from the production Docker image.
+# Useful for local debugging — extracts photon_data/ into the current directory.
 
 set -euo pipefail
 
