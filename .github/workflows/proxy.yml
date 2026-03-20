@@ -22,12 +22,32 @@ on:
       - '.github/actions/**'
       - '!**/*.md'
       - 'helm/geocoder-proxy/**'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Deploy target'
+        required: true
+        type: choice
+        options:
+          - 'dev only'
+          - 'dev → tst → prd'
+          - 'tst → prd'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
+  log-inputs:
+    name: Log Inputs
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual inputs
+        run: |
+          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
+
   build-push:
     name: Proxy
     runs-on: ubuntu-latest
@@ -55,7 +75,9 @@ jobs:
   deploy-dev:
     name: Dev
     needs: build-push
-    if: github.event_name == 'push'
+    if: |
+      github.event_name != 'pull_request' &&
+      inputs.target != 'tst → prd'
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: dev
@@ -72,7 +94,8 @@ jobs:
     needs: [ build-push, deploy-dev ]
     if: |
       !cancelled() &&
-      needs.deploy-dev.result == 'success'
+      inputs.target != 'dev only' &&
+      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/deploy-and-test.yml
     with:
       environment: tst
@@ -123,4 +146,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
           payload: |
-            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+            text: "❌ *${{ github.workflow }}*${{ inputs.target && format(' ({0})', inputs.target) || '' }} failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
