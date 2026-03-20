@@ -33,6 +33,7 @@ jobs:
         with:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+          latest_tag: latest-prod
 
   photon:
     name: Photon Image
@@ -63,6 +64,7 @@ jobs:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+          latest_tag: latest-prod
 
   deploy-tst:
     name: Staging

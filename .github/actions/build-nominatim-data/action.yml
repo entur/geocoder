@@ -22,6 +22,10 @@ inputs:
   service_account:
     description: 'GCP Service Account'
     required: true
+  latest_tag:
+    description: 'Override the latest tag (default: "latest")'
+    required: false
+    default: 'latest'
 
 outputs:
   image_tag:
@@ -65,3 +69,4 @@ runs:
         min_size_mb: 1
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
+        latest_tag: ${{ inputs.latest_tag }}

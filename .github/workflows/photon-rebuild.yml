@@ -15,7 +15,6 @@ on:
         description: 'Nominatim data tag'
         required: false
         type: string
-        default: 'latest-main'
 
 concurrency:
   group: "photon-${{ inputs.target }}"
