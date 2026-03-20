@@ -8,10 +8,10 @@ All deployment runs from the `main` branch.
 
 ### Proxy
 
-**Automatic** — Push to `main` → builds and deploys to dev → tst → prd, with acceptance tests after each.
+**Automatic** — Push to `main` → builds and deploys to dev → tst → prd, with acceptance tests after each. Tags `prod-approved` after successful prod deploy.
 
-**Manual:**
-- [proxy-build.yml](https://github.com/entur/geocoder/actions/workflows/proxy-build.yml) — Build and deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`)
+**Manual** — [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) also supports manual dispatch (target: `dev only` | `dev → tst → prd` | `tst → prd`).
+
 - [proxy-deploy.yml](https://github.com/entur/geocoder/actions/workflows/proxy-deploy.yml) — Deploy an existing image tag
 
 ### Photon
