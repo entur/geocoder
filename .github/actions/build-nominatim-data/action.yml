@@ -10,6 +10,12 @@ inputs:
     description: 'Suffix for image name (e.g., -se for geocoder-nominatim-data-se)'
     required: false
     default: ''
+  lantmateriet_user:
+    description: 'Lantmäteriet Geotorget username (for Swedish address data)'
+    required: false
+  lantmateriet_pass:
+    description: 'Lantmäteriet Geotorget password (for Swedish address data)'
+    required: false
   workload_identity_provider:
     description: 'GCP Workload Identity Provider'
     required: true
@@ -27,6 +33,9 @@ runs:
   steps:
     - name: Run create-nominatim-data.sh
       shell: bash
+      env:
+        LANTMATERIET_USER: ${{ inputs.lantmateriet_user }}
+        LANTMATERIET_PASS: ${{ inputs.lantmateriet_pass }}
       run: ./import/create-nominatim-data.sh import/config/${{ inputs.config }} -z
       working-directory: photon
 

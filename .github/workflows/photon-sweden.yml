@@ -15,7 +15,6 @@ on:
         description: 'Nominatim data tag (only for "Use existing data")'
         required: false
         type: string
-        default: 'latest-main'
       photon_image_tag:
         description: 'Photon image tag (only for "Deploy specified")'
         required: false
@@ -59,6 +58,8 @@ jobs:
         with:
           config: sources-sweden-test.conf
           suffix: -se
+          lantmateriet_user: ${{ secrets.LANTMATERIET_USER }}
+          lantmateriet_pass: ${{ secrets.LANTMATERIET_PASS }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
