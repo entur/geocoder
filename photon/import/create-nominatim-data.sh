@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.3.2"
+VERSION="v0.3.3"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -78,8 +78,8 @@ esac
 # shellcheck source=/dev/null
 . "$CONFIG_FILE"
 
-if [ -z "${ADRESSE_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
-    fail "No data sources configured. Set at least one of: ADRESSE_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
+if [ -z "${GEONORGE_AREA:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
+    fail "No data sources configured. Set at least one of: GEONORGE_AREA, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
 fi
 
 echo "Using config: $CONFIG_FILE"
@@ -88,9 +88,9 @@ START_TIME=$(date +%s)
 
 rm -f nominatim.ndjson
 
-if [ -n "${ADRESSE_URL:-}" ] && [ -n "${STEDSNAVN_URL:-}" ]; then
-    convert matrikkel -i "$ADRESSE_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
-    convert stedsnavn -i "$STEDSNAVN_URL" -o nominatim.ndjson -a
+if [ -n "${GEONORGE_AREA:-}" ]; then
+    convert matrikkel -r "$GEONORGE_AREA" -o nominatim.ndjson -a
+    convert stedsnavn -r "$GEONORGE_AREA" -o nominatim.ndjson -a
 fi
 
 if [ -n "${POI_URL:-}" ]; then
