@@ -70,7 +70,7 @@ runs:
         echo "file=$CONTEXT/Dockerfile" >> "$GITHUB_OUTPUT"
 
     - name: Authenticate with GCP
-      uses: google-github-actions/auth@v2
+      uses: google-github-actions/auth@v3
       with:
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
@@ -82,7 +82,7 @@ runs:
         gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
 
     - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - name: Generate image tag
       id: set-tag
@@ -92,7 +92,7 @@ runs:
         latest_tag: ${{ inputs.latest_tag }}
 
     - name: Build and push to GCR
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: ${{ steps.create-dockerfile.outputs.context }}
         file: ${{ steps.create-dockerfile.outputs.file }}
