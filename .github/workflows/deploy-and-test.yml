@@ -1,4 +1,4 @@
-name: "~ Deploy & Test (internal)"
+name: "zz Deploy & Test (internal)"
 
 on:
   workflow_call:
