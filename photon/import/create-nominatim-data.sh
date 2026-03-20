@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.3.1"
+VERSION="v0.3.2"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -107,6 +107,10 @@ fi
 
 if [ -n "${OSM_URL:-}" ]; then
     convert osm -i "$OSM_URL" -o nominatim.ndjson -a
+fi
+
+if [ -n "${BELAGENHET_AREA:-}" ]; then
+    convert belagenhet -m "${BELAGENHET_AREA}" -o nominatim.ndjson -a
 fi
 
 END_TIME=$(date +%s)
