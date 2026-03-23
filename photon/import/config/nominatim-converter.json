@@ -83,6 +83,7 @@
     "defaultValue": 50,
     "rankAddress": 30,
     "stopTypeFactors": {
+      "airport": 5.0,
       "busStation": 2.0,
       "metroStation": 2.0,
       "railStation": 2.0
