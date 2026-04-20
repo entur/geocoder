@@ -67,23 +67,23 @@
     ]
   },
   "stedsnavn": {
-    "defaultValue": 40.0,
+    "defaultValue": 1.0,
     "rankAddress": 16
   },
   "matrikkel": {
-    "addressPopularity": 20.0,
-    "streetPopularity": 20.0,
+    "addressPopularity": 1.0,
+    "streetPopularity": 5.0,
     "rankAddress": 26
   },
   "poi": {
-    "importance": 0.5,
+    "importance": 0.1,
     "rankAddress": 30
   },
   "stopPlace": {
     "defaultValue": 50,
     "rankAddress": 30,
     "stopTypeFactors": {
-      "airport": 5.0,
+      "airport": 500.0,
       "busStation": 2.0,
       "metroStation": 2.0,
       "railStation": 2.0
