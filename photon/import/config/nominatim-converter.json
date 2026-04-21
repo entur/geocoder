@@ -1,6 +1,6 @@
 {
   "osm": {
-    "defaultValue": 1.0,
+    "defaultValue": 0.5,
     "rankAddress": {
       "boundary": 10,
       "place": 20,
@@ -76,7 +76,7 @@
     "rankAddress": 26
   },
   "poi": {
-    "importance": 0.1,
+    "importance": 0.01,
     "rankAddress": 30
   },
   "stopPlace": {
@@ -84,9 +84,13 @@
     "rankAddress": 30,
     "stopTypeFactors": {
       "airport": 500.0,
-      "busStation": 2.0,
-      "metroStation": 2.0,
-      "railStation": 2.0
+      "busStation": 20.0,
+      "ferryStop": 0.2,
+      "harbourPort": 0.2,
+      "metroStation": 20.0,
+      "onstreetBus": 0.1,
+      "onstreetTram": 0.1,
+      "railStation": 100.0
     },
     "interchangeFactors": {
       "recommendedInterchange": 3.0,
@@ -100,6 +104,6 @@
   "importance": {
     "minPopularity": 1.0,
     "maxPopularity": 1000000000.0,
-    "floor": 0.1
+    "floor": 0.01
   }
 }

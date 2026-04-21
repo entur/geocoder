@@ -4,6 +4,7 @@ import no.entur.geocoder.common.Category
 import no.entur.geocoder.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.common.Category.asCategory
 import no.entur.geocoder.common.Country
+import no.entur.geocoder.common.FocusDefaults
 import no.entur.geocoder.common.Geo
 import no.entur.geocoder.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
@@ -39,9 +40,9 @@ data class PhotonAutocompleteRequest(
             val includes = PhotonFilterBuilder.buildIncludes(req)
             val excludes = PhotonFilterBuilder.buildExcludes(req)
 
-            // Convert Pelias focus to Photon parameters (null focus → no location bias)
-            val zoom = Geo.peliasScaleToPhotonZoom(req.focus?.scale)
-            val locationBiasScale = req.focus?.let { calculateLocationBias(it.weight ?: 15.0) }
+            // Null focus → no location bias. Otherwise FocusDefaults fills in missing scale/weight.
+            val zoom = Geo.peliasScaleToPhotonZoom(req.focus?.scale ?: FocusDefaults.SCALE_KM)
+            val locationBiasScale = req.focus?.let { calculateLocationBias(it.weight ?: FocusDefaults.WEIGHT) }
 
             return PhotonAutocompleteRequest(
                 query = handleText(req.text),

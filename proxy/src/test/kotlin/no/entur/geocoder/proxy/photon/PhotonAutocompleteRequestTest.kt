@@ -238,4 +238,17 @@ class PhotonAutocompleteRequestTest {
 
         assertEquals(expectedInclude, request.includes.find { it == expectedInclude })
     }
+
+    @Test
+    fun `from PeliasAutocompleteParams applies FocusDefaults when scale and weight are omitted`() {
+        // Pins the mapping of FocusDefaults to Photon params; drifting either constant here
+        // moves the autocomplete ranking observably.
+        val focus = PeliasAutocompleteRequest.FocusParams(lat = 59.97337, lon = 11.09255, scale = null, weight = null)
+        val req = PeliasAutocompleteRequest(text = "lille", focus = focus, multiModal = "parent")
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(13, request.zoom) // SCALE_KM=10 → zoom=13
+        assertEquals(0.1, request.locationBiasScale!!, 0.005) // WEIGHT=28 → location_bias_scale ≈ 0.1
+    }
 }

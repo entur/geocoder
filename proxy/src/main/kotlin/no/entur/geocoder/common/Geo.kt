@@ -52,17 +52,15 @@ object Geo {
     }
 
     /**
-     * Converts Pelias focus.scale to Photon zoom level.
+     * Converts Pelias focus.scale (km) to Photon zoom [0-18]. Null → [FocusDefaults.SCALE_KM].
      *
-     * Pelias uses linear decay (score drops to 0 at 2×scale), while Photon uses exponential decay
-     * (score never reaches 0). Formula: `(scale + 1) / 2.5` accounts for Pelias's 1km offset and
-     * balances the different decay curves to provide similar user experience.
-     *
-     * @param peliasScale The Pelias focus.scale in km, or null for 100km
-     * @return Photon zoom level [0-18]
+     * Pelias decays linearly to zero at `2×scale`; Photon decays exponentially (never to zero),
+     * so the mapping is empirical: `(scale + 1) / 2.5` offsets Pelias's 1 km minimum and fits
+     * the curve, and `log2(... * 4)` is a close integer approximation of Photon's inverse
+     * `biasRadius = 2.2^(18-zoom) × 0.1`. Changing either constant rescales the whole mapping.
      */
     fun peliasScaleToPhotonZoom(peliasScale: Int?): Int {
-        val effectiveScale = peliasScale ?: 100
+        val effectiveScale = peliasScale ?: FocusDefaults.SCALE_KM
         val targetRadius = (effectiveScale + 1.0) / 2.5
         val zoom = (18 - log2(targetRadius * 4)).toInt()
         return zoom.coerceIn(0, 18)
