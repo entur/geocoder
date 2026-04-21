@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.3.4"
+VERSION="v0.3.5"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -42,8 +42,13 @@ if [ ! -f "$BINARY" ]; then
     chmod +x "$BINARY"
 fi
 
+# Cache downloaded source archives (OSM PBF, Geonorge matrikkel/stedsnavn, stop place ZIPs)
+# so re-runs skip the multi-GB downloads. Default persists across reboots via XDG cache;
+# override with NOMINATIM_CACHE_DIR=/path, or point it at ${TMPDIR}/... for ephemeral caching.
+CACHE_DIR="${NOMINATIM_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nominatim-converter}"
+
 convert() {
-    "$BINARY" "$@" -c "$SCRIPTDIR/config/nominatim-converter.json"
+    "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$SCRIPTDIR/config/nominatim-converter.json"
 }
 
 # Parse arguments

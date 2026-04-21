@@ -26,10 +26,14 @@ if echo "$NOMINATIM_FILE" | grep -q '\.gz$'; then
   IMPORT_FILE="${NOMINATIM_FILE%.gz}"
 fi
 
+# Photon importer is memory-hungry per worker (~1-2GB each). 5 is tuned for the
+# CI/build runners (8 vCPU / 16GB+); reduce to 3 on smaller hosts or laptops.
+IMPORT_THREADS="${PHOTON_IMPORT_THREADS:-5}"
+
 START_TIME=$(date +%s)
 java -jar "$PHOTON_JAR" \
         import \
-        -j 4 \
+        -j "$IMPORT_THREADS" \
         -import-file "$IMPORT_FILE" \
         -languages no,en \
         -extra-tags ALL
