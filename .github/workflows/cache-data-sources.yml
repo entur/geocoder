@@ -1,0 +1,98 @@
+name: Cache Data Sources to GCS
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}"
+  cancel-in-progress: false
+
+jobs:
+  cache:
+    name: Cache ${{ matrix.source.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        source:
+          - name: osm-norway
+            url: https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf
+            filename: norway-latest.osm.pbf
+            min_size_mb: 1000
+          - name: stopplace
+            url: https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip
+            filename: Current_latest.zip
+            min_size_mb: 300
+          - name: poi-festivals
+            url: https://raw.githubusercontent.com/entur/geocoder-data/refs/heads/main/festivals_netex_poi.xml
+            filename: festivals_netex_poi.xml
+            min_size_mb: 0
+          - name: poi-events
+            url: https://raw.githubusercontent.com/entur/geocoder-data/refs/heads/main/events_norway_poi.xml
+            filename: events_norway_poi.xml
+            min_size_mb: 0
+          - name: matrikkel
+            url: https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
+            filename: Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
+            min_size_mb: 100
+          - name: stedsnavn
+            url: https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip
+            filename: Basisdata_0000_Norge_25833_Stedsnavn_GML.zip
+            min_size_mb: 100
+
+    steps:
+      - name: Download ${{ matrix.source.name }}
+        run: |
+          curl -fL --retry 3 --retry-delay 10 -o "${{ matrix.source.filename }}" "${{ matrix.source.url }}"
+          ls -lh "${{ matrix.source.filename }}"
+
+      - name: Verify file size
+        run: |
+          SIZE_MB=$(du -m "${{ matrix.source.filename }}" | cut -f1)
+          MIN_MB=${{ matrix.source.min_size_mb }}
+          echo "Size: ${SIZE_MB}M (min ${MIN_MB}M)"
+          if [ "$SIZE_MB" -lt "$MIN_MB" ]; then
+            echo "ERROR: file smaller than minimum"
+            exit 1
+          fi
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload to GCS
+        run: |
+          gcloud storage cp "${{ matrix.source.filename }}" \
+            "gs://ent-geocoder-prd/data-sources/${{ matrix.source.filename }}"
+
+      - name: Summary
+        run: |
+          {
+            echo "### ${{ matrix.source.name }}"
+            echo "**Source:** ${{ matrix.source.url }}"
+            echo "**Cached:** \`gs://ent-geocoder-prd/data-sources/${{ matrix.source.filename }}\`"
+            echo "**Size:** $(du -h "${{ matrix.source.filename }}" | cut -f1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  notify-slack:
+    needs: cache
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
