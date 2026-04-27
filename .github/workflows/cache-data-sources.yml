@@ -28,7 +28,7 @@ jobs:
           - name: stopplace
             url: https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip
             filename: Current_latest.zip
-            min_size_mb: 300
+            min_size_mb: 30
           - name: poi-festivals
             url: https://raw.githubusercontent.com/entur/geocoder-data/refs/heads/main/festivals_netex_poi.xml
             filename: festivals_netex_poi.xml
@@ -72,6 +72,8 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Upload to GCS
+        env:
+          CLOUDSDK_STORAGE_PARALLEL_COMPOSITE_UPLOAD_ENABLED: "False"
         run: |
           gcloud storage cp "${{ matrix.source.filename }}" \
             "gs://ent-geocoder-prd/data-sources/${{ matrix.source.filename }}"
