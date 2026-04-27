@@ -12,8 +12,7 @@
 # the sentinel so this script skips the download.
 
 set -eu
-# busybox ash supports -o pipefail; needed so wget|tar surfaces wget failures.
-# shellcheck disable=SC3040
+# shellcheck disable=SC3040  # ash supports pipefail; needed so curl|tar surfaces curl failures
 set -o pipefail
 
 DATA_DIR=photon_data
@@ -28,10 +27,10 @@ if [ ! -f "$SENTINEL" ]; then
   echo "Downloading $PHOTON_DATA_URL"
   TARBALL=$(mktemp)
   trap 'rm -f "$TARBALL"' EXIT
-  wget -O "$TARBALL" --tries=3 --timeout=60 "$PHOTON_DATA_URL"
+  curl -fL --retry 3 --retry-delay 10 --connect-timeout 30 -o "$TARBALL" "$PHOTON_DATA_URL"
 
   # CI always uploads .sha256 alongside the tarball; treat its absence as an error.
-  EXPECTED=$(wget -qO- --tries=3 --timeout=15 "${PHOTON_DATA_URL}.sha256" | tr -d '[:space:]')
+  EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 "${PHOTON_DATA_URL}.sha256" | tr -d '[:space:]')
   ACTUAL=$(sha256sum "$TARBALL" | awk '{print $1}')
   if [ "$EXPECTED" != "$ACTUAL" ]; then
     echo "checksum mismatch: expected $EXPECTED got $ACTUAL" >&2
