@@ -47,7 +47,7 @@ runs:
           SHA=$(git rev-parse HEAD)
           BRANCH=$(git branch --show-current)
           [ -z "$BRANCH" ] && BRANCH="${GITHUB_REF_NAME:-detached}"
-          IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$SHA" "$BRANCH")
+          IMAGE_TAG=$(${{ github.workspace }}/.github/scripts/generate-tag.sh "$SHA" "$BRANCH")
         fi
 
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
