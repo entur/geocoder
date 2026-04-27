@@ -19,24 +19,33 @@ common:
         maxSurge: 25%  # Allow 25% extra pods during rollout (default)
     minReadySeconds: 10  # Wait 10 seconds after pod is ready before marking it available
   container:
-    image: <+artifacts.primary.image>  # The CD tool will replace this value with the actual image
+    image: <+artifacts.primary.image>  # CD tool replaces with the actual image
     imagePullPolicy: Always
     cpu: 2
     memory: 2560 # This is request mem. Limit is 20% higher.
+    # Sized for the extracted photon_data (a few GB) plus headroom for the
+    # in-flight tarball during download/extract.
+    ephemeralStorage: 4Gi
+    ephemeralStorageLimit: 8Gi
+    # PHOTON_DATA_URL is injected by .github/workflows/deploy-and-test.yml
+    # before helm runs. templates/photon-data-validation.yaml fails the
+    # helm render if it's missing - a manual `helm upgrade` without
+    # injection never reaches the cluster.
     probes:
       enabled: true
       spec:
+        # Budget covers: photon_data download (~hundreds of MB) + tar extract +
+        # JVM startup + index mmap warmup. 5s * 180 = 15 min ceiling.
         startupProbe:
           tcpSocket:
             port: 2322
-          periodSeconds: 1
+          periodSeconds: 5
           timeoutSeconds: 1
-          failureThreshold: 300
+          failureThreshold: 180
         readinessProbe:
           httpGet:
             path: /api?q=test&limit=1
             port: 2322
-          initialDelaySeconds: 45
           periodSeconds: 10
           timeoutSeconds: 10
           failureThreshold: 3
@@ -45,7 +54,6 @@ common:
           httpGet:
             path: /status
             port: 2322
-          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3

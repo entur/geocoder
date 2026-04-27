@@ -1,0 +1,14 @@
+{{- /*
+Fails `helm template / install / upgrade` when PHOTON_DATA_URL is not set.
+
+CI injects the value via .github/workflows/deploy-and-test.yml (yq mutation
+of common.container.env). For a manual deploy from a workstation, supply an
+overlay values file with the URL - see README "Photon data artifacts (GCS)".
+*/ -}}
+{{- $url := "" -}}
+{{- range (.Values.common.container.env | default list) -}}
+  {{- if eq .name "PHOTON_DATA_URL" -}}{{- $url = .value -}}{{- end -}}
+{{- end -}}
+{{- if eq $url "" -}}
+  {{- fail "PHOTON_DATA_URL is not set in common.container.env. CI normally injects it; for a manual deploy add an overlay values file - see README." -}}
+{{- end -}}

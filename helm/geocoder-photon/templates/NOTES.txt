@@ -1,0 +1,7 @@
+Release {{ .Release.Name }} deployed.
+
+{{- range (.Values.common.container.env | default list) }}
+{{- if eq .name "PHOTON_DATA_URL" }}
+PHOTON_DATA_URL = {{ .value | quote }}
+{{- end }}
+{{- end }}
