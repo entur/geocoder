@@ -21,14 +21,6 @@ jobs:
       max-parallel: 10
       matrix:
         source:
-          - name: osm-norway
-            url: https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf
-            filename: norway-latest.osm.pbf
-            min_size_mb: 1000
-          - name: stopplace
-            url: https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip
-            filename: Current_latest.zip
-            min_size_mb: 30
           - name: matrikkel
             url: https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
             filename: Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
