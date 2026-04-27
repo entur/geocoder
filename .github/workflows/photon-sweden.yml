@@ -48,10 +48,8 @@ jobs:
       id-token: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
-
     steps:
       - uses: actions/checkout@v6
-
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
@@ -79,10 +77,8 @@ jobs:
       pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
-
     steps:
       - uses: actions/checkout@v6
-
       - name: Build Photon image
         id: build
         uses: ./.github/actions/build-photon-image
@@ -92,26 +88,22 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  deploy-dev:
-    name: Dev
+  deploy:
+    name: Deploy
     needs: photon
     if: |
       !cancelled() &&
       (needs.photon.result == 'success' || inputs.build == 'Deploy specified Photon image')
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_photon-deploy-fanout.yml
     with:
-      environment: dev
       image: "geocoder-photon-se:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon-se
-      values: values-kub-ent-dev-se.yaml
-      require_approval: false
+      suffix: '-se'
+      target: 'dev only'
       run_tests: false
     secrets: inherit
 
   notify-slack:
-    needs: deploy-dev
+    needs: [ nominatim-data, photon, deploy ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

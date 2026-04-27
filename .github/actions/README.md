@@ -33,35 +33,35 @@ with:
 
 **Outputs:** `image_tag`
 
-## upload-docker-artifact
+## upload-gcs-artifact
 
-Store files as Docker images in GCR. Useful for large build artifacts (data files, compiled outputs).
+Upload a file to a public GCS bucket at a versioned path; write `<file>.sha256` sidecar and `<latest_tag>.txt` pointer.
 
 ```yaml
-uses: ./.github/actions/upload-docker-artifact
+uses: ./.github/actions/upload-gcs-artifact
 with:
   file_path: path/to/file.tar.gz
-  image_name: my-data
+  prefix: my-prefix
   workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
   service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
 
-**Outputs:** `image_tag`
+**Outputs:** `tag`, `gcs_uri`, `https_url`, `sha256`
 
-## download-docker-artifact
+## download-gcs-artifact
 
-Extract files from Docker images stored in GCR.
+Download a public GCS object via HTTPS (no auth needed). Resolve via explicit `tag` or via `latest_tag` pointer file.
 
 ```yaml
-uses: ./.github/actions/download-docker-artifact
+uses: ./.github/actions/download-gcs-artifact
 with:
-  image: my-data:latest
+  prefix: my-prefix
+  tag: main.20260427-1023-SHAabc1234
+  filename: file.tar.gz
   destination: ./output
-  workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-  service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 ```
 
-**Outputs:** `artifact_file`
+**Outputs:** `artifact_file`, `resolved_tag`
 
 ## docker-scan
 

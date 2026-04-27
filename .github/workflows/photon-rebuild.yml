@@ -45,10 +45,8 @@ jobs:
       pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
-
     steps:
       - uses: actions/checkout@v6
-
       - name: Build Photon image
         id: build
         uses: ./.github/actions/build-photon-image
@@ -57,56 +55,17 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  # --- Deploy ---
-
-  deploy-dev:
-    name: Dev
+  deploy:
+    name: Deploy
     needs: photon
-    if: inputs.target != 'tst → prd'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_photon-deploy-fanout.yml
     with:
-      environment: dev
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-      values: values-kub-ent-dev.yaml
-      require_approval: false
-    secrets: inherit
-
-  deploy-tst:
-    name: Staging
-    needs: [ photon, deploy-dev ]
-    if: |
-      !cancelled() &&
-      inputs.target != 'dev only' &&
-      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: tst
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-    secrets: inherit
-
-  deploy-prd:
-    name: Production
-    needs: [ photon, deploy-tst ]
-    if: |
-      !cancelled() &&
-      needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: prd
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
+      target: ${{ inputs.target }}
     secrets: inherit
 
   notify-slack:
-    needs: [ deploy-dev, deploy-tst, deploy-prd ]
+    needs: [ photon, deploy ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

@@ -11,6 +11,10 @@ concurrency:
   group: "${{ github.workflow }}"
   cancel-in-progress: true
 
+env:
+  CHECKOUT_REF: prod-approved
+  LATEST_TAG: latest-prod
+
 jobs:
   nominatim-data:
     name: Nominatim Data
@@ -21,26 +25,21 @@ jobs:
       id-token: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
-
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: prod-approved
-
+          ref: ${{ env.CHECKOUT_REF }}
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          latest_tag: latest-prod
+          latest_tag: ${{ env.LATEST_TAG }}
 
   photon:
     name: Photon Image
     needs: nominatim-data
-    if: |
-      !cancelled() &&
-      needs.nominatim-data.result == 'success'
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -51,12 +50,10 @@ jobs:
       pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
-
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: prod-approved
-
+          ref: ${{ env.CHECKOUT_REF }}
       - name: Build Photon image
         id: build
         uses: ./.github/actions/build-photon-image
@@ -64,42 +61,19 @@ jobs:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          latest_tag: latest-prod
+          latest_tag: ${{ env.LATEST_TAG }}
 
-  deploy-tst:
-    name: Staging
+  deploy:
+    name: Deploy
     needs: photon
-    if: |
-      !cancelled() &&
-      needs.photon.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_photon-deploy-fanout.yml
     with:
-      environment: tst
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-      require_approval: false
-    secrets: inherit
-
-  deploy-prd:
-    name: Production
-    needs: [ photon, deploy-tst ]
-    if: |
-      !cancelled() &&
-      needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: prd
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-      require_approval: false
+      target: 'tst → prd'
     secrets: inherit
 
   notify-slack:
-    needs: [ deploy-tst, deploy-prd ]
+    needs: [ nominatim-data, photon, deploy ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

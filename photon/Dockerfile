@@ -4,11 +4,8 @@ WORKDIR /srv
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-COPY photon.jar ./
-COPY photon-start.sh ./
-COPY photon_data ./photon_data
+COPY --chown=1000:1000 photon.jar photon-start.sh ./
 
-RUN chown -R 1000:1000 /srv
 USER 1000:1000
 
-CMD ["sh", "-c", "exec ./photon-start.sh"]
+CMD ["./photon-start.sh"]

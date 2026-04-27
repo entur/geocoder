@@ -1,0 +1,81 @@
+name: "~ Photon Deploy Fanout (internal)"
+
+# Reusable deploy ladder shared by photon.yml, photon-rebuild.yml,
+# photon-scheduled.yml, photon-sweden.yml and photon-deploy.yml. Each caller
+# decides how the image was produced and which environments to roll out to;
+# this workflow only runs the actual dev/tst/prd helm deploys.
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: 'Full image:tag to deploy (e.g. geocoder-photon:main.20260427-...)'
+        required: true
+        type: string
+      suffix:
+        description: 'Image/release suffix, e.g. -se for Sweden'
+        required: false
+        type: string
+        default: ''
+      target:
+        description: 'dev only | dev → tst → prd | tst → prd'
+        required: true
+        type: string
+      run_tests:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  deploy-dev:
+    name: Dev
+    if: inputs.target == 'dev only' || inputs.target == 'dev → tst → prd'
+    uses: ./.github/workflows/deploy-and-test.yml
+    with:
+      environment: dev
+      image: ${{ inputs.image }}
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon${{ inputs.suffix }}
+      values: values-kub-ent-dev${{ inputs.suffix }}.yaml
+      photon_data_prefix: photon-data${{ inputs.suffix }}
+      require_approval: false
+      run_tests: ${{ inputs.run_tests }}
+    secrets: inherit
+
+  deploy-tst:
+    name: Staging
+    needs: deploy-dev
+    if: |
+      !cancelled() &&
+      (inputs.target == 'tst → prd' || inputs.target == 'dev → tst → prd') &&
+      (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped')
+    uses: ./.github/workflows/deploy-and-test.yml
+    with:
+      environment: tst
+      image: ${{ inputs.image }}
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon${{ inputs.suffix }}
+      values: values-kub-ent-tst${{ inputs.suffix }}.yaml
+      photon_data_prefix: photon-data${{ inputs.suffix }}
+      run_tests: ${{ inputs.run_tests }}
+    secrets: inherit
+
+  deploy-prd:
+    name: Production
+    needs: deploy-tst
+    if: |
+      !cancelled() &&
+      needs.deploy-tst.result == 'success'
+    uses: ./.github/workflows/deploy-and-test.yml
+    with:
+      environment: prd
+      image: ${{ inputs.image }}
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon${{ inputs.suffix }}
+      values: values-kub-ent-prd${{ inputs.suffix }}.yaml
+      photon_data_prefix: photon-data${{ inputs.suffix }}
+      run_tests: ${{ inputs.run_tests }}
+    secrets: inherit

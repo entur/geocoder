@@ -22,6 +22,16 @@ on:
         required: false
         type: string
         default: ''
+      photon_data_prefix:
+        description: 'GCS prefix for the photon_data.tar.gz tarball (default photon-data; -se variants for Sweden). Set to empty to skip injection (non-photon deploys).'
+        required: false
+        type: string
+        default: 'photon-data'
+      photon_data_bucket:
+        description: 'GCS bucket holding photon_data.tar.gz'
+        required: false
+        type: string
+        default: 'ent-geocoder-prd'
       require_approval:
         required: false
         type: boolean
@@ -64,6 +74,33 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: "v3.19.2"
+
+      - name: Inject photon_data_url
+        if: inputs.photon_data_prefix != ''
+        env:
+          CHART: ${{ inputs.chart }}
+          VALUES: ${{ inputs.values || format('values-kub-ent-{0}.yaml', inputs.environment) }}
+          IMAGE: ${{ inputs.image }}
+          BUCKET: ${{ inputs.photon_data_bucket }}
+          PREFIX: ${{ inputs.photon_data_prefix }}
+        # The photon_data tag matches the image tag (build-photon-image generates
+        # one and passes to both docker-build-push and upload-gcs-artifact), so
+        # we can derive the data URL from the image tag here. entur/gha-helm
+        # takes a single -f, so we mutate the env values file in place.
+        run: |
+          TAG="${IMAGE##*:}"
+          PHOTON_DATA_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG}/photon_data.tar.gz"
+
+          PHOTON_DATA_URL="$PHOTON_DATA_URL" yq -i '
+            .common.container.env = (
+              (.common.container.env // [])
+              | map(select(.name != "PHOTON_DATA_URL"))
+              + [{"name": "PHOTON_DATA_URL", "value": strenv(PHOTON_DATA_URL)}]
+            )
+          ' "$CHART/env/$VALUES"
+
+          echo "### Photon data URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed image will load \`$PHOTON_DATA_URL\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Helm lint
         env:

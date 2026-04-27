@@ -66,6 +66,12 @@ Categories use prefixes for filtering:
 - v2: Centralized in `ErrorHandler.kt`, returns Pelias-style error responses
 - v3: Route-level error handling in `App.kt` (`v3problem`), returns RFC 9457 `application/problem+json` with `status`, `title`, `detail`
 
+### Photon Data Flow
+- Build artifacts (`nominatim.ndjson.gz`, `photon_data.tar.gz`) live in public GCS bucket `ent-geocoder-prd` at `<prefix>/<tag>/<file>`. Each artifact has a `.sha256` sidecar.
+- The photon container fetches `photon_data.tar.gz` from `$PHOTON_DATA_URL` on startup, verifies the sidecar, atomic-extracts to `photon_data/`, and writes a `.ready` sentinel.
+- `build-photon-image` action generates one tag and passes it to both `docker-build-push` and `upload-gcs-artifact`, so the photon image tag and the data tag are always identical. `deploy-and-test.yml` derives the data URL from the image tag - workflows do not thread it.
+- `helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render if `PHOTON_DATA_URL` is missing - a manual `helm upgrade` without injection never reaches the cluster.
+
 ## Things to Avoid
 
 - Don't break Pelias API compatibility in v2 endpoints

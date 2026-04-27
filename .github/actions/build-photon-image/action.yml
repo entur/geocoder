@@ -22,12 +22,22 @@ inputs:
 
 outputs:
   image_tag:
-    description: 'The tag of the built Photon image'
+    description: 'Shared tag for the built Photon image and the photon_data.tar.gz upload'
     value: ${{ steps.docker-image.outputs.image_tag }}
 
 runs:
   using: 'composite'
   steps:
+    # One tag for both the docker image and the photon_data.tar.gz upload.
+    # This pairing lets deploy-and-test.yml derive the data URL from the
+    # image tag, so callers don't have to thread photon_data_url separately.
+    - name: Generate shared build tag
+      id: tag
+      uses: ./.github/actions/generate-image-tag
+      with:
+        image_name: geocoder-photon${{ inputs.suffix }}
+        latest_tag: ${{ inputs.latest_tag }}
+
     - name: Dockerfile lint
       uses: hadolint/hadolint-action@v3.1.0
       with:
@@ -41,13 +51,13 @@ runs:
         java-version: 25
 
     - name: Download nominatim data
-      uses: ./.github/actions/download-docker-artifact
+      uses: ./.github/actions/download-gcs-artifact
       with:
-        image: geocoder-nominatim-data${{ inputs.suffix }}:${{ inputs.nominatim_data_tag }}
+        prefix: nominatim-data${{ inputs.suffix }}
+        tag: ${{ inputs.nominatim_data_tag }}
+        filename: nominatim.ndjson.gz
         destination: photon
         min_size_mb: 1
-        workload_identity_provider: ${{ inputs.workload_identity_provider }}
-        service_account: ${{ inputs.service_account }}
 
     - name: Create Photon Data
       shell: bash
@@ -70,6 +80,25 @@ runs:
           exit 1
         fi
 
+    - name: Package photon_data
+      shell: bash
+      working-directory: photon
+      # Tar contents-only (no leading "photon_data/" path) so consumers
+      # extract directly into a target directory without --strip-components.
+      run: tar -czf photon_data.tar.gz -C photon_data .
+
+    - name: Upload photon_data to GCS
+      id: upload-photon-data
+      uses: ./.github/actions/upload-gcs-artifact
+      with:
+        prefix: photon-data${{ inputs.suffix }}
+        file_path: photon/photon_data.tar.gz
+        tag: ${{ steps.tag.outputs.image_tag }}
+        min_size_mb: 1
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+        latest_tag: ${{ inputs.latest_tag }}
+
     - name: Create and Push Photon image
       id: docker-image
       uses: ./.github/actions/docker-build-push
@@ -77,6 +106,7 @@ runs:
         image_name: geocoder-photon${{ inputs.suffix }}
         context: photon
         push: true
+        tag: ${{ steps.tag.outputs.image_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
         latest_tag: ${{ inputs.latest_tag }}

@@ -12,7 +12,7 @@ on:
           - 'dev → tst → prd'
           - 'tst → prd'
       image_tag:
-        description: 'Photon image tag'
+        description: 'Photon image tag (data URL is derived from this tag)'
         required: true
         type: string
 
@@ -43,7 +43,6 @@ jobs:
       image_tag: ${{ steps.resolve.outputs.resolved_tag }}
     steps:
       - uses: actions/checkout@v6
-
       - name: Resolve image tag
         id: resolve
         uses: ./.github/actions/resolve-image-tag
@@ -53,56 +52,17 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  # --- Deploy ---
-
-  deploy-dev:
-    name: Dev
+  deploy:
+    name: Deploy
     needs: resolve-tag
-    if: inputs.target != 'tst → prd'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_photon-deploy-fanout.yml
     with:
-      environment: dev
       image: "geocoder-photon:${{ needs.resolve-tag.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-      values: values-kub-ent-dev.yaml
-      require_approval: false
-    secrets: inherit
-
-  deploy-tst:
-    name: Staging
-    needs: [ resolve-tag, deploy-dev ]
-    if: |
-      !cancelled() &&
-      inputs.target != 'dev only' &&
-      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: tst
-      image: "geocoder-photon:${{ needs.resolve-tag.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
-    secrets: inherit
-
-  deploy-prd:
-    name: Production
-    needs: [ resolve-tag, deploy-tst ]
-    if: |
-      !cancelled() &&
-      needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
-    with:
-      environment: prd
-      image: "geocoder-photon:${{ needs.resolve-tag.outputs.image_tag }}"
-      chart: helm/geocoder-photon
-      namespace: geocoder
-      release_name: geocoder-photon
+      target: ${{ inputs.target }}
     secrets: inherit
 
   notify-slack:
-    needs: [ deploy-dev, deploy-tst, deploy-prd ]
+    needs: [ resolve-tag, deploy ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

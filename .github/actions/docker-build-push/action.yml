@@ -30,6 +30,10 @@ inputs:
     description: 'Override the latest tag (default: "latest")'
     required: false
     default: 'latest'
+  tag:
+    description: 'Override the auto-generated image tag (use to pair with a sibling upload-gcs-artifact tag)'
+    required: false
+    default: ''
 
 outputs:
   image_tag:
@@ -62,6 +66,7 @@ runs:
       with:
         image_name: ${{ inputs.image_name }}
         latest_tag: ${{ inputs.latest_tag }}
+        tag: ${{ inputs.tag }}
 
     - name: Check if image already exists
       if: ${{ inputs.push == 'true' }}

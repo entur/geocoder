@@ -13,6 +13,10 @@ inputs:
     description: 'Override the latest tag (default: "latest")'
     required: false
     default: 'latest'
+  tag:
+    description: 'Override the auto-generated tag (use to share a tag across sibling steps)'
+    required: false
+    default: ''
 
 outputs:
   image_tag:
@@ -34,14 +38,17 @@ runs:
     - name: Generate image tag
       id: generate
       shell: bash
+      env:
+        OVERRIDE: ${{ inputs.tag }}
       run: |
-        SHA=$(git rev-parse HEAD)
-        BRANCH=$(git branch --show-current)
-        if [[ -z "$BRANCH" ]]; then
-          BRANCH="${GITHUB_REF_NAME:-detached}"
+        if [ -n "$OVERRIDE" ]; then
+          IMAGE_TAG="$OVERRIDE"
+        else
+          SHA=$(git rev-parse HEAD)
+          BRANCH=$(git branch --show-current)
+          [ -z "$BRANCH" ] && BRANCH="${GITHUB_REF_NAME:-detached}"
+          IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$SHA" "$BRANCH")
         fi
-        echo "SHA=$SHA, BRANCH=$BRANCH (GITHUB_SHA=$GITHUB_SHA, GITHUB_REF_NAME=$GITHUB_REF_NAME)"
-        IMAGE_TAG=$(${{ github.action_path }}/generate-tag.sh "$SHA" "$BRANCH")
 
         BASE_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}"
         FULL_IMAGE="${BASE_IMAGE}:${IMAGE_TAG}"

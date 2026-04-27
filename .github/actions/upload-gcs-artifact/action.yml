@@ -1,0 +1,145 @@
+name: 'Upload Artifact to GCS'
+description: 'Upload a file to a public GCS bucket at a timestamped path and update a latest pointer'
+
+inputs:
+  file_path:
+    description: 'Path to file on disk to upload'
+    required: true
+  bucket:
+    description: 'GCS bucket name (without gs:// prefix)'
+    required: false
+    default: 'ent-geocoder-prd'
+  prefix:
+    description: 'Object prefix inside the bucket (no leading or trailing slash)'
+    required: true
+  min_size_mb:
+    description: 'Minimum file size in MB (optional validation)'
+    required: false
+    default: ''
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+  latest_tag:
+    description: 'Name of the latest pointer file written alongside the versioned upload (without .txt suffix)'
+    required: false
+    default: 'latest'
+  tag:
+    description: 'Override the auto-generated version tag (use to pair with a sibling docker-build-push tag)'
+    required: false
+    default: ''
+
+outputs:
+  tag:
+    description: 'Generated version tag (e.g. main.20260427-1023-SHAabc1234)'
+    value: ${{ steps.generate.outputs.tag }}
+  gcs_uri:
+    description: 'gs:// URI of the uploaded object'
+    value: ${{ steps.upload.outputs.gcs_uri }}
+  https_url:
+    description: 'Public HTTPS URL of the uploaded object'
+    value: ${{ steps.upload.outputs.https_url }}
+  sha256:
+    description: 'SHA-256 checksum of the uploaded file (also published as <object>.sha256)'
+    value: ${{ steps.upload.outputs.sha256 }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Verify file size
+      if: inputs.min_size_mb != ''
+      shell: bash
+      run: |
+        FILE_PATH="${{ inputs.file_path }}"
+        MIN_SIZE_MB="${{ inputs.min_size_mb }}"
+
+        if [ ! -f "$FILE_PATH" ]; then
+          echo "ERROR: File not found: $FILE_PATH"
+          exit 1
+        fi
+
+        FILE_SIZE_MB=$(du -m "$FILE_PATH" | cut -f1)
+        echo "File size: ${FILE_SIZE_MB}M (minimum required: ${MIN_SIZE_MB}M)"
+
+        if [ "$FILE_SIZE_MB" -lt "$MIN_SIZE_MB" ]; then
+          echo "ERROR: File size (${FILE_SIZE_MB}M) is less than minimum required (${MIN_SIZE_MB}M)"
+          exit 1
+        fi
+
+    - name: Resolve version tag
+      id: generate
+      shell: bash
+      env:
+        OVERRIDE: ${{ inputs.tag }}
+      run: |
+        if [ -n "$OVERRIDE" ]; then
+          TAG="$OVERRIDE"
+        else
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+          BRANCH_SLUG=$(echo "${GITHUB_REF_NAME:-detached}" | sed -E 's/[^a-zA-Z0-9_-]+/_/g')
+          TAG="${BRANCH_SLUG}.$(date -u +'%Y%m%d-%H%M%S')-SHA${SHORT_SHA}"
+        fi
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        echo "Tag: $TAG"
+
+    - name: Authenticate with GCP
+      uses: google-github-actions/auth@v3
+      with:
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
+
+    - name: Setup gcloud
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Upload to GCS
+      id: upload
+      shell: bash
+      env:
+        CLOUDSDK_STORAGE_PARALLEL_COMPOSITE_UPLOAD_ENABLED: "False"
+      run: |
+        FILE_PATH="${{ inputs.file_path }}"
+        BUCKET="${{ inputs.bucket }}"
+        PREFIX="${{ inputs.prefix }}"
+        TAG="${{ steps.generate.outputs.tag }}"
+        LATEST="${{ inputs.latest_tag }}"
+        BASENAME=$(basename "$FILE_PATH")
+
+        OBJECT_PATH="${PREFIX}/${TAG}/${BASENAME}"
+        GCS_URI="gs://${BUCKET}/${OBJECT_PATH}"
+        HTTPS_URL="https://storage.googleapis.com/${BUCKET}/${OBJECT_PATH}"
+
+        # --content-encoding=identity prevents gcloud from auto-tagging .gz files as
+        # Content-Encoding: gzip, which would cause GCS to transcode (decompress) on
+        # GET when clients don't send Accept-Encoding: gzip - breaking `tar -xzf`.
+        # --cache-control=public,max-age=31536000,immutable since the path is versioned.
+        gcloud storage cp \
+          --content-type=application/gzip \
+          --content-encoding=identity \
+          --cache-control="public, max-age=31536000, immutable" \
+          "$FILE_PATH" "$GCS_URI"
+
+        # Sidecar checksum for integrity verification on download.
+        SHA256=$(sha256sum "$FILE_PATH" | awk '{print $1}')
+        echo "$SHA256" | gcloud storage cp \
+          --content-type=text/plain \
+          --cache-control="public, max-age=31536000, immutable" \
+          - "${GCS_URI}.sha256"
+
+        # Pointer file is mutable - keep it un-cached so consumers see updates promptly.
+        echo "$TAG" | gcloud storage cp \
+          --content-type=text/plain \
+          --cache-control="no-cache, max-age=0" \
+          - "gs://${BUCKET}/${PREFIX}/${LATEST}.txt"
+
+        echo "gcs_uri=$GCS_URI" >> "$GITHUB_OUTPUT"
+        echo "https_url=$HTTPS_URL" >> "$GITHUB_OUTPUT"
+        echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+
+    - name: Summary
+      shell: bash
+      run: |
+        echo "### GCS Artifact Upload" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** file_path=\`${{ inputs.file_path }}\` prefix=\`${{ inputs.prefix }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "**Out:** tag=\`${{ steps.generate.outputs.tag }}\` url=${{ steps.upload.outputs.https_url }}" >> "$GITHUB_STEP_SUMMARY"

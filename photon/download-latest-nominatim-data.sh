@@ -1,14 +1,31 @@
 #!/usr/bin/env bash
-# Download the latest Nominatim NDJSON data from the production Docker image.
-# Useful for local debugging — extracts the data artifact into the current directory.
+# Download the latest Nominatim NDJSON data from the public GCS bucket.
+# Useful for local debugging - downloads the file into the current directory.
 # Usage: ./download-latest-nominatim-data.sh [suffix] [tag]
 #   suffix: e.g. '-se' for country-specific data (default: none)
-#   tag:    Docker image tag (default: latest-prod)
+#   tag:    'latest-prod' (default), 'latest', or a specific timestamped tag
 
 set -euo pipefail
 
-SUFFIX=${1:-} # e.g. '-se'
-TAG=${2:-latest-prod}
+SUFFIX=${1:-}
+TAG_INPUT=${2:-latest-prod}
 
-SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
-"$SCRIPTDIR/../.github/actions/download-docker-artifact/extract.sh" eu.gcr.io/entur-system-1287 "geocoder-nominatim-data$SUFFIX:$TAG" .
+BUCKET=ent-geocoder-prd
+PREFIX="nominatim-data${SUFFIX}"
+FILENAME="nominatim.ndjson.gz"
+
+case "$TAG_INPUT" in
+  latest|latest-prod)
+    POINTER_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG_INPUT}.txt"
+    echo "Resolving $TAG_INPUT pointer: $POINTER_URL"
+    TAG=$(curl -fsSL "$POINTER_URL" | tr -d '[:space:]')
+    ;;
+  *)
+    TAG="$TAG_INPUT"
+    ;;
+esac
+
+URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG}/${FILENAME}"
+echo "Downloading $URL"
+curl -fL --retry 3 --retry-delay 10 -o "$FILENAME" "$URL"
+ls -lh "$FILENAME"

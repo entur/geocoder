@@ -1,0 +1,100 @@
+name: 'Download Artifact from GCS'
+description: 'Download a public GCS object at a versioned path via plain HTTPS'
+
+inputs:
+  bucket:
+    description: 'GCS bucket name (without gs:// prefix)'
+    required: false
+    default: 'ent-geocoder-prd'
+  prefix:
+    description: 'Object prefix inside the bucket (no leading or trailing slash)'
+    required: true
+  tag:
+    description: 'Version tag (subdirectory under prefix). Pass either tag or latest_tag.'
+    required: false
+    default: ''
+  latest_tag:
+    description: 'Name of the latest pointer file (without .txt suffix). Used when tag is empty.'
+    required: false
+    default: ''
+  filename:
+    description: 'Object basename to download'
+    required: true
+  destination:
+    description: 'Destination directory on disk'
+    required: true
+  min_size_mb:
+    description: 'Minimum file size in MB (optional validation)'
+    required: false
+    default: ''
+
+outputs:
+  artifact_file:
+    description: 'Path to the downloaded file'
+    value: ${{ steps.download.outputs.artifact_file }}
+  resolved_tag:
+    description: 'The tag actually used (resolved from latest_tag if necessary)'
+    value: ${{ steps.download.outputs.resolved_tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download from GCS
+      id: download
+      shell: bash
+      run: |
+        BUCKET="${{ inputs.bucket }}"
+        PREFIX="${{ inputs.prefix }}"
+        TAG="${{ inputs.tag }}"
+        LATEST="${{ inputs.latest_tag }}"
+        FILENAME="${{ inputs.filename }}"
+        DEST="${{ inputs.destination }}"
+
+        if [ -z "$TAG" ] && [ -z "$LATEST" ]; then
+          echo "ERROR: must pass either tag or latest_tag"
+          exit 1
+        fi
+
+        if [ -z "$TAG" ]; then
+          POINTER_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${LATEST}.txt"
+          echo "Resolving latest pointer: $POINTER_URL"
+          TAG=$(curl -fsSL "$POINTER_URL" | tr -d '[:space:]')
+          if [ -z "$TAG" ]; then
+            echo "ERROR: latest pointer is empty"
+            exit 1
+          fi
+          echo "Resolved tag: $TAG"
+        fi
+
+        URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG}/${FILENAME}"
+        mkdir -p "$DEST"
+        OUT="${DEST}/${FILENAME}"
+
+        echo "Downloading $URL"
+        curl -fL --retry 3 --retry-delay 10 -o "$OUT" "$URL"
+        ls -lh "$OUT"
+
+        echo "artifact_file=$OUT" >> "$GITHUB_OUTPUT"
+        echo "resolved_tag=$TAG" >> "$GITHUB_OUTPUT"
+
+    - name: Verify file size
+      if: inputs.min_size_mb != ''
+      shell: bash
+      run: |
+        ARTIFACT_FILE="${{ steps.download.outputs.artifact_file }}"
+        MIN_SIZE_MB="${{ inputs.min_size_mb }}"
+
+        FILE_SIZE_MB=$(du -m "$ARTIFACT_FILE" | cut -f1)
+        echo "Downloaded file size: ${FILE_SIZE_MB}M (minimum required: ${MIN_SIZE_MB}M)"
+
+        if [ "$FILE_SIZE_MB" -lt "$MIN_SIZE_MB" ]; then
+          echo "ERROR: Downloaded file size (${FILE_SIZE_MB}M) is less than minimum required (${MIN_SIZE_MB}M)"
+          exit 1
+        fi
+
+    - name: Summary
+      shell: bash
+      run: |
+        echo "### GCS Artifact Download" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** prefix=\`${{ inputs.prefix }}\` tag=\`${{ steps.download.outputs.resolved_tag }}\` filename=\`${{ inputs.filename }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "**Out:** artifact_file=\`${{ steps.download.outputs.artifact_file }}\`" >> "$GITHUB_STEP_SUMMARY"

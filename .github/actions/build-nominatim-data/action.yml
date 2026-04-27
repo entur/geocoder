@@ -30,7 +30,7 @@ inputs:
 outputs:
   image_tag:
     description: 'The tag of the uploaded nominatim data image'
-    value: ${{ steps.upload-nominatim-data.outputs.image_tag }}
+    value: ${{ steps.upload-nominatim-data.outputs.tag }}
 
 runs:
   using: 'composite'
@@ -62,9 +62,9 @@ runs:
 
     - name: Upload nominatim data
       id: upload-nominatim-data
-      uses: ./.github/actions/upload-docker-artifact
+      uses: ./.github/actions/upload-gcs-artifact
       with:
-        image_name: geocoder-nominatim-data${{ inputs.suffix }}
+        prefix: nominatim-data${{ inputs.suffix }}
         file_path: photon/nominatim.ndjson.gz
         min_size_mb: 1
         workload_identity_provider: ${{ inputs.workload_identity_provider }}

@@ -28,6 +28,55 @@ All deployment runs from the `main` branch.
 - [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) — Import/rebuild/deploy Photon for Sweden
 - [proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml) — Build/deploy Proxy for Sweden
 
+### Photon data artifacts (GCS)
+
+Built artifacts live in the public bucket `gs://ent-geocoder-prd/`:
+
+| Prefix                 | Contents                                     |
+| ---------------------- | -------------------------------------------- |
+| `nominatim-data/`      | `nominatim.ndjson.gz` per build (+ `.sha256`) |
+| `nominatim-data-se/`   | Sweden variant                               |
+| `photon-data/`         | `photon_data.tar.gz` per build (+ `.sha256`) |
+| `photon-data-se/`      | Sweden variant                               |
+| `data-sources/`        | Daily-refreshed third-party source files     |
+
+Each build writes to `<prefix>/<tag>/<filename>`. The `<tag>` is generated once and shared between the docker image and the GCS upload, so `geocoder-photon:<tag>` always pairs with `gs://.../photon-data/<tag>/photon_data.tar.gz`. Pointer files at the prefix root track recent builds:
+
+- `latest.txt` — most recent build from any branch
+- `latest-prod.txt` — most recent build deployed to prod (written by `photon-scheduled.yml`)
+
+The photon container fetches `photon_data.tar.gz` from `$PHOTON_DATA_URL` on startup, verifies its `.sha256` sidecar, and writes a `photon_data/.ready` sentinel after extraction so in-place container restarts skip the download. CI derives the URL from the image tag in [deploy-and-test.yml](.github/workflows/deploy-and-test.yml) and injects it into helm values; `templates/photon-data-validation.yaml` fails the helm render if it's missing.
+
+**Rolling back to a previous build:**
+
+```bash
+# See available pointers and recent tags
+curl -s https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.txt
+
+# Re-deploy a known-good image (the data is paired automatically)
+gh workflow run photon-deploy.yml -f target='tst → prd' -f image_tag=<previous-tag>
+```
+
+**90-day lifecycle rule** (apply once per bucket):
+
+```json
+{
+  "lifecycle": {
+    "rule": [
+      {
+        "action": {"type": "Delete"},
+        "condition": {
+          "age": 90,
+          "matchesPrefix": ["nominatim-data", "photon-data"],
+          "matchesSuffix": [".gz", ".sha256"]
+        }
+      }
+    ]
+  }
+}
+```
+The `matchesSuffix` filter spares the `latest*.txt` pointer files.
+
 
 ## Usage
 
