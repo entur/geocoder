@@ -12,15 +12,20 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CHECKOUT_REF: prod-approved
   LATEST_TAG: latest-prod
+
+# All checkouts and the generate-tag reusable workflow use the `prod-approved` tag
+# (moved by proxy CI after a successful prod deploy) so the scheduled rebuild runs
+# against the same code that's currently in prod, not whatever happens to be on main.
+# Hardcoded in three places below because reusable-workflow `with:` blocks can't read
+# the workflow-level `env` context.
 
 jobs:
   generate-tag:
     name: Generate Tag
     uses: ./.github/workflows/_generate-tag.yml
     with:
-      ref: ${{ env.CHECKOUT_REF }}
+      ref: prod-approved
 
   nominatim-data:
     name: Nominatim Data
@@ -35,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ env.CHECKOUT_REF }}
+          ref: prod-approved
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
@@ -61,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ env.CHECKOUT_REF }}
+          ref: prod-approved
       - name: Build Photon image
         id: build
         uses: ./.github/actions/build-photon-image
