@@ -29,14 +29,6 @@ jobs:
             url: https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip
             filename: Current_latest.zip
             min_size_mb: 30
-          - name: poi-festivals
-            url: https://raw.githubusercontent.com/entur/geocoder-data/refs/heads/main/festivals_netex_poi.xml
-            filename: festivals_netex_poi.xml
-            min_size_mb: 0
-          - name: poi-events
-            url: https://raw.githubusercontent.com/entur/geocoder-data/refs/heads/main/events_norway_poi.xml
-            filename: events_norway_poi.xml
-            min_size_mb: 0
           - name: matrikkel
             url: https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
             filename: Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
