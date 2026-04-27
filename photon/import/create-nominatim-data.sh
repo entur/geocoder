@@ -83,8 +83,8 @@ esac
 # shellcheck source=/dev/null
 . "$CONFIG_FILE"
 
-if [ -z "${GEONORGE_AREA:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
-    fail "No data sources configured. Set at least one of: GEONORGE_AREA, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
+if [ -z "${GEONORGE_AREA:-}" ] && [ -z "${MATRIKKEL_URL:-}" ] && [ -z "${STEDSNAVN_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
+    fail "No data sources configured. Set at least one of: GEONORGE_AREA, MATRIKKEL_URL, STEDSNAVN_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
 fi
 
 echo "Using config: $CONFIG_FILE"
@@ -93,8 +93,16 @@ START_TIME=$(date +%s)
 
 rm -f nominatim.ndjson
 
-if [ -n "${GEONORGE_AREA:-}" ]; then
+if [ -n "${MATRIKKEL_URL:-}" ]; then
+    [ -n "${STEDSNAVN_URL:-}" ] || fail "MATRIKKEL_URL requires STEDSNAVN_URL (used as -g GML for matrikkel)"
+    convert matrikkel -i "$MATRIKKEL_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
+elif [ -n "${GEONORGE_AREA:-}" ]; then
     convert matrikkel -r "$GEONORGE_AREA" -o nominatim.ndjson -a
+fi
+
+if [ -n "${STEDSNAVN_URL:-}" ]; then
+    convert stedsnavn -i "$STEDSNAVN_URL" -o nominatim.ndjson -a
+elif [ -n "${GEONORGE_AREA:-}" ]; then
     convert stedsnavn -r "$GEONORGE_AREA" -o nominatim.ndjson -a
 fi
 
