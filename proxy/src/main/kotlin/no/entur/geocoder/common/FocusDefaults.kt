@@ -10,5 +10,5 @@ object FocusDefaults {
     const val SCALE_KM: Int = 10
 
     /** Default `focus.weight` (mapped by `LocationBiasCalculator` to the Photon `scale` param). */
-    const val WEIGHT: Double = 28.0
+    const val WEIGHT: Double = 20.0
 }
