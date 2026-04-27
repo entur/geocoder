@@ -45,7 +45,7 @@ Each build writes to `<prefix>/<tag>/<filename>`. The `<tag>` is generated once 
 - `latest.txt` — most recent build from any branch
 - `latest-prod.txt` — most recent build deployed to prod (written by `photon-scheduled.yml`)
 
-The photon container fetches `photon_data.tar.gz` from `$PHOTON_DATA_URL` on startup, verifies its `.sha256` sidecar, and writes a `photon_data/.ready` sentinel after extraction so in-place container restarts skip the download. CI derives the URL from the image tag in [deploy-and-test.yml](.github/workflows/deploy-and-test.yml) and injects it into helm values; `templates/photon-data-validation.yaml` fails the helm render if it's missing.
+The photon container fetches `photon_data.tar.gz` from `$PHOTON_DATA_URL` on startup, verifies its `.sha256` sidecar, and writes a `photon_data/.ready` sentinel after extraction so in-place container restarts skip the download. CI derives the URL from the image tag in [_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) and injects it into helm values; `templates/photon-data-validation.yaml` fails the helm render if it's missing.
 
 **Rolling back to a previous build:**
 

@@ -59,7 +59,7 @@ jobs:
     name: Dev
     needs: resolve-tag
     if: inputs.target != 'tst → prd'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: dev
       image: "geocoder-proxy:${{ needs.resolve-tag.outputs.image_tag }}"
@@ -77,7 +77,7 @@ jobs:
       !cancelled() &&
       inputs.target != 'dev only' &&
       (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: tst
       image: "geocoder-proxy:${{ needs.resolve-tag.outputs.image_tag }}"
@@ -92,7 +92,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: prd
       image: "geocoder-proxy:${{ needs.resolve-tag.outputs.image_tag }}"

@@ -33,8 +33,16 @@ jobs:
             echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # Fresh tag for the rebuilt photon image and its photon_data upload. The input
+  # nominatim_data_tag stays as-is - it points at an artifact published in a previous
+  # workflow run, so reusing it here would collide with the existing docker image.
+  generate-tag:
+    name: Generate Tag
+    uses: ./.github/workflows/_generate-tag.yml
+
   photon:
     name: Photon Image
+    needs: generate-tag
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -52,6 +60,7 @@ jobs:
         uses: ./.github/actions/build-photon-image
         with:
           nominatim_data_tag: ${{ inputs.nominatim_data_tag }}
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
@@ -65,7 +74,7 @@ jobs:
     secrets: inherit
 
   notify-slack:
-    needs: [ photon, deploy ]
+    needs: [ generate-tag, photon, deploy ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

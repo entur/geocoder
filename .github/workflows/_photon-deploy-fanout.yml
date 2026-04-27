@@ -30,7 +30,7 @@ jobs:
   deploy-dev:
     name: Dev
     if: inputs.target == 'dev only' || inputs.target == 'dev → tst → prd'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: dev
       image: ${{ inputs.image }}
@@ -50,7 +50,7 @@ jobs:
       !cancelled() &&
       (inputs.target == 'tst → prd' || inputs.target == 'dev → tst → prd') &&
       (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped')
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: tst
       image: ${{ inputs.image }}
@@ -68,7 +68,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: prd
       image: ${{ inputs.image }}

@@ -16,8 +16,15 @@ env:
   LATEST_TAG: latest-prod
 
 jobs:
+  generate-tag:
+    name: Generate Tag
+    uses: ./.github/workflows/_generate-tag.yml
+    with:
+      ref: ${{ env.CHECKOUT_REF }}
+
   nominatim-data:
     name: Nominatim Data
+    needs: generate-tag
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -33,13 +40,14 @@ jobs:
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           latest_tag: ${{ env.LATEST_TAG }}
 
   photon:
     name: Photon Image
-    needs: nominatim-data
+    needs: [generate-tag, nominatim-data]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -59,6 +67,7 @@ jobs:
         uses: ./.github/actions/build-photon-image
         with:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           latest_tag: ${{ env.LATEST_TAG }}
@@ -73,7 +82,7 @@ jobs:
     secrets: inherit
 
   notify-slack:
-    needs: [ nominatim-data, photon, deploy ]
+    needs: [ generate-tag, nominatim-data, photon, deploy ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

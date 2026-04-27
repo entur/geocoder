@@ -1,7 +1,7 @@
 {{- /*
 Fails `helm template / install / upgrade` when PHOTON_DATA_URL is not set.
 
-CI injects the value via .github/workflows/deploy-and-test.yml (yq mutation
+CI injects the value via .github/workflows/_deploy-and-test.yml (yq mutation
 of common.container.env). For a manual deploy from a workstation, supply an
 overlay values file with the URL - see README "Photon data artifacts (GCS)".
 */ -}}

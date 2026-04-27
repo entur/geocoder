@@ -19,25 +19,18 @@ inputs:
     description: 'Override the latest tag (default: "latest")'
     required: false
     default: 'latest'
+  build_tag:
+    description: 'Shared per-run build tag (produced by the _generate-tag.yml reusable workflow). Used for both the photon_data.tar.gz upload and the docker image, so _deploy-and-test.yml can derive the data URL from the image tag.'
+    required: true
 
 outputs:
   image_tag:
-    description: 'Shared tag for the built Photon image and the photon_data.tar.gz upload'
-    value: ${{ steps.docker-image.outputs.image_tag }}
+    description: 'Tag of the built Photon image (== inputs.build_tag, exposed for callers that compose on outputs)'
+    value: ${{ inputs.build_tag }}
 
 runs:
   using: 'composite'
   steps:
-    # One tag for both the docker image and the photon_data.tar.gz upload.
-    # This pairing lets deploy-and-test.yml derive the data URL from the
-    # image tag, so callers don't have to thread photon_data_url separately.
-    - name: Generate shared build tag
-      id: tag
-      uses: ./.github/actions/generate-image-tag
-      with:
-        image_name: geocoder-photon${{ inputs.suffix }}
-        latest_tag: ${{ inputs.latest_tag }}
-
     - name: Dockerfile lint
       uses: hadolint/hadolint-action@v3.1.0
       with:
@@ -93,20 +86,19 @@ runs:
       with:
         prefix: photon-data${{ inputs.suffix }}
         file_path: photon/photon_data.tar.gz
-        tag: ${{ steps.tag.outputs.image_tag }}
+        tag: ${{ inputs.build_tag }}
         min_size_mb: 1
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
         latest_tag: ${{ inputs.latest_tag }}
 
     - name: Create and Push Photon image
-      id: docker-image
       uses: ./.github/actions/docker-build-push
       with:
         image_name: geocoder-photon${{ inputs.suffix }}
         context: photon
         push: true
-        tag: ${{ steps.tag.outputs.image_tag }}
+        tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
         latest_tag: ${{ inputs.latest_tag }}
@@ -115,6 +107,6 @@ runs:
       # Always runs — this action always pushes
       uses: ./.github/actions/docker-scan
       with:
-        image: "geocoder-photon${{ inputs.suffix }}:${{ steps.docker-image.outputs.image_tag }}"
+        image: "geocoder-photon${{ inputs.suffix }}:${{ inputs.build_tag }}"
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}

@@ -1,0 +1,38 @@
+name: Generate Build Tag
+
+# Single source of truth for the per-run build tag. Called as a leading job from any
+# workflow that produces multiple coupled artifacts (nominatim-data upload, photon-data
+# upload, docker image), so they all share the same identifier instead of drifting by
+# whatever wall-clock time elapsed between jobs.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Git ref to check out before running generate-tag.sh (default: workflow ref)'
+        type: string
+        required: false
+        default: ''
+    outputs:
+      tag:
+        description: 'Generated tag, e.g. main.20260427-104906-SHA745faea'
+        value: ${{ jobs.generate.outputs.tag }}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+      - id: tag
+        shell: bash
+        run: |
+          TAG=$(./.github/scripts/generate-tag.sh "$(git rev-parse HEAD)" "${GITHUB_REF_NAME:-detached}")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Build Tag"
+            echo "**Tag:** \`$TAG\`"
+          } >> "$GITHUB_STEP_SUMMARY"

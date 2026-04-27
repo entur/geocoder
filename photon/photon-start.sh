@@ -7,7 +7,7 @@
 # pod) skip the download. Pod replacement (rolling deploy, eviction, node
 # drain) starts fresh and re-downloads.
 #
-# CI injects PHOTON_DATA_URL via deploy-and-test.yml. For local debugging,
+# CI injects PHOTON_DATA_URL via _deploy-and-test.yml. For local debugging,
 # run download-latest-photon-data.sh first - it populates photon_data/ and
 # the sentinel so this script skips the download.
 

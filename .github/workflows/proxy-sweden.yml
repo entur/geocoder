@@ -62,7 +62,7 @@ jobs:
     if: |
       !cancelled() &&
       (needs.build-push.result == 'success' || inputs.build == 'Deploy specified image')
-    uses: ./.github/workflows/deploy-and-test.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: dev
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"

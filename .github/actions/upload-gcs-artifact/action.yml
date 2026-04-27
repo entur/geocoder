@@ -138,6 +138,6 @@ runs:
     - name: Summary
       shell: bash
       run: |
-        echo "### GCS Artifact Upload" >> "$GITHUB_STEP_SUMMARY"
-        echo "**In:** file_path=\`${{ inputs.file_path }}\` prefix=\`${{ inputs.prefix }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "### GCS Artifact Upload (${{ inputs.prefix }})" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** file_path=\`${{ inputs.file_path }}\`" >> "$GITHUB_STEP_SUMMARY"
         echo "**Out:** tag=\`${{ steps.generate.outputs.tag }}\` url=${{ steps.upload.outputs.https_url }}" >> "$GITHUB_STEP_SUMMARY"

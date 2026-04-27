@@ -26,6 +26,9 @@ inputs:
     description: 'Override the latest tag (default: "latest")'
     required: false
     default: 'latest'
+  build_tag:
+    description: 'Shared per-run build tag (produced by the _generate-tag.yml reusable workflow)'
+    required: true
 
 outputs:
   image_tag:
@@ -67,6 +70,7 @@ runs:
         prefix: nominatim-data${{ inputs.suffix }}
         file_path: photon/nominatim.ndjson.gz
         min_size_mb: 1
+        tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
         latest_tag: ${{ inputs.latest_tag }}
