@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PHOTON_JAR=https://github.com/komoot/photon/releases/download/1.1.0/photon-1.1.0.jar
+PHOTON_JAR=https://github.com/entur/photon/releases/download/2026-04-27/photon-1.1.0-b3cdd53.jar
 
 curl -sfL --retry 2 -o photon.jar $PHOTON_JAR && echo photon.jar downloaded successfully && exit 0
 
