@@ -1,15 +1,15 @@
 [versions]
-ben-manes-ver = "0.53.0"
+ben-manes-ver = "0.54.0"
 countries = "3.0.0"
 geotools = "34.2"
 jackson = "2.21.1"
-kotlin = "2.3.10"
-ktlint-gradle = "14.1.0"
-ktor = "3.4.1"
+kotlin = "2.3.21"
+ktlint-gradle = "14.2.0"
+ktor = "3.4.3"
 logback = "1.5.32"
 logback-encoder = "9.0"
 micrometer = "1.16.4"
-shadow = "9.3.2"
+shadow = "9.4.1"
 
 [libraries]
 geotools-referencing = { module = "org.geotools:gt-referencing", version.ref = "geotools" }

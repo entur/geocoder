@@ -7,7 +7,11 @@ import kotlin.test.assertEquals
 
 class V3AllowedParamsTest {
     private fun expectedParams(klass: KClass<*>): Set<String> =
-        klass.primaryConstructor?.parameters?.mapNotNull { it.name }?.toSet().orEmpty()
+        klass.primaryConstructor
+            ?.parameters
+            ?.mapNotNull { it.name }
+            ?.toSet()
+            .orEmpty()
 
     @Test
     fun `autocomplete ALLOWED_PARAMS matches data class fields`() {
