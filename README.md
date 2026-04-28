@@ -6,9 +6,15 @@ Geocoding service consisting of a Photon backend search engine and a Proxy front
 
 All deployment runs from the `main` branch.
 
+The daily import uses the `prod-approved` tag. Remember to update that whenever needed:
+```
+git tag -f prod-approved [sha]
+git push origin prod-approved --force-with-lease
+```
+
 ### Proxy
 
-**Automatic** — Push to `main` → builds and deploys to dev → tst → prd, with acceptance tests after each. Tags `prod-approved` after successful prod deploy.
+**Automatic** — Push to `main` → builds and deploys to dev → tst → prd, with acceptance tests after each.
 
 **Manual** — [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) also supports manual dispatch (target: `dev only` | `dev → tst → prd` | `tst → prd`).
 
@@ -16,7 +22,7 @@ All deployment runs from the `main` branch.
 
 ### Photon
 
-**Scheduled** — Daily at 07:27 UTC: full data import + build + deploy to tst → prd. Checks out the `prod-approved` tag (updated by Proxy CI after successful prod deploy) to avoid using untested commits.
+**Scheduled** — Daily at 07:27 UTC: full data import + build + deploy to tst → prd. Checks out the `prod-approved` tag to avoid using untested commits.
 
 **Manual:**
 - [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) — Import data, build Photon image, deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`)
