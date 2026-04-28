@@ -100,7 +100,7 @@ class PeliasApiTest {
             assertEquals("59.91", req.url.parameters["lat"])
             assertEquals("10.75", req.url.parameters["lon"])
             assertEquals("no", req.url.parameters["lang"])
-            assertEquals("30", req.url.parameters["limit"])
+            assertEquals("10", req.url.parameters["limit"])
         }
 
     @Test
@@ -120,6 +120,6 @@ class PeliasApiTest {
             val req1 = recordedRequests[0]
             assertTrue(req1.url.encodedPath.endsWith("/api"))
             assertEquals("foo.bar.baz,abc.def.xyz", req1.url.parameters["include"])
-            assertEquals("5", req1.url.parameters["limit"])
+            assertEquals(2 + RESULT_PRUNING_HEADROOM, req1.url.parameters["limit"]?.toInt())
         }
 }

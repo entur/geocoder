@@ -21,7 +21,7 @@ class PhotonReverseRequestTest {
         assertEquals(59.911491, request.latitude)
         assertEquals(10.757933, request.longitude)
         assertEquals("no", request.language)
-        assertEquals(30, request.limit)
+        assertEquals(10, request.limit)
         assertNull(request.radius)
     }
 

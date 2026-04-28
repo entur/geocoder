@@ -32,9 +32,11 @@ data class PhotonAutocompleteRequest(
          * We drop the city (by) if a GOSP exists with the same name. This can only be done after fetching,
          * so we fetch one extra and drop the last result if there is a match.
          *
+         * Also fetching more than requested to work around https://github.com/komoot/photon/issues/1061
+         *
          * see PeliasResultTransformer#filterCityIfGospIsPresent()
          */
-        const val RESULT_PRUNING_HEADROOM = 3
+        const val RESULT_PRUNING_HEADROOM = 30
 
         fun from(req: PeliasAutocompleteRequest): PhotonAutocompleteRequest {
             val includes = PhotonFilterBuilder.buildIncludes(req)

@@ -128,7 +128,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertEquals(6, request.limit)
+        assertEquals(3 + RESULT_PRUNING_HEADROOM, request.limit)
         assertEquals("no", request.language)
         assertNull(request.lat)
         assertNull(request.lon)
