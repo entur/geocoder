@@ -84,6 +84,7 @@ jobs:
     with:
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
       target: 'tst → prd'
+      require_approval: false
     secrets: inherit
 
   notify-slack:

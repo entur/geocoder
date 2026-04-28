@@ -21,6 +21,11 @@ on:
         description: 'dev only | dev → tst → prd | tst → prd'
         required: true
         type: string
+      require_approval:
+        description: 'Require manual approval before tst and prd. Dev never requires approval.'
+        required: false
+        type: boolean
+        default: true
       run_tests:
         required: false
         type: boolean
@@ -59,6 +64,7 @@ jobs:
       release_name: geocoder-photon${{ inputs.suffix }}
       values: values-kub-ent-tst${{ inputs.suffix }}.yaml
       photon_data_prefix: photon-data${{ inputs.suffix }}
+      require_approval: ${{ inputs.require_approval }}
       run_tests: ${{ inputs.run_tests }}
     secrets: inherit
 
@@ -77,5 +83,6 @@ jobs:
       release_name: geocoder-photon${{ inputs.suffix }}
       values: values-kub-ent-prd${{ inputs.suffix }}.yaml
       photon_data_prefix: photon-data${{ inputs.suffix }}
+      require_approval: ${{ inputs.require_approval }}
       run_tests: ${{ inputs.run_tests }}
     secrets: inherit
