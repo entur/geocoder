@@ -8,7 +8,7 @@ data class PeliasReverseRequest(
     val lat: Double,
     val lon: Double,
     val radius: Double? = null,
-    val size: Int = 10,
+    val size: Int = 30,
     val lang: String = "no",
     val boundaryCountry: String? = null,
     val boundaryCountyIds: List<String> = emptyList(),

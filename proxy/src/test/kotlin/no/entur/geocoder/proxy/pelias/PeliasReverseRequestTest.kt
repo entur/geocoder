@@ -91,7 +91,7 @@ class PeliasReverseRequestTest {
             )
 
         assertNull(req.radius)
-        assertEquals(10, req.size)
+        assertEquals(30, req.size)
         assertEquals("no", req.lang)
         assertNull(req.boundaryCountry)
         assertEquals(emptyList(), req.boundaryCountyIds)

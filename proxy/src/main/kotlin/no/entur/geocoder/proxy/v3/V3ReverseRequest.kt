@@ -6,7 +6,7 @@ data class V3ReverseRequest(
     val lat: Double,
     val lon: Double,
     val radius: Double? = null,
-    val limit: Int = 10,
+    val limit: Int = 30,
     val lang: String = "no",
     val layers: List<String> = emptyList(),
     val sources: List<String> = emptyList(),

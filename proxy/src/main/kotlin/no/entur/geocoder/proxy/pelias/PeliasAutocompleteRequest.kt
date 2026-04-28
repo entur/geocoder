@@ -6,7 +6,7 @@ import no.entur.geocoder.proxy.Text.safeVars
 
 data class PeliasAutocompleteRequest(
     val text: String = "",
-    val size: Int = 10,
+    val size: Int = 30,
     val lang: String = "no",
     val boundaryCountry: String? = null,
     val boundaryCountyIds: List<String> = emptyList(),

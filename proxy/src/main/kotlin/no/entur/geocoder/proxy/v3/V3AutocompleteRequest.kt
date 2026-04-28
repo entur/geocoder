@@ -6,7 +6,7 @@ import kotlin.math.roundToInt
 
 data class V3AutocompleteRequest(
     val q: String = "",
-    val limit: Int = 10,
+    val limit: Int = 30,
     val lang: String = "no",
     val lat: Double? = null,
     val lon: Double? = null,
