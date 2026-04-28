@@ -1,4 +1,4 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
 import de.westnordost.countryboundaries.CountryBoundaries
 import kotlinx.io.asSource

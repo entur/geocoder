@@ -1,9 +1,9 @@
 package no.entur.geocoder.proxy.pelias
 
-import no.entur.geocoder.common.Coordinate
-import no.entur.geocoder.common.Extra
-import no.entur.geocoder.common.Source
-import no.entur.geocoder.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Coordinate
+import no.entur.geocoder.proxy.common.Extra
+import no.entur.geocoder.proxy.common.Source
+import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*

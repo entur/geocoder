@@ -5,8 +5,8 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.entur.geocoder.common.JsonMapper.jacksonMapper
-import no.entur.geocoder.common.Util.within
+import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Util.within
 
 class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
     /**

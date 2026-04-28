@@ -1,4 +1,4 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
 enum class LegacyLayer {
     venue,

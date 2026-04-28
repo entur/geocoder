@@ -1,9 +1,9 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.http.*
-import no.entur.geocoder.common.SearchDefaults
-import no.entur.geocoder.proxy.Text.safeVar
-import no.entur.geocoder.proxy.Text.safeVars
+import no.entur.geocoder.proxy.common.SearchDefaults
+import no.entur.geocoder.proxy.common.Text.safeVar
+import no.entur.geocoder.proxy.common.Text.safeVars
 
 data class PeliasAutocompleteRequest(
     val text: String = "",

@@ -1,4 +1,4 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource

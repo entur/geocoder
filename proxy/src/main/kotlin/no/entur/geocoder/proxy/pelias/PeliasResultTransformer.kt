@@ -1,16 +1,16 @@
 package no.entur.geocoder.proxy.pelias
 
-import no.entur.geocoder.common.Category.GOSP
-import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.common.Coordinate
-import no.entur.geocoder.common.Coordinate.Companion.coordOrNull
-import no.entur.geocoder.common.Extra
-import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.LegacyLayer.Companion.LEGACY_LAYER_PREFIX
-import no.entur.geocoder.common.LegacySource.Companion.LEGACY_SOURCE_PREFIX
-import no.entur.geocoder.common.Source
-import no.entur.geocoder.common.Text.OSM_TAG_SEPARATOR
-import no.entur.geocoder.common.Util.toBigDecimalWithScale
+import no.entur.geocoder.proxy.common.Category.GOSP
+import no.entur.geocoder.proxy.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.proxy.common.Coordinate
+import no.entur.geocoder.proxy.common.Coordinate.Companion.coordOrNull
+import no.entur.geocoder.proxy.common.Extra
+import no.entur.geocoder.proxy.common.Geo
+import no.entur.geocoder.proxy.common.LegacyLayer.Companion.LEGACY_LAYER_PREFIX
+import no.entur.geocoder.proxy.common.LegacySource.Companion.LEGACY_SOURCE_PREFIX
+import no.entur.geocoder.proxy.common.Source
+import no.entur.geocoder.proxy.common.Text.OSM_TAG_SEPARATOR
+import no.entur.geocoder.proxy.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.pelias.PeliasResult.*
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*

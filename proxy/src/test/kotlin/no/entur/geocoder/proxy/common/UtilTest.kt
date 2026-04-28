@@ -1,7 +1,7 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
-import no.entur.geocoder.common.Util.titleize
-import no.entur.geocoder.common.Util.toBigDecimalWithScale
+import no.entur.geocoder.proxy.common.Util.titleize
+import no.entur.geocoder.proxy.common.Util.toBigDecimalWithScale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,4 +1,4 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
 import java.math.BigDecimal
 import java.math.RoundingMode.HALF_UP

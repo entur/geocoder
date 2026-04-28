@@ -1,12 +1,12 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.common.Category
-import no.entur.geocoder.common.Category.COUNTRY_PREFIX
-import no.entur.geocoder.common.Category.asCategory
-import no.entur.geocoder.common.Country
-import no.entur.geocoder.common.FocusDefaults
-import no.entur.geocoder.common.Geo
-import no.entur.geocoder.common.LegacySource.openaddresses
+import no.entur.geocoder.proxy.common.Category
+import no.entur.geocoder.proxy.common.Category.COUNTRY_PREFIX
+import no.entur.geocoder.proxy.common.Category.asCategory
+import no.entur.geocoder.proxy.common.Country
+import no.entur.geocoder.proxy.common.FocusDefaults
+import no.entur.geocoder.proxy.common.Geo
+import no.entur.geocoder.proxy.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.Lang.handleLang

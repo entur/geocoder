@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
-import no.entur.geocoder.common.Category
+import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import no.entur.geocoder.proxy.photon.Lang.handleLang
 import no.entur.geocoder.proxy.v3.V3ReverseRequest

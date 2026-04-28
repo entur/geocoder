@@ -1,7 +1,7 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.http.*
-import no.entur.geocoder.proxy.Text.safeVars
+import no.entur.geocoder.proxy.common.Text.safeVars
 
 data class PeliasPlaceRequest(val ids: List<String> = emptyList(), val debug: Boolean = false) {
     init {

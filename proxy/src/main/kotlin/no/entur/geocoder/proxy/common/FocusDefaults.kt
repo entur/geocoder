@@ -1,4 +1,4 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
 /**
  * Fallback values when a Pelias client sends `focus.point` without `focus.scale`/`focus.weight`.

@@ -1,7 +1,7 @@
 package no.entur.geocoder.proxy
 
-import no.entur.geocoder.proxy.Text.safeVar
-import no.entur.geocoder.proxy.Text.safeVars
+import no.entur.geocoder.proxy.common.Text.safeVar
+import no.entur.geocoder.proxy.common.Text.safeVars
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

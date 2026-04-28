@@ -1,8 +1,8 @@
 package no.entur.geocoder.proxy.v3
 
-import no.entur.geocoder.common.Category
-import no.entur.geocoder.common.Extra
-import no.entur.geocoder.common.Source
+import no.entur.geocoder.proxy.common.Category
+import no.entur.geocoder.proxy.common.Extra
+import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonGeometry

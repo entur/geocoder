@@ -1,6 +1,6 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
-import no.entur.geocoder.common.Text.joinOsmValuesToString
+import no.entur.geocoder.proxy.common.Text.joinOsmValuesToString
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
 

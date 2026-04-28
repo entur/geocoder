@@ -1,6 +1,7 @@
-package no.entur.geocoder.common
+package no.entur.geocoder.proxy.common
 
 import java.util.Locale
+import kotlin.collections.get
 
 data class Country(
     val name: String, // 2-letter lowercase (e.g. "no")
@@ -12,7 +13,7 @@ data class Country(
                 .getISOCountries()
                 .mapNotNull { iso2 ->
                     try {
-                        val iso3 = Locale("", iso2).isO3Country
+                        val iso3 = Locale.of("", iso2).getISO3Country()
                         if (iso3.isNotBlank()) {
                             Country(iso2.lowercase(), iso3.uppercase())
                         } else {

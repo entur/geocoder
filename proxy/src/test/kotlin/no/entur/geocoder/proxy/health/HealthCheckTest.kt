@@ -14,7 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
-import no.entur.geocoder.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
 import no.entur.geocoder.proxy.health.HealthCheck.HealthResponse
 import no.entur.geocoder.proxy.photon.PhotonApi
 import kotlin.test.Test

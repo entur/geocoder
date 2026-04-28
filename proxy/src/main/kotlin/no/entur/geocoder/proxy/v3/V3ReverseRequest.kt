@@ -1,7 +1,7 @@
 package no.entur.geocoder.proxy.v3
 
 import io.ktor.http.*
-import no.entur.geocoder.common.SearchDefaults
+import no.entur.geocoder.proxy.common.SearchDefaults
 
 data class V3ReverseRequest(
     val lat: Double,

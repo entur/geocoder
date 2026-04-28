@@ -10,10 +10,10 @@ import io.ktor.http.ContentType.Application.Json
 import io.ktor.server.testing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.entur.geocoder.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.common.JsonMapper.jacksonMapper
-import no.entur.geocoder.common.LegacyLayer.address
-import no.entur.geocoder.common.LegacySource.openstreetmap
+import no.entur.geocoder.proxy.common.Category.LEGACY_CATEGORY_PREFIX
+import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.LegacyLayer.address
+import no.entur.geocoder.proxy.common.LegacySource.openstreetmap
 import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.App.Companion.sharedApigeeToken
 import no.entur.geocoder.proxy.pelias.PeliasResult
