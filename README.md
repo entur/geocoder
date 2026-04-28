@@ -9,7 +9,7 @@ All deployment runs from the `main` branch.
 The daily import uses the `prod-approved` tag. Remember to update that whenever needed:
 ```
 git tag -f prod-approved [sha]
-git push origin prod-approved --force-with-lease
+git push origin prod-approved --force
 ```
 
 ### Proxy
