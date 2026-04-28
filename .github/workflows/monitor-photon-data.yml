@@ -2,6 +2,7 @@ name: Photon Data Monitor
 
 on:
   schedule:
+    # 8:22 UTC is 9:22 CET and 10:22 CEST
     - cron: '22 8 * * *'
   workflow_dispatch:  # Allow manual triggering
 
