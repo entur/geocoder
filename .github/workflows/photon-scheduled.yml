@@ -2,10 +2,10 @@ name: Photon — Scheduled Import
 
 on:
   schedule:
-    # Run full build every day (7:27 UTC is 8:27 CET / 9:27 CEST).
+    # Run full build every day (6:27 UTC is 7:27 CET / 8:27 CEST).
     # Uses the `prod-approved` tag (updated by proxy CI after successful prod deploy)
     # to avoid picking up untested commits from main.
-    - cron: '27 7 * * *'
+    - cron: '27 6 * * *'
 
 concurrency:
   group: "${{ github.workflow }}"
