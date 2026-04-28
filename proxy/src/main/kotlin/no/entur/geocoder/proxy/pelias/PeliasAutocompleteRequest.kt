@@ -1,13 +1,14 @@
 package no.entur.geocoder.proxy.pelias
 
 import io.ktor.http.*
+import no.entur.geocoder.common.SearchDefaults
 import no.entur.geocoder.proxy.Text.safeVar
 import no.entur.geocoder.proxy.Text.safeVars
 
 data class PeliasAutocompleteRequest(
     val text: String = "",
-    val size: Int = 30,
-    val lang: String = "no",
+    val size: Int = SearchDefaults.LIMIT,
+    val lang: String = SearchDefaults.LANG,
     val boundaryCountry: String? = null,
     val boundaryCountyIds: List<String> = emptyList(),
     val boundaryLocalityIds: List<String> = emptyList(),
@@ -32,8 +33,8 @@ data class PeliasAutocompleteRequest(
         fun from(req: Parameters) =
             PeliasAutocompleteRequest(
                 text = req["text"]?.safeVar() ?: "",
-                size = req["size"]?.toIntOrNull() ?: 10,
-                lang = req["lang"].safeVar() ?: "no",
+                size = req["size"]?.toIntOrNull() ?: SearchDefaults.LIMIT,
+                lang = req["lang"].safeVar() ?: SearchDefaults.LANG,
                 boundaryCountry = req["boundary.country"]?.safeVar(),
                 boundaryCountyIds = req["boundary.county_ids"]?.split(",").safeVars() ?: emptyList(),
                 boundaryLocalityIds = req["boundary.locality_ids"]?.split(",").safeVars() ?: emptyList(),

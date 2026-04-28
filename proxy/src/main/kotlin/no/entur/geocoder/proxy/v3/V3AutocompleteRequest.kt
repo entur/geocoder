@@ -1,13 +1,14 @@
 package no.entur.geocoder.proxy.v3
 
 import io.ktor.http.*
+import no.entur.geocoder.common.SearchDefaults
 import kotlin.math.ln
 import kotlin.math.roundToInt
 
 data class V3AutocompleteRequest(
     val q: String = "",
-    val limit: Int = 30,
-    val lang: String = "no",
+    val limit: Int = SearchDefaults.LIMIT,
+    val lang: String = SearchDefaults.LANG,
     val lat: Double? = null,
     val lon: Double? = null,
     val radius: Double? = null,
@@ -55,8 +56,8 @@ data class V3AutocompleteRequest(
             val lon = req["lon"]?.toDoubleOrNull()
             return V3AutocompleteRequest(
                 q = req["q"] ?: "",
-                limit = req["limit"]?.toIntOrNull() ?: 10,
-                lang = req["lang"] ?: "no",
+                limit = req["limit"]?.toIntOrNull() ?: SearchDefaults.LIMIT,
+                lang = req["lang"] ?: SearchDefaults.LANG,
                 lat = lat,
                 lon = lon,
                 radius = req["radius"]?.toDoubleOrNull(),

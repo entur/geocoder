@@ -1,13 +1,14 @@
 package no.entur.geocoder.proxy.v3
 
 import io.ktor.http.*
+import no.entur.geocoder.common.SearchDefaults
 
 data class V3ReverseRequest(
     val lat: Double,
     val lon: Double,
     val radius: Double? = null,
-    val limit: Int = 30,
-    val lang: String = "no",
+    val limit: Int = SearchDefaults.LIMIT,
+    val lang: String = SearchDefaults.LANG,
     val layers: List<String> = emptyList(),
     val sources: List<String> = emptyList(),
     val multimodal: String = "parent",
@@ -34,8 +35,8 @@ data class V3ReverseRequest(
                     req["lon"]?.toDoubleOrNull()
                         ?: throw IllegalArgumentException("Parameter 'lon' is required"),
                 radius = req["radius"]?.toDoubleOrNull(),
-                limit = req["limit"]?.toIntOrNull() ?: 10,
-                lang = req["lang"] ?: "no",
+                limit = req["limit"]?.toIntOrNull() ?: SearchDefaults.LIMIT,
+                lang = req["lang"] ?: SearchDefaults.LANG,
                 layers = req["layers"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 sources = req["sources"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                 multimodal = req["multimodal"] ?: "parent",

@@ -100,7 +100,7 @@ class PeliasApiTest {
             assertEquals("59.91", req.url.parameters["lat"])
             assertEquals("10.75", req.url.parameters["lon"])
             assertEquals("no", req.url.parameters["lang"])
-            assertEquals("10", req.url.parameters["limit"])
+            assertEquals("30", req.url.parameters["limit"])
         }
 
     @Test
