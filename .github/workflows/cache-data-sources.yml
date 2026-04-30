@@ -72,8 +72,71 @@ jobs:
             echo "**Size:** $(du -h "${{ matrix.source.filename }}" | cut -f1)"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  posthog-popular-stops:
+    name: Cache popular stops (${{ matrix.mode }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: fra
+            filename: popular-stops-fra.csv
+          - mode: til
+            filename: popular-stops-til.csv
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch ${{ matrix.mode }} from PostHog
+        env:
+          # Token needs insight:read and query:read scopes.
+          TOKEN: ${{ secrets.POSTHOG_TOKEN }}
+        run: |
+          .github/scripts/fetch-posthog-popular-stops.sh "${{ matrix.mode }}" > "${{ matrix.filename }}"
+          echo "Wrote $(wc -l < "${{ matrix.filename }}") lines to ${{ matrix.filename }}"
+          head -3 "${{ matrix.filename }}"
+
+      - name: Verify non-empty
+        env:
+          OUT: ${{ matrix.filename }}
+        run: |
+          ROWS=$(wc -l < "$OUT")
+          echo "Rows: $ROWS"
+          if [ "$ROWS" -lt 10 ]; then
+            echo "ERROR: only $ROWS rows in $OUT"
+            exit 1
+          fi
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload to GCS
+        env:
+          CLOUDSDK_STORAGE_PARALLEL_COMPOSITE_UPLOAD_ENABLED: "False"
+        run: |
+          gcloud storage cp "${{ matrix.filename }}" \
+            "gs://ent-geocoder-prd/data-sources/${{ matrix.filename }}"
+
+      - name: Summary
+        run: |
+          {
+            echo "### popular stops (${{ matrix.mode }})"
+            echo "**Source:** PostHog insight \`${{ matrix.short_id }}\`"
+            echo "**Cached:** \`gs://ent-geocoder-prd/data-sources/${{ matrix.filename }}\`"
+            echo "**Rows:** $(wc -l < "${{ matrix.filename }}")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   notify-slack:
-    needs: cache
+    needs: [cache, posthog-popular-stops]
     if: failure()
     runs-on: ubuntu-latest
     steps:
