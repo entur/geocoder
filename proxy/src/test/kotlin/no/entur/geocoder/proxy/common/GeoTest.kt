@@ -28,32 +28,18 @@ class GeoTest {
 
     @ParameterizedTest
     @CsvSource(
-        "5, 14", // very local: ~4km radius
-        "10, 13", // local: ~8km radius
-        "25, 12", // district: ~16km radius
-        "50, 11", // default Pelias: ~32km radius
-        "100, 10", // regional: ~64km radius
-        "200, 9", // multi-region: ~128km radius
-        "500, 8", // national: ~256km radius
-        "2500, 6", // Entur default: ~512km radius
+        "5, 14", // very local: biasRadius ~2 km
+        "10, 13", // local: biasRadius ~5 km
+        "25, 12", // district: biasRadius ~11 km
+        "50, 11", // biasRadius ~25 km
+        "100, 10", // regional: biasRadius ~55 km
+        "200, 9", // multi-region: biasRadius ~120 km
+        "500, 9", // saturating: effective ~280 km -> biasRadius ~120 km
+        "2500, 9", // FocusDefaults.SCALE_KM, saturated near asymptote 300 -> biasRadius ~120 km
     )
     fun `peliasScaleToPhotonZoom converts scale to zoom level`(peliasScale: Int, expectedZoom: Int) {
         val zoom = Geo.peliasScaleToPhotonZoom(peliasScale)
         assertEquals(expectedZoom, zoom)
-    }
-
-    @Test
-    fun `peliasScaleToPhotonZoom produces reasonable Photon radius`() {
-        // Verify that the conversion produces Photon radii in the expected ballpark
-        // For Pelias scale=50km, we expect Photon radius to be larger (due to exponential vs linear decay)
-        val zoom = Geo.peliasScaleToPhotonZoom(50)
-        val photonRadius = (1 shl (18 - zoom)) * 0.25
-
-        // Photon radius should be larger than Pelias scale but not excessively so
-        // For scale=50km, we expect radius around 20-40km
-        assert(photonRadius in 20.0..40.0) {
-            "For Pelias scale=50km, expected Photon radius in [20,40]km range, got ${photonRadius}km"
-        }
     }
 
     @ParameterizedTest

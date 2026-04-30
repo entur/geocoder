@@ -248,7 +248,7 @@ class PhotonAutocompleteRequestTest {
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertEquals(13, request.zoom) // SCALE_KM=10 → zoom=13
-        assertEquals(0.156, request.locationBiasScale!!, 0.005) // WEIGHT=20 → location_bias_scale ≈ 0.156
+        assertEquals(9, request.zoom) // SCALE_KM=2500 saturates near 300 -> zoom=9 (biasRadius ~120 km)
+        assertEquals(0.2, request.locationBiasScale!!, 0.01) // WEIGHT=15 -> location_bias_scale ~0.2
     }
 }

@@ -42,7 +42,9 @@ data class PhotonAutocompleteRequest(
             val includes = PhotonFilterBuilder.buildIncludes(req)
             val excludes = PhotonFilterBuilder.buildExcludes(req)
 
-            // Null focus → no location bias. Otherwise FocusDefaults fills in missing scale/weight.
+            // FocusDefaults supplies the API-documented fallbacks when focus.scale/focus.weight are
+            // absent. zoom is always computed; Photon disables location bias when no focus point is
+            // sent (lat/lon null) or when zoom <= 4, so the value is effectively ignored if focus is null.
             val zoom = Geo.peliasScaleToPhotonZoom(req.focus?.scale ?: FocusDefaults.SCALE_KM)
             val locationBiasScale = req.focus?.let { calculateLocationBias(it.weight ?: FocusDefaults.WEIGHT) }
 

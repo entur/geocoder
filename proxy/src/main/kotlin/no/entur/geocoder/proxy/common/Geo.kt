@@ -51,18 +51,26 @@ object Geo {
         return earthRadius * c
     }
 
+    private const val SATURATION_SCALE_KM: Double = 300.0
+
     /**
-     * Converts Pelias focus.scale (km) to Photon zoom [0-18]. Null → [FocusDefaults.SCALE_KM].
+     * Converts Pelias `focus.scale` (km) to Photon `zoom` [0-18].
      *
-     * Pelias decays linearly to zero at `2×scale`; Photon decays exponentially (never to zero),
-     * so the mapping is empirical: `(scale + 1) / 2.5` offsets Pelias's 1 km minimum and fits
-     * the curve, and `log2(... * 4)` is a close integer approximation of Photon's inverse
-     * `biasRadius = 2.2^(18-zoom) × 0.1`. Changing either constant rescales the whole mapping.
+     * Empirical tuning, not a literal Pelias-Photon equivalence. The literal half-score match
+     * (Pelias half-score at `dist = scale`, Photon half-score at `dist = biasRadius + decayRadius`
+     * since `negDecay = ln(0.5) / decayRadius`) leaves too little location discrimination for
+     * short queries in country-sized indexes after Photon's `location_bias_score` widening of
+     * `biasRadius`. The current heuristic targets `biasRadius = scale / 2`, paired with a tanh
+     * saturation around [SATURATION_SCALE_KM] so the API default `scale=2500` lands at a useful
+     * `zoom=9` (biasRadius ~120 km, decayRadius ~720 km) instead of `zoom=6` (biasRadius ~1280 km,
+     * which would swallow Norway). Pinned by `GeoTest` and `PhotonAutocompleteRequestTest`.
+     *
+     * `biasRadius = 2.2^(18 - zoom) * 0.1`, `decayRadius = max(8, biasRadius * (zoom - 3))`,
+     * see Photon's `SearchRequestBase`.
      */
-    fun peliasScaleToPhotonZoom(peliasScale: Int?): Int {
-        val effectiveScale = peliasScale ?: FocusDefaults.SCALE_KM
-        val targetRadius = (effectiveScale + 1.0) / 2.5
-        val zoom = (18 - log2(targetRadius * 4)).toInt()
+    fun peliasScaleToPhotonZoom(scale: Int): Int {
+        val saturated = SATURATION_SCALE_KM * tanh(scale / SATURATION_SCALE_KM)
+        val zoom = (18.0 - log(5.0 * saturated, 2.2)).roundToInt()
         return zoom.coerceIn(0, 18)
     }
 

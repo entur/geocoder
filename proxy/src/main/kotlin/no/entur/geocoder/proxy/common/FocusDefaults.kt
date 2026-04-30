@@ -7,8 +7,8 @@ package no.entur.geocoder.proxy.common
  */
 object FocusDefaults {
     /** Default `focus.scale` in kilometres. */
-    const val SCALE_KM: Int = 10
+    const val SCALE_KM: Int = 2500
 
     /** Default `focus.weight` (mapped by `LocationBiasCalculator` to the Photon `scale` param). */
-    const val WEIGHT: Double = 20.0
+    const val WEIGHT: Double = 15.0
 }
