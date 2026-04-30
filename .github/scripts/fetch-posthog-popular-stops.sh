@@ -27,4 +27,8 @@ curl -s "https://eu.posthog.com/api/projects/$PROJ/query/" \
      -H "Authorization: Bearer $TOKEN" \
      -H "Content-Type: application/json" \
      -d "{\"query\": $QUERY}" \
-  | jq -r '["id","name","usage"], (.results[] | [.breakdown_value[0], .breakdown_value[1], .aggregated_value]) | map(tostring) | join(";")'
+  | jq -r '["id","name","usage"],
+           (.results[]
+              | select(.breakdown_value[0] != "$$_posthog_breakdown_null_$$")
+              | [.breakdown_value[0], .breakdown_value[1], .aggregated_value])
+           | map(tostring) | join(";")'

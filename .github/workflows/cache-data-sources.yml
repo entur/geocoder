@@ -105,7 +105,7 @@ jobs:
         run: |
           ROWS=$(wc -l < "$OUT")
           echo "Rows: $ROWS"
-          if [ "$ROWS" -lt 10 ]; then
+          if [ "$ROWS" -lt 990 ]; then
             echo "ERROR: only $ROWS rows in $OUT"
             exit 1
           fi
@@ -130,7 +130,6 @@ jobs:
         run: |
           {
             echo "### popular stops (${{ matrix.mode }})"
-            echo "**Source:** PostHog insight \`${{ matrix.short_id }}\`"
             echo "**Cached:** \`gs://ent-geocoder-prd/data-sources/${{ matrix.filename }}\`"
             echo "**Rows:** $(wc -l < "${{ matrix.filename }}")"
           } >> "$GITHUB_STEP_SUMMARY"

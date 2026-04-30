@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.3.6"
+VERSION="v0.4.0"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -47,8 +47,15 @@ fi
 # override with NOMINATIM_CACHE_DIR=/path, or point it at ${TMPDIR}/... for ephemeral caching.
 CACHE_DIR="${NOMINATIM_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nominatim-converter}"
 
+# USAGE_FILE is set further down if the active config defines USAGE_URL.
+USAGE_FILE=""
+
 convert() {
-    "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$SCRIPTDIR/config/nominatim-converter.json"
+    if [ -n "$USAGE_FILE" ]; then
+        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$SCRIPTDIR/config/nominatim-converter.json" --usage "$USAGE_FILE"
+    else
+        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$SCRIPTDIR/config/nominatim-converter.json"
+    fi
 }
 
 # Parse arguments
@@ -90,6 +97,16 @@ fi
 echo "Using config: $CONFIG_FILE"
 
 START_TIME=$(date +%s)
+
+# Download popular-stops CSV once if the config requested usage-driven boosting.
+# `--usage` only accepts local paths, so we resolve the URL up-front and reuse the
+# same file across every per-source convert call.
+if [ -n "${USAGE_URL:-}" ]; then
+    USAGE_FILE="${TMPDIR:-/tmp}/nominatim-usage.csv"
+    echo "Downloading usage CSV: $USAGE_URL"
+    curl -sfL --retry 2 "$USAGE_URL" -o "$USAGE_FILE"
+    echo "  $(wc -l < "$USAGE_FILE") rows -> $USAGE_FILE"
+fi
 
 rm -f nominatim.ndjson
 
