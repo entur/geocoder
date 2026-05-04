@@ -29,8 +29,8 @@ fetch() {
 
 # Fetch both insights, slurp into one stream, sum usage per id.
 {
-    fetch hd0beH5A   # fra (boardings)
-    fetch LePQhnOg   # til (alightings)
+    fetch hd0beH5A   # fra (https://eu.posthog.com/project/2283/insights/hd0beH5A)
+    fetch LePQhnOg   # til (https://eu.posthog.com/project/2283/insights/LePQhnOg)
 } | jq -rs '
     [.[].results[]]
     | map(select(.breakdown_value[0] != "$$_posthog_breakdown_null_$$"))
