@@ -22,12 +22,12 @@ runs:
   using: 'composite'
   steps:
     - name: Dockerfile lint
-      uses: hadolint/hadolint-action@v3
+      uses: hadolint/hadolint-action@v3.3.0
       with:
         dockerfile: proxy/Dockerfile
         ignore: "DL3018,DL3059"
 
-    - uses: entur/ror-gha-workflows/.github/actions/gradle-cache@v1
+    - uses: entur/ror-gha-workflows/.github/actions/gradle-cache@v1.2.1
       with:
         java-version: '25'
 
