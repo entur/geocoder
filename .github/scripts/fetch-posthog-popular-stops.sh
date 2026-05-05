@@ -72,7 +72,7 @@ verify() {
         END {
             printf "Validated %d body rows, total usage %d, top %d\n", rows, total, top
             if (rows < 990) { print "ERROR: only " rows " body rows"; exit 1 }
-            if (top < 1000)  { print "ERROR: top usage " top " unrealistically low"; exit 1 }
+            if (top < 10000)  { print "ERROR: top usage " top " unrealistically low"; exit 1 }
         }
     ' "$1"
 }
