@@ -9,6 +9,10 @@ info:
   license:
     name: EUPL-1.2
     url: https://opensource.org/licenses/EUPL-1.2
+  x-entur-metadata:
+    id: geocoder
+    owner: team-ror
+    audience: open
 
 servers:
   - url: https://api.entur.io/geocoder

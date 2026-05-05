@@ -41,7 +41,7 @@ runs:
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: test-results-v2${{ inputs.environment }}
         path: acceptance-tests/test-output.log

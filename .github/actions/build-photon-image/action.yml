@@ -32,7 +32,7 @@ runs:
   using: 'composite'
   steps:
     - name: Dockerfile lint
-      uses: hadolint/hadolint-action@v3.1.0
+      uses: hadolint/hadolint-action@v3
       with:
         dockerfile: photon/Dockerfile
         ignore: "DL3018,DL3059"

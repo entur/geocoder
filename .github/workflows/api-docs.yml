@@ -30,18 +30,23 @@ concurrency:
 
 jobs:
   api-lint:
-    uses: entur/gha-api/.github/workflows/lint.yml@v4
+    strategy:
+      matrix:
+        spec:
+          - proxy/src/main/resources/openapi.yml
+          - proxy/src/main/resources/openapi3.yml
+    uses: entur/gha-api/.github/workflows/lint.yml@v6
     secrets: inherit
     with:
-      spec: proxy/src/main/resources/openapi*.yml
+      path: ${{ matrix.spec }}
 
   api-publish:
     if: github.event_name != 'pull_request'
     needs: api-lint
-    uses: entur/gha-api/.github/workflows/publish.yml@v4
+    uses: entur/gha-api/.github/workflows/publish.yml@v6
     secrets: inherit
     with:
-      spec: proxy/src/main/resources/openapi.yml
+      path: proxy/src/main/resources/openapi.yml
 
   docs-publish:
     if: github.event_name != 'pull_request'
