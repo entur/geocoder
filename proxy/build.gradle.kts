@@ -53,12 +53,12 @@ dependencies {
 configurations.configureEach {
     resolutionStrategy.eachDependency {
         if (requested.group == "io.netty") {
-            useVersion("4.2.10.Final")
+            useVersion("4.2.12.Final")
             because("force latest version to fix CVE-2025-67735")
         }
         if (requested.group.startsWith("tools.jackson")) {
-            useVersion("3.1.0")
-            because("force latest version to fix GHSA-72hv-8253-57qq")
+            useVersion("3.1.1")
+            because("force latest version to fix GHSA-2m67-wjpj-xhg9")
         }
     }
 }
