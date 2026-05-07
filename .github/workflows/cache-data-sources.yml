@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Download ${{ matrix.source.name }}
         run: |
-          curl -fL --retry 3 --retry-delay 10 -o "${{ matrix.source.filename }}" "${{ matrix.source.url }}"
+          curl -fL --retry 3 --retry-delay 10 -A "entur-geocoder" -o "${{ matrix.source.filename }}" "${{ matrix.source.url }}"
           ls -lh "${{ matrix.source.filename }}"
 
       - name: Verify file size

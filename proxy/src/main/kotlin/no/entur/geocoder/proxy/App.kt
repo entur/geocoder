@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.UserAgent
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -180,6 +181,9 @@ class App {
 
         private val httpClient =
             HttpClient(CIO) {
+                install(UserAgent) {
+                    agent = "entur-geocoder-proxy"
+                }
                 install(ClientContentNegotiation) {
                     jackson()
                 }

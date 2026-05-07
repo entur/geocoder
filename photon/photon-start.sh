@@ -27,10 +27,10 @@ if [ ! -f "$SENTINEL" ]; then
   echo "Downloading $PHOTON_DATA_URL"
   TARBALL=$(mktemp)
   trap 'rm -f "$TARBALL"' EXIT
-  curl -fL --retry 3 --retry-delay 10 --connect-timeout 30 -o "$TARBALL" "$PHOTON_DATA_URL"
+  curl -fL --retry 3 --retry-delay 10 --connect-timeout 30 -A "entur-geocoder" -o "$TARBALL" "$PHOTON_DATA_URL"
 
   # CI always uploads .sha256 alongside the tarball; treat its absence as an error.
-  EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 "${PHOTON_DATA_URL}.sha256" | tr -d '[:space:]')
+  EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 -A "entur-geocoder" "${PHOTON_DATA_URL}.sha256" | tr -d '[:space:]')
   ACTUAL=$(sha256sum "$TARBALL" | awk '{print $1}')
   if [ "$EXPECTED" != "$ACTUAL" ]; then
     echo "checksum mismatch: expected $EXPECTED got $ACTUAL" >&2

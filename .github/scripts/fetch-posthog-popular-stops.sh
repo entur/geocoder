@@ -21,11 +21,11 @@ INSIGHTS=(
 fetch() {
     local short_id=$1
     local query
-    query=$(curl -sG "https://eu.posthog.com/api/projects/$PROJ/insights/" \
+    query=$(curl -sG -A "entur-geocoder" "https://eu.posthog.com/api/projects/$PROJ/insights/" \
                  -H "Authorization: Bearer $TOKEN" \
                  --data-urlencode "short_id=$short_id" \
             | jq ".results[0].query | .source.breakdownFilter.breakdown_limit = $LIMIT")
-    curl -s "https://eu.posthog.com/api/projects/$PROJ/query/" \
+    curl -s -A "entur-geocoder" "https://eu.posthog.com/api/projects/$PROJ/query/" \
          -H "Authorization: Bearer $TOKEN" \
          -H "Content-Type: application/json" \
          -d "{\"query\": $query}"

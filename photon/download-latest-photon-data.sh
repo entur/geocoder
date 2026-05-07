@@ -20,7 +20,7 @@ case "$TAG_INPUT" in
   latest|latest-prod)
     POINTER_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG_INPUT}.txt"
     echo "Resolving $TAG_INPUT pointer: $POINTER_URL"
-    TAG=$(curl -fsSL "$POINTER_URL" | tr -d '[:space:]')
+    TAG=$(curl -fsSL -A "entur-geocoder" "$POINTER_URL" | tr -d '[:space:]')
     ;;
   *)
     TAG="$TAG_INPUT"
@@ -32,9 +32,9 @@ echo "Downloading $URL"
 
 TARBALL=$(mktemp)
 trap 'rm -f "$TARBALL"' EXIT
-curl -fL --retry 3 --retry-delay 10 -o "$TARBALL" "$URL"
+curl -fL --retry 3 --retry-delay 10 -A "entur-geocoder" -o "$TARBALL" "$URL"
 
-EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 "${URL}.sha256" | tr -d '[:space:]')
+EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 -A "entur-geocoder" "${URL}.sha256" | tr -d '[:space:]')
 ACTUAL=$(sha256sum "$TARBALL" | awk '{print $1}')
 if [ "$EXPECTED" != "$ACTUAL" ]; then
   echo "checksum mismatch: expected $EXPECTED got $ACTUAL" >&2

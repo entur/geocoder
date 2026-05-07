@@ -38,7 +38,7 @@ if [ ! -f "$BINARY" ]; then
         *) fail "Unsupported OS: $OS" ;;
     esac
     echo "Downloading nominatim-converter $VERSION..."
-    curl -sfL --retry 2 "$BASE_URL/$ARTIFACT" -o "$BINARY"
+    curl -sfL --retry 2 -A "entur-geocoder" "$BASE_URL/$ARTIFACT" -o "$BINARY"
     chmod +x "$BINARY"
 fi
 
@@ -104,7 +104,7 @@ START_TIME=$(date +%s)
 if [ -n "${USAGE_URL:-}" ]; then
     USAGE_FILE="${TMPDIR:-/tmp}/nominatim-usage.csv"
     echo "Downloading usage CSV: $USAGE_URL"
-    curl -sfL --retry 2 "$USAGE_URL" -o "$USAGE_FILE"
+    curl -sfL --retry 2 -A "entur-geocoder" "$USAGE_URL" -o "$USAGE_FILE"
     echo "  $(wc -l < "$USAGE_FILE") rows -> $USAGE_FILE"
 fi
 

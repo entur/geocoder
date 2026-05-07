@@ -13,7 +13,7 @@ jobs:
       - name: Check Photon import date
         id: check
         run: |
-          INFO=$(curl -sf https://api.entur.io/geocoder/v2/info)
+          INFO=$(curl -sf -A "entur-geocoder" https://api.entur.io/geocoder/v2/info)
           IMPORT_DATE=$(echo "$INFO" | jq -r '.photonImportDate')
 
           echo "Import date: $IMPORT_DATE"

@@ -18,7 +18,7 @@ case "$TAG_INPUT" in
   latest|latest-prod)
     POINTER_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG_INPUT}.txt"
     echo "Resolving $TAG_INPUT pointer: $POINTER_URL"
-    TAG=$(curl -fsSL "$POINTER_URL" | tr -d '[:space:]')
+    TAG=$(curl -fsSL -A "entur-geocoder" "$POINTER_URL" | tr -d '[:space:]')
     ;;
   *)
     TAG="$TAG_INPUT"
@@ -27,5 +27,5 @@ esac
 
 URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG}/${FILENAME}"
 echo "Downloading $URL"
-curl -fL --retry 3 --retry-delay 10 -o "$FILENAME" "$URL"
+curl -fL --retry 3 --retry-delay 10 -A "entur-geocoder" -o "$FILENAME" "$URL"
 ls -lh "$FILENAME"
