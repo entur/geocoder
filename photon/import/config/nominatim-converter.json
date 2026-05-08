@@ -76,7 +76,7 @@
   },
   "matrikkel": {
     "addressPopularity": 1.0,
-    "streetPopularity": 5.0,
+    "streetPopularity": 2.0,
     "rankAddress": 26
   },
   "poi": {
