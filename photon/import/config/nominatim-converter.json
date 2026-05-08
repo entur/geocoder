@@ -87,14 +87,14 @@
     "defaultValue": 50,
     "rankAddress": 30,
     "stopTypeFactors": {
-      "airport": 500.0,
+      "airport": 150.0,
       "busStation": 20.0,
       "ferryStop": 0.2,
       "harbourPort": 0.2,
       "metroStation": 20.0,
       "onstreetBus": 0.1,
       "onstreetTram": 0.1,
-      "railStation": 100.0
+      "railStation": 500.0
     },
     "interchangeFactors": {
       "recommendedInterchange": 3.0,
