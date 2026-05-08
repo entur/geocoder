@@ -108,6 +108,6 @@
   "importance": {
     "minPopularity": 1.0,
     "maxPopularity": 1000000000.0,
-    "floor": 0.01
+    "floor": 0.001
   }
 }
