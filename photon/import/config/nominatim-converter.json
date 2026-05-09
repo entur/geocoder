@@ -103,6 +103,7 @@
   },
   "groupOfStopPlaces": {
     "importanceMultiplier": 5.0,
+    "secondaryGosps": ["NSR:GroupOfStopPlaces:7"],
     "rankAddress": 30
   },
   "importance": {
