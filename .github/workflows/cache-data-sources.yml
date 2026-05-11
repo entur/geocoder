@@ -25,11 +25,15 @@ jobs:
           - name: matrikkel
             url: https://nedlasting.geonorge.no/geonorge/Basisdata/MatrikkelenAdresse/CSV/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
             filename: Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip
-            min_size_mb: 100
+            min_size_kb: 100000
           - name: stedsnavn
             url: https://nedlasting.geonorge.no/geonorge/Basisdata/Stedsnavn/GML/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip
             filename: Basisdata_0000_Norge_25833_Stedsnavn_GML.zip
-            min_size_mb: 100
+            min_size_kb: 100000
+          - name: custom-pois
+            url: https://poiman.entur.io/api/export/netex
+            filename: events_norway_poi.xml
+            min_size_kb: 25
 
     steps:
       - name: Download ${{ matrix.source.name }}
@@ -39,10 +43,10 @@ jobs:
 
       - name: Verify file size
         run: |
-          SIZE_MB=$(du -m "${{ matrix.source.filename }}" | cut -f1)
-          MIN_MB=${{ matrix.source.min_size_mb }}
-          echo "Size: ${SIZE_MB}M (min ${MIN_MB}M)"
-          if [ "$SIZE_MB" -lt "$MIN_MB" ]; then
+          SIZE_KB=$(du -k "${{ matrix.source.filename }}" | cut -f1)
+          MIN_KB=${{ matrix.source.min_size_kb }}
+          echo "Size: ${SIZE_KB}K (min ${MIN_KB}K)"
+          if [ "$SIZE_KB" -lt "$MIN_KB" ]; then
             echo "ERROR: file smaller than minimum"
             exit 1
           fi
