@@ -5,6 +5,7 @@ on:
     # Run full build every day (6:27 UTC is 7:27 CET or 8:27 CEST)
     # Uses the `prod-approved` tag to avoid picking up untested commits from main.
     - cron: '27 6 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: "${{ github.workflow }}"
