@@ -85,9 +85,9 @@ data class V3Result(
         val layers: List<Layer>? = null,
         val sources: List<String>? = null,
         val countries: List<String>? = null,
-        val countyIds: List<String>? = null,
-        val localityIds: List<String>? = null,
-        val tariffZones: List<String>? = null,
+        val counties: List<String>? = null,
+        val localities: List<String>? = null,
+        val fareZones: List<String>? = null,
         val fareZoneAuthorities: List<String>? = null,
         val multimodal: String? = null,
     )

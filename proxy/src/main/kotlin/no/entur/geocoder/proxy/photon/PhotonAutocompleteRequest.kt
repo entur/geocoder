@@ -1,9 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.common.Category
-import no.entur.geocoder.proxy.common.Category.COUNTRY_PREFIX
 import no.entur.geocoder.proxy.common.Category.asCategory
-import no.entur.geocoder.proxy.common.Country
 import no.entur.geocoder.proxy.common.FocusDefaults
 import no.entur.geocoder.proxy.common.Geo
 import no.entur.geocoder.proxy.common.LegacySource.openaddresses
@@ -105,34 +103,7 @@ data class PhotonAutocompleteRequest(
             )
 
         fun from(req: V3AutocompleteRequest): PhotonAutocompleteRequest {
-            val includes =
-                buildList {
-                    if (req.countries.isNotEmpty()) {
-                        add(
-                            req.countries
-                                .mapNotNull { Country.parse(it) }
-                                .joinToString(",") { COUNTRY_PREFIX + it.name },
-                        )
-                    }
-                    if (req.countyIds.isNotEmpty()) {
-                        add(req.countyIds.joinToString(",") { Category.countyIdsCategory(it) })
-                    }
-                    if (req.localityIds.isNotEmpty()) {
-                        add(req.localityIds.joinToString(",") { Category.localityIdsCategory(it) })
-                    }
-                    if (req.tariffZones.isNotEmpty()) {
-                        add(req.tariffZones.joinToString(",") { Category.tariffZoneIdCategory(it) })
-                    }
-                    if (req.fareZoneAuthorities.isNotEmpty()) {
-                        add(req.fareZoneAuthorities.joinToString(",") { Category.fareZoneAuthorityCategory(it) })
-                    }
-                    if (req.sources.isNotEmpty()) {
-                        add(req.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
-                    }
-                    if (req.layers.isNotEmpty()) {
-                        add(req.layers.joinToString(",") { Category.LAYER_PREFIX + it })
-                    }
-                }
+            val includes = PhotonFilterBuilder.buildIncludes(req)
 
             val excludeAddresses =
                 if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {

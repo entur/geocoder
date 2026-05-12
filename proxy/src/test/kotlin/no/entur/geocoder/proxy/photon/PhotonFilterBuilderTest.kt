@@ -114,6 +114,23 @@ class PhotonFilterBuilderTest {
     }
 
     @Test
+    fun `v2 tariffZones routes refs to tariff_zone_id or fare_zone_id by ref shape`() {
+        val req =
+            PeliasAutocompleteRequest(
+                text = "mixed",
+                tariffZones = listOf("RUT:TariffZone:1", "RUT:FareZone:4", "ATB:TariffZone:A"),
+            )
+        val includes = PhotonFilterBuilder.buildIncludes(req)
+        // All three refs share one comma-separated include group so they OR within v2's tariffZones filter.
+        assertTrue(
+            includes.contains(
+                "tariff_zone_id.RUT.TariffZone.1,fare_zone_id.RUT.FareZone.4,tariff_zone_id.ATB.TariffZone.A",
+            ),
+            "Got: $includes",
+        )
+    }
+
+    @Test
     fun `boundary county_ids and locality_ids are converted to Photon filters`() {
         val autocomplete =
             PeliasAutocompleteRequest(

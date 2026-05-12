@@ -44,9 +44,9 @@ paths:
         - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Countries'
-        - $ref: '#/components/parameters/CountyIds'
-        - $ref: '#/components/parameters/LocalityIds'
-        - $ref: '#/components/parameters/TariffZones'
+        - $ref: '#/components/parameters/Counties'
+        - $ref: '#/components/parameters/Localities'
+        - $ref: '#/components/parameters/FareZones'
         - $ref: '#/components/parameters/FareZoneAuthorities'
         - $ref: '#/components/parameters/Multimodal'
         - $ref: '#/components/parameters/ETClientName'
@@ -79,6 +79,11 @@ paths:
         - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Sources'
+        - $ref: '#/components/parameters/Countries'
+        - $ref: '#/components/parameters/Counties'
+        - $ref: '#/components/parameters/Localities'
+        - $ref: '#/components/parameters/FareZones'
+        - $ref: '#/components/parameters/FareZoneAuthorities'
         - $ref: '#/components/parameters/Multimodal'
         - $ref: '#/components/parameters/ETClientName'
       responses:
@@ -211,8 +216,8 @@ components:
           type: string
       example: [no]
 
-    CountyIds:
-      name: countyIds
+    Counties:
+      name: counties
       in: query
       description: County IDs filter
       style: form
@@ -223,8 +228,8 @@ components:
           type: string
       example: ["KVE:County:03"]
 
-    LocalityIds:
-      name: localityIds
+    Localities:
+      name: localities
       in: query
       description: Locality IDs filter
       style: form
@@ -235,17 +240,19 @@ components:
           type: string
       example: ["KVE:Locality:0301"]
 
-    TariffZones:
-      name: tariffZones
+    FareZones:
+      name: fareZones
       in: query
-      description: Tariff zone IDs filter
+      description: |
+        Fare zone IDs filter. Refs must be FareZone-shaped (e.g. `RUT:FareZone:1`); TariffZone-shaped
+        refs do not match because the two namespaces are indexed under distinct prefixes.
       style: form
       explode: false
       schema:
         type: array
         items:
           type: string
-      example: ["RUT:TariffZone:1"]
+      example: ["RUT:FareZone:1"]
 
     FareZoneAuthorities:
       name: fareZoneAuthorities
@@ -583,15 +590,15 @@ components:
           type: array
           items:
             type: string
-        countyIds:
+        counties:
           type: array
           items:
             type: string
-        localityIds:
+        localities:
           type: array
           items:
             type: string
-        tariffZones:
+        fareZones:
           type: array
           items:
             type: string

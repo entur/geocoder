@@ -204,6 +204,29 @@ class PhotonReverseRequestTest {
     }
 
     @Test
+    fun `from V3ReverseRequest forwards boundary and fare zone filters as Photon includes`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.911491,
+                lon = 10.757933,
+                countries = listOf("no"),
+                counties = listOf("KVE:TopographicPlace:03"),
+                localities = listOf("KVE:TopographicPlace:0301"),
+                fareZones = listOf("RUT:FareZone:1"),
+                fareZoneAuthorities = listOf("RUT"),
+            )
+
+        val request = PhotonReverseRequest.from(req)
+
+        assertTrue(request.includes.any { it == "country.no" })
+        assertTrue(request.includes.any { it == "county_gid.KVE.TopographicPlace.03" })
+        assertTrue(request.includes.any { it == "locality_gid.KVE.TopographicPlace.0301" })
+        assertTrue(request.includes.any { it == "fare_zone_id.RUT.FareZone.1" })
+        assertTrue(request.includes.any { it.startsWith("fare_zone_authority.RUT") })
+    }
+
+
+    @Test
     fun `from PeliasReverseParams handles all boundary types`() {
         val req =
             PeliasReverseRequest(

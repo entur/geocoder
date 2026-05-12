@@ -18,30 +18,6 @@ object V3ResultTransformer {
     ): V3Result {
         val features = filterCityIfGospIsPresent(result.features.map { transformFeature(it) }).take(req.limit)
 
-        val filters =
-            if (req.layers.isNotEmpty() ||
-                req.sources.isNotEmpty() ||
-                req.countries.isNotEmpty() ||
-                req.countyIds.isNotEmpty() ||
-                req.localityIds.isNotEmpty() ||
-                req.tariffZones.isNotEmpty() ||
-                req.fareZoneAuthorities.isNotEmpty() ||
-                req.multimodal != "parent"
-            ) {
-                V3Result.Filters(
-                    layers = req.layers.mapNotNull { mapToLayer(it) }.takeIf { it.isNotEmpty() },
-                    sources = req.sources.takeIf { it.isNotEmpty() },
-                    countries = req.countries.takeIf { it.isNotEmpty() },
-                    countyIds = req.countyIds.takeIf { it.isNotEmpty() },
-                    localityIds = req.localityIds.takeIf { it.isNotEmpty() },
-                    tariffZones = req.tariffZones.takeIf { it.isNotEmpty() },
-                    fareZoneAuthorities = req.fareZoneAuthorities.takeIf { it.isNotEmpty() },
-                    multimodal = req.multimodal.takeIf { it != "parent" },
-                )
-            } else {
-                null
-            }
-
         return V3Result(
             features = features,
             bbox = calculateBbox(features),
@@ -52,7 +28,7 @@ object V3ResultTransformer {
                             text = req.q,
                             limit = req.limit,
                             language = req.lang,
-                            filters = filters,
+                            filters = buildFiltersEcho(req),
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
@@ -77,10 +53,39 @@ object V3ResultTransformer {
                             longitude = req.lon,
                             limit = req.limit,
                             language = req.lang,
+                            filters = buildFiltersEcho(req),
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
                 ),
+        )
+    }
+
+    /**
+     * Echo the request filters back in the response metadata. Returns null when no filters were
+     * applied (so the field is omitted from the JSON via `@JsonInclude(NON_NULL)`).
+     */
+    private fun buildFiltersEcho(params: V3FilterParams): V3Result.Filters? {
+        if (params.layers.isEmpty() &&
+            params.sources.isEmpty() &&
+            params.countries.isEmpty() &&
+            params.counties.isEmpty() &&
+            params.localities.isEmpty() &&
+            params.fareZones.isEmpty() &&
+            params.fareZoneAuthorities.isEmpty() &&
+            params.multimodal == "parent"
+        ) {
+            return null
+        }
+        return V3Result.Filters(
+            layers = params.layers.mapNotNull { mapToLayer(it) }.takeIf { it.isNotEmpty() },
+            sources = params.sources.takeIf { it.isNotEmpty() },
+            countries = params.countries.takeIf { it.isNotEmpty() },
+            counties = params.counties.takeIf { it.isNotEmpty() },
+            localities = params.localities.takeIf { it.isNotEmpty() },
+            fareZones = params.fareZones.takeIf { it.isNotEmpty() },
+            fareZoneAuthorities = params.fareZoneAuthorities.takeIf { it.isNotEmpty() },
+            multimodal = params.multimodal.takeIf { it != "parent" },
         )
     }
 

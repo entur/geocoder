@@ -6,13 +6,21 @@ import no.entur.geocoder.proxy.common.SearchDefaults
 data class V3ReverseRequest(
     val lat: Double,
     val lon: Double,
+    /** Search radius in kilometres. Decimals accepted. Forwarded as-is to Photon's reverse `radius` param (also km). */
     val radius: Double? = null,
     val limit: Int = SearchDefaults.LIMIT,
     val lang: String = SearchDefaults.LANG,
-    val layers: List<String> = emptyList(),
-    val sources: List<String> = emptyList(),
-    val multimodal: String = "parent",
-) {
+    override val layers: List<String> = emptyList(),
+    override val sources: List<String> = emptyList(),
+    override val countries: List<String> = emptyList(),
+    override val counties: List<String> = emptyList(),
+    override val localities: List<String> = emptyList(),
+    /** Fare zone IDs in `AUTH:FareZone:ID` form. Maps to the converter's `fare_zone_id.` indexed prefix; TariffZone-shaped refs will not match. */
+    override val fareZones: List<String> = emptyList(),
+    /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
+    override val fareZoneAuthorities: List<String> = emptyList(),
+    override val multimodal: String = "parent",
+) : V3FilterParams {
     init {
         require(lat in -90.0..90.0) { "Parameter 'lat' must be between -90 and 90" }
         require(lon in -180.0..180.0) { "Parameter 'lon' must be between -180 and 180" }
@@ -22,7 +30,8 @@ data class V3ReverseRequest(
         internal val ALLOWED_PARAMS =
             setOf(
                 "lat", "lon", "radius", "limit", "lang",
-                "layers", "sources", "multimodal",
+                "layers", "sources", "countries", "counties", "localities",
+                "fareZones", "fareZoneAuthorities", "multimodal",
             )
 
         fun from(req: Parameters): V3ReverseRequest {
@@ -31,14 +40,17 @@ data class V3ReverseRequest(
 
             return V3ReverseRequest(
                 lat = req["lat"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'lat' is required"),
-                lon =
-                    req["lon"]?.toDoubleOrNull()
-                        ?: throw IllegalArgumentException("Parameter 'lon' is required"),
+                lon = req["lon"]?.toDoubleOrNull() ?: throw IllegalArgumentException("Parameter 'lon' is required"),
                 radius = req["radius"]?.toDoubleOrNull(),
                 limit = req["limit"]?.toIntOrNull() ?: SearchDefaults.LIMIT,
                 lang = req["lang"] ?: SearchDefaults.LANG,
-                layers = req["layers"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
-                sources = req["sources"]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                layers = req.csv("layers"),
+                sources = req.csv("sources"),
+                countries = req.csv("countries"),
+                counties = req.csv("counties"),
+                localities = req.csv("localities"),
+                fareZones = req.csv("fareZones"),
+                fareZoneAuthorities = req.csv("fareZoneAuthorities"),
                 multimodal = req["multimodal"] ?: "parent",
             )
         }

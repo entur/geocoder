@@ -33,15 +33,7 @@ data class PhotonReverseRequest(
         }
 
         fun from(req: V3ReverseRequest): PhotonReverseRequest {
-            val includes =
-                buildList {
-                    if (req.sources.isNotEmpty()) {
-                        add(req.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
-                    }
-                    if (req.layers.isNotEmpty()) {
-                        add(req.layers.joinToString(",") { Category.LAYER_PREFIX + it })
-                    }
-                }
+            val includes = PhotonFilterBuilder.buildIncludes(req)
 
             val callerWantsAddresses =
                 req.layers.contains("address") ||

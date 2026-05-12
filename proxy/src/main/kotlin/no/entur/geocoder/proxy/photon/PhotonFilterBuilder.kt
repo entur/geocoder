@@ -10,6 +10,7 @@ import no.entur.geocoder.proxy.common.LegacySource.Companion.LEGACY_SOURCE_PREFI
 import no.entur.geocoder.proxy.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
+import no.entur.geocoder.proxy.v3.V3FilterParams
 
 object PhotonFilterBuilder {
     private const val KVE_PREFIX = "KVE:TopographicPlace:"
@@ -71,7 +72,20 @@ object PhotonFilterBuilder {
                 add(boundaryLocalityIds.joinToString(",") { Category.localityIdsCategory(normalizeTopographicPlaceId(it)) })
             }
             if (tariffZones.isNotEmpty()) {
-                add(tariffZones.joinToString(",") { Category.tariffZoneIdCategory(it) })
+                // v2 backwards-compat: real NeTEx data has both :TariffZone: and :FareZone: refs
+                // inside <TariffZones>, and v2 callers pass either shape. The converter splits the
+                // two into distinct indexed prefixes (tariff_zone_id. vs fare_zone_id.), so route
+                // each input ref to its matching prefix here.
+                //
+                // The `:FareZone:` substring branch MUST stay in sync with
+                // nominatim-converter/src/source/stopplace/convert.rs::append_tariff_zone_categories
+                // (pass 1) - both decide TariffZone vs FareZone the same way.
+                add(
+                    tariffZones.joinToString(",") { ref ->
+                        if (ref.contains(":FareZone:")) Category.fareZoneIdCategory(ref)
+                        else Category.tariffZoneIdCategory(ref)
+                    },
+                )
             }
             if (tariffZoneAuthorities.isNotEmpty()) {
                 add(tariffZoneAuthorities.joinToString(",") { TARIFF_ZONE_AUTH_PREFIX + it })
@@ -89,6 +103,40 @@ object PhotonFilterBuilder {
                 if (categories.none { it == "NO_FILTER" }) {
                     add(categories.joinToString(",") { LEGACY_CATEGORY_PREFIX + it })
                 }
+            }
+        }
+
+    /**
+     * Build the Photon `include` filter list for a v3 request (autocomplete or reverse).
+     * `fareZones` here is strict: refs must be FareZone-shaped to match the converter's
+     * `fare_zone_id.` indexed prefix - TariffZone-shaped refs will not match anything.
+     */
+    fun buildIncludes(params: V3FilterParams): List<String> =
+        buildList {
+            if (params.countries.isNotEmpty()) {
+                add(
+                    params.countries
+                        .mapNotNull { Country.parse(it) }
+                        .joinToString(",") { COUNTRY_PREFIX + it.name },
+                )
+            }
+            if (params.counties.isNotEmpty()) {
+                add(params.counties.joinToString(",") { Category.countyIdsCategory(it) })
+            }
+            if (params.localities.isNotEmpty()) {
+                add(params.localities.joinToString(",") { Category.localityIdsCategory(it) })
+            }
+            if (params.fareZones.isNotEmpty()) {
+                add(params.fareZones.joinToString(",") { Category.fareZoneIdCategory(it) })
+            }
+            if (params.fareZoneAuthorities.isNotEmpty()) {
+                add(params.fareZoneAuthorities.joinToString(",") { Category.fareZoneAuthorityCategory(it) })
+            }
+            if (params.sources.isNotEmpty()) {
+                add(params.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
+            }
+            if (params.layers.isNotEmpty()) {
+                add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
             }
         }
 
