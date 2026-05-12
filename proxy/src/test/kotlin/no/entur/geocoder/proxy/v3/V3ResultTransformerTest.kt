@@ -20,8 +20,8 @@ class V3ResultTransformerTest {
         "kartverket-stedsnavn, , , , place",
         "nsr, , stop_position, , stopPlace",
         "nsr, , railway_station, , stopPlace",
+        "nsr, , yes, legacy.layer.venue, stopPlace",
         "nsr, , , ${Category.LAYER_GOSP}, groupOfStopPlaces",
-        "nsr, , other, , poi",
         "openstreetmap, highway, , , street",
         "openstreetmap, amenity, , , poi",
     )

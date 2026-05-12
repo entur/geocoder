@@ -109,7 +109,7 @@ object V3ResultTransformer {
         val extra = props.extra
         val coords = feature.geometry.coordinates
 
-        val layer = determineLayer(extra.source, props.osm_key, props.osm_value, extra.tags)
+        val layer = determineLayer(extra.source, props.osm_key, extra.tags)
 
         val defaultName =
             props.name
@@ -195,15 +195,19 @@ object V3ResultTransformer {
         )
     }
 
-    private fun determineLayer(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.Layer =
+    private fun determineLayer(source: String?, osmKey: String?, tags: String?): V3Result.Layer =
         when (source) {
             Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
+
             Source.KARTVERKET_STEDSNAVN -> V3Result.Layer.place
-            Source.NSR -> when {
-                tags.containsTag(Category.LAYER_GOSP) -> V3Result.Layer.groupOfStopPlaces
-                osmValue?.contains("stop") == true || osmValue?.contains("station") == true -> V3Result.Layer.stopPlace
-                else -> V3Result.Layer.poi
-            }
+
+            Source.NSR ->
+                if (tags.containsTag(Category.LAYER_GOSP)) {
+                    V3Result.Layer.groupOfStopPlaces
+                } else {
+                    V3Result.Layer.stopPlace
+                }
+
             else -> if (osmKey == "highway") V3Result.Layer.street else V3Result.Layer.poi
         }
 
