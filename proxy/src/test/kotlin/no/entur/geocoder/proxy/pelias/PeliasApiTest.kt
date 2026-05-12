@@ -10,6 +10,7 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.App.Companion.sharedApigeeToken
+import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -62,7 +63,7 @@ class PeliasApiTest {
             assertEquals("Oslo", req.url.parameters["q"])
             assertEquals("${(1 + RESULT_PRUNING_HEADROOM)}", req.url.parameters["limit"])
             assertEquals("en", req.url.parameters["lang"])
-            assertEquals(listOf("multimodal.child", "osm.public_transport.address"), req.url.parameters.getAll("exclude"))
+            assertEquals(listOf("multimodal.child", Category.LAYER_ADDRESS), req.url.parameters.getAll("exclude"))
         }
 
     @Test

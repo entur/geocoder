@@ -100,3 +100,7 @@ Photon's `/api` accepts `bbox`, `osm_tag`, `dedupe`. Photon's `/reverse` accepts
 ### 2k. `Place` endpoint batch cap
 
 `V3PlaceRequest` accepts an unbounded `ids` list. The OpenAPI says nothing. The reviewer-recommended cap is 100. Easy to enforce in code and document. Original plan §3g.
+
+### 2l. `osm.public_transport.*` removed from emitted categories
+
+The `osm.public_transport.{address,street,stop_place,poi,custom_poi,group_of_stop_places}` primary-entity tags are no longer emitted into the Nominatim NDJSON, and Photon docs no longer carry them. The proxy was migrated to use `layer.*` for include/exclude filtering. Anything that talks to Photon directly (analytics, dashboards, third-party tooling not under our control) and filters via `?include=osm.public_transport.X` is now silently broken. Migration path: replace with the corresponding `layer.X` filter (e.g. `osm.public_transport.address` -> `layer.address`, `osm.public_transport.group_of_stop_places` -> `layer.groupOfStopPlaces`).

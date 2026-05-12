@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.photon
 
+import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import no.entur.geocoder.proxy.v3.V3ReverseRequest
 import kotlin.test.Test
@@ -69,7 +70,7 @@ class PhotonReverseRequestTest {
 
         val request = PhotonReverseRequest.from(req)
 
-        assertTrue(request.excludes.contains("osm.public_transport.address"))
+        assertTrue(request.excludes.contains(Category.LAYER_ADDRESS))
     }
 
     @Test
@@ -83,7 +84,7 @@ class PhotonReverseRequestTest {
 
         val request = PhotonReverseRequest.from(req)
 
-        assertTrue(request.excludes.contains("osm.public_transport.address"))
+        assertTrue(request.excludes.contains(Category.LAYER_ADDRESS))
         assertTrue(request.excludes.contains("multimodal.child"))
         assertEquals(2, request.excludes.size)
     }
@@ -99,7 +100,7 @@ class PhotonReverseRequestTest {
 
         val request = PhotonReverseRequest.from(req)
 
-        assertTrue(request.excludes.contains("osm.public_transport.address"))
+        assertTrue(request.excludes.contains(Category.LAYER_ADDRESS))
         assertTrue(request.excludes.contains("multimodal.parent"))
         assertEquals(2, request.excludes.size)
     }
@@ -115,7 +116,7 @@ class PhotonReverseRequestTest {
 
         val request = PhotonReverseRequest.from(req)
 
-        assertTrue(request.excludes.contains("osm.public_transport.address"))
+        assertTrue(request.excludes.contains(Category.LAYER_ADDRESS))
         assertEquals(1, request.excludes.size)
     }
 

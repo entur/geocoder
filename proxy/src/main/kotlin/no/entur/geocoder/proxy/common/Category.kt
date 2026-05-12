@@ -1,10 +1,11 @@
 package no.entur.geocoder.proxy.common
 
+// String constants must stay in sync with nominatim-converter/src/common/category.rs.
 object Category {
-    const val OSM_ADDRESS = "osm.public_transport.address" // Addresses with house numbers
-    const val OSM_GOSP = "osm.public_transport.group_of_stop_places"
-
+    const val LAYER_PREFIX = "layer."
+    const val LAYER_ADDRESS = "layer.address" // Addresses with house numbers
     const val LAYER_STOP_PLACE = "layer.stopPlace"
+    const val LAYER_GOSP = "layer.groupOfStopPlaces"
 
     const val GOSP = "GroupOfStopPlaces"
 

@@ -63,6 +63,7 @@ data class V3Result(
         stopPlace,
         groupOfStopPlaces,
         poi,
+        place,
     }
 
     data class Metadata(

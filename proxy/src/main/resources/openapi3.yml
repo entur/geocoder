@@ -183,7 +183,7 @@ components:
         type: array
         items:
           type: string
-          enum: [address, street, stopPlace, groupOfStopPlaces, poi]
+          enum: [address, street, stopPlace, groupOfStopPlaces, poi, place]
       example: [stopPlace, address]
 
     Sources:
@@ -522,6 +522,7 @@ components:
         - stopPlace
         - groupOfStopPlaces
         - poi
+        - place
       example: "stopPlace"
 
     Metadata:

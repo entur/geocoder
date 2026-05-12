@@ -17,9 +17,10 @@ class V3ResultTransformerTest {
     @ParameterizedTest
     @CsvSource(
         "kartverket-matrikkelenadresse, , , , address",
+        "kartverket-stedsnavn, , , , place",
         "nsr, , stop_position, , stopPlace",
         "nsr, , railway_station, , stopPlace",
-        "nsr, , , ${Category.OSM_GOSP}, groupOfStopPlaces",
+        "nsr, , , ${Category.LAYER_GOSP}, groupOfStopPlaces",
         "nsr, , other, , poi",
         "openstreetmap, highway, , , street",
         "openstreetmap, amenity, , , poi",

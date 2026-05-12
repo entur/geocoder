@@ -39,14 +39,14 @@ data class PhotonReverseRequest(
                         add(req.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
                     }
                     if (req.layers.isNotEmpty()) {
-                        add(req.layers.joinToString(",") { "layer.$it" })
+                        add(req.layers.joinToString(",") { Category.LAYER_PREFIX + it })
                     }
                 }
 
             val callerWantsAddresses =
                 req.layers.contains("address") ||
                     req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }
-            val excludeAddresses = if (callerWantsAddresses) null else Category.OSM_ADDRESS
+            val excludeAddresses = if (callerWantsAddresses) null else Category.LAYER_ADDRESS
 
             return PhotonReverseRequest(
                 latitude = req.lat,

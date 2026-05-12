@@ -196,15 +196,19 @@ object V3ResultTransformer {
     }
 
     private fun determineLayer(source: String?, osmKey: String?, osmValue: String?, tags: String?): V3Result.Layer =
-        when {
-            source == Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
-            source == Source.NSR && tags?.contains(Category.OSM_GOSP) == true -> V3Result.Layer.groupOfStopPlaces
-            source == Source.NSR && osmValue?.contains("stop") == true -> V3Result.Layer.stopPlace
-            source == Source.NSR && osmValue?.contains("station") == true -> V3Result.Layer.stopPlace
-            source == Source.NSR -> V3Result.Layer.poi
-            osmKey == "highway" -> V3Result.Layer.street
-            else -> V3Result.Layer.poi
+        when (source) {
+            Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
+            Source.KARTVERKET_STEDSNAVN -> V3Result.Layer.place
+            Source.NSR -> when {
+                tags.containsTag(Category.LAYER_GOSP) -> V3Result.Layer.groupOfStopPlaces
+                osmValue?.contains("stop") == true || osmValue?.contains("station") == true -> V3Result.Layer.stopPlace
+                else -> V3Result.Layer.poi
+            }
+            else -> if (osmKey == "highway") V3Result.Layer.street else V3Result.Layer.poi
         }
+
+    private fun String?.containsTag(tag: String): Boolean =
+        this.orEmpty().splitToSequence(',', ';').any { it.trim() == tag }
 
     private fun parseTransportModes(transportMode: String?): List<V3Result.TransportMode>? =
         transportMode

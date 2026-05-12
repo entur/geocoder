@@ -14,6 +14,9 @@ import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 object PhotonFilterBuilder {
     private const val KVE_PREFIX = "KVE:TopographicPlace:"
     private val DIGIT_ONLY_PATTERN = Regex("^\\d+$")
+    private val HOUSE_NUMBER_HINT = Regex("(\\s\\d|\\d\\s)")
+
+    fun textHasHouseNumber(text: String): Boolean = HOUSE_NUMBER_HINT.containsMatchIn(text)
 
     private fun normalizeTopographicPlaceId(id: String): String =
         if (id.matches(DIGIT_ONLY_PATTERN)) {
@@ -96,15 +99,10 @@ object PhotonFilterBuilder {
         )
 
     // Exclude addresses unless the query contains a house number or sources=<whatever>
+    // (typically takes care of "Oslo C" returning addresses).
     private fun buildHouseNumberExclude(req: PeliasAutocompleteRequest): String? =
-        if (req.sources.contains(openaddresses.name)) {
-            null
-        } else {
-            // Typically takes care of "Oslo C" returning addresses.
-            req.text
-                .takeIf { !it.contains("(\\s\\d|\\d\\s)".toRegex()) }
-                ?.let { Category.OSM_ADDRESS }
-        }
+        if (req.sources.contains(openaddresses.name)) null
+        else req.text.takeIf { !textHasHouseNumber(it) }?.let { Category.LAYER_ADDRESS }
 
     fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(
@@ -112,7 +110,7 @@ object PhotonFilterBuilder {
             if (req.sources.contains(openaddresses.name)) {
                 null
             } else {
-                Category.OSM_ADDRESS // Exclude addresses with house numbers in reverse requests
+                Category.LAYER_ADDRESS // Exclude addresses with house numbers in reverse requests
             },
         )
 
