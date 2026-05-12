@@ -19,6 +19,7 @@ import java.math.RoundingMode
 
 object PeliasResultTransformer {
     private const val KVE_PREFIX = "KVE:PostalAddress:"
+    private const val KVE_PLACE_NAME_PREFIX = "KVE:PlaceName:"
     private const val OSM_POI_PREFIX = "OSM:PointOfInterest:"
     private const val OSM_TOPO_PREFIX = "OSM:TopographicPlace:"
 
@@ -26,6 +27,7 @@ object PeliasResultTransformer {
     private fun normalizeV2Id(id: String): String =
         id
             .removePrefix(KVE_PREFIX)
+            .removePrefix(KVE_PLACE_NAME_PREFIX)
             .replace(OSM_POI_PREFIX, OSM_TOPO_PREFIX)
 
     fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteRequest): PeliasResult =

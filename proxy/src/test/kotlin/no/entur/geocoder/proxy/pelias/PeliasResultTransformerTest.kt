@@ -95,6 +95,26 @@ class PeliasResultTransformerTest {
 
     @ParameterizedTest
     @CsvSource(
+        "NSR:StopPlace:337 | NSR:StopPlace:337",
+        "KVE:PostalAddress:225678815 | 225678815",
+        "KVE:PlaceName:434810 | 434810",
+        "OSM:PointOfInterest:100 | OSM:TopographicPlace:100",
+        "KVE:TopographicPlace:0301-Karl Johans gate | KVE:TopographicPlace:0301-Karl Johans gate",
+        delimiter = '|',
+    )
+    fun `transformFeature normalizes v3 ids back to v2 shape`(inputId: String, expectedId: String) {
+        val photonFeature =
+            PhotonFeature(
+                type = "Feature",
+                geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.7, 59.9)),
+                properties = PhotonProperties(extra = Extra(id = inputId)),
+            )
+        val result = PeliasResultTransformer.transformFeature(photonFeature, null)
+        assertEquals(expectedId, result.properties.id)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
         "borough, 123456, whosonfirst:123456",
         "county, 03, whosonfirst:county:03",
         "county, 18, whosonfirst:county:18",

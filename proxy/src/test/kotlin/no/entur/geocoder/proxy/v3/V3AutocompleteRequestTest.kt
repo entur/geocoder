@@ -15,22 +15,22 @@ class V3AutocompleteRequestTest {
     @Test
     fun `photonZoom uses default radius of 50km`() {
         val req = V3AutocompleteRequest(q = "oslo", lat = 59.9, lon = 10.7)
-        // 50km -> zoom = 18 - log2(50/0.25) = 18 - log2(200) ≈ 18 - 7.64 = 10
+        // 50km -> 18 - log_2.2(500) ≈ 10
         assertEquals(10, req.photonZoom())
     }
 
     @Test
     fun `photonZoom with explicit radius`() {
-        // 4km -> zoom = 18 - log2(4/0.25) = 18 - 4 = 14
+        // 4km -> 18 - log_2.2(40) ≈ 13
         val req = V3AutocompleteRequest(q = "oslo", lat = 59.9, lon = 10.7, radius = 4.0)
-        assertEquals(14, req.photonZoom())
+        assertEquals(13, req.photonZoom())
     }
 
     @Test
     fun `photonZoom with small radius`() {
-        // 0.25km -> zoom = 18 - log2(1) = 18
+        // 0.25km -> 18 - log_2.2(2.5) ≈ 17
         val req = V3AutocompleteRequest(q = "oslo", lat = 59.9, lon = 10.7, radius = 0.25)
-        assertEquals(18, req.photonZoom())
+        assertEquals(17, req.photonZoom())
     }
 
     @Test

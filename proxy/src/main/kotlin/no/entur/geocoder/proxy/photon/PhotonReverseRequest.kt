@@ -43,12 +43,10 @@ data class PhotonReverseRequest(
                     }
                 }
 
-            val excludeAddresses =
-                if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
-                    null
-                } else {
-                    Category.OSM_ADDRESS
-                }
+            val callerWantsAddresses =
+                req.layers.contains("address") ||
+                    req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }
+            val excludeAddresses = if (callerWantsAddresses) null else Category.OSM_ADDRESS
 
             return PhotonReverseRequest(
                 latitude = req.lat,

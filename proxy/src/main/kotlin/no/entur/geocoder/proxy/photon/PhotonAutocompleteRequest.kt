@@ -99,6 +99,7 @@ data class PhotonAutocompleteRequest(
         fun from(req: V3PlaceRequest): PhotonAutocompleteRequest =
             PhotonAutocompleteRequest(
                 query = "",
+                language = handleLang(req.lang),
                 includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
                 limit = req.ids.size + RESULT_PRUNING_HEADROOM,
             )
@@ -147,7 +148,7 @@ data class PhotonAutocompleteRequest(
 
             return PhotonAutocompleteRequest(
                 query = req.q,
-                limit = req.limit,
+                limit = req.limit + RESULT_PRUNING_HEADROOM,
                 language = handleLang(req.lang),
                 includes = includes,
                 excludes = excludes,

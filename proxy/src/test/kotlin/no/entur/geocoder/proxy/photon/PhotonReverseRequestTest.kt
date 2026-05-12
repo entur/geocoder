@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
+import no.entur.geocoder.proxy.v3.V3ReverseRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -172,6 +173,33 @@ class PhotonReverseRequestTest {
         val request = PhotonReverseRequest.from(req)
 
         assertEquals(emptyList(), request.includes)
+    }
+
+    @Test
+    fun `from V3ReverseRequest passes radius through as kilometres`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.911491,
+                lon = 10.757933,
+                radius = 0.5,
+            )
+
+        val request = PhotonReverseRequest.from(req)
+
+        assertEquals(0.5, request.radius)
+    }
+
+    @Test
+    fun `from V3ReverseRequest leaves radius null when not provided`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.911491,
+                lon = 10.757933,
+            )
+
+        val request = PhotonReverseRequest.from(req)
+
+        assertNull(request.radius)
     }
 
     @Test

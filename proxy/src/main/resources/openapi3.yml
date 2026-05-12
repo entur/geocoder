@@ -104,6 +104,7 @@ paths:
       operationId: placeV3
       parameters:
         - $ref: '#/components/parameters/Ids'
+        - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
@@ -133,10 +134,14 @@ components:
       name: ids
       in: query
       required: true
-      description: Place IDs to look up (comma-separated)
+      description: Place IDs to look up
+      style: form
+      explode: false
       schema:
-        type: string
-      example: "NSR:StopPlace:337,NSR:StopPlace:59872"
+        type: array
+        items:
+          type: string
+      example: [NSR:StopPlace:337, NSR:StopPlace:59872]
 
     Query:
       name: q
@@ -184,51 +189,75 @@ components:
     Sources:
       name: sources
       in: query
-      description: Data source filter (comma-separated)
+      description: Data source filter
+      style: form
+      explode: false
       schema:
-        type: string
-        enum: [openstreetmap, kartverket-matrikkelenadresse, kartverket-stedsnavn, nsr, custom-poi]
-      example: "openstreetmap"
+        type: array
+        items:
+          type: string
+          enum: [openstreetmap, kartverket-matrikkelenadresse, kartverket-stedsnavn, nsr, custom-poi]
+      example: [openstreetmap]
 
     Countries:
       name: countries
       in: query
-      description: ISO 3166-1 alpha-2 country code filter (comma-separated)
+      description: ISO 3166-1 alpha-2 country code filter
+      style: form
+      explode: false
       schema:
-        type: string
-      example: "no"
+        type: array
+        items:
+          type: string
+      example: [no]
 
     CountyIds:
       name: countyIds
       in: query
-      description: County IDs filter (comma-separated)
+      description: County IDs filter
+      style: form
+      explode: false
       schema:
-        type: string
-      example: "KVE:County:03"
+        type: array
+        items:
+          type: string
+      example: ["KVE:County:03"]
 
     LocalityIds:
       name: localityIds
       in: query
-      description: Locality IDs filter (comma-separated)
+      description: Locality IDs filter
+      style: form
+      explode: false
       schema:
-        type: string
-      example: "KVE:Locality:0301"
+        type: array
+        items:
+          type: string
+      example: ["KVE:Locality:0301"]
 
     TariffZones:
       name: tariffZones
       in: query
-      description: Tariff zone IDs filter (comma-separated)
+      description: Tariff zone IDs filter
+      style: form
+      explode: false
       schema:
-        type: string
-      example: "RUT:TariffZone:1"
+        type: array
+        items:
+          type: string
+      example: ["RUT:TariffZone:1"]
 
     FareZoneAuthorities:
       name: fareZoneAuthorities
       in: query
-      description: Fare zone authorities filter (comma-separated)
+      description: Fare zone authorities filter
+      style: form
+      explode: false
       schema:
-        type: string
-      example: "RUT:Authority:RUT"
+        type: array
+        items:
+          type: string
+      example: ["RUT:Authority:RUT"]
 
     Multimodal:
       name: multimodal
@@ -265,13 +294,13 @@ components:
     AutocompleteRadius:
       name: radius
       in: query
-      description: Focus radius in kilometres. Results within this distance from the focus point receive the strongest boost.
+      description: Focus radius in kilometres (decimals accepted). Results within this distance from the focus point receive the strongest boost.
       schema:
         type: number
         format: double
         minimum: 0
-        default: 50.0
-      example: 50.0
+        default: 50
+      example: 50
 
     AutocompleteWeight:
       name: weight
@@ -312,12 +341,12 @@ components:
     Radius:
       name: radius
       in: query
-      description: Search radius in kilometres. If omitted, no radius limit is applied.
+      description: Search radius in kilometres (decimals accepted). If omitted, no radius limit is applied.
       schema:
         type: number
         format: double
         minimum: 0
-      example: 1.0
+      example: 0.5
 
   schemas:
     Result:

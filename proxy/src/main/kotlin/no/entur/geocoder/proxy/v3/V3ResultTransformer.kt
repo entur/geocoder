@@ -16,7 +16,7 @@ object V3ResultTransformer {
         result: PhotonResult,
         req: V3AutocompleteRequest,
     ): V3Result {
-        val features = result.features.map { transformFeature(it) }
+        val features = filterCityIfGospIsPresent(result.features.map { transformFeature(it) }).take(req.limit)
 
         val filters =
             if (req.layers.isNotEmpty() ||
@@ -96,7 +96,7 @@ object V3ResultTransformer {
                     query =
                         QueryInfo(
                             limit = req.ids.size,
-                            language = "no",
+                            language = req.lang,
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
@@ -221,6 +221,18 @@ object V3ResultTransformer {
 
     private fun mapToLayer(type: String): V3Result.Layer? =
         V3Result.Layer.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }
+
+    private fun filterCityIfGospIsPresent(features: List<V3Result.Feature>): List<V3Result.Feature> {
+        val gospNames =
+            features
+                .filter { it.properties.layer == V3Result.Layer.groupOfStopPlaces }
+                .map { it.properties.name.default }
+                .toSet()
+        if (gospNames.isEmpty()) return features
+        return features.filter { f ->
+            !(f.properties.categories?.contains("by") == true && f.properties.name.default in gospNames)
+        }
+    }
 
     private fun calculateBbox(features: List<V3Result.Feature>): List<BigDecimal>? {
         if (features.isEmpty()) return null

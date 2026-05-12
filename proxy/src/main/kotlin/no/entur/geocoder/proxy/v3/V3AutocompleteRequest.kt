@@ -2,7 +2,7 @@ package no.entur.geocoder.proxy.v3
 
 import io.ktor.http.*
 import no.entur.geocoder.proxy.common.SearchDefaults
-import kotlin.math.ln
+import kotlin.math.log
 import kotlin.math.roundToInt
 
 data class V3AutocompleteRequest(
@@ -22,11 +22,11 @@ data class V3AutocompleteRequest(
     val fareZoneAuthorities: List<String> = emptyList(),
     val multimodal: String = "parent",
 ) {
-    /** Convert radius in km to Photon zoom level. Photon formula: radius = (1 shl (18 - zoom)) * 0.25 km */
+    /** Convert radius in km to Photon zoom. Photon: radius = 2.2^(18 - zoom) * 0.1 km (see SearchRequestBase). */
     fun photonZoom(): Int? {
         if (lat == null || lon == null) return null
         val r = radius ?: DEFAULT_RADIUS_KM
-        return (18 - ln(r / 0.25) / LN2).roundToInt().coerceIn(0, 18)
+        return (18 - log(r / 0.1, 2.2)).roundToInt().coerceIn(0, 18)
     }
 
     /** Convert weight (0=no bias, 1=max bias) to Photon location_bias_scale (0=max bias, 1=no bias). */
@@ -39,7 +39,6 @@ data class V3AutocompleteRequest(
     companion object {
         private const val DEFAULT_RADIUS_KM = 50.0
         private const val DEFAULT_WEIGHT = 0.8
-        private val LN2 = ln(2.0)
 
         internal val ALLOWED_PARAMS =
             setOf(
