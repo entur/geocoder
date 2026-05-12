@@ -37,6 +37,7 @@ to_csv() {
         [.[].results[]]
         | map(select(.breakdown_value[0] != "$$_posthog_breakdown_null_$$"))
         | map(.breakdown_value[0] |= sub("^OSM:TopographicPlace:"; "OSM:PointOfInterest:"))
+        | map(.breakdown_value[0] |= (if test("^[0-9]+$") then "KVE:PlaceName:" + . else . end))
         | group_by(.breakdown_value[0])
         | map({
             id:    .[0].breakdown_value[0],
