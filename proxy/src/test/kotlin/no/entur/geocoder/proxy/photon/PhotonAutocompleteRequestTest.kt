@@ -260,22 +260,6 @@ class PhotonAutocompleteRequestTest {
         val request = PhotonAutocompleteRequest.from(req)
 
         assertEquals(9, request.zoom) // SCALE_KM=2500 saturates near 300 -> zoom=9 (biasRadius ~120 km)
-        assertEquals(0.5, request.locationBiasScale!!, 0.01) // WEIGHT=1.2 -> location_bias_scale ~0.5
-    }
-
-    @Test
-    fun `v3 and Pelias defaults land on the same Photon location_bias_scale`() {
-        // Calibration insurance: v3 weight=0.5 (linear) and Pelias FocusDefaults.WEIGHT=1.2
-        // (through the LocationBiasCalculator curve) are calibrated to produce the same Photon
-        // scale. If either default or the curve moves without re-calibrating, this fails.
-        val v3Default =
-            no.entur.geocoder.proxy.v3.V3AutocompleteRequest(q = "x", lat = 0.0, lon = 0.0)
-                .photonLocationBiasScale()!!
-        val peliasFocus =
-            PeliasAutocompleteRequest.FocusParams(lat = 0.0, lon = 0.0, scale = null, weight = null)
-        val peliasDefault =
-            PhotonAutocompleteRequest.from(PeliasAutocompleteRequest(text = "x", focus = peliasFocus, multiModal = "parent"))
-                .locationBiasScale!!
-        assertEquals(v3Default, peliasDefault, 0.02)
+        assertEquals(0.47, request.locationBiasScale!!, 0.01) // WEIGHT=1.6 -> location_bias_scale ~0.47
     }
 }

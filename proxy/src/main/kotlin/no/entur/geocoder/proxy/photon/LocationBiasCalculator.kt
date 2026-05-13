@@ -27,10 +27,12 @@ object LocationBiasCalculator {
      * `(50 -> 0.0)`; the 0.185 exponent is reverse-engineered to hit the `15 -> 0.2` anchor
      * (upstream Pelias API default `weight=15`). Monotonically decreasing and smooth.
      *
-     * Our own default (when the client omits `focus.weight`) is `FocusDefaults.WEIGHT = 1.2`,
-     * which lands near `scale = 0.5`. We deviate from the upstream Pelias `15` default to keep
-     * importance and location bias roughly balanced in scoring; see the v3 doc on weight
-     * semantics for the rationale.
+     * Our own default (when the client omits `focus.weight`) is `FocusDefaults.WEIGHT = 1.6`,
+     * landing near `scale = 0.47`. v3's separate `weight` default is `0.5` (linear),
+     * landing at `scale = 0.5`. The two surfaces deliberately use slightly different scales:
+     * v2's wider default focus radius lets far candidates accumulate location-bias score
+     * inside the no-decay zone, so v2 needs a touch more location-bias weight than v3 to
+     * keep near-focus winners on top.
      */
     fun calculateLocationBias(peliasWeight: Double): Double {
         val weight = max(0.0, peliasWeight)

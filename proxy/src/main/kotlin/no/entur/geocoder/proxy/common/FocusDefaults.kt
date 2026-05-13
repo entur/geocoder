@@ -11,10 +11,13 @@ object FocusDefaults {
 
     /**
      * Default `focus.weight` (mapped by `LocationBiasCalculator` to the Photon `scale` param).
-     * `1.2` is calibrated to land near `scale = 0.5`, the same balance as v3's `weight = 0.5`
-     * default. Deliberately diverges from the upstream Pelias default `15` (which would give
-     * `scale ~ 0.2`) so importance and location bias contribute roughly equally to ranking;
-     * keeps far-focus major cities winning against near-focus same-prefix streets.
+     * `1.6` lands near `scale = 0.47`, giving location bias a slight edge over importance
+     * (53% loc / 47% imp). v2's default focus radius is wider than v3's (Photon `biasRadius`
+     * ~115 km vs ~55 km), so the no-decay zone covers more terrain; location bias needs the
+     * heavier weight here than v3 (which uses `weight = 0.5` -> `scale = 0.5`) to keep
+     * near-focus winners on top when far competitors are still inside the no-decay offset.
+     * Deliberately diverges from the upstream Pelias default `15` (which would give
+     * `scale ~ 0.2`).
      */
-    const val WEIGHT: Double = 1.2
+    const val WEIGHT: Double = 1.6
 }
