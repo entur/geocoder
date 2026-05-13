@@ -160,11 +160,12 @@ object V3ResultTransformer {
                             ?.filter { it.startsWith("legacy.category.") }
                             ?.map { it.substringAfterLast('.') }
                             ?.filter { it.isNotBlank() },
-                    tariffZones =
-                        extra.tariff_zones
+                    fareZones =
+                        extra.fare_zones
                             ?.split(",", ";")
                             ?.map { it.trim() }
-                            ?.filter { it.isNotBlank() },
+                            ?.filter { it.isNotBlank() }
+                            ?.takeIf { it.isNotEmpty() },
                     transportModes = parseTransportModes(extra.transport_mode),
                     stopPlaceTypes =
                         extra.stop_place_type

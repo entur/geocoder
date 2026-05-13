@@ -7,6 +7,7 @@ data class Extra(
     val accuracy: String? = null,
     val source: String? = null,
     val tariff_zones: String? = null,
+    val fare_zones: String? = null,
     val id: String,
     val county_gid: String? = null,
     val borough: String? = null,

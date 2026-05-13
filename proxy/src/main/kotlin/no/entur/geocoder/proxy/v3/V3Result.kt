@@ -28,7 +28,7 @@ data class V3Result(
         val source: String,
         val address: Address? = null,
         val categories: List<String>? = null,
-        val tariffZones: List<String>? = null,
+        val fareZones: List<String>? = null,
         val transportModes: List<TransportMode>? = null,
         val stopPlaceTypes: List<String>? = null,
     )

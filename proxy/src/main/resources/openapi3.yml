@@ -436,11 +436,11 @@ components:
           items:
             type: string
           example: ["restaurant"]
-        tariffZones:
+        fareZones:
           type: array
           items:
             type: string
-          example: ["RUT:TariffZone:1"]
+          example: ["RUT:FareZone:4"]
         transportModes:
           type: array
           items:
