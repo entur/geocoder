@@ -147,6 +147,15 @@ class PhotonAutocompleteRequestTest {
     }
 
     @Test
+    fun `from PeliasPlaceParams rewrites legacy OSM TopographicPlace id to PointOfInterest`() {
+        val req = PeliasPlaceRequest(ids = listOf("OSM:TopographicPlace:545260792"))
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(listOf("OSM.PointOfInterest.545260792"), request.includes)
+    }
+
+    @Test
     fun `from PeliasAutocompleteParams calculates zoom from scale`() {
         val focus =
             PeliasAutocompleteRequest.FocusParams(

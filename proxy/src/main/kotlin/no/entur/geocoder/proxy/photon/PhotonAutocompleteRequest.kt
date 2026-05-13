@@ -77,13 +77,20 @@ data class PhotonAutocompleteRequest(
 
         private const val LEGACY_OA_PREFIX = "openaddresses:address:"
         private const val KVE_ADDRESS_PREFIX = "KVE:PostalAddress:"
+        private const val LEGACY_OSM_PREFIX = "OSM:TopographicPlace:"
+        private const val OSM_POI_PREFIX = "OSM:PointOfInterest:"
 
         private fun expandId(id: String): List<String> =
-            if (id.startsWith(LEGACY_OA_PREFIX)) {
-                val numericId = id.removePrefix(LEGACY_OA_PREFIX)
-                listOf(id.asCategory(), (KVE_ADDRESS_PREFIX + numericId).asCategory())
-            } else {
-                listOf(id.asCategory())
+            when {
+                id.startsWith(LEGACY_OA_PREFIX) -> {
+                    val numericId = id.removePrefix(LEGACY_OA_PREFIX)
+                    listOf(id.asCategory(), (KVE_ADDRESS_PREFIX + numericId).asCategory())
+                }
+                id.startsWith(LEGACY_OSM_PREFIX) -> {
+                    val numericId = id.removePrefix(LEGACY_OSM_PREFIX)
+                    listOf((OSM_POI_PREFIX + numericId).asCategory())
+                }
+                else -> listOf(id.asCategory())
             }
 
         fun from(req: PeliasPlaceRequest): PhotonAutocompleteRequest =
