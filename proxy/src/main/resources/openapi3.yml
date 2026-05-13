@@ -318,8 +318,8 @@ components:
         format: double
         minimum: 0
         maximum: 1
-        default: 0.8
-      example: 0.8
+        default: 0.5
+      example: 0.5
 
     Latitude:
       name: lat

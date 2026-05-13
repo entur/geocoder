@@ -44,10 +44,10 @@ class V3AutocompleteRequestTest {
     }
 
     @Test
-    fun `photonLocationBiasScale uses default weight of 0_8`() {
+    fun `photonLocationBiasScale uses default weight of 0_5`() {
         val req = V3AutocompleteRequest(q = "oslo", lat = 59.9, lon = 10.7)
-        // weight 0.8 -> location_bias_scale = 1 - 0.8 = 0.2
-        assertEquals(0.2, req.photonLocationBiasScale()!!, 0.001)
+        // weight 0.5 -> location_bias_scale = 1 - 0.5 = 0.5
+        assertEquals(0.5, req.photonLocationBiasScale()!!, 0.001)
     }
 
     @Test

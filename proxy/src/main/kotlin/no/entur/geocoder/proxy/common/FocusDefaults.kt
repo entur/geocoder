@@ -9,6 +9,12 @@ object FocusDefaults {
     /** Default `focus.scale` in kilometres. */
     const val SCALE_KM: Int = 2500
 
-    /** Default `focus.weight` (mapped by `LocationBiasCalculator` to the Photon `scale` param). */
-    const val WEIGHT: Double = 15.0
+    /**
+     * Default `focus.weight` (mapped by `LocationBiasCalculator` to the Photon `scale` param).
+     * `1.2` is calibrated to land near `scale = 0.5`, the same balance as v3's `weight = 0.5`
+     * default. Deliberately diverges from the upstream Pelias default `15` (which would give
+     * `scale ~ 0.2`) so importance and location bias contribute roughly equally to ranking;
+     * keeps far-focus major cities winning against near-focus same-prefix streets.
+     */
+    const val WEIGHT: Double = 1.2
 }

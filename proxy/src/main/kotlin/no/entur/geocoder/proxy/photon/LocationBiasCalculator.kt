@@ -25,7 +25,12 @@ object LocationBiasCalculator {
      * Pelias `focus.weight` is inverted: higher weight = stronger focus emphasis = lower Photon
      * scale. The curve `1 - (weight / 50)^0.185` interpolates through `(0 -> 1.0)`, `(15 -> 0.2)`,
      * `(50 -> 0.0)`; the 0.185 exponent is reverse-engineered to hit the `15 -> 0.2` anchor
-     * (Pelias API default `weight=15`). Monotonically decreasing and smooth.
+     * (upstream Pelias API default `weight=15`). Monotonically decreasing and smooth.
+     *
+     * Our own default (when the client omits `focus.weight`) is `FocusDefaults.WEIGHT = 1.2`,
+     * which lands near `scale = 0.5`. We deviate from the upstream Pelias `15` default to keep
+     * importance and location bias roughly balanced in scoring; see the v3 doc on weight
+     * semantics for the rationale.
      */
     fun calculateLocationBias(peliasWeight: Double): Double {
         val weight = max(0.0, peliasWeight)

@@ -41,7 +41,7 @@ data class V3AutocompleteRequest(
 
     companion object {
         private const val DEFAULT_RADIUS_KM = 50.0
-        private const val DEFAULT_WEIGHT = 0.8
+        private const val DEFAULT_WEIGHT = 0.5
 
         internal val ALLOWED_PARAMS =
             setOf(
