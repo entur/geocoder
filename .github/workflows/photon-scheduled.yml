@@ -93,7 +93,7 @@ jobs:
 
   deploy-prd:
     name: Prod
-    needs: deploy-tst
+    needs: [ photon, deploy-tst ]
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'

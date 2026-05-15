@@ -87,7 +87,7 @@ jobs:
 
   deploy-prd:
     name: Prod
-    needs: deploy-tst
+    needs: [ resolve-tag, deploy-tst ]
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
