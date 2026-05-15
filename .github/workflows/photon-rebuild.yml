@@ -76,6 +76,7 @@ jobs:
       namespace: geocoder
       release_name: geocoder-photon
       values: values-kub-ent-dev.yaml
+      photon_data_prefix: photon-data
       require_approval: false
     secrets: inherit
 
@@ -95,6 +96,7 @@ jobs:
       namespace: geocoder
       release_name: geocoder-photon
       values: values-kub-ent-tst.yaml
+      photon_data_prefix: photon-data
     secrets: inherit
 
   deploy-prd:
@@ -111,6 +113,7 @@ jobs:
       namespace: geocoder
       release_name: geocoder-photon
       values: values-kub-ent-prd.yaml
+      photon_data_prefix: photon-data
     secrets: inherit
 
   notify-slack:

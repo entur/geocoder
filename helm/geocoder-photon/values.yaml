@@ -27,10 +27,13 @@ common:
     # in-flight tarball during download/extract.
     ephemeralStorage: 4Gi
     ephemeralStorageLimit: 8Gi
-    # PHOTON_DATA_URL is injected by .github/workflows/_deploy-and-test.yml
-    # before helm runs. templates/photon-data-validation.yaml fails the
-    # helm render if it's missing - a manual `helm upgrade` without
-    # injection never reaches the cluster.
+    env:
+      # __PHOTON_DATA_URL__ is substituted by .github/workflows/_deploy-and-test.yml
+      # before helm runs. templates/photon-data-validation.yaml fails the helm
+      # render if the placeholder remains (e.g. manual `helm upgrade` without
+      # substitution).
+      - name: PHOTON_DATA_URL
+        value: "__PHOTON_DATA_URL__"
     probes:
       enabled: true
       spec:

@@ -23,15 +23,10 @@ on:
         type: string
         default: ''
       photon_data_prefix:
-        description: 'GCS prefix for the photon_data.tar.gz tarball (default photon-data; -se variants for Sweden). Set to empty to skip injection (non-photon deploys).'
+        description: 'GCS prefix for the photon_data.tar.gz tarball (e.g. photon-data, photon-data-se). Leave empty for non-photon deploys.'
         required: false
         type: string
-        default: 'photon-data'
-      photon_data_bucket:
-        description: 'GCS bucket holding photon_data.tar.gz'
-        required: false
-        type: string
-        default: 'ent-geocoder-prd'
+        default: ''
       require_approval:
         required: false
         type: boolean
@@ -79,25 +74,18 @@ jobs:
         if: inputs.photon_data_prefix != ''
         env:
           CHART: ${{ inputs.chart }}
-          VALUES: ${{ inputs.values || format('values-kub-ent-{0}.yaml', inputs.environment) }}
           IMAGE: ${{ inputs.image }}
-          BUCKET: ${{ inputs.photon_data_bucket }}
           PREFIX: ${{ inputs.photon_data_prefix }}
         # The photon_data tag matches the image tag (build-photon-image generates
         # one and passes to both docker-build-push and upload-gcs-artifact), so
-        # we can derive the data URL from the image tag here. entur/gha-helm
-        # takes a single -f, so we mutate the env values file in place.
+        # we can derive the data URL from the image tag here. The chart's
+        # values.yaml carries a __PHOTON_DATA_URL__ placeholder that we resolve
+        # in place; templates/photon-data-validation.yaml fails the render if
+        # the placeholder remains.
         run: |
           TAG="${IMAGE##*:}"
-          PHOTON_DATA_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG}/photon_data.tar.gz"
-
-          PHOTON_DATA_URL="$PHOTON_DATA_URL" yq -i '
-            .common.container.env = (
-              (.common.container.env // [])
-              | map(select(.name != "PHOTON_DATA_URL"))
-              + [{"name": "PHOTON_DATA_URL", "value": strenv(PHOTON_DATA_URL)}]
-            )
-          ' "$CHART/env/$VALUES"
+          PHOTON_DATA_URL="https://storage.googleapis.com/ent-geocoder-prd/${PREFIX}/${TAG}/photon_data.tar.gz"
+          sed -i "s|__PHOTON_DATA_URL__|${PHOTON_DATA_URL}|g" "$CHART/values.yaml"
 
           echo "### Photon data URL" >> "$GITHUB_STEP_SUMMARY"
           echo "Deployed image will load \`$PHOTON_DATA_URL\`" >> "$GITHUB_STEP_SUMMARY"
