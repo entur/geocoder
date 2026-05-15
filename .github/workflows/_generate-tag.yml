@@ -1,4 +1,4 @@
-name: Generate Build Tag
+name: ""~ Generate Build Tag"
 
 # Single source of truth for the per-run build tag. Called as a leading job from any
 # workflow that produces multiple coupled artifacts (nominatim-data upload, photon-data
