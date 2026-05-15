@@ -50,7 +50,7 @@ runs:
         tag: ${{ inputs.nominatim_data_tag }}
         filename: nominatim.ndjson.gz
         destination: photon
-        min_size_mb: 1
+        min_size_mb: 150
 
     - name: Create Photon Data
       shell: bash
@@ -87,7 +87,7 @@ runs:
         prefix: photon-data${{ inputs.suffix }}
         file_path: photon/photon_data.tar.gz
         tag: ${{ inputs.build_tag }}
-        min_size_mb: 1
+        min_size_mb: 500
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
         latest_tag: ${{ inputs.latest_tag }}

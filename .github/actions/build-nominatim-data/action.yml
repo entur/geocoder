@@ -69,7 +69,7 @@ runs:
       with:
         prefix: nominatim-data${{ inputs.suffix }}
         file_path: photon/nominatim.ndjson.gz
-        min_size_mb: 1
+        min_size_mb: 150
         tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
