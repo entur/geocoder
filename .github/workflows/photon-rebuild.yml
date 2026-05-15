@@ -17,7 +17,7 @@ on:
         type: string
 
 concurrency:
-  group: "photon-${{ inputs.target }}"
+  group: "${{ github.workflow }}-${{ inputs.target }}"
   cancel-in-progress: true
 
 jobs:
@@ -64,17 +64,57 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  deploy:
-    name: Deploy
+  deploy-dev:
+    name: Dev
     needs: photon
-    uses: ./.github/workflows/_photon-deploy-fanout.yml
+    if: inputs.target == 'dev only' || inputs.target == 'dev → tst → prd'
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
+      environment: dev
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      target: ${{ inputs.target }}
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+      values: values-kub-ent-dev.yaml
+      require_approval: false
+    secrets: inherit
+
+  deploy-tst:
+    name: Staging
+    needs: [ photon, deploy-dev ]
+    if: |
+      !cancelled() &&
+      (inputs.target == 'dev → tst → prd' || inputs.target == 'tst → prd') &&
+      needs.photon.result == 'success' &&
+      (needs.deploy-dev.result == 'success' || needs.deploy-dev.result == 'skipped')
+    uses: ./.github/workflows/_deploy-and-test.yml
+    with:
+      environment: tst
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+      values: values-kub-ent-tst.yaml
+    secrets: inherit
+
+  deploy-prd:
+    name: Prod
+    needs: deploy-tst
+    if: |
+      !cancelled() &&
+      needs.deploy-tst.result == 'success'
+    uses: ./.github/workflows/_deploy-and-test.yml
+    with:
+      environment: prd
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+      values: values-kub-ent-prd.yaml
     secrets: inherit
 
   notify-slack:
-    needs: [ generate-tag, photon, deploy ]
+    needs: [ generate-tag, photon, deploy-dev, deploy-tst, deploy-prd ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

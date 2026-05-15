@@ -17,7 +17,7 @@ on:
         type: string
 
 concurrency:
-  group: "proxy-${{ inputs.target }}"
+  group: "${{ github.workflow }}-${{ inputs.target }}"
   cancel-in-progress: true
 
 jobs:
@@ -76,6 +76,7 @@ jobs:
     if: |
       !cancelled() &&
       inputs.target != 'dev only' &&
+      needs.resolve-tag.result == 'success' &&
       (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/_deploy-and-test.yml
     with:
@@ -87,7 +88,7 @@ jobs:
     secrets: inherit
 
   deploy-prd:
-    name: Production
+    name: Prod
     needs: [ resolve-tag, deploy-tst ]
     if: |
       !cancelled() &&

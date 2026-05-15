@@ -99,22 +99,27 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  deploy:
-    name: Deploy
+  deploy-dev:
+    name: Dev
     needs: photon
     if: |
       !cancelled() &&
       (needs.photon.result == 'success' || inputs.build == 'Deploy specified Photon image')
-    uses: ./.github/workflows/_photon-deploy-fanout.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
+      environment: dev
       image: "geocoder-photon-se:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
-      suffix: '-se'
-      target: 'dev only'
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon-se
+      values: values-kub-ent-dev-se.yaml
+      photon_data_prefix: photon-data-se
+      require_approval: false
       run_tests: false
     secrets: inherit
 
   notify-slack:
-    needs: [ generate-tag, nominatim-data, photon, deploy ]
+    needs: [ generate-tag, nominatim-data, photon, deploy-dev ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

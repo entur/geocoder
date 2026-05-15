@@ -77,18 +77,39 @@ jobs:
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
           latest_tag: ${{ env.LATEST_TAG }}
 
-  deploy:
-    name: Deploy
+  deploy-tst:
+    name: Staging
     needs: photon
-    uses: ./.github/workflows/_photon-deploy-fanout.yml
+    uses: ./.github/workflows/_deploy-and-test.yml
     with:
+      environment: tst
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
-      target: 'tst → prd'
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+      values: values-kub-ent-tst.yaml
+      require_approval: false
+    secrets: inherit
+
+  deploy-prd:
+    name: Prod
+    needs: deploy-tst
+    if: |
+      !cancelled() &&
+      needs.deploy-tst.result == 'success'
+    uses: ./.github/workflows/_deploy-and-test.yml
+    with:
+      environment: prd
+      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon
+      values: values-kub-ent-prd.yaml
       require_approval: false
     secrets: inherit
 
   notify-slack:
-    needs: [ generate-tag, nominatim-data, photon, deploy ]
+    needs: [ generate-tag, nominatim-data, photon, deploy-tst, deploy-prd ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

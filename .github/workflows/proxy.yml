@@ -95,6 +95,7 @@ jobs:
     if: |
       !cancelled() &&
       inputs.target != 'dev only' &&
+      needs.build-push.result == 'success' &&
       (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
     uses: ./.github/workflows/_deploy-and-test.yml
     with:
@@ -106,7 +107,7 @@ jobs:
     secrets: inherit
 
   deploy-prd:
-    name: Production
+    name: Prod
     needs: [ build-push, deploy-tst ]
     if: |
       !cancelled() &&
