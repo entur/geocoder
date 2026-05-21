@@ -36,7 +36,6 @@ java -jar "$PHOTON_JAR" \
         -j "$IMPORT_THREADS" \
         -import-file "$IMPORT_FILE" \
         -languages no,en \
-        -stem-english-possessives \
         -extra-tags ALL
 END_TIME=$(date +%s)
 echo "Created photon_data in $((END_TIME - START_TIME)) seconds."

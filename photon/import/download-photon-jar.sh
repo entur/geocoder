@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PHOTON_JAR=https://github.com/entur/photon/releases/download/2026-05-12-apostrophe-s/photon-1.1.0-d3c2220.jar
+PHOTON_JAR=https://github.com/entur/photon/releases/download/2026-05-21/photon-1.1.0-5268c1a.jar
 
 curl -sfL --retry 2 -A "entur-geocoder" -o photon.jar $PHOTON_JAR && echo photon.jar downloaded successfully && exit 0
 
