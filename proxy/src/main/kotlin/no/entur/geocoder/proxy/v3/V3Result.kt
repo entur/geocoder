@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.v3
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.math.BigDecimal
+import java.time.Instant
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class V3Result(
@@ -69,7 +70,7 @@ data class V3Result(
     data class Metadata(
         val query: QueryInfo,
         val resultCount: Int,
-        val timestamp: Long = System.currentTimeMillis(),
+        val timestamp: String = Instant.now().toString(),
         val debug: Map<String, Any>? = null,
     )
 

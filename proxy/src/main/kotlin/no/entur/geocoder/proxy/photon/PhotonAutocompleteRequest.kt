@@ -5,6 +5,7 @@ import no.entur.geocoder.proxy.common.Category.asCategory
 import no.entur.geocoder.proxy.common.FocusDefaults
 import no.entur.geocoder.proxy.common.Geo
 import no.entur.geocoder.proxy.common.LegacySource.openaddresses
+import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.Lang.handleLang
@@ -113,8 +114,9 @@ data class PhotonAutocompleteRequest(
         fun from(req: V3AutocompleteRequest): PhotonAutocompleteRequest {
             val includes = PhotonFilterBuilder.buildIncludes(req)
 
+            val callerWantsAddresses = req.sources.contains(Source.KARTVERKET_ADRESSE)
             val excludeAddresses =
-                if (req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }) {
+                if (callerWantsAddresses) {
                     null
                 } else {
                     req.q.takeIf { !PhotonFilterBuilder.textHasHouseNumber(it) }?.let { Category.LAYER_ADDRESS }
@@ -135,8 +137,7 @@ data class PhotonAutocompleteRequest(
                 lon = req.lon,
                 zoom = req.photonZoom(),
                 locationBiasScale = req.photonLocationBiasScale(),
-                includeHousenumbers =
-                    req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") } && !req.q.contains("\\s\\d".toRegex()),
+                includeHousenumbers = callerWantsAddresses && !req.q.contains("\\s\\d".toRegex()),
                 debug = req.debug,
             )
         }

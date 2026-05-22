@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.common.Category
+import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import no.entur.geocoder.proxy.photon.Lang.handleLang
 import no.entur.geocoder.proxy.v3.V3ReverseRequest
@@ -37,7 +38,7 @@ data class PhotonReverseRequest(
 
             val callerWantsAddresses =
                 req.layers.contains("address") ||
-                    req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") }
+                    req.sources.contains(Source.KARTVERKET_ADRESSE)
             val excludeAddresses = if (callerWantsAddresses) null else Category.LAYER_ADDRESS
 
             return PhotonReverseRequest(

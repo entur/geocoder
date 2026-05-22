@@ -10,6 +10,7 @@ import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
 import no.entur.geocoder.proxy.v3.V3Result.Metadata
 import no.entur.geocoder.proxy.v3.V3Result.QueryInfo
 import java.math.BigDecimal
+import java.time.Instant
 
 object V3ResultTransformer {
     fun parseAndTransform(
@@ -31,7 +32,7 @@ object V3ResultTransformer {
                             filters = buildFiltersEcho(req),
                         ),
                     resultCount = features.size,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = Instant.now().toString(),
                     debug = debugInfo(result, req.debug),
                 ),
         )
@@ -57,7 +58,7 @@ object V3ResultTransformer {
                             filters = buildFiltersEcho(req),
                         ),
                     resultCount = features.size,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = Instant.now().toString(),
                     debug = debugInfo(result, req.debug),
                 ),
         )
@@ -106,7 +107,7 @@ object V3ResultTransformer {
                             language = req.lang,
                         ),
                     resultCount = features.size,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = Instant.now().toString(),
                     debug = debugInfo(result, req.debug),
                 ),
         )

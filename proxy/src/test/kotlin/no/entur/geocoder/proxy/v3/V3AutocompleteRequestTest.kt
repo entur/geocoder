@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.v3
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class V3AutocompleteRequestTest {
@@ -69,5 +70,14 @@ class V3AutocompleteRequestTest {
 
         val under = V3AutocompleteRequest(q = "oslo", lat = 59.9, lon = 10.7, weight = -1.0)
         assertEquals(1.0, under.photonLocationBiasScale())
+    }
+
+    @Test
+    fun `focus parameters require both lat and lon`() {
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", lat = 59.9) }
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", lon = 10.7) }
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", radius = 50.0) }
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", weight = 0.5) }
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", lat = 59.9, radius = 50.0) }
     }
 }

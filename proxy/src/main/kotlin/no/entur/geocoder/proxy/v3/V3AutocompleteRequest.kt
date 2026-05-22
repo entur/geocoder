@@ -26,6 +26,13 @@ data class V3AutocompleteRequest(
     override val multimodal: String = "parent",
     val debug: Boolean = false,
 ) : V3FilterParams {
+    init {
+        val anyFocusParam = lat != null || lon != null || radius != null || weight != null
+        require(!anyFocusParam || (lat != null && lon != null)) {
+            "Focus parameters (lat, lon, radius, weight) form a bundle: lat and lon must both be set when any is provided"
+        }
+    }
+
     /** Convert radius in km to Photon zoom. Photon: radius = 2.2^(18 - zoom) * 0.1 km (see SearchRequestBase). */
     fun photonZoom(): Int? {
         if (lat == null || lon == null) return null

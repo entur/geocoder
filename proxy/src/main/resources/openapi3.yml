@@ -454,6 +454,12 @@ components:
         source:
           type: string
           description: Data source identifier (same values as the sources filter)
+          enum:
+            - openstreetmap
+            - kartverket-matrikkelenadresse
+            - kartverket-stedsnavn
+            - nsr
+            - custom-poi
           example: "nsr"
 
     Names:
@@ -545,9 +551,10 @@ components:
           type: integer
           example: 5
         timestamp:
-          type: integer
-          format: int64
-          example: 1740998400000
+          type: string
+          format: date-time
+          description: Response generation time as an ISO 8601 instant (UTC).
+          example: "2025-03-04T11:00:00Z"
 
     QueryInfo:
       type: object
