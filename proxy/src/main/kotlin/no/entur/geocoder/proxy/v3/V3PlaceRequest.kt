@@ -6,13 +6,14 @@ import no.entur.geocoder.proxy.common.SearchDefaults
 data class V3PlaceRequest(
     val ids: List<String>,
     val lang: String = SearchDefaults.LANG,
+    val debug: Boolean = false,
 ) {
     init {
         require(ids.isNotEmpty()) { "Parameter 'ids' is required" }
     }
 
     companion object {
-        internal val ALLOWED_PARAMS = setOf("ids", "lang")
+        internal val ALLOWED_PARAMS = setOf("ids", "lang", "debug")
 
         fun from(req: Parameters): V3PlaceRequest {
             val unknown = req.names().filterNot { it in ALLOWED_PARAMS }
@@ -21,6 +22,7 @@ data class V3PlaceRequest(
             return V3PlaceRequest(
                 ids = req["ids"]?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList(),
                 lang = req["lang"] ?: SearchDefaults.LANG,
+                debug = req["debug"].toBoolean(),
             )
         }
     }

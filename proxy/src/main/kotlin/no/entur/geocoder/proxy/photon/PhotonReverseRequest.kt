@@ -48,7 +48,7 @@ data class PhotonReverseRequest(
                 radius = req.radius,
                 includes = includes,
                 excludes = listOfNotNull(excludeAddresses, PhotonFilterBuilder.buildMultimodalExclude(req.multimodal)),
-                debug = false,
+                debug = req.debug,
             )
         }
     }

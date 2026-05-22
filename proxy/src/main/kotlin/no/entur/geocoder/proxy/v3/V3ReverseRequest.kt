@@ -20,6 +20,7 @@ data class V3ReverseRequest(
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
     override val multimodal: String = "parent",
+    val debug: Boolean = false,
 ) : V3FilterParams {
     init {
         require(lat in -90.0..90.0) { "Parameter 'lat' must be between -90 and 90" }
@@ -31,7 +32,7 @@ data class V3ReverseRequest(
             setOf(
                 "lat", "lon", "radius", "limit", "lang",
                 "layers", "sources", "countries", "counties", "localities",
-                "fareZones", "fareZoneAuthorities", "multimodal",
+                "fareZones", "fareZoneAuthorities", "multimodal", "debug",
             )
 
         fun from(req: Parameters): V3ReverseRequest {
@@ -52,6 +53,7 @@ data class V3ReverseRequest(
                 fareZones = req.csv("fareZones"),
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
                 multimodal = req["multimodal"] ?: "parent",
+                debug = req["debug"].toBoolean(),
             )
         }
     }

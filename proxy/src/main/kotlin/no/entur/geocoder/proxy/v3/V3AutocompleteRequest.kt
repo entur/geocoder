@@ -24,6 +24,7 @@ data class V3AutocompleteRequest(
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
     override val multimodal: String = "parent",
+    val debug: Boolean = false,
 ) : V3FilterParams {
     /** Convert radius in km to Photon zoom. Photon: radius = 2.2^(18 - zoom) * 0.1 km (see SearchRequestBase). */
     fun photonZoom(): Int? {
@@ -47,7 +48,7 @@ data class V3AutocompleteRequest(
             setOf(
                 "q", "limit", "lang", "lat", "lon",
                 "radius", "weight", "layers", "sources", "countries", "counties",
-                "localities", "fareZones", "fareZoneAuthorities", "multimodal",
+                "localities", "fareZones", "fareZoneAuthorities", "multimodal", "debug",
             )
 
         fun from(req: Parameters): V3AutocompleteRequest {
@@ -70,6 +71,7 @@ data class V3AutocompleteRequest(
                 fareZones = req.csv("fareZones"),
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
                 multimodal = req["multimodal"] ?: "parent",
+                debug = req["debug"].toBoolean(),
             )
         }
     }

@@ -32,6 +32,7 @@ object V3ResultTransformer {
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
+                    debug = debugInfo(result, req.debug),
                 ),
         )
     }
@@ -57,6 +58,7 @@ object V3ResultTransformer {
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
+                    debug = debugInfo(result, req.debug),
                 ),
         )
     }
@@ -105,9 +107,13 @@ object V3ResultTransformer {
                         ),
                     resultCount = features.size,
                     timestamp = System.currentTimeMillis(),
+                    debug = debugInfo(result, req.debug),
                 ),
         )
     }
+
+    private fun debugInfo(result: PhotonResult, debug: Boolean): Map<String, Any>? =
+        if (debug && result.properties.isNotEmpty()) result.properties else null
 
     private fun transformFeature(feature: PhotonFeature): V3Result.Feature {
         val props = feature.properties

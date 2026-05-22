@@ -107,6 +107,7 @@ data class PhotonAutocompleteRequest(
                 language = handleLang(req.lang),
                 includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
                 limit = req.ids.size + RESULT_PRUNING_HEADROOM,
+                debug = req.debug,
             )
 
         fun from(req: V3AutocompleteRequest): PhotonAutocompleteRequest {
@@ -136,7 +137,7 @@ data class PhotonAutocompleteRequest(
                 locationBiasScale = req.photonLocationBiasScale(),
                 includeHousenumbers =
                     req.sources.any { it.contains("kartverket") || it.contains("matrikkelen") } && !req.q.contains("\\s\\d".toRegex()),
-                debug = false,
+                debug = req.debug,
             )
         }
     }

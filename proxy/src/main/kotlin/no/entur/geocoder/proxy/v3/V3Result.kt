@@ -70,6 +70,7 @@ data class V3Result(
         val query: QueryInfo,
         val resultCount: Int,
         val timestamp: Long = System.currentTimeMillis(),
+        val debug: Map<String, Any>? = null,
     )
 
     data class QueryInfo(
