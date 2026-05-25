@@ -62,7 +62,7 @@ verify() {
         NF != 3 || $1 == "" || $2 == "" || $3 == "" {
             print "ERROR: line " NR ": malformed row: " $0; exit 1
         }
-        $1 !~ /^([A-Za-z]+:[A-Za-z]+:[A-Za-zæøåÆØÅ0-9 .'-]+|[0-9]+)$/ {
+        $1 !~ /^([A-Za-z]+:[A-Za-z]+:[A-Za-zæøåÆØÅ0-9 .'\''-]+|[0-9]+)$/ {
             print "ERROR: line " NR ": unexpected id: " $1; exit 1
         }
         $3 !~ /^[0-9]+$/ {
