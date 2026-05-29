@@ -4,6 +4,7 @@ import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
+import no.entur.geocoder.proxy.v3.V3PlaceRequest
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.*
@@ -148,12 +149,46 @@ class PhotonAutocompleteRequestTest {
     }
 
     @Test
-    fun `from PeliasPlaceParams rewrites legacy OSM TopographicPlace id to PointOfInterest`() {
+    fun `from PeliasPlaceParams expands OSM TopographicPlace with interim PointOfInterest fallback`() {
         val req = PeliasPlaceRequest(ids = listOf("OSM:TopographicPlace:545260792"))
 
         val request = PhotonAutocompleteRequest.from(req)
 
-        assertEquals(listOf("OSM.PointOfInterest.545260792"), request.includes)
+        // Canonical lookup plus interim fallback for index docs from a previous
+        // converter run that still carry OSM:PointOfInterest:N.
+        assertEquals(listOf("OSM.TopographicPlace.545260792,OSM.PointOfInterest.545260792"), request.includes)
+    }
+
+    @Test
+    fun `from V3PlaceParams passes PlaceName id straight through`() {
+        val req = V3PlaceRequest(ids = listOf("KVE:PlaceName:434810"))
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(listOf("KVE.PlaceName.434810"), request.includes)
+    }
+
+    @Test
+    fun `from V3PlaceParams transliterates street id for the include filter`() {
+        // Norwegian diacritics and spaces get transliterated so Photon accepts the
+        // include filter; the proxy and converter use identical mapping.
+        val req = V3PlaceRequest(ids = listOf("KVE:TopographicPlace:3407-Fahlstrøms plass"))
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(listOf("KVE.TopographicPlace.3407-Fahlstroems_plass"), request.includes)
+    }
+
+    @Test
+    fun `from V3PlaceParams expands OSM TopographicPlace with interim PointOfInterest fallback`() {
+        val req = V3PlaceRequest(ids = listOf("OSM:TopographicPlace:545260792"))
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(
+            listOf("OSM.TopographicPlace.545260792,OSM.PointOfInterest.545260792"),
+            request.includes,
+        )
     }
 
     @Test

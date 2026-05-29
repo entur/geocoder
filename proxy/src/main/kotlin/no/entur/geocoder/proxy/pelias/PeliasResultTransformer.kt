@@ -6,6 +6,7 @@ import no.entur.geocoder.proxy.common.Coordinate
 import no.entur.geocoder.proxy.common.Coordinate.Companion.coordOrNull
 import no.entur.geocoder.proxy.common.Extra
 import no.entur.geocoder.proxy.common.Geo
+import no.entur.geocoder.proxy.common.InterimIds
 import no.entur.geocoder.proxy.common.LegacyLayer.Companion.LEGACY_LAYER_PREFIX
 import no.entur.geocoder.proxy.common.LegacySource.Companion.LEGACY_SOURCE_PREFIX
 import no.entur.geocoder.proxy.common.Source
@@ -18,17 +19,20 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 object PeliasResultTransformer {
-    private const val KVE_PREFIX = "KVE:PostalAddress:"
+    private const val KVE_POSTAL_ADDRESS_PREFIX = "KVE:PostalAddress:"
     private const val KVE_PLACE_NAME_PREFIX = "KVE:PlaceName:"
-    private const val OSM_POI_PREFIX = "OSM:PointOfInterest:"
-    private const val OSM_TOPO_PREFIX = "OSM:TopographicPlace:"
 
-    /** Normalize IDs so v2 output stays backward-compatible. */
-    private fun normalizeV2Id(id: String): String =
-        id
-            .removePrefix(KVE_PREFIX)
-            .removePrefix(KVE_PLACE_NAME_PREFIX)
-            .replace(OSM_POI_PREFIX, OSM_TOPO_PREFIX)
+    /**
+     * Map v3-shape index IDs to the v2 wire shape. v2 stedsnavn IDs are bare numeric
+     * `lokal_id`; v2 postal addresses are also bare numeric. Everything else passes
+     * through (after [InterimIds] canonicalisation of interim index shapes).
+     */
+    private fun normalizeV2Id(id: String, source: String?): String {
+        if (source == Source.KARTVERKET_STEDSNAVN) {
+            id.removePrefix(KVE_PLACE_NAME_PREFIX).let { if (it != id) return it }
+        }
+        return InterimIds.canonicaliseOsmId(id).removePrefix(KVE_POSTAL_ADDRESS_PREFIX)
+    }
 
     fun parseAndTransform(result: PhotonResult, request: PeliasAutocompleteRequest): PeliasResult =
         parseAndTransform(
@@ -133,7 +137,7 @@ object PeliasResultTransformer {
         val layer = transformLayer(extra)
 
         val name = transformName(props)
-        val id = normalizeV2Id(extra.id)
+        val id = normalizeV2Id(extra.id, extra.source)
         var popularName =
             extra
                 .alt_name
@@ -288,7 +292,9 @@ object PeliasResultTransformer {
             ?.substringAfterLast(".")
 
     fun transformBoroughGid(boroughGid: String?): String? =
-        boroughGid?.let { "whosonfirst:$it" }
+        boroughGid
+            ?.let(InterimIds::boroughNumber)
+            ?.let { "whosonfirst:borough:$it" }
 
     fun transformCountyGid(countyGid: String?): String? =
         countyGid?.let { "whosonfirst:county:$it" }

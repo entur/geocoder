@@ -32,6 +32,10 @@ data class V3Result(
         val fareZones: List<String>? = null,
         val transportModes: List<TransportMode>? = null,
         val stopPlaceTypes: List<String>? = null,
+        /** Distance from the reverse query point in kilometres (3-decimal precision). Present on reverse responses only. */
+        val distance: BigDecimal? = null,
+        /** Per-language description. Keys are ISO 639-2 alpha-3 language codes (e.g. `nor`, `eng`). */
+        val description: Map<String, String>? = null,
     )
 
     data class Names(

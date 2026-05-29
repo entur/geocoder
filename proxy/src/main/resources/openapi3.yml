@@ -226,7 +226,7 @@ components:
         type: array
         items:
           type: string
-      example: ["KVE:County:03"]
+      example: ["KVE:TopographicPlace:03"]
 
     Localities:
       name: localities
@@ -238,7 +238,7 @@ components:
         type: array
         items:
           type: string
-      example: ["KVE:Locality:0301"]
+      example: ["KVE:TopographicPlace:0301"]
 
     FareZones:
       name: fareZones
@@ -461,6 +461,19 @@ components:
             - nsr
             - custom-poi
           example: "nsr"
+        distance:
+          type: number
+          format: double
+          description: Distance from the reverse query point in kilometres (3-decimal precision). Present on `/v3/reverse` responses only; the field is omitted (not `null`) on autocomplete and place lookup.
+          example: 0.142
+        description:
+          type: object
+          description: Per-language description. Keys are ISO 639-2 alpha-3 language codes (`nor`, `eng`, etc.). The field is omitted (not `null`) when the underlying record has no description.
+          additionalProperties:
+            type: string
+          example:
+            nor: "Norges nasjonalteater"
+            eng: "Norway's national theatre"
 
     Names:
       type: object
@@ -498,19 +511,19 @@ components:
           example: "Oslo"
         localityId:
           type: string
-          example: "KVE:Locality:0301"
+          example: "KVE:TopographicPlace:0301"
         borough:
           type: string
           example: "Sentrum"
         boroughId:
           type: string
-          example: "whosonfirst:borough:34200502"
+          example: "KVE:Borough:34200502"
         county:
           type: string
           example: "Oslo"
         countyId:
           type: string
-          example: "KVE:County:03"
+          example: "KVE:TopographicPlace:03"
         countryCode:
           type: string
           example: "no"

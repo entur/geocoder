@@ -4,24 +4,40 @@ Captured during the panel review of the v3 work. Two sections: (1) **deployment 
 
 ## 1. Deployment notes
 
-### 1a. Stedsnavn usage CSV must be re-keyed before re-indexing
+### 1c. Street id lookups only work after the transliteration reindex
 
-Stedsnavn IDs in the index changed from bare numeric `434810` to `KVE:PlaceName:434810` (see `nominatim-converter/src/source/stedsnavn/convert.rs`). The importance/popularity lookup (`importance_calc.calculate_importance_for(&id, ...)`) now passes the canonical form. If the production usage CSV still has bare-numeric keys for stedsnavn rows, every stedsnavn entry will silently fall back to the default importance (`config.stedsnavn.default_value`), since `usage.rs` returns `1.0` on miss with no warning.
+Before the transliteration change, street id categories with spaces or Norwegian
+characters (`KVE.TopographicPlace.0301-Karl Johans gate`) were silently dropped
+by Photon's category charset filter at index time - street place lookups for
+such names have never worked. They start working only once the index is rebuilt
+with the transliterating converter. No interim fallback is possible (there is
+no old category shape to fall back to). The acceptance cases
+`street-with-spaces` / `street-with-diacritics` (marked `status: pass`, i.e. the
+post-reindex contract) will fail when run against an environment that has not
+yet been reindexed - expected until the reindex completes.
+
+The proxy-side interim fallbacks for `OSM:PointOfInterest:N` and `borough:N` /
+bare-numeric grunnkrets gids live in `InterimIds.kt`, which also documents the
+observable trigger for deleting them after the reindex.
+
+### 1a. Stedsnavn usage CSV must be re-keyed before re-indexing (IGNORE)
+
+Stedsnavn IDs in the index are `KVE:PlaceName:<lokal_id>` (see `nominatim-converter/src/source/stedsnavn/convert.rs`). The importance/popularity lookup (`importance_calc.calculate_importance_for(&id, ...)`) passes the canonical form. If the production usage CSV still has bare-numeric keys for stedsnavn rows, every stedsnavn entry will silently fall back to the default importance (`config.stedsnavn.default_value`), since `usage.rs` returns `1.0` on miss with no warning.
 
 Two viable mitigations, pick one before the next reindex:
 
-- **Re-key the CSV**: rewrite stedsnavn rows so the key column is `KVE:PlaceName:<lokal_id>` instead of `<lokal_id>`. This aligns stedsnavn with matrikkel/belagenhet/osm which already use canonical IDs.
+- **Re-key the CSV**: rewrite stedsnavn rows so the key column is `KVE:PlaceName:<lokal_id>` instead of `<lokal_id>`. This aligns stedsnavn with matrikkel/osm which already use canonical IDs.
 - **Tolerate either form**: extend `UsageBoost::lookup` to try both `id` and `id.split(':').last()` so old CSVs keep working. Simpler operationally, but masks future ID changes the same way.
 
 Until one of these is done, stedsnavn ranking will degrade silently after a reindex.
 
-### 1b. Old Photon indexes still have bare-numeric stedsnavn place_ids
+### 1b. Old Photon indexes still have bare-numeric stedsnavn place_ids (IGNORE)
 
-A v2 client looking up `?ids=434810` already fails validation (`PeliasPlaceRequest` requires 3-part colon IDs) so this doesn't break the wire. But any tooling that talks to Photon directly and parsed numeric `place_id`/`osm_id` values for stedsnavn must be updated to handle the new `KVE-PlaceName-N` shape. Audit dashboards, log scrapers, and analytics jobs that read raw Photon output.
+A v2 client looking up `?ids=434810` already fails validation (`PeliasPlaceRequest` requires 3-part colon IDs) so this doesn't break the wire. But any tooling that talks to Photon directly and parsed numeric `place_id`/`osm_id` values for stedsnavn must be updated to handle the `KVE-PlaceName-N` shape. Audit dashboards, log scrapers, and analytics jobs that read raw Photon output.
 
 ## 2. Open design questions
 
-### 2a. Reverse `radius` units
+### 2a. Reverse `radius` units (IGNORE)
 
 Industry norm for reverse-geocoder radius is metres (Mapbox, Google, HERE). v3 currently uses kilometres on both autocomplete focus and reverse, with decimals accepted. The UX reviewer flagged this as a footgun: copy-pasting a `radius=500` from a Mapbox example into v3 means "500 km radius" which is meaningless.
 
@@ -29,25 +45,11 @@ If we want to flip reverse to metres later, that's still a breaking change but t
 
 Decision needed before public GA.
 
-### 2b. `KVE:PlaceName:` is not a Transmodel-canonical entity
+### 2b. `KVE:*` namespaces are not strictly Transmodel-canonical (IGNORE)
 
-NeTEx would call SSR settlements (`by`, `bydel`, `tettsted`, `tettsteddel`, `tettbebyggelse`) `TopographicPlace` entries with appropriate type codes. We chose `KVE:PlaceName:` because `KVE:TopographicPlace:` is already overloaded three ways (fylker, kommuner, streets). The pragmatic call is right but worth flagging:
+Stedsnavn lives in `KVE:PlaceName:N` and grunnkrets in `KVE:Borough:N` - dedicated per-concept namespaces rather than NeTEx-canonical entity types. NeTEx would model both as `TopographicPlace` entries with a `topographicPlaceType` discriminator; `Borough` in NeTEx specifically means an urban subdivision while grunnkrets also covers rural areas. The per-namespace approach is a pragmatic call: every ID is self-discriminating without length heuristics, and the namespaces will be opaque to NeTEx-aware downstream consumers (journey planner, NeTEx exports).
 
-- `KVE:PlaceName:N` will be opaque to downstream NeTEx-aware consumers (journey planner, NeTEx exports). They'll treat it as an unrecognised entity.
-- The real semantic debt is the street-as-`TopographicPlace` overload in `nominatim-converter/src/source/matrikkel/convert.rs:162`. Moving streets to a different namespace (e.g. `KVE:Road:KOMNR-NAME`) would free `TopographicPlace` for SSR settlements and align with NeTEx. Separate ticket.
-
-For now, document `KVE:PlaceName:` as a geocoder-local extension in v3.md (already partially done in the ID format section).
-
-### 2c. v3.md response shape diff is too thin
-
-Pelias reviewer's strongest point. v2 emits a long list of flat properties (`popular_name`, `street`, `housenumber`, `postalcode`, `country_a`, `county`, `county_gid`, `locality`, `locality_gid`, `borough`, `borough_gid`, `label`, `category`, `mode`, `tariff_zones`, `distance`, `accuracy`, `source_id`, `gid`, `description`). The current doc only narrates a few high-level structural changes. A property-by-property v2 -> v3 mapping table (or "dropped") would save migrating clients real time.
-
-Notable v2 fields with no v3 mapping documented:
-
-- `gid` (the `source:layer:id` triple - core Pelias shape). Gone in v3? Renamed?
-- `source_id`, `accuracy`, `popular_name`, `distance`, `tariff_zones`, `mode`, `description` - need explicit mapping or "removed".
-- `*_gid` family (`county_gid`, `locality_gid`, `borough_gid`) - v3 drops the WOF prefix; say so explicitly.
-- v2 reverse carries `distance`; v3 currently doesn't.
+SSR subtype (`by`/`bydel`/`tettsted`/`tettsteddel`/`tettbebyggelse`) is not exposed in the v3 response - all five collapse to `layer=place`. If a client needs to differentiate, add a `topographicPlaceType` field to `Place`.
 
 ### 2d. Pre-existing bbox sentinel bug
 

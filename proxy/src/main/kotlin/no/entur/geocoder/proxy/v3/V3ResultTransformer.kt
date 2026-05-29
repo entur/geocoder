@@ -1,8 +1,11 @@
 package no.entur.geocoder.proxy.v3
 
 import no.entur.geocoder.proxy.common.Category
+import no.entur.geocoder.proxy.common.Coordinate
 import no.entur.geocoder.proxy.common.Country
 import no.entur.geocoder.proxy.common.Extra
+import no.entur.geocoder.proxy.common.Geo
+import no.entur.geocoder.proxy.common.InterimIds
 import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.photon.PhotonResult
@@ -42,7 +45,8 @@ object V3ResultTransformer {
         result: PhotonResult,
         req: V3ReverseRequest,
     ): V3Result {
-        val features = result.features.map { transformFeature(it) }
+        val origin = Coordinate(req.lat, req.lon)
+        val features = result.features.map { transformFeature(it, origin) }
 
         return V3Result(
             features = features,
@@ -116,12 +120,13 @@ object V3ResultTransformer {
     private fun debugInfo(result: PhotonResult, debug: Boolean): Map<String, Any>? =
         if (debug && result.properties.isNotEmpty()) result.properties else null
 
-    private fun transformFeature(feature: PhotonFeature): V3Result.Feature {
+    private fun transformFeature(feature: PhotonFeature, origin: Coordinate? = null): V3Result.Feature {
         val props = feature.properties
         val extra = props.extra
         val coords = feature.geometry.coordinates
 
         val layer = determineLayer(extra.source, props.osm_key, extra.tags)
+        val distance = origin?.let { calculateDistanceKm(coords, it) }
 
         val defaultName =
             props.name
@@ -152,7 +157,7 @@ object V3ResultTransformer {
                 ),
             properties =
                 V3Result.Place(
-                    id = extra.id,
+                    id = InterimIds.canonicaliseOsmId(extra.id),
                     name =
                         V3Result.Names(
                             default = defaultName,
@@ -180,6 +185,8 @@ object V3ResultTransformer {
                             ?.filter { it.isNotBlank() }
                             ?.takeIf { it.isNotEmpty() },
                     source = mapProviderName(extra.source),
+                    distance = distance,
+                    description = parseDescription(extra.description),
                 ),
         )
     }
@@ -201,7 +208,7 @@ object V3ResultTransformer {
             locality = extra.locality ?: props.city,
             localityId = extra.locality_gid,
             borough = extra.borough,
-            boroughId = extra.borough_gid,
+            boroughId = extra.borough_gid?.let(InterimIds::canonicaliseBoroughGid),
             county = props.county,
             countyId = extra.county_gid,
             countryCode = iso3ToIso2(extra.country_a),
@@ -253,6 +260,35 @@ object V3ResultTransformer {
         return features.filter { f ->
             !(f.properties.categories?.contains("by") == true && f.properties.name.default in gospNames)
         }
+    }
+
+    private val langPrefix = Regex("^[a-z]{3}:")
+
+    private fun parseDescription(raw: String?): Map<String, String>? {
+        if (raw.isNullOrBlank()) return null
+        val segments = raw.split(";").map { it.trim() }.filter { it.isNotEmpty() }
+        // Treat as lang-prefixed only if every segment looks like `xyz:...`. A single
+        // free-text description containing a stray `tel:`/`www:`/`e.g.:` would otherwise
+        // be mis-parsed.
+        return if (segments.all { langPrefix.containsMatchIn(it) }) {
+            segments
+                .mapNotNull { seg ->
+                    val colon = seg.indexOf(':')
+                    val lang = seg.take(colon).trim()
+                    val text = seg.substring(colon + 1).trim()
+                    if (lang.isNotEmpty() && text.isNotEmpty()) lang to text else null
+                }
+                .toMap()
+                .takeIf { it.isNotEmpty() }
+        } else {
+            mapOf("nor" to raw.trim())
+        }
+    }
+
+    private fun calculateDistanceKm(coords: List<Double>, origin: Coordinate): BigDecimal? {
+        if (coords.size < 2) return null
+        val featureCoord = Coordinate(coords[1], coords[0])
+        return (Geo.haversineDistance(featureCoord, origin) / 1000.0).toBigDecimalWithScale(3)
     }
 
     private fun calculateBbox(features: List<V3Result.Feature>): List<BigDecimal>? {

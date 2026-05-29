@@ -4,6 +4,7 @@ import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.common.Category.asCategory
 import no.entur.geocoder.proxy.common.FocusDefaults
 import no.entur.geocoder.proxy.common.Geo
+import no.entur.geocoder.proxy.common.InterimIds
 import no.entur.geocoder.proxy.common.LegacySource.openaddresses
 import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
@@ -78,26 +79,23 @@ data class PhotonAutocompleteRequest(
 
         private const val LEGACY_OA_PREFIX = "openaddresses:address:"
         private const val KVE_ADDRESS_PREFIX = "KVE:PostalAddress:"
-        private const val LEGACY_OSM_PREFIX = "OSM:TopographicPlace:"
-        private const val OSM_POI_PREFIX = "OSM:PointOfInterest:"
 
-        private fun expandId(id: String): List<String> =
-            when {
-                id.startsWith(LEGACY_OA_PREFIX) -> {
-                    val numericId = id.removePrefix(LEGACY_OA_PREFIX)
-                    listOf(id.asCategory(), (KVE_ADDRESS_PREFIX + numericId).asCategory())
-                }
-                id.startsWith(LEGACY_OSM_PREFIX) -> {
-                    val numericId = id.removePrefix(LEGACY_OSM_PREFIX)
-                    listOf((OSM_POI_PREFIX + numericId).asCategory())
-                }
-                else -> listOf(id.asCategory())
+        private fun expandPeliasId(id: String): List<String> =
+            if (id.startsWith(LEGACY_OA_PREFIX)) {
+                val numericId = id.removePrefix(LEGACY_OA_PREFIX)
+                listOf(id.asCategory(), (KVE_ADDRESS_PREFIX + numericId).asCategory())
+            } else {
+                expandV3Id(id)
             }
+
+        /** Canonical lookup plus the interim OSM alias for index docs not yet reindexed. */
+        private fun expandV3Id(id: String): List<String> =
+            listOfNotNull(id.asCategory(), InterimIds.interimOsmAlias(id)?.asCategory())
 
         fun from(req: PeliasPlaceRequest): PhotonAutocompleteRequest =
             PhotonAutocompleteRequest(
                 query = "",
-                includes = listOf(req.ids.flatMap { expandId(it) }.joinToString(",")),
+                includes = listOf(req.ids.flatMap { expandPeliasId(it) }.joinToString(",")),
                 limit = req.ids.size + RESULT_PRUNING_HEADROOM,
                 debug = req.debug,
             )
@@ -106,7 +104,7 @@ data class PhotonAutocompleteRequest(
             PhotonAutocompleteRequest(
                 query = "",
                 language = handleLang(req.lang),
-                includes = listOf(req.ids.map { it.asCategory() }.joinToString(",")),
+                includes = listOf(req.ids.flatMap { expandV3Id(it) }.joinToString(",")),
                 limit = req.ids.size + RESULT_PRUNING_HEADROOM,
                 debug = req.debug,
             )
