@@ -31,7 +31,7 @@ object V3ResultTransformer {
                         QueryInfo(
                             text = req.q,
                             limit = req.limit,
-                            language = req.lang,
+                            lang = req.lang,
                             filters = buildFiltersEcho(req),
                         ),
                     resultCount = features.size,
@@ -55,10 +55,10 @@ object V3ResultTransformer {
                 Metadata(
                     query =
                         QueryInfo(
-                            latitude = req.lat,
-                            longitude = req.lon,
+                            lat = req.lat,
+                            lon = req.lon,
                             limit = req.limit,
-                            language = req.lang,
+                            lang = req.lang,
                             filters = buildFiltersEcho(req),
                         ),
                     resultCount = features.size,
@@ -108,7 +108,7 @@ object V3ResultTransformer {
                     query =
                         QueryInfo(
                             limit = req.ids.size,
-                            language = req.lang,
+                            lang = req.lang,
                         ),
                     resultCount = features.size,
                     timestamp = Instant.now().toString(),
@@ -158,7 +158,7 @@ object V3ResultTransformer {
             properties =
                 V3Result.Place(
                     id = InterimIds.canonicaliseOsmId(extra.id),
-                    name =
+                    names =
                         V3Result.Names(
                             default = defaultName,
                             label = labelName,
@@ -254,11 +254,11 @@ object V3ResultTransformer {
         val gospNames =
             features
                 .filter { it.properties.layer == V3Result.Layer.groupOfStopPlaces }
-                .map { it.properties.name.default }
+                .map { it.properties.names.default }
                 .toSet()
         if (gospNames.isEmpty()) return features
         return features.filter { f ->
-            !(f.properties.categories?.contains("by") == true && f.properties.name.default in gospNames)
+            !(f.properties.categories?.contains("by") == true && f.properties.names.default in gospNames)
         }
     }
 
@@ -292,28 +292,13 @@ object V3ResultTransformer {
     }
 
     private fun calculateBbox(features: List<V3Result.Feature>): List<BigDecimal>? {
-        if (features.isEmpty()) return null
-
-        var minLon = BigDecimal(Double.MAX_VALUE)
-        var minLat = BigDecimal(Double.MAX_VALUE)
-        var maxLon = BigDecimal(Double.MIN_VALUE)
-        var maxLat = BigDecimal(Double.MIN_VALUE)
-
-        features.forEach { feature ->
-            val coords = feature.geometry.coordinates
-            val lon = coords.getOrNull(0) ?: return@forEach
-            val lat = coords.getOrNull(1) ?: return@forEach
-
-            minLon = minOf(minLon, lon)
-            minLat = minOf(minLat, lat)
-            maxLon = maxOf(maxLon, lon)
-            maxLat = maxOf(maxLat, lat)
-        }
-
-        return if (minLon != BigDecimal(Double.MAX_VALUE)) {
-            listOf(minLon, minLat, maxLon, maxLat)
-        } else {
-            null
-        }
+        val points = features.map { it.geometry.coordinates }.filter { it.size >= 2 }
+        if (points.isEmpty()) return null
+        return listOf(
+            points.minOf { it[0] }, // minLon
+            points.minOf { it[1] }, // minLat
+            points.maxOf { it[0] }, // maxLon
+            points.maxOf { it[1] }, // maxLat
+        )
     }
 }

@@ -10,9 +10,12 @@ data class V3PlaceRequest(
 ) {
     init {
         require(ids.isNotEmpty()) { "Parameter 'ids' is required" }
+        require(ids.size <= MAX_IDS) { "Parameter 'ids' accepts at most $MAX_IDS ids" }
     }
 
     companion object {
+        const val MAX_IDS = 100
+
         internal val ALLOWED_PARAMS = setOf("ids", "lang", "debug")
 
         fun from(req: Parameters): V3PlaceRequest {

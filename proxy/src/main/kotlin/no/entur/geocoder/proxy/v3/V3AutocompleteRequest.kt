@@ -40,7 +40,13 @@ data class V3AutocompleteRequest(
         return (18 - log(r / 0.1, 2.2)).roundToInt().coerceIn(0, 18)
     }
 
-    /** Convert weight (0=no bias, 1=max bias) to Photon location_bias_scale (0=max bias, 1=no bias). */
+    /**
+     * Convert weight (0=no bias, 1=max bias) to Photon location_bias_scale (0=max bias, 1=no bias).
+     *
+     * Note: Photon multiplies importance by the scale, so `weight` is a linear blend between
+     * text/importance ranking (0) and pure location preference (1). At weight=1 (scale=0)
+     * popularity is ignored entirely - popular places lose their ranking advantage.
+     */
     fun photonLocationBiasScale(): Double? {
         if (lat == null || lon == null) return null
         val w = (weight ?: DEFAULT_WEIGHT).coerceIn(0.0, 1.0)

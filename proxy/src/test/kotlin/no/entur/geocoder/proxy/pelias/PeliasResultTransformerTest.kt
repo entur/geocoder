@@ -353,6 +353,34 @@ class PeliasResultTransformerTest {
     }
 
     @Test
+    fun `bbox handles negative coordinates`() {
+        // Regression: the old Double.MIN_VALUE sentinel broke max-calculation for
+        // negative lon/lat (Jan Mayen, lon ~-8.5, is in the Norway OSM extract).
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(-9.1, 70.9)),
+                            properties = PhotonProperties(name = "A", extra = Extra(id = "1")),
+                        ),
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(-8.2, 71.1)),
+                            properties = PhotonProperties(name = "B", extra = Extra(id = "2")),
+                        ),
+                    ),
+            )
+
+        val bbox = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("x")).bbox
+
+        requireNotNull(bbox)
+        assertEquals(0, java.math.BigDecimal("-9.1").compareTo(bbox[0])) // minLon
+        assertEquals(0, java.math.BigDecimal("70.9").compareTo(bbox[1])) // minLat
+        assertEquals(0, java.math.BigDecimal("-8.2").compareTo(bbox[2])) // maxLon
+        assertEquals(0, java.math.BigDecimal("71.1").compareTo(bbox[3])) // maxLat
+    }
+
+    @Test
     fun `parseAndTransform calculates distances when coordinates provided`() {
         val photonResult =
             createPhotonResult(

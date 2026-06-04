@@ -24,7 +24,9 @@ data class V3Result(
 
     data class Place(
         val id: String,
-        val name: Names,
+        // Plural to avoid stock GeoJSON tooling (Leaflet, Mapbox GL) rendering an
+        // object where it expects a `properties.name` string.
+        val names: Names,
         val layer: Layer,
         val source: String,
         val address: Address? = null,
@@ -80,10 +82,10 @@ data class V3Result(
 
     data class QueryInfo(
         val text: String? = null,
-        val latitude: Double? = null,
-        val longitude: Double? = null,
+        val lat: Double? = null,
+        val lon: Double? = null,
         val limit: Int,
-        val language: String,
+        val lang: String,
         val filters: Filters? = null,
     )
 

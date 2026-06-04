@@ -7,6 +7,7 @@ import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonGeometry
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonProperties
+import java.math.BigDecimal
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.Test
@@ -44,19 +45,19 @@ class V3ResultTransformerTest {
     @Test
     fun `display name appends locality`() {
         val place = transformSingle(Extra(id = "OSM:TopographicPlace:42", source = Source.OSM, locality = "Oslo"))
-        assertEquals("Test, Oslo", place.name.display)
+        assertEquals("Test, Oslo", place.names.display)
     }
 
     @Test
     fun `label is null when same as default name`() {
         val place = transformSingle(Extra(id = "OSM:TopographicPlace:42", source = Source.OSM, alt_name = "Test"))
-        assertNull(place.name.label)
+        assertNull(place.names.label)
     }
 
     @Test
     fun `label is set when different from default name`() {
         val place = transformSingle(Extra(id = "OSM:TopographicPlace:42", source = Source.OSM, alt_name = "Alias"))
-        assertEquals("Alias", place.name.label)
+        assertEquals("Alias", place.names.label)
     }
 
     @Test
@@ -129,7 +130,7 @@ class V3ResultTransformerTest {
                 .features
                 .first()
                 .properties
-        assertEquals(java.math.BigDecimal("1.001"), place.distance)
+        assertEquals(BigDecimal("1.001"), place.distance)
     }
 
     @Test
@@ -222,6 +223,32 @@ class V3ResultTransformerTest {
                 ),
             )
         assertEquals("KVE:Borough:34200205", place.address?.boroughId)
+    }
+
+    @Test
+    fun `bbox handles negative coordinates`() {
+        // Regression: the old Double.MIN_VALUE sentinel broke max-calculation for
+        // negative lon/lat (Jan Mayen, lon ~-8.5, is in the Norway OSM extract).
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(-21.9, 64.1)),
+                            properties = PhotonProperties(name = "A", extra = Extra(id = "OSM:TopographicPlace:1", source = Source.OSM)),
+                        ),
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(-18.1, 65.7)),
+                            properties = PhotonProperties(name = "B", extra = Extra(id = "OSM:TopographicPlace:2", source = Source.OSM)),
+                        ),
+                    ),
+            )
+        val bbox = V3ResultTransformer.parseAndTransform(photonResult, V3AutocompleteRequest(q = "x")).bbox
+        requireNotNull(bbox)
+        assertEquals(BigDecimal("-21.900000"), bbox[0]) // minLon
+        assertEquals(BigDecimal("64.100000"), bbox[1]) // minLat
+        assertEquals(BigDecimal("-18.100000"), bbox[2]) // maxLon
+        assertEquals(BigDecimal("65.700000"), bbox[3]) // maxLat
     }
 
     private fun transformSingle(

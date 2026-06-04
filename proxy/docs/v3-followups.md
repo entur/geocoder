@@ -22,38 +22,15 @@ observable trigger for deleting them after the reindex.
 
 ## 2. Open design questions
 
-### 2d. Pre-existing bbox sentinel bug
-
-Both `V3ResultTransformer.calculateBbox` and `PeliasResultTransformer.calculateBoundingBox` initialise `maxLon` and `maxLat` with `BigDecimal(Double.MIN_VALUE)`. `Double.MIN_VALUE` is the smallest *positive* double (~4.9e-324), not negative infinity. For features with negative longitude or latitude, `maxOf(sentinel, -5)` returns the sentinel, not `-5`.
-
-Operational impact in Norway: zero (all of Norway is positive lon/lat). Fix is trivial - swap to `-Double.MAX_VALUE` or use a nullable accumulator. Drop it in opportunistically.
-
-### 2e. `properties.name` as a JSON object breaks GeoJSON renderers
-
-GeoJSON tools (Leaflet, Mapbox GL `text-field`, ogr2ogr) assume `properties.name` is a string. v3 makes it an object `{ default, label?, display }`, which renders as `[object Object]` in stock tooling.
-
-Cheap fix while we can still break the contract: rename to `properties.names` (plural). The OpenAPI schema is already named `Names`, so this aligns the field name with the type name.
-
 ### 2f. `multimodal=parent` default is opinionated
 
 Hides multimodal children (quays, platforms) by default. Fine for journey-planner clients (they want to route to the stop place, not a specific platform), surprising for a general-purpose geocoder where "reverse-geocode my current position" should probably return the platform.
 
 The behaviour is now documented in both v3.md and the OpenAPI parameter description. Remaining decision: keep `parent` or flip the default to `all`.
 
-### 2g. Parameter naming inconsistency
+### 2h. v3 weight tuning
 
-Request params mix short (`q`, `lat`, `lon`, `lang`) with long camelCase (`countyIds`, `localityIds`, `tariffZones`, `fareZoneAuthorities`). The metadata response echoes back yet a third form (`latitude`, `longitude`, `language`).
-
-The mixed convention is defensible (short for the most common params, longer for compound ones), but the metadata echo should mirror the request keys: `lat`/`lon`/`lang`, not the long form. Cheap to align before GA.
-
-### 2h. v3 weight semantics misleading at extremes
-
-Photon's `location_bias_scale` doesn't behave as the v3 kdoc claims. Photon multiplies importance by `30 * scale`, then adds the location-bias term separately - so v3 `weight=1` -> `scale=0` zeroes out importance entirely (popular places lose their advantage), and `weight=0` -> `scale=1` gives full importance but Photon may still apply some location bias internally. The linear mapping is plausible UX but its actual effect on ranking is non-obvious.
-
-Options:
-
-- Apply the same tuned curve v2 uses (`LocationBiasCalculator`/`Geo.peliasScaleToPhotonZoom`) to v3's `weight` parameter. Pro: consistent v2 behaviour, well-tuned for Norway. Con: surprises the docs.
-- Keep the linear mapping but document the actual effect: "weight is a linear blend between text/importance ranking (0) and pure location preference (1). At weight=1, popularity is ignored."
+The linear `weight` mapping is now documented honestly (weight=1 ignores popularity entirely - kdoc and v3.md). Still open if ranking quality disappoints: apply the v2-tuned curve (`LocationBiasCalculator`/`Geo.peliasScaleToPhotonZoom`) to v3's `weight` instead of the linear mapping. Pro: well-tuned for Norway. Con: surprises the docs.
 
 ### 2i. Missing response fields (partially shipped)
 
@@ -84,3 +61,8 @@ Decisions made; recorded here so they don't get re-litigated.
 - **`KVE:PlaceName:N` / `KVE:Borough:N`** are geocoder-local namespaces, not NeTEx-canonical entity types; opaque to NeTEx-aware consumers by design. SSR subtype is not exposed (`layer=place` for all five); add a `topographicPlaceType` field if a client ever needs it.
 - **Stedsnavn usage CSV** keeps bare-numeric keys; ranking falls back to default importance on key-shape mismatch (accepted).
 - **Bare-numeric stedsnavn place_ids in old Photon indexes**: tooling reading raw Photon output must handle `KVE-PlaceName-N` (accepted, no proxy impact).
+- **bbox sentinel bug** fixed: nullable accumulators replace the broken `Double.MIN_VALUE` sentinel in both transformers.
+- **`properties.name` -> `properties.names`**: renamed so stock GeoJSON tooling doesn't choke on an object where it expects a `name` string.
+- **Metadata echo mirrors request keys**: `lat`/`lon`/`lang` instead of `latitude`/`longitude`/`language`.
+- **`/v3/place` caps `ids` at 100** (code + OpenAPI `maxItems`).
+- **`weight` extremes documented**: linear blend, weight=1 ignores popularity (kdoc + v3.md).

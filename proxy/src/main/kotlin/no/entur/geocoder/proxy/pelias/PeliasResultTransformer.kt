@@ -103,31 +103,14 @@ object PeliasResultTransformer {
     }
 
     private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {
-        if (features.isEmpty()) return null
-
-        var minLon = BigDecimal(Double.MAX_VALUE)
-        var minLat = BigDecimal(Double.MAX_VALUE)
-        var maxLon = BigDecimal(Double.MIN_VALUE)
-        var maxLat = BigDecimal(Double.MIN_VALUE)
-
-        features.forEach { feature ->
-            val coords = feature.geometry.coordinates
-            if (coords.size >= 2) {
-                val lon = coords[0]
-                val lat = coords[1]
-
-                minLon = minOf(minLon, lon)
-                minLat = minOf(minLat, lat)
-                maxLon = maxOf(maxLon, lon)
-                maxLat = maxOf(maxLat, lat)
-            }
-        }
-
-        return if (minLon != BigDecimal(Double.MAX_VALUE)) {
-            listOf(minLon, minLat, maxLon, maxLat)
-        } else {
-            null
-        }
+        val points = features.map { it.geometry.coordinates }.filter { it.size >= 2 }
+        if (points.isEmpty()) return null
+        return listOf(
+            points.minOf { it[0] }, // minLon
+            points.minOf { it[1] }, // minLat
+            points.maxOf { it[0] }, // maxLon
+            points.maxOf { it[1] }, // maxLat
+        )
     }
 
     fun transformFeature(feature: PhotonFeature, distance: Double?): PeliasFeature {

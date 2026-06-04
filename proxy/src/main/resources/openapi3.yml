@@ -139,11 +139,12 @@ components:
       name: ids
       in: query
       required: true
-      description: Place IDs to look up
+      description: Place IDs to look up (at most 100)
       style: form
       explode: false
       schema:
         type: array
+        maxItems: 100
         items:
           type: string
       example: [NSR:StopPlace:337, NSR:StopPlace:59872]
@@ -418,14 +419,14 @@ components:
       type: object
       required:
         - id
-        - name
+        - names
         - layer
         - source
       properties:
         id:
           type: string
           example: "NSR:StopPlace:59872"
-        name:
+        names:
           $ref: '#/components/schemas/Names'
         layer:
           $ref: '#/components/schemas/Layer'
@@ -573,23 +574,23 @@ components:
       type: object
       required:
         - limit
-        - language
+        - lang
       properties:
         text:
           type: string
           example: "Oslo S"
-        latitude:
+        lat:
           type: number
           format: double
           example: 59.9110
-        longitude:
+        lon:
           type: number
           format: double
           example: 10.7522
         limit:
           type: integer
           example: 10
-        language:
+        lang:
           type: string
           example: "no"
         filters:
@@ -644,4 +645,4 @@ components:
           example: "Bad Request"
         detail:
           type: string
-          example: "Parameter 'latitude' is required"
+          example: "Parameter 'lat' is required"
