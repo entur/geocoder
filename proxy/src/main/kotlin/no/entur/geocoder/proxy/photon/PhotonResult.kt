@@ -47,6 +47,8 @@ data class PhotonResult(
         val city: String? = null,
         val street: String? = null,
         val county: String? = null,
+        /** Photon per-feature extent: [minLon, maxLat, maxLon, minLat] (NW + SE corners). */
+        val extent: List<Double>? = null,
         val extra: Extra,
     )
 }

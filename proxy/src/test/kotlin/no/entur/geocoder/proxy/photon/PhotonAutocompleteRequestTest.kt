@@ -4,6 +4,7 @@ import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasPlaceRequest
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
+import no.entur.geocoder.proxy.v3.V3AutocompleteRequest
 import no.entur.geocoder.proxy.v3.V3PlaceRequest
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -166,6 +167,15 @@ class PhotonAutocompleteRequestTest {
         val request = PhotonAutocompleteRequest.from(req)
 
         assertEquals(listOf("KVE.PlaceName.434810"), request.includes)
+    }
+
+    @Test
+    fun `from V3AutocompleteRequest passes bbox through`() {
+        val req = V3AutocompleteRequest(q = "oslo", bbox = listOf(10.5, 59.8, 10.9, 60.0))
+
+        val request = PhotonAutocompleteRequest.from(req)
+
+        assertEquals(listOf(10.5, 59.8, 10.9, 60.0), request.bbox)
     }
 
     @Test

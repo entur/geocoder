@@ -24,12 +24,21 @@ data class V3AutocompleteRequest(
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
     override val multimodal: String = "parent",
+    /** Hard viewport restriction: results must fall inside `minLon,minLat,maxLon,maxLat`. */
+    val bbox: List<Double>? = null,
     val debug: Boolean = false,
 ) : V3FilterParams {
     init {
         val anyFocusParam = lat != null || lon != null || radius != null || weight != null
         require(!anyFocusParam || (lat != null && lon != null)) {
             "Focus parameters (lat, lon, radius, weight) form a bundle: lat and lon must both be set when any is provided"
+        }
+        bbox?.let {
+            require(it.size == 4) { "Parameter 'bbox' must be four numbers: minLon,minLat,maxLon,maxLat" }
+            val (minLon, minLat, maxLon, maxLat) = it
+            require(minLon in -180.0..180.0 && maxLon in -180.0..180.0) { "Parameter 'bbox': longitudes must be within [-180, 180]" }
+            require(minLat in -90.0..90.0 && maxLat in -90.0..90.0) { "Parameter 'bbox': latitudes must be within [-90, 90]" }
+            require(minLon < maxLon && minLat < maxLat) { "Parameter 'bbox': expected minLon,minLat,maxLon,maxLat with min < max" }
         }
     }
 
@@ -61,7 +70,7 @@ data class V3AutocompleteRequest(
             setOf(
                 "q", "limit", "lang", "lat", "lon",
                 "radius", "weight", "layers", "sources", "countries", "counties",
-                "localities", "fareZones", "fareZoneAuthorities", "multimodal", "debug",
+                "localities", "fareZones", "fareZoneAuthorities", "multimodal", "bbox", "debug",
             )
 
         fun from(req: Parameters): V3AutocompleteRequest {
@@ -84,8 +93,16 @@ data class V3AutocompleteRequest(
                 fareZones = req.csv("fareZones"),
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
                 multimodal = req["multimodal"] ?: "parent",
+                bbox = req["bbox"]?.let(::parseBbox),
                 debug = req["debug"].toBoolean(),
             )
         }
+
+        private fun parseBbox(raw: String): List<Double> =
+            raw.split(",").map {
+                requireNotNull(it.trim().toDoubleOrNull()) {
+                    "Parameter 'bbox' must be four numbers: minLon,minLat,maxLon,maxLat"
+                }
+            }
     }
 }

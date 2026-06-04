@@ -228,6 +228,15 @@ class PhotonReverseRequestTest {
 
 
     @Test
+    fun `from V3ReverseRequest passes distanceSort through`() {
+        val sorted = PhotonReverseRequest.from(V3ReverseRequest(lat = 59.9, lon = 10.7))
+        assertTrue(sorted.distanceSort)
+
+        val unsorted = PhotonReverseRequest.from(V3ReverseRequest(lat = 59.9, lon = 10.7, distanceSort = false))
+        assertFalse(unsorted.distanceSort)
+    }
+
+    @Test
     fun `from V3ReverseRequest excludes addresses by default`() {
         val req = V3ReverseRequest(lat = 59.911491, lon = 10.757933)
         val request = PhotonReverseRequest.from(req)

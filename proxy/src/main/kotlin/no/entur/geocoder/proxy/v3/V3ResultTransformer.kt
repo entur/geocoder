@@ -146,6 +146,7 @@ object V3ResultTransformer {
         val displayName = defaultName + extra.locality?.let { ", $it" }.orEmpty()
 
         return V3Result.Feature(
+            bbox = featureBbox(props.extent),
             geometry =
                 V3Result.Geometry(
                     type = feature.geometry.type,
@@ -284,6 +285,14 @@ object V3ResultTransformer {
             mapOf("nor" to raw.trim())
         }
     }
+
+    /** Photon's extent is the NW + SE corners; GeoJSON bbox is [minLon, minLat, maxLon, maxLat]. */
+    private fun featureBbox(extent: List<Double>?): List<BigDecimal>? =
+        extent
+            ?.takeIf { it.size == 4 }
+            ?.let { (minLon, maxLat, maxLon, minLat) ->
+                listOf(minLon, minLat, maxLon, maxLat).map { v -> v.toBigDecimalWithScale() }
+            }
 
     private fun calculateDistanceKm(coords: List<Double>, origin: Coordinate): BigDecimal? {
         if (coords.size < 2) return null

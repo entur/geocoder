@@ -226,6 +226,46 @@ class V3ResultTransformerTest {
     }
 
     @Test
+    fun `feature bbox is mapped from photon extent`() {
+        // Photon extent order is [minLon, maxLat, maxLon, minLat] (NW + SE);
+        // GeoJSON bbox is [minLon, minLat, maxLon, maxLat].
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.75, 59.91)),
+                            properties = PhotonProperties(
+                                name = "Karl Johans gate",
+                                extent = listOf(10.73, 59.92, 10.76, 59.91),
+                                extra = Extra(id = "KVE:TopographicPlace:0301-Karl Johans gate", source = Source.KARTVERKET_ADRESSE),
+                            ),
+                        ),
+                    ),
+            )
+        val feature = V3ResultTransformer.parseAndTransform(photonResult, V3AutocompleteRequest(q = "x")).features.first()
+        assertEquals(
+            listOf(BigDecimal("10.730000"), BigDecimal("59.910000"), BigDecimal("10.760000"), BigDecimal("59.920000")),
+            feature.bbox,
+        )
+    }
+
+    @Test
+    fun `feature bbox is absent without photon extent`() {
+        val photonResult =
+            PhotonResult(
+                features = listOf(
+                    PhotonFeature(
+                        geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.0, 60.0)),
+                        properties = PhotonProperties(name = "Test", extra = Extra(id = "OSM:TopographicPlace:42", source = Source.OSM)),
+                    ),
+                ),
+            )
+        val feature = V3ResultTransformer.parseAndTransform(photonResult, V3AutocompleteRequest(q = "x")).features.first()
+        assertNull(feature.bbox)
+    }
+
+    @Test
     fun `bbox handles negative coordinates`() {
         // Regression: the old Double.MIN_VALUE sentinel broke max-calculation for
         // negative lon/lat (Jan Mayen, lon ~-8.5, is in the Norway OSM extract).

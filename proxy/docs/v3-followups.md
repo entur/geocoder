@@ -32,18 +32,21 @@ The behaviour is now documented in both v3.md and the OpenAPI parameter descript
 
 The linear `weight` mapping is now documented honestly (weight=1 ignores popularity entirely - kdoc and v3.md). Still open if ranking quality disappoints: apply the v2-tuned curve (`LocationBiasCalculator`/`Geo.peliasScaleToPhotonZoom`) to v3's `weight` instead of the linear mapping. Pro: well-tuned for Norway. Con: surprises the docs.
 
-### 2i. Missing response fields (partially shipped)
+### 2i. Missing response fields (mostly shipped)
 
-Shipped: `distance` per feature on reverse (km, 3-decimal precision) and `description` (per-language map). Still open:
+Shipped: `distance` (reverse, km), `description` (per-language map), per-feature `bbox` for streets and groups of stop places (converter computes real extents; needs the next reindex to appear in responses). Still open:
 
-- `score` per feature (Photon's relevance score).
-- All `alt_name` entries, not just the first.
-- Per-feature `bbox` for streets and group-of-stop-places (currently only top-level).
-- Language-of-match indicator per name.
+- All `alt_name` entries, not just the first (small; data already indexed `;`-joined).
+- `score` per feature: blocked - Photon only emits the ES score in debug mode and /photon is off-limits; would require an upstream contribution.
+- Language-of-match indicator: blocked - Photon does not track which language field matched.
 
-### 2j. Photon features not surfaced
+### 2j. Photon features not surfaced (partially shipped)
 
-Photon's `/api` accepts `bbox`, `osm_tag`, `dedupe`. Photon's `/reverse` accepts `query_string_filter` and a `distance_sort` toggle. None plumb through to v3. The original plan called out `bbox` and `categories` filters as quick wins. Re-confirmed by the panel.
+Shipped: `bbox` viewport filter on `/v3/autocomplete`, `distanceSort` toggle on `/v3/reverse`. Still open:
+
+- `categories` as a request filter (the principled version of Photon's raw `osm_tag` - v3 returns categories but does not accept them as a filter). Needs a design pass on the value set.
+- `query_string_filter` on reverse: powerful but exposes ES query-string syntax; needs a curated wrapper if ever exposed.
+- `dedupe` toggle: trivial, low value (debug tool).
 
 ### 2l. `osm.public_transport.*` removed from emitted categories
 

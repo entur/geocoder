@@ -24,6 +24,8 @@ data class PhotonAutocompleteRequest(
     val lon: Double? = null,
     val zoom: Int? = null,
     val locationBiasScale: Double? = null,
+    /** Photon viewport restriction: minLon,minLat,maxLon,maxLat. */
+    val bbox: List<Double>? = null,
     val includeHousenumbers: Boolean = false,
     val debug: Boolean = false,
 ) {
@@ -135,6 +137,7 @@ data class PhotonAutocompleteRequest(
                 lon = req.lon,
                 zoom = req.photonZoom(),
                 locationBiasScale = req.photonLocationBiasScale(),
+                bbox = req.bbox,
                 includeHousenumbers = callerWantsAddresses && !req.q.contains("\\s\\d".toRegex()),
                 debug = req.debug,
             )

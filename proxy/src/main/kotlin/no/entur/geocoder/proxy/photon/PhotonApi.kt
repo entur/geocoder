@@ -36,6 +36,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                         parameter("lat", req.lat)
                         parameter("lon", req.lon)
                     }
+                    req.bbox?.let { parameter("bbox", it.joinToString(",")) }
                     parameter("debug", req.debug)
                     if (req.includeHousenumbers) parameter("suggest_addresses", true)
                 }
@@ -63,6 +64,8 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     req.excludes.forEach {
                         parameter("exclude", it)
                     }
+                    // Photon defaults to distance sorting; only the non-default needs sending.
+                    if (!req.distanceSort) parameter("distance_sort", false)
                     parameter("debug", req.debug)
                 }
         return convertResponse(response)

@@ -1,5 +1,6 @@
 package no.entur.geocoder.proxy.v3
 
+import io.ktor.http.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -79,5 +80,28 @@ class V3AutocompleteRequestTest {
         assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", radius = 50.0) }
         assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", weight = 0.5) }
         assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", lat = 59.9, radius = 50.0) }
+    }
+
+    @Test
+    fun `bbox is parsed from comma-separated string`() {
+        val req = V3AutocompleteRequest.from(parametersOf("q" to listOf("oslo"), "bbox" to listOf("10.5,59.8,10.9,60.0")))
+        assertEquals(listOf(10.5, 59.8, 10.9, 60.0), req.bbox)
+    }
+
+    @Test
+    fun `bbox rejects malformed input`() {
+        // wrong arity
+        assertFailsWith<IllegalArgumentException> {
+            V3AutocompleteRequest.from(parametersOf("q" to listOf("oslo"), "bbox" to listOf("10.5,59.8,10.9")))
+        }
+        // non-numeric
+        assertFailsWith<IllegalArgumentException> {
+            V3AutocompleteRequest.from(parametersOf("q" to listOf("oslo"), "bbox" to listOf("a,b,c,d")))
+        }
+        // min >= max
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", bbox = listOf(10.9, 59.8, 10.5, 60.0)) }
+        // out of range
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", bbox = listOf(-190.0, 59.8, 10.9, 60.0)) }
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", bbox = listOf(10.5, 59.8, 10.9, 95.0)) }
     }
 }

@@ -39,6 +39,7 @@ paths:
         - $ref: '#/components/parameters/AutocompleteLongitude'
         - $ref: '#/components/parameters/AutocompleteRadius'
         - $ref: '#/components/parameters/AutocompleteWeight'
+        - $ref: '#/components/parameters/Bbox'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/Layers'
@@ -75,6 +76,7 @@ paths:
         - $ref: '#/components/parameters/Latitude'
         - $ref: '#/components/parameters/Longitude'
         - $ref: '#/components/parameters/Radius'
+        - $ref: '#/components/parameters/DistanceSort'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/Layers'
@@ -322,6 +324,24 @@ components:
         default: 0.5
       example: 0.5
 
+    Bbox:
+      name: bbox
+      in: query
+      description: "Restrict results to a bounding box: `minLon,minLat,maxLon,maxLat`. Unlike the focus point (a soft bias), this is a hard filter."
+      schema:
+        type: string
+        pattern: '^\s*-?\d+(\.\d+)?(\s*,\s*-?\d+(\.\d+)?){3}\s*$'
+      example: "10.5,59.8,10.9,60.0"
+
+    DistanceSort:
+      name: distanceSort
+      in: query
+      description: Sort reverse results by distance from the query point (default) or by relevance when false.
+      schema:
+        type: boolean
+        default: true
+      example: true
+
     Latitude:
       name: lat
       in: query
@@ -396,6 +416,14 @@ components:
           $ref: '#/components/schemas/Geometry'
         properties:
           $ref: '#/components/schemas/Place'
+        bbox:
+          type: array
+          description: GeoJSON bounding box `[minLon, minLat, maxLon, maxLat]`. Present for features with a real extent (streets, groups of stop places); omitted for point features.
+          items:
+            type: number
+          minItems: 4
+          maxItems: 4
+          example: [10.73, 59.91, 10.76, 59.92]
 
     Geometry:
       type: object

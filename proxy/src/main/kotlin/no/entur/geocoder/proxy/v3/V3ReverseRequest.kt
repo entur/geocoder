@@ -20,6 +20,8 @@ data class V3ReverseRequest(
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
     override val multimodal: String = "parent",
+    /** Sort by distance from the query point (default) or by relevance when false. */
+    val distanceSort: Boolean = true,
     val debug: Boolean = false,
 ) : V3FilterParams {
     init {
@@ -32,7 +34,7 @@ data class V3ReverseRequest(
             setOf(
                 "lat", "lon", "radius", "limit", "lang",
                 "layers", "sources", "countries", "counties", "localities",
-                "fareZones", "fareZoneAuthorities", "multimodal", "debug",
+                "fareZones", "fareZoneAuthorities", "multimodal", "distanceSort", "debug",
             )
 
         fun from(req: Parameters): V3ReverseRequest {
@@ -53,6 +55,10 @@ data class V3ReverseRequest(
                 fareZones = req.csv("fareZones"),
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
                 multimodal = req["multimodal"] ?: "parent",
+                distanceSort = req["distanceSort"]?.let {
+                    it.toBooleanStrictOrNull()
+                        ?: throw IllegalArgumentException("Parameter 'distanceSort' must be true or false")
+                } ?: true,
                 debug = req["debug"].toBoolean(),
             )
         }

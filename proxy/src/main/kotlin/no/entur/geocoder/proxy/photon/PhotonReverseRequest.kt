@@ -14,6 +14,7 @@ data class PhotonReverseRequest(
     val radius: Double? = null,
     val includes: List<String> = emptyList(),
     val excludes: List<String> = emptyList(),
+    val distanceSort: Boolean = true,
     val debug: Boolean = false,
 ) {
     companion object {
@@ -49,6 +50,7 @@ data class PhotonReverseRequest(
                 radius = req.radius,
                 includes = includes,
                 excludes = listOfNotNull(excludeAddresses, PhotonFilterBuilder.buildMultimodalExclude(req.multimodal)),
+                distanceSort = req.distanceSort,
                 debug = req.debug,
             )
         }

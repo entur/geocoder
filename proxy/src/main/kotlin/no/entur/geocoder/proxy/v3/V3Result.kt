@@ -15,6 +15,11 @@ data class V3Result(
         val type: String = "Feature",
         val geometry: Geometry,
         val properties: Place,
+        /**
+         * GeoJSON bbox `[minLon, minLat, maxLon, maxLat]`. Present for features with
+         * a real extent (streets, groups of stop places); absent for point features.
+         */
+        val bbox: List<BigDecimal>? = null,
     )
 
     data class Geometry(
