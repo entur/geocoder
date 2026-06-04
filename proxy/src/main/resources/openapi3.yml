@@ -269,7 +269,7 @@ components:
     Multimodal:
       name: multimodal
       in: query
-      description: "Stop place hierarchy filter: `parent` (default) returns parent stops only, `child` returns child stops only, `all` returns both"
+      description: "Multimodal stop place filter. Standalone (monomodal) stop places always appear; this only decides whether multimodal parents, children, or both appear alongside them: `parent` (default) hides multimodal children, `child` hides multimodal parents, `all` shows both"
       schema:
         type: string
         enum: [parent, child, all]

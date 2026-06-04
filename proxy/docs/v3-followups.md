@@ -20,36 +20,7 @@ The proxy-side interim fallbacks for `OSM:PointOfInterest:N` and `borough:N` /
 bare-numeric grunnkrets gids live in `InterimIds.kt`, which also documents the
 observable trigger for deleting them after the reindex.
 
-### 1a. Stedsnavn usage CSV must be re-keyed before re-indexing (IGNORE)
-
-Stedsnavn IDs in the index are `KVE:PlaceName:<lokal_id>` (see `nominatim-converter/src/source/stedsnavn/convert.rs`). The importance/popularity lookup (`importance_calc.calculate_importance_for(&id, ...)`) passes the canonical form. If the production usage CSV still has bare-numeric keys for stedsnavn rows, every stedsnavn entry will silently fall back to the default importance (`config.stedsnavn.default_value`), since `usage.rs` returns `1.0` on miss with no warning.
-
-Two viable mitigations, pick one before the next reindex:
-
-- **Re-key the CSV**: rewrite stedsnavn rows so the key column is `KVE:PlaceName:<lokal_id>` instead of `<lokal_id>`. This aligns stedsnavn with matrikkel/osm which already use canonical IDs.
-- **Tolerate either form**: extend `UsageBoost::lookup` to try both `id` and `id.split(':').last()` so old CSVs keep working. Simpler operationally, but masks future ID changes the same way.
-
-Until one of these is done, stedsnavn ranking will degrade silently after a reindex.
-
-### 1b. Old Photon indexes still have bare-numeric stedsnavn place_ids (IGNORE)
-
-A v2 client looking up `?ids=434810` already fails validation (`PeliasPlaceRequest` requires 3-part colon IDs) so this doesn't break the wire. But any tooling that talks to Photon directly and parsed numeric `place_id`/`osm_id` values for stedsnavn must be updated to handle the `KVE-PlaceName-N` shape. Audit dashboards, log scrapers, and analytics jobs that read raw Photon output.
-
 ## 2. Open design questions
-
-### 2a. Reverse `radius` units (IGNORE)
-
-Industry norm for reverse-geocoder radius is metres (Mapbox, Google, HERE). v3 currently uses kilometres on both autocomplete focus and reverse, with decimals accepted. The UX reviewer flagged this as a footgun: copy-pasting a `radius=500` from a Mapbox example into v3 means "500 km radius" which is meaningless.
-
-If we want to flip reverse to metres later, that's still a breaking change but the V3 codebase is set up for it cleanly: divide by 1000 inside `PhotonReverseRequest.from(V3ReverseRequest)`. Autocomplete focus is a soft bias so the unit matters less - keep it km for symmetry.
-
-Decision needed before public GA.
-
-### 2b. `KVE:*` namespaces are not strictly Transmodel-canonical (IGNORE)
-
-Stedsnavn lives in `KVE:PlaceName:N` and grunnkrets in `KVE:Borough:N` - dedicated per-concept namespaces rather than NeTEx-canonical entity types. NeTEx would model both as `TopographicPlace` entries with a `topographicPlaceType` discriminator; `Borough` in NeTEx specifically means an urban subdivision while grunnkrets also covers rural areas. The per-namespace approach is a pragmatic call: every ID is self-discriminating without length heuristics, and the namespaces will be opaque to NeTEx-aware downstream consumers (journey planner, NeTEx exports).
-
-SSR subtype (`by`/`bydel`/`tettsted`/`tettsteddel`/`tettbebyggelse`) is not exposed in the v3 response - all five collapse to `layer=place`. If a client needs to differentiate, add a `topographicPlaceType` field to `Place`.
 
 ### 2d. Pre-existing bbox sentinel bug
 
@@ -65,9 +36,9 @@ Cheap fix while we can still break the contract: rename to `properties.names` (p
 
 ### 2f. `multimodal=parent` default is opinionated
 
-Hides quays and platforms by default. Fine for journey-planner clients (they want to route to the stop place, not a specific platform), surprising for a general-purpose geocoder where "reverse-geocode my current position" should probably return the platform.
+Hides multimodal children (quays, platforms) by default. Fine for journey-planner clients (they want to route to the stop place, not a specific platform), surprising for a general-purpose geocoder where "reverse-geocode my current position" should probably return the platform.
 
-Two options: flip the default to `all`, or keep `parent` but document loudly in the OpenAPI description that child stops are hidden by default. Status quo (silent `parent`) is the worst of both.
+The behaviour is now documented in both v3.md and the OpenAPI parameter description. Remaining decision: keep `parent` or flip the default to `all`.
 
 ### 2g. Parameter naming inconsistency
 
@@ -84,14 +55,12 @@ Options:
 - Apply the same tuned curve v2 uses (`LocationBiasCalculator`/`Geo.peliasScaleToPhotonZoom`) to v3's `weight` parameter. Pro: consistent v2 behaviour, well-tuned for Norway. Con: surprises the docs.
 - Keep the linear mapping but document the actual effect: "weight is a linear blend between text/importance ranking (0) and pure location preference (1). At weight=1, popularity is ignored."
 
-### 2i. Missing response fields (already in the plan)
+### 2i. Missing response fields (partially shipped)
 
-These were flagged again by the reviewers; they were already noted as quick wins in the original plan §3 but listed here for completeness:
+Shipped: `distance` per feature on reverse (km, 3-decimal precision) and `description` (per-language map). Still open:
 
-- `distance` (metres) per feature on reverse.
 - `score` per feature (Photon's relevance score).
 - All `alt_name` entries, not just the first.
-- POI `description` (per-language map).
 - Per-feature `bbox` for streets and group-of-stop-places (currently only top-level).
 - Language-of-match indicator per name.
 
@@ -105,4 +74,13 @@ Photon's `/api` accepts `bbox`, `osm_tag`, `dedupe`. Photon's `/reverse` accepts
 
 ### 2l. `osm.public_transport.*` removed from emitted categories
 
-The `osm.public_transport.{address,street,stop_place,poi,custom_poi,group_of_stop_places}` primary-entity tags are no longer emitted into the Nominatim NDJSON, and Photon docs no longer carry them. The proxy was migrated to use `layer.*` for include/exclude filtering. Anything that talks to Photon directly (analytics, dashboards, third-party tooling not under our control) and filters via `?include=osm.public_transport.X` is now silently broken. Migration path: replace with the corresponding `layer.X` filter (e.g. `osm.public_transport.address` -> `layer.address`, `osm.public_transport.group_of_stop_places` -> `layer.groupOfStopPlaces`).
+The `osm.public_transport.{address,street,stop_place,poi,custom_poi,group_of_stop_places}` primary-entity tags are no longer emitted into the Nominatim NDJSON, and Photon docs no longer carry them. The proxy was migrated to use `layer.*` for include/exclude filtering. Anything that talks to Photon directly (analytics, dashboards, third-party tooling not under our control) and filters via `?include=osm.public_transport.X` is now silently broken. Migration path: replace with the corresponding `layer.X` filter (e.g. `osm.public_transport.address` -> `layer.address`, `osm.public_transport.group_of_stop_places` -> `layer.groupOfStopPlaces`). Drop this note once production has been reindexed and the direct-Photon consumers audited.
+
+## 3. Settled
+
+Decisions made; recorded here so they don't get re-litigated.
+
+- **Reverse `radius` stays km** (industry norm is metres; we keep km for v2 symmetry, decimals accepted).
+- **`KVE:PlaceName:N` / `KVE:Borough:N`** are geocoder-local namespaces, not NeTEx-canonical entity types; opaque to NeTEx-aware consumers by design. SSR subtype is not exposed (`layer=place` for all five); add a `topographicPlaceType` field if a client ever needs it.
+- **Stedsnavn usage CSV** keeps bare-numeric keys; ranking falls back to default importance on key-shape mismatch (accepted).
+- **Bare-numeric stedsnavn place_ids in old Photon indexes**: tooling reading raw Photon output must handle `KVE-PlaceName-N` (accepted, no proxy impact).
