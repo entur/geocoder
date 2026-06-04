@@ -19,6 +19,8 @@ data class V3ReverseRequest(
     override val fareZones: List<String> = emptyList(),
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
+    /** NeTEx stop place types (e.g. `railStation`, `airport`); restricts results to stop places of those types, excluding other layers. */
+    override val stopPlaceTypes: List<String> = emptyList(),
     override val multimodal: String = "parent",
     /** Sort by distance from the query point (default) or by relevance when false. */
     val distanceSort: Boolean = true,
@@ -34,7 +36,7 @@ data class V3ReverseRequest(
             setOf(
                 "lat", "lon", "radius", "limit", "lang",
                 "layers", "sources", "countries", "counties", "localities",
-                "fareZones", "fareZoneAuthorities", "multimodal", "distanceSort", "debug",
+                "fareZones", "fareZoneAuthorities", "stopPlaceTypes", "multimodal", "distanceSort", "debug",
             )
 
         fun from(req: Parameters): V3ReverseRequest {
@@ -54,6 +56,7 @@ data class V3ReverseRequest(
                 localities = req.csv("localities"),
                 fareZones = req.csv("fareZones"),
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
+                stopPlaceTypes = req.csv("stopPlaceTypes"),
                 multimodal = req["multimodal"] ?: "parent",
                 distanceSort = req["distanceSort"]?.let {
                     it.toBooleanStrictOrNull()

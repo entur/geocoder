@@ -2,6 +2,7 @@ package no.entur.geocoder.proxy.photon
 
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
+import no.entur.geocoder.proxy.v3.V3ReverseRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -153,5 +154,18 @@ class PhotonFilterBuilderTest {
         val reverseIncludes = PhotonFilterBuilder.buildIncludes(reverse)
         assertTrue(reverseIncludes.contains("county_gid.KVE.TopographicPlace.40"))
         assertTrue(reverseIncludes.contains("locality_gid.KVE.TopographicPlace.4005"))
+    }
+
+    @Test
+    fun `v3 stopPlaceTypes become a stop_place_type include group`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.91,
+                lon = 10.75,
+                stopPlaceTypes = listOf("railStation", "airport"),
+            )
+        val includes = PhotonFilterBuilder.buildIncludes(req)
+        // One comma-separated group so the types OR with each other.
+        assertTrue(includes.contains("stop_place_type.railStation,stop_place_type.airport"), "Got: $includes")
     }
 }

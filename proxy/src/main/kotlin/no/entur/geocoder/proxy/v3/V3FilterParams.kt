@@ -15,9 +15,10 @@ interface V3FilterParams {
     val fareZoneAuthorities: List<String>
     val sources: List<String>
     val layers: List<String>
+    val stopPlaceTypes: List<String>
     val multimodal: String
 }
 
-/** Parse a comma-separated query parameter, dropping blank entries. */
+/** Parse a comma-separated query parameter, trimming whitespace and dropping blank entries. */
 internal fun Parameters.csv(name: String): List<String> =
-    this[name]?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+    this[name]?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()

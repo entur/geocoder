@@ -43,6 +43,7 @@ paths:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/StopPlaceTypes'
         - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Countries'
         - $ref: '#/components/parameters/Counties'
@@ -80,6 +81,7 @@ paths:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Language'
         - $ref: '#/components/parameters/Layers'
+        - $ref: '#/components/parameters/StopPlaceTypes'
         - $ref: '#/components/parameters/Sources'
         - $ref: '#/components/parameters/Countries'
         - $ref: '#/components/parameters/Counties'
@@ -193,6 +195,19 @@ components:
           type: string
           enum: [address, street, stopPlace, groupOfStopPlaces, poi, place]
       example: [stopPlace, address]
+
+    StopPlaceTypes:
+      name: stopPlaceTypes
+      in: query
+      description: Restrict results to stop places of these NeTEx types. Results from other layers (addresses, POIs, streets, places) are excluded - same semantics as v2's `categories` filter.
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum: [onstreetBus, onstreetTram, airport, railStation, metroStation, busStation, coachStation, tramStation, harbourPort, ferryPort, ferryStop, liftStation, vehicleRailInterchange, other]
+      example: [railStation, metroStation]
 
     Sources:
       name: sources
@@ -476,7 +491,7 @@ components:
             $ref: '#/components/schemas/TransportMode'
         stopPlaceTypes:
           type: array
-          description: NeTEx StopPlaceType values (e.g. onstreetBus, railStation)
+          description: NeTEx StopPlaceType values (same value set as the `stopPlaceTypes` filter parameter)
           items:
             type: string
           example: ["onstreetBus"]

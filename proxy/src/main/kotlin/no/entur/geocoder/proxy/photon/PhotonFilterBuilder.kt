@@ -138,6 +138,9 @@ object PhotonFilterBuilder {
             if (params.layers.isNotEmpty()) {
                 add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
             }
+            if (params.stopPlaceTypes.isNotEmpty()) {
+                add(params.stopPlaceTypes.joinToString(",") { Category.STOP_PLACE_TYPE_PREFIX + it })
+            }
         }
 
     fun buildExcludes(req: PeliasAutocompleteRequest): List<String> =

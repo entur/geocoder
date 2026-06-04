@@ -23,6 +23,8 @@ data class V3AutocompleteRequest(
     override val fareZones: List<String> = emptyList(),
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
+    /** NeTEx stop place types (e.g. `railStation`, `airport`); restricts results to stop places of those types, excluding other layers. */
+    override val stopPlaceTypes: List<String> = emptyList(),
     override val multimodal: String = "parent",
     /** Hard viewport restriction: results must fall inside `minLon,minLat,maxLon,maxLat`. */
     val bbox: List<Double>? = null,
@@ -70,7 +72,7 @@ data class V3AutocompleteRequest(
             setOf(
                 "q", "limit", "lang", "lat", "lon",
                 "radius", "weight", "layers", "sources", "countries", "counties",
-                "localities", "fareZones", "fareZoneAuthorities", "multimodal", "bbox", "debug",
+                "localities", "fareZones", "fareZoneAuthorities", "stopPlaceTypes", "multimodal", "bbox", "debug",
             )
 
         fun from(req: Parameters): V3AutocompleteRequest {
@@ -92,6 +94,7 @@ data class V3AutocompleteRequest(
                 localities = req.csv("localities"),
                 fareZones = req.csv("fareZones"),
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
+                stopPlaceTypes = req.csv("stopPlaceTypes"),
                 multimodal = req["multimodal"] ?: "parent",
                 bbox = req["bbox"]?.let(::parseBbox),
                 debug = req["debug"].toBoolean(),

@@ -18,6 +18,7 @@ object Category {
 
     const val COUNTY_ID_PREFIX = "county_gid."
     const val LOCALITY_ID_PREFIX = "locality_gid."
+    const val STOP_PLACE_TYPE_PREFIX = "stop_place_type."
 
     /**
      * NSR, layer = venue:

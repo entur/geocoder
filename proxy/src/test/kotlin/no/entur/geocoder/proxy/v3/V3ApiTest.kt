@@ -83,6 +83,17 @@ class V3ApiTest {
         }
 
     @Test
+    fun `stopPlaceTypes is sent to photon as a stop_place_type include group`() =
+        testApplication {
+            application { setupRouting() }
+            client.get("/v3/reverse?lat=59.91&lon=10.75&stopPlaceTypes=railStation,airport") {
+                header(sharedApigeeToken, "dummy-secret")
+            }
+            val includes = recordedRequests.single().url.parameters.getAll("include").orEmpty()
+            assertEquals(true, includes.contains("stop_place_type.railStation,stop_place_type.airport"), "Got: $includes")
+        }
+
+    @Test
     fun `reverse rejects garbage distanceSort`() =
         testApplication {
             application { setupRouting() }

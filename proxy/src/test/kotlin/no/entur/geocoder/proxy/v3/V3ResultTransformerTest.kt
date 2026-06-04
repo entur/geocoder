@@ -226,6 +226,25 @@ class V3ResultTransformerTest {
     }
 
     @Test
+    fun `filters echo includes stopPlaceTypes and omits empty filters`() {
+        val photonResult = PhotonResult(features = emptyList())
+
+        val withFilter =
+            V3ResultTransformer.parseAndTransform(
+                photonResult,
+                V3ReverseRequest(lat = 59.91, lon = 10.75, stopPlaceTypes = listOf("railStation")),
+            )
+        assertEquals(listOf("railStation"), withFilter.metadata.query.filters?.stopPlaceTypes)
+
+        val withoutFilters =
+            V3ResultTransformer.parseAndTransform(
+                photonResult,
+                V3ReverseRequest(lat = 59.91, lon = 10.75),
+            )
+        assertNull(withoutFilters.metadata.query.filters)
+    }
+
+    @Test
     fun `feature bbox is mapped from photon extent`() {
         // Photon extent order is [minLon, maxLat, maxLon, minLat] (NW + SE);
         // GeoJSON bbox is [minLon, minLat, maxLon, maxLat].

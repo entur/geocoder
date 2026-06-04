@@ -80,6 +80,7 @@ object V3ResultTransformer {
             params.localities.isEmpty() &&
             params.fareZones.isEmpty() &&
             params.fareZoneAuthorities.isEmpty() &&
+            params.stopPlaceTypes.isEmpty() &&
             params.multimodal == "parent"
         ) {
             return null
@@ -92,6 +93,7 @@ object V3ResultTransformer {
             localities = params.localities.takeIf { it.isNotEmpty() },
             fareZones = params.fareZones.takeIf { it.isNotEmpty() },
             fareZoneAuthorities = params.fareZoneAuthorities.takeIf { it.isNotEmpty() },
+            stopPlaceTypes = params.stopPlaceTypes.takeIf { it.isNotEmpty() },
             multimodal = params.multimodal.takeIf { it != "parent" },
         )
     }

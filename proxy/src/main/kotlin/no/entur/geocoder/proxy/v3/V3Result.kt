@@ -102,6 +102,7 @@ data class V3Result(
         val localities: List<String>? = null,
         val fareZones: List<String>? = null,
         val fareZoneAuthorities: List<String>? = null,
+        val stopPlaceTypes: List<String>? = null,
         val multimodal: String? = null,
     )
 }
