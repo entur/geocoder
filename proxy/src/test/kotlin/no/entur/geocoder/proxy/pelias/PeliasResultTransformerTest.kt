@@ -464,6 +464,22 @@ class PeliasResultTransformerTest {
         }
     }
 
+    @Test
+    fun `street falls back to the NOT_AN_ADDRESS sentinel when the doc has no street`() {
+        val feature =
+            createPhotonFeature(
+                extra =
+                    Extra(
+                        id = "OSM:TopographicPlace:113972189",
+                        tags = "legacy.source.osm,legacy.layer.venue",
+                    ),
+            )
+
+        val props = PeliasResultTransformer.transformFeature(feature, null).properties
+
+        assertEquals("NOT_AN_ADDRESS-OSM:TopographicPlace:113972189", props.street)
+    }
+
     private fun createPhotonFeature(
         name: String? = "Test",
         coordinates: List<Double> = listOf(10.0, 60.0),
