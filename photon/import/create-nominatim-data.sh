@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.4.8"
+VERSION="v0.5.0"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -52,9 +52,9 @@ USAGE_FILE=""
 
 convert() {
     if [ -n "$USAGE_FILE" ]; then
-        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$SCRIPTDIR/config/nominatim-converter.json" --usage "$USAGE_FILE"
+        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$CONVERTER_CONFIG" --usage "$USAGE_FILE"
     else
-        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$SCRIPTDIR/config/nominatim-converter.json"
+        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$CONVERTER_CONFIG"
     fi
 }
 
@@ -90,8 +90,14 @@ esac
 # shellcheck source=/dev/null
 . "$CONFIG_FILE"
 
-if [ -z "${GEONORGE_AREA:-}" ] && [ -z "${MATRIKKEL_URL:-}" ] && [ -z "${STEDSNAVN_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${POI2_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
-    fail "No data sources configured. Set at least one of: GEONORGE_AREA, MATRIKKEL_URL, STEDSNAVN_URL, POI_URL, POI2_URL, STOPPLACE_URL, OSM_URL"
+# Converter config (scoring + per-source minLines). A sources conf may set CONVERTER_CONFIG
+# to a region-specific file (e.g. Sweden, whose data volumes differ from Norway); otherwise
+# the Norway default is used.
+CONVERTER_CONFIG="$SCRIPTDIR/config/${CONVERTER_CONFIG:-nominatim-converter.json}"
+[ -f "$CONVERTER_CONFIG" ] || fail "Converter config not found: $CONVERTER_CONFIG"
+
+if [ -z "${GEONORGE_AREA:-}" ] && [ -z "${MATRIKKEL_URL:-}" ] && [ -z "${STEDSNAVN_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
+    fail "No data sources configured. Set at least one of: GEONORGE_AREA, MATRIKKEL_URL, STEDSNAVN_URL, POI_URL, STOPPLACE_URL, OSM_URL"
 fi
 
 echo "Using config: $CONFIG_FILE"
@@ -125,10 +131,6 @@ fi
 
 if [ -n "${POI_URL:-}" ]; then
     convert poi -i "$POI_URL" -o nominatim.ndjson -a
-fi
-
-if [ -n "${POI2_URL:-}" ]; then
-    convert poi -i "$POI2_URL" -o nominatim.ndjson -a
 fi
 
 if [ -n "${STOPPLACE_URL:-}" ]; then
