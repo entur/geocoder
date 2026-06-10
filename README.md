@@ -97,7 +97,7 @@ cd photon
 ./import/download-photon-jar.sh
 
 # EITHER download source data, convert to nominatim.ndjson (downloads nominatim-converter binary automatically)
-./import/create-nominatim-data.sh import/config/sources-prod.conf -z
+./import/create-nominatim-data.sh import/config/converter-prod.json -z
 
 # OR download the latest nominatim.ndjson build by Github Actions
 ./download-latest-nominatim-data.sh

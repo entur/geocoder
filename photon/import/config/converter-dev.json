@@ -1,5 +1,7 @@
 {
+  "usage": { "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/popular-stops.csv" } },
   "osm": {
+    "input": { "url": "https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf" },
     "defaultValue": 0.5,
     "rankAddress": {
       "boundary": 10,
@@ -73,22 +75,26 @@
     "minLines": 30000
   },
   "stedsnavn": {
+    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip" },
     "defaultValue": 1.0,
     "rankAddress": 16,
     "minLines": 1500
   },
   "matrikkel": {
+    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip" },
     "addressPopularity": 1.0,
     "streetPopularity": 2.0,
     "rankAddress": 26,
     "minLines": 2000000
   },
   "poi": {
+    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/events_norway_poi.xml" },
     "importance": 0.01,
     "rankAddress": 30,
     "minLines": 5
   },
   "stopPlace": {
+    "input": { "url": "https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip" },
     "defaultValue": 50,
     "rankAddress": 30,
     "minLines": 40000,
@@ -105,15 +111,10 @@
     "interchangeFactors": {
       "recommendedInterchange": 3.0,
       "preferredInterchange": 10.0
+    },
+    "groupOfStopPlaces": {
+      "secondaryGosps": ["NSR:GroupOfStopPlaces:7"],
+      "rankAddress": 30
     }
-  },
-  "groupOfStopPlaces": {
-    "secondaryGosps": ["NSR:GroupOfStopPlaces:7"],
-    "rankAddress": 30
-  },
-  "importance": {
-    "minPopularity": 1.0,
-    "maxPopularity": 1000000000.0,
-    "floor": 0.001
   }
 }

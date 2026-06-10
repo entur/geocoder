@@ -1,0 +1,118 @@
+{
+  "osm": {
+    "input": { "file": "src/test/resources/oslo-center.osm.pbf" },
+    "defaultValue": 0.5,
+    "rankAddress": {
+      "boundary": 10,
+      "place": 20,
+      "road": 26,
+      "building": 28,
+      "poi": 30
+    },
+    "filters": [
+      {"key": "amenity", "value": "hospital", "priority": 9, "useEntrance": true},
+      {"key": "amenity", "value": "school", "priority": 9},
+      {"key": "amenity", "value": "university", "priority": 9},
+      {"key": "healthcare:speciality", "value": "emergency", "priority": 9},
+      {"key": "shop", "value": "mall", "priority": 9},
+      {"key": "amenity", "value": "college", "priority": 8},
+      {"key": "amenity", "value": "fire_station", "priority": 8},
+      {"key": "amenity", "value": "place_of_worship", "priority": 8},
+      {"key": "amenity", "value": "exhibition_centre", "priority": 8, "useEntrance": true},
+      {"key": "leisure", "value": "park", "priority": 8, "useEntrance": true},
+      {"key": "leisure", "value": "sports_centre", "priority": 8},
+      {"key": "leisure", "value": "stadium", "priority": 8, "useEntrance": true},
+      {"key": "tourism", "value": "museum", "priority": 8},
+      {"key": "landuse", "value": "winter_sports", "priority": 8},
+      {"key": "amenity", "value": "library", "priority": 7},
+      {"key": "amenity", "value": "kindergarten", "priority": 7},
+      {"key": "amenity", "value": "nursing_home", "priority": 7},
+      {"key": "amenity", "value": "food_court", "priority": 7},
+      {"key": "amenity", "value": "clinic", "priority": 7},
+      {"key": "amenity", "value": "pharmacy", "priority": 7},
+      {"key": "amenity", "value": "police", "priority": 7},
+      {"key": "leisure", "value": "ice_rink", "priority": 7},
+      {"key": "tourism", "value": "hotel", "priority": 6},
+      {"key": "amenity", "value": "cafe", "priority": 6},
+      {"key": "amenity", "value": "restaurant", "priority": 6},
+      {"key": "amenity", "value": "social_facility", "priority": 6},
+      {"key": "amenity", "value": "doctors", "priority": 6},
+      {"key": "amenity", "value": "post_office", "priority": 6},
+      {"key": "natural", "value": "beach", "priority": 6},
+      {"key": "name", "value": "Barcode", "priority": 6},
+      {"key": "tourism", "value": "motel", "priority": 5},
+      {"key": "tourism", "value": "hostel", "priority": 5},
+      {"key": "tourism", "value": "alpine_hut", "priority": 5},
+      {"key": "tourism", "value": "camp_site", "priority": 5},
+      {"key": "tourism", "value": "gallery", "priority": 5},
+      {"key": "tourism", "value": "theme_park", "priority": 5, "useEntrance": true},
+      {"key": "amenity", "value": "community_centre", "priority": 5},
+      {"key": "amenity", "value": "dentist", "priority": 5},
+      {"key": "amenity", "value": "concert_hall", "priority": 5, "useEntrance": true},
+      {"key": "amenity", "value": "events_venue", "priority": 5, "useEntrance": true},
+      {"key": "amenity", "value": "conference_centre", "priority": 5, "useEntrance": true},
+      {"key": "landuse", "value": "cemetery", "priority": 5},
+      {"key": "office", "value": "government", "priority": 5},
+      {"key": "name", "value": "Munch brygge", "priority": 5},
+      {"key": "sport", "value": "karting", "priority": 5},
+      {"key": "sport", "value": "motor", "priority": 5},
+      {"key": "amenity", "value": "embassy", "priority": 4},
+      {"key": "amenity", "value": "golf_course", "priority": 4},
+      {"key": "tourism", "value": "guest_house", "priority": 4},
+      {"key": "amenity", "value": "prison", "priority": 3},
+      {"key": "shop", "value": "furniture", "priority": 3},
+      {"key": "amenity", "value": "cinema", "priority": 1},
+      {"key": "amenity", "value": "theatre", "priority": 1},
+      {"key": "amenity", "value": "bank", "priority": 1},
+      {"key": "amenity", "value": "courthouse", "priority": 1},
+      {"key": "amenity", "value": "townhall", "priority": 1},
+      {"key": "tourism", "value": "attraction", "priority": 1},
+      {"key": "name", "value": "Entur AS", "priority": 1},
+      {"key": "landuse", "value": "military", "priority": 1, "useEntrance": true},
+      {"key": "landuse", "value": "quarry", "priority": 1, "useEntrance": true}
+    ]
+  },
+  "stedsnavn": {
+    "input": { "region": "03" },
+    "defaultValue": 1.0,
+    "rankAddress": 16,
+    "minLines": 100
+  },
+  "matrikkel": {
+    "input": { "region": "03" },
+    "addressPopularity": 1.0,
+    "streetPopularity": 2.0,
+    "rankAddress": 26,
+    "minLines": 50000
+  },
+  "poi": {
+    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/events_norway_poi.xml" },
+    "importance": 0.01,
+    "rankAddress": 30,
+    "minLines": 5
+  },
+  "stopPlace": {
+    "input": { "url": "https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip" },
+    "defaultValue": 50,
+    "rankAddress": 30,
+    "minLines": 50,
+    "stopTypeFactors": {
+      "airport": 150.0,
+      "busStation": 20.0,
+      "ferryStop": 0.2,
+      "harbourPort": 0.2,
+      "metroStation": 20.0,
+      "onstreetBus": 0.1,
+      "onstreetTram": 0.1,
+      "railStation": 500.0
+    },
+    "interchangeFactors": {
+      "recommendedInterchange": 3.0,
+      "preferredInterchange": 10.0
+    },
+    "groupOfStopPlaces": {
+      "secondaryGosps": ["NSR:GroupOfStopPlaces:7"],
+      "rankAddress": 30
+    }
+  }
+}

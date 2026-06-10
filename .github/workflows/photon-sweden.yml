@@ -63,7 +63,7 @@ jobs:
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
-          config: sources-sweden-test.conf
+          config: converter-sweden-test.json
           suffix: -se
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           lantmateriet_user: ${{ secrets.LANTMATERIET_USER }}

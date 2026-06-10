@@ -15,7 +15,7 @@ on:
         description: 'Nominatim config'
         required: false
         type: string
-        default: 'sources-prod.conf'
+        default: 'converter-prod.json'
 
 concurrency:
   group: "${{ github.workflow }}-${{ inputs.target }}"

@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.5.0"
+VERSION="v0.6.0"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -13,11 +13,11 @@ usage() {
     echo "Usage: $0 <config-file> [-z]"
     echo ""
     echo "Arguments:"
-    echo "  config-file    Path to config file (e.g., import/config/sources-prod.conf)"
+    echo "  config-file    Converter config (e.g., import/config/converter-prod.json)"
     echo "  -z             Compress output with gzip"
     echo ""
     echo "Available configs:"
-    for f in "$SCRIPTDIR"/config/*.conf; do
+    for f in "$SCRIPTDIR"/config/converter-*.json; do
         [ -f "$f" ] && echo "  import/config/$(basename "$f")"
     done
     exit 1
@@ -47,17 +47,6 @@ fi
 # override with NOMINATIM_CACHE_DIR=/path, or point it at ${TMPDIR}/... for ephemeral caching.
 CACHE_DIR="${NOMINATIM_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nominatim-converter}"
 
-# USAGE_FILE is set further down if the active config defines USAGE_URL.
-USAGE_FILE=""
-
-convert() {
-    if [ -n "$USAGE_FILE" ]; then
-        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$CONVERTER_CONFIG" --usage "$USAGE_FILE"
-    else
-        "$BINARY" "$@" --cache-dir "$CACHE_DIR" -c "$CONVERTER_CONFIG"
-    fi
-}
-
 # Parse arguments
 CONFIG_FILE=""
 COMPRESS=false
@@ -78,7 +67,7 @@ done
 
 [ -n "$CONFIG_FILE" ] || usage
 
-# Resolve config path relative to script dir if not absolute
+# Resolve config path relative to photon/ if not absolute
 case "$CONFIG_FILE" in
     /*) ;;
     *) CONFIG_FILE="$PHOTONDIR/$CONFIG_FILE" ;;
@@ -86,64 +75,15 @@ esac
 
 [ -f "$CONFIG_FILE" ] || fail "Config file not found: $CONFIG_FILE"
 
-# Source config - sets URL variables
-# shellcheck source=/dev/null
-. "$CONFIG_FILE"
-
-# Converter config (scoring + per-source minLines). A sources conf may set CONVERTER_CONFIG
-# to a region-specific file (e.g. Sweden, whose data volumes differ from Norway); otherwise
-# the Norway default is used.
-CONVERTER_CONFIG="$SCRIPTDIR/config/${CONVERTER_CONFIG:-nominatim-converter.json}"
-[ -f "$CONVERTER_CONFIG" ] || fail "Converter config not found: $CONVERTER_CONFIG"
-
-if [ -z "${GEONORGE_AREA:-}" ] && [ -z "${MATRIKKEL_URL:-}" ] && [ -z "${STEDSNAVN_URL:-}" ] && [ -z "${POI_URL:-}" ] && [ -z "${STOPPLACE_URL:-}" ] && [ -z "${OSM_URL:-}" ]; then
-    fail "No data sources configured. Set at least one of: GEONORGE_AREA, MATRIKKEL_URL, STEDSNAVN_URL, POI_URL, STOPPLACE_URL, OSM_URL"
-fi
-
 echo "Using config: $CONFIG_FILE"
 
+# The converter reads each source's `input` (URL / file / Geonorge region / Lantmateriet
+# municipality) and the scoring from this one file, then writes a combined NDJSON. Source
+# selection, ordering, and downloading all happen inside `build`.
 START_TIME=$(date +%s)
 
-# Download popular-stops CSV once if the config requested usage-driven boosting.
-# `--usage` only accepts local paths, so we resolve the URL up-front and reuse the
-# same file across every per-source convert call.
-if [ -n "${USAGE_URL:-}" ]; then
-    USAGE_FILE="${TMPDIR:-/tmp}/nominatim-usage.csv"
-    echo "Downloading usage CSV: $USAGE_URL"
-    curl -sfL --retry 2 -A "entur-geocoder" "$USAGE_URL" -o "$USAGE_FILE"
-    echo "  $(wc -l < "$USAGE_FILE") rows -> $USAGE_FILE"
-fi
-
 rm -f nominatim.ndjson
-
-if [ -n "${MATRIKKEL_URL:-}" ]; then
-    [ -n "${STEDSNAVN_URL:-}" ] || fail "MATRIKKEL_URL requires STEDSNAVN_URL (used as -g GML for matrikkel)"
-    convert matrikkel -i "$MATRIKKEL_URL" -g "$STEDSNAVN_URL" -o nominatim.ndjson -a
-elif [ -n "${GEONORGE_AREA:-}" ]; then
-    convert matrikkel -r "$GEONORGE_AREA" -o nominatim.ndjson -a
-fi
-
-if [ -n "${STEDSNAVN_URL:-}" ]; then
-    convert stedsnavn -i "$STEDSNAVN_URL" -o nominatim.ndjson -a
-elif [ -n "${GEONORGE_AREA:-}" ]; then
-    convert stedsnavn -r "$GEONORGE_AREA" -o nominatim.ndjson -a
-fi
-
-if [ -n "${POI_URL:-}" ]; then
-    convert poi -i "$POI_URL" -o nominatim.ndjson -a
-fi
-
-if [ -n "${STOPPLACE_URL:-}" ]; then
-    convert stopplace -i "$STOPPLACE_URL" -o nominatim.ndjson -a
-fi
-
-if [ -n "${OSM_URL:-}" ]; then
-    convert osm -i "$OSM_URL" -o nominatim.ndjson -a
-fi
-
-if [ -n "${BELAGENHET_AREA:-}" ]; then
-    convert belagenhet -m "${BELAGENHET_AREA}" -o nominatim.ndjson -a
-fi
+"$BINARY" build -c "$CONFIG_FILE" -o nominatim.ndjson --cache-dir "$CACHE_DIR" -f
 
 END_TIME=$(date +%s)
 echo "Created nominatim.ndjson in $((END_TIME - START_TIME)) seconds."

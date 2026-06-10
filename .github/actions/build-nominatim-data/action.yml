@@ -3,9 +3,9 @@ description: 'Download converter, run import, and upload nominatim data as artif
 
 inputs:
   config:
-    description: 'Sources config file name (in import/config/ directory)'
+    description: 'Converter config file name (in import/config/ directory)'
     required: false
-    default: 'sources-prod.conf'
+    default: 'converter-prod.json'
   suffix:
     description: 'Suffix for image name (e.g., -se for geocoder-nominatim-data-se)'
     required: false

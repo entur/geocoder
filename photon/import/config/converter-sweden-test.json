@@ -1,0 +1,32 @@
+{
+  "stopPlace": {
+    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/test-data/2026-02-03_stop_places_filtered.xml.zip" },
+    "defaultValue": 50,
+    "rankAddress": 30,
+    "minLines": 40000,
+    "stopTypeFactors": {
+      "airport": 150.0,
+      "busStation": 20.0,
+      "ferryStop": 0.2,
+      "harbourPort": 0.2,
+      "metroStation": 20.0,
+      "onstreetBus": 0.1,
+      "onstreetTram": 0.1,
+      "railStation": 500.0
+    },
+    "interchangeFactors": {
+      "recommendedInterchange": 3.0,
+      "preferredInterchange": 10.0
+    },
+    "groupOfStopPlaces": {
+      "rankAddress": 30
+    }
+  },
+  "belagenhet": {
+    "input": { "municipality": "all" },
+    "addressPopularity": 20.0,
+    "streetPopularity": 20.0,
+    "rankAddress": 26,
+    "minLines": 3000000
+  }
+}
