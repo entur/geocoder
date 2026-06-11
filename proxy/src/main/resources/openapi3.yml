@@ -14,6 +14,10 @@ info:
     owner: team-ror
     audience: open
 
+externalDocs:
+  description: Geocoder v3 documentation and v2 migration guide
+  url: https://github.com/entur/geocoder/blob/main/proxy/docs/v3.md
+
 servers:
   - url: https://api.entur.io/geocoder
 
