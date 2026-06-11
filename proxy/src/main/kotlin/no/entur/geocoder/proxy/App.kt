@@ -226,8 +226,6 @@ class App {
                 call.respondText(objectMapper.writeValueAsString(body), problemJson, status)
             }
         }
-
-        const val sharedApigeeToken = "x-shared-token"
     }
 }
 

@@ -9,7 +9,6 @@ import io.ktor.server.testing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.App.Companion.configureApp
-import no.entur.geocoder.proxy.App.Companion.sharedApigeeToken
 import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -53,7 +52,6 @@ class PeliasApiTest {
                 client.get("/v2/autocomplete?text=Oslo&size=1&lang=en&multiModal=parent") {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    header(sharedApigeeToken, "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 
@@ -91,7 +89,6 @@ class PeliasApiTest {
                 client.get("/v2/reverse?point.lat=59.91&point.lon=10.75&lang=no&limit=10&multiModal=parent") {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    header(sharedApigeeToken, "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 
@@ -113,7 +110,6 @@ class PeliasApiTest {
                 client.get("/v2/place?ids=foo:bar:baz,abc:def:xyz&multiModal=parent") {
                     header(HttpHeaders.Accept, ContentType.Application.Json.toString())
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    header(sharedApigeeToken, "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
 

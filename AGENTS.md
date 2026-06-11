@@ -64,7 +64,7 @@ Categories use prefixes for filtering:
 
 ### Error Handling
 - v2: Centralized in `ErrorHandler.kt`, returns Pelias-style error responses
-- v3: Route-level error handling in `App.kt` (`v3problem`), returns RFC 9457 `application/problem+json` with `status`, `title`, `detail`
+- v3: Route-level error handling in `App.kt` (`v3respond`), returns RFC 9457 `application/problem+json` with `status`, `title`, `detail`
 
 ### Photon Data Flow
 - Build artifacts (`nominatim.ndjson.gz`, `photon_data.tar.gz`) live in public GCS bucket `ent-geocoder-prd` at `<prefix>/<tag>/<file>`. Each artifact has a `.sha256` sidecar.

@@ -9,7 +9,6 @@ import io.ktor.server.testing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.App.Companion.configureApp
-import no.entur.geocoder.proxy.App.Companion.sharedApigeeToken
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -49,7 +48,6 @@ class V3ApiTest {
             application { setupRouting() }
             val response =
                 client.get("/v3/autocomplete?q=oslo&bbox=10.5,59.8,10.9,60.0") {
-                    header(sharedApigeeToken, "dummy-secret")
                 }
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("10.5,59.8,10.9,60.0", recordedRequests.single().url.parameters["bbox"])
@@ -60,7 +58,6 @@ class V3ApiTest {
         testApplication {
             application { setupRouting() }
             client.get("/v3/autocomplete?q=oslo") {
-                header(sharedApigeeToken, "dummy-secret")
             }
             assertNull(recordedRequests.single().url.parameters["bbox"])
         }
@@ -70,13 +67,11 @@ class V3ApiTest {
         testApplication {
             application { setupRouting() }
             client.get("/v3/reverse?lat=59.91&lon=10.75&distanceSort=false") {
-                header(sharedApigeeToken, "dummy-secret")
             }
             assertEquals("false", recordedRequests.single().url.parameters["distance_sort"])
 
             recordedRequests.clear()
             client.get("/v3/reverse?lat=59.91&lon=10.75") {
-                header(sharedApigeeToken, "dummy-secret")
             }
             // Photon defaults to distance sorting; the default is not sent.
             assertNull(recordedRequests.single().url.parameters["distance_sort"])
@@ -87,7 +82,6 @@ class V3ApiTest {
         testApplication {
             application { setupRouting() }
             client.get("/v3/reverse?lat=59.91&lon=10.75&stopPlaceTypes=railStation,airport") {
-                header(sharedApigeeToken, "dummy-secret")
             }
             val includes = recordedRequests.single().url.parameters.getAll("include").orEmpty()
             assertEquals(true, includes.contains("stop_place_type.railStation,stop_place_type.airport"), "Got: $includes")
@@ -99,7 +93,6 @@ class V3ApiTest {
             application { setupRouting() }
             val response =
                 client.get("/v3/reverse?lat=59.91&lon=10.75&distanceSort=maybe") {
-                    header(sharedApigeeToken, "dummy-secret")
                 }
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
