@@ -12,10 +12,10 @@ info:
   x-entur-metadata:
     id: geocoder-v3
     owner: team-ror
-    audience: internal
+    audience: open
 
 servers:
-  - url: https://api.dev.entur.io/geocoder
+  - url: https://api.entur.io/geocoder
 
 tags:
   - name: Autocomplete

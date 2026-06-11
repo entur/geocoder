@@ -171,6 +171,11 @@ class App {
                     call.respond(info)
                 }
 
+                get("/v3/info") {
+                    val info = healthCheck.info()
+                    call.respond(info)
+                }
+
                 get("/metrics") {
                     val metrics = micrometerRegistry.scrape()
                     call.respond(metrics)

@@ -48,6 +48,14 @@ jobs:
     with:
       path: proxy/src/main/resources/openapi.yml
 
+  api-publish-v3:
+    if: github.event_name != 'pull_request'
+    needs: api-lint
+    uses: entur/gha-api/.github/workflows/publish.yml@v6
+    secrets: inherit
+    with:
+      path: proxy/src/main/resources/openapi3.yml
+
   docs-publish:
     if: github.event_name != 'pull_request'
     needs: api-lint

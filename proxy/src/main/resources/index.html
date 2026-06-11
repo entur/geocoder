@@ -51,10 +51,10 @@
 <body>
     <h1>EnTur Geocoding API</h1>
 
-    See the <a href="https://beta.developer.entur.no/open/api/geocoder/openapi/autocomplete">API docs</a> for
+    See the <a href="https://beta.developer.entur.no/apis/geocoder">API docs</a> for
     more details.
 
-    <h2>Autocomplete Endpoint</h2>
+    <h2>v2 Autocomplete Endpoint</h2>
     <div class="endpoint">
         <code>/v2/autocomplete</code>
         <p>Search for places by name with autocomplete functionality.</p>
@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <h2>Reverse Geocoding Endpoint</h2>
+    <h2>v2 Reverse Geocoding Endpoint</h2>
     <div class="endpoint">
         <code>/v2/reverse</code>
         <p>Find places near a specific coordinate.</p>
@@ -83,6 +83,67 @@
         <div class="example">
             <div class="description">Lookup with radius of 200 metres (boundary.circle.radius is in kilometres, decimals accepted):</div>
             <a href="/v2/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=0.2">/v2/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=0.2</a>
+        </div>
+    </div>
+
+    <h2>v3 Autocomplete Endpoint</h2>
+    <div class="endpoint">
+        <code>/v3/autocomplete</code>
+        <p>Search for places by name with autocomplete functionality.</p>
+
+        <div class="example">
+            <div class="description">Search for Oslo:</div>
+            <a href="/v3/autocomplete?q=oslo">/v3/autocomplete?q=oslo</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Search with limit of 5:</div>
+            <a href="/v3/autocomplete?q=skøyen&limit=5">/v3/autocomplete?q=skøyen&limit=5</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Search with focus point (lat, lon, radius in kilometres):</div>
+            <a href="/v3/autocomplete?q=torget&lat=60.39&lon=5.32&radius=10">/v3/autocomplete?q=torget&lat=60.39&lon=5.32&radius=10</a>
+        </div>
+    </div>
+
+    <h2>v3 Reverse Geocoding Endpoint</h2>
+    <div class="endpoint">
+        <code>/v3/reverse</code>
+        <p>Find places near a specific coordinate.</p>
+
+        <div class="example">
+            <div class="description">Lookup Oslo Central Station:</div>
+            <a href="/v3/reverse?lat=59.911&lon=10.753">/v3/reverse?lat=59.911&lon=10.753</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Lookup with radius of 200 metres (radius is in kilometres, decimals accepted):</div>
+            <a href="/v3/reverse?lat=59.911&lon=10.753&radius=0.2">/v3/reverse?lat=59.911&lon=10.753&radius=0.2</a>
+        </div>
+    </div>
+
+    <h2>v3 Place Lookup Endpoint</h2>
+    <div class="endpoint">
+        <code>/v3/place</code>
+        <p>Look up places by ID. Accepts up to 100 comma-separated ids.</p>
+
+        <div class="example">
+            <div class="description">Lookup Oslo S:</div>
+            <a href="/v3/place?ids=NSR:StopPlace:59872">/v3/place?ids=NSR:StopPlace:59872</a>
+        </div>
+    </div>
+
+    <h2>OpenAPI Specifications</h2>
+    <div class="endpoint">
+        <div class="example">
+            <div class="description">v2 spec:</div>
+            <a href="/v2/openapi.yaml">/v2/openapi.yaml</a>
+        </div>
+
+        <div class="example">
+            <div class="description">v3 spec:</div>
+            <a href="/v3/openapi.yaml">/v3/openapi.yaml</a>
         </div>
     </div>
 
