@@ -2,7 +2,8 @@ openapi: 3.0.3
 info:
   title: Geocoder v3
   version: 3.0.0
-  description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
+  description: |
+    Geocoding and reverse geocoding for Norwegian addresses and points of interest.
   contact:
     name: Team Ruter og reiseplanlegging
     url: https://developer.entur.org
@@ -10,13 +11,13 @@ info:
     name: EUPL-1.2
     url: https://opensource.org/licenses/EUPL-1.2
   x-entur-metadata:
-    id: geocoder-v3
+    id: geocoder
     owner: team-ror
     audience: open
 
 externalDocs:
-  description: Documentation and v2 migration guide
-  url: https://github.com/entur/geocoder/blob/main/proxy/docs/v3.md
+  description: Geocoder v3 documentation and migration guide
+  url: https://beta.developer.entur.no/docs/open-services/geocoder
 
 servers:
   - url: https://api.entur.io/geocoder
@@ -229,7 +230,7 @@ components:
     Query:
       name: q
       in: query
-      description: Search query. May be omitted when at least one filter parameter is given, which lists all matching places instead (e.g. every airport, or every stop place in a fare zone).
+      description: "Search query. Optional when at least one filter (e.g. `layers`, `stopPlaceTypes`, `fareZones`) is given; the response then lists every place matching the filters (e.g. every airport, or every stop place in a fare zone)."
       schema:
         type: string
       example: "Oslo S"
@@ -270,7 +271,7 @@ components:
     StopPlaceTypes:
       name: stopPlaceTypes
       in: query
-      description: Restrict results to stop places of these NeTEx types. Results from other layers (addresses, POIs, streets, places) are excluded - same semantics as v2's `categories` filter.
+      description: Restrict results to stop places of these NeTEx types. Results from other layers (addresses, POIs, streets, places) are excluded.
       style: form
       explode: false
       schema:
@@ -332,9 +333,7 @@ components:
     FareZones:
       name: fareZones
       in: query
-      description: |
-        Fare zone IDs filter. Refs must be FareZone-shaped (e.g. `RUT:FareZone:1`); TariffZone-shaped
-        refs do not match because the two namespaces are indexed under distinct prefixes.
+      description: "Fare zone IDs filter. Refs must be FareZone-shaped (e.g. `RUT:FareZone:1`); legacy `TariffZone` refs are not supported."
       style: form
       explode: false
       schema:

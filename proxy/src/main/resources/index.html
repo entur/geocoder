@@ -16,7 +16,7 @@
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
         }
-        h2 {
+        h2, h3 {
             color: #0066cc;
             margin-top: 30px;
         }
@@ -53,38 +53,6 @@
 
     See the <a href="https://beta.developer.entur.no/apis/geocoder">API docs</a> for
     more details.
-
-    <h2>v2 Autocomplete Endpoint</h2>
-    <div class="endpoint">
-        <code>/v2/autocomplete</code>
-        <p>Search for places by name with autocomplete functionality.</p>
-
-        <div class="example">
-            <div class="description">Search for Oslo:</div>
-            <a href="/v2/autocomplete?text=oslo">/v2/autocomplete?text=oslo</a>
-        </div>
-
-        <div class="example">
-            <div class="description">Search with size limit of 5:</div>
-            <a href="/v2/autocomplete?text=skøyen&size=5">/v2/autocomplete?text=skøyen&size=5</a>
-        </div>
-    </div>
-
-    <h2>v2 Reverse Geocoding Endpoint</h2>
-    <div class="endpoint">
-        <code>/v2/reverse</code>
-        <p>Find places near a specific coordinate.</p>
-
-        <div class="example">
-            <div class="description">Lookup Oslo Central Station:</div>
-            <a href="/v2/reverse?point.lat=59.911&point.lon=10.753">/v2/reverse?point.lat=59.911&point.lon=10.753</a>
-        </div>
-
-        <div class="example">
-            <div class="description">Lookup with radius of 200 metres (boundary.circle.radius is in kilometres, decimals accepted):</div>
-            <a href="/v2/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=0.2">/v2/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=0.2</a>
-        </div>
-    </div>
 
     <h2>v3 Autocomplete Endpoint</h2>
     <div class="endpoint">
@@ -131,6 +99,42 @@
         <div class="example">
             <div class="description">Lookup Oslo S:</div>
             <a href="/v3/place?ids=NSR:StopPlace:59872">/v3/place?ids=NSR:StopPlace:59872</a>
+        </div>
+    </div>
+
+    <h2>v2 Endpoints (deprecated)</h2>
+    <p>v2 is deprecated - new integrations should use v3. See the
+        <a href="https://beta.developer.entur.no/docs/open-services/geocoder/migration-v2-v3">migration guide</a>.</p>
+
+    <h3>v2 Autocomplete Endpoint</h3>
+    <div class="endpoint">
+        <code>/v2/autocomplete</code>
+        <p>Search for places by name with autocomplete functionality.</p>
+
+        <div class="example">
+            <div class="description">Search for Oslo:</div>
+            <a href="/v2/autocomplete?text=oslo">/v2/autocomplete?text=oslo</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Search with size limit of 5:</div>
+            <a href="/v2/autocomplete?text=skøyen&size=5">/v2/autocomplete?text=skøyen&size=5</a>
+        </div>
+    </div>
+
+    <h3>v2 Reverse Geocoding Endpoint</h3>
+    <div class="endpoint">
+        <code>/v2/reverse</code>
+        <p>Find places near a specific coordinate.</p>
+
+        <div class="example">
+            <div class="description">Lookup Oslo Central Station:</div>
+            <a href="/v2/reverse?point.lat=59.911&point.lon=10.753">/v2/reverse?point.lat=59.911&point.lon=10.753</a>
+        </div>
+
+        <div class="example">
+            <div class="description">Lookup with radius of 200 metres (boundary.circle.radius is in kilometres, decimals accepted):</div>
+            <a href="/v2/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=0.2">/v2/reverse?point.lat=59.911&point.lon=10.753&boundary.circle.radius=0.2</a>
         </div>
     </div>
 
