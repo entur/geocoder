@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -133,24 +133,23 @@ class App {
                     call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
                 }
 
-                if (System.getenv("COMMON_ENV") != "prd") {
-                    get("/v3/autocomplete") {
-                        v3problem(call) { v3api.autocomplete(call.request.queryParameters) }
-                    }
-
-                    get("/v3/reverse") {
-                        v3problem(call) { v3api.reverse(call.request.queryParameters) }
-                    }
-
-                    get("/v3/place") {
-                        v3problem(call) { v3api.place(call.request.queryParameters) }
-                    }
-
-                    get("/v3/openapi.yaml") {
-                        val openapi = readFile("openapi3.yml")
-                        call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
-                    }
+                get("/v3/autocomplete") {
+                    v3respond(call) { v3api.autocomplete(call.request.queryParameters) }
                 }
+
+                get("/v3/reverse") {
+                    v3respond(call) { v3api.reverse(call.request.queryParameters) }
+                }
+
+                get("/v3/place") {
+                    v3respond(call) { v3api.place(call.request.queryParameters) }
+                }
+
+                get("/v3/openapi.yaml") {
+                    val openapi = readFile("openapi3.yml")
+                    call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
+                }
+
                 get("/") {
                     val indexHtml = readFile("index.html")
                     call.respondText(String(indexHtml), contentType = ContentType.Text.Html)
@@ -194,7 +193,7 @@ class App {
                 .getResourceAsStream(name)
                 ?.readBytes()
                 ?: throw IllegalStateException("$name not found")
-        )
+            )
 
         private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry =
@@ -210,7 +209,7 @@ class App {
         private val objectMapper =
             ObjectMapper().setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
 
-        private suspend fun v3problem(call: ApplicationCall, block: suspend () -> V3Result) {
+        private suspend fun v3respond(call: ApplicationCall, block: suspend () -> V3Result) {
             try {
                 call.respond(block())
             } catch (e: Exception) {
