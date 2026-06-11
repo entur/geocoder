@@ -83,6 +83,17 @@ class V3AutocompleteRequestTest {
     }
 
     @Test
+    fun `limit must be between 1 and 100`() {
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", limit = 0) }
+        assertFailsWith<IllegalArgumentException> { V3AutocompleteRequest(q = "oslo", limit = 101) }
+        assertEquals(100, V3AutocompleteRequest(q = "oslo", limit = 100).limit)
+
+        assertFailsWith<IllegalArgumentException> { V3ReverseRequest(lat = 59.9, lon = 10.7, limit = 0) }
+        assertFailsWith<IllegalArgumentException> { V3ReverseRequest(lat = 59.9, lon = 10.7, limit = 101) }
+        assertEquals(100, V3ReverseRequest(lat = 59.9, lon = 10.7, limit = 100).limit)
+    }
+
+    @Test
     fun `bbox is parsed from comma-separated string`() {
         val req = V3AutocompleteRequest.from(parametersOf("q" to listOf("oslo"), "bbox" to listOf("10.5,59.8,10.9,60.0")))
         assertEquals(listOf(10.5, 59.8, 10.9, 60.0), req.bbox)

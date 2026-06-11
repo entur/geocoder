@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Geocoder
+  title: Geocoder v1/v2
   version: 2.0.0
   description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
   contact:
@@ -51,7 +51,6 @@ paths:
         - $ref: '#/components/parameters/FocusScale'
         - $ref: '#/components/parameters/FocusWeight'
         - $ref: '#/components/parameters/MultiModal'
-        - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
           description: Matching places
@@ -59,6 +58,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+              example:
+                geocoding:
+                  version: "0.2"
+                  engine:
+                    name: "Photon"
+                    version: "1.2.0"
+                  timestamp: 1781174186971
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [10.753051, 59.910357]
+                    properties:
+                      id: "NSR:StopPlace:59872"
+                      gid: "openstreetmap:venue:NSR:StopPlace:59872"
+                      layer: "venue"
+                      source: "openstreetmap"
+                      source_id: "NSR:StopPlace:59872"
+                      name: "Oslo S"
+                      accuracy: "point"
+                      country_a: "NOR"
+                      county: "Oslo"
+                      county_gid: "whosonfirst:county:KVE:TopographicPlace:03"
+                      locality: "Oslo"
+                      locality_gid: "whosonfirst:locality:KVE:TopographicPlace:0301"
+                      label: "Oslo S, Oslo"
+                      category: ["onstreetBus", "railStation"]
+                      tariff_zones: ["RUT:TariffZone:1", "RUT:FareZone:4"]
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                geocoding:
+                  version: "0.2"
+                  attribution: "http://pelias.mapzen.com/v1/attribution"
+                  errors: ["Invalid parameters. text cannot be blank"]
+                  engine:
+                    name: "Photon"
+                    version: "1.2.0"
+                  timestamp: 1781174186971
+                type: FeatureCollection
+                features: []
 
   /v1/reverse:
     get:
@@ -83,7 +128,6 @@ paths:
         - $ref: '#/components/parameters/Layers'
         - $ref: '#/components/parameters/Categories'
         - $ref: '#/components/parameters/MultiModal'
-        - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
           description: Nearby places
@@ -91,6 +135,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+              example:
+                geocoding:
+                  version: "0.2"
+                  engine:
+                    name: "Photon"
+                    version: "1.2.0"
+                  timestamp: 1781174186971
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [10.753051, 59.910357]
+                    properties:
+                      id: "NSR:StopPlace:59872"
+                      gid: "openstreetmap:venue:NSR:StopPlace:59872"
+                      layer: "venue"
+                      source: "openstreetmap"
+                      source_id: "NSR:StopPlace:59872"
+                      name: "Oslo S"
+                      accuracy: "point"
+                      country_a: "NOR"
+                      county: "Oslo"
+                      county_gid: "whosonfirst:county:KVE:TopographicPlace:03"
+                      locality: "Oslo"
+                      locality_gid: "whosonfirst:locality:KVE:TopographicPlace:0301"
+                      label: "Oslo S, Oslo"
+                      category: ["onstreetBus", "railStation"]
+                      tariff_zones: ["RUT:TariffZone:1", "RUT:FareZone:4"]
+                      distance: 0.142
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                geocoding:
+                  version: "0.2"
+                  attribution: "http://pelias.mapzen.com/v1/attribution"
+                  errors: ["Invalid parameters. Parameter 'point.lat' is required"]
+                  engine:
+                    name: "Photon"
+                    version: "1.2.0"
+                  timestamp: 1781174186971
+                type: FeatureCollection
+                features: []
+
   /v1/place:
     get:
       tags:
@@ -100,8 +192,6 @@ paths:
       operationId: placeV2
       parameters:
         - $ref: '#/components/parameters/Ids'
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
           description: Matching places
@@ -109,17 +199,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+              example:
+                geocoding:
+                  version: "0.2"
+                  engine:
+                    name: "Photon"
+                    version: "1.2.0"
+                  timestamp: 1781174186971
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [10.753051, 59.910357]
+                    properties:
+                      id: "NSR:StopPlace:59872"
+                      gid: "openstreetmap:venue:NSR:StopPlace:59872"
+                      layer: "venue"
+                      source: "openstreetmap"
+                      source_id: "NSR:StopPlace:59872"
+                      name: "Oslo S"
+                      accuracy: "point"
+                      country_a: "NOR"
+                      county: "Oslo"
+                      county_gid: "whosonfirst:county:KVE:TopographicPlace:03"
+                      locality: "Oslo"
+                      locality_gid: "whosonfirst:locality:KVE:TopographicPlace:0301"
+                      label: "Oslo S, Oslo"
+                      category: ["onstreetBus", "railStation"]
+                      tariff_zones: ["RUT:TariffZone:1", "RUT:FareZone:4"]
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+              example:
+                geocoding:
+                  version: "0.2"
+                  attribution: "http://pelias.mapzen.com/v1/attribution"
+                  errors: ["Invalid parameters. Parameter 'ids' is required"]
+                  engine:
+                    name: "Photon"
+                    version: "1.2.0"
+                  timestamp: 1781174186971
+                type: FeatureCollection
+                features: []
 
 components:
   parameters:
-    ETClientName:
-      name: ET-Client-Name
-      in: header
-      description: Client identifier
-      schema:
-        type: string
-      example: "my-example-application"
-
     Ids:
       name: ids
       in: query
@@ -168,20 +296,20 @@ components:
       example: "NO"
 
     BoundaryCountyIds:
-      name: boundary.county.ids
+      name: boundary.county_ids
       in: query
       description: County IDs filter (comma-separated)
       schema:
         type: string
-      example: "KVE:County:03"
+      example: "KVE:TopographicPlace:03"
 
     BoundaryLocalityIds:
-      name: boundary.locality.ids
+      name: boundary.locality_ids
       in: query
       description: Locality IDs filter (comma-separated)
       schema:
         type: string
-      example: "KVE:Locality:0301"
+      example: "KVE:TopographicPlace:0301"
 
     TariffZoneIds:
       name: tariff_zone_ids
@@ -336,13 +464,20 @@ components:
             version:
               type: string
               example: "0.2"
-            query:
-              type: object
-              additionalProperties: true
+            attribution:
+              type: string
+              example: "http://pelias.mapzen.com/v1/attribution"
+            errors:
+              type: array
+              description: Error messages. Only present on error responses.
+              items:
+                type: string
+              example: ["Invalid parameters. Parameter 'point.lat' is required"]
             timestamp:
               type: integer
               format: int64
-              example: 1732104123
+              description: Response generation time in milliseconds since the epoch.
+              example: 1732104123000
             engine:
               type: object
               properties:
@@ -351,7 +486,7 @@ components:
                   example: "Photon"
                 version:
                   type: string
-                  example: "0.7.0"
+                  example: "1.2.0"
         type:
           type: string
           enum: [FeatureCollection]
@@ -460,6 +595,15 @@ components:
               items:
                 type: string
               example: ["street"]
+            mode:
+              type: array
+              description: Transport modes for stop places. Each entry is a single-key object mapping a mode to its submode (or null when the mode has no submode).
+              items:
+                type: object
+                additionalProperties:
+                  type: string
+                  nullable: true
+              example: [{"bus": "railReplacementBus"}]
             tariff_zones:
               type: array
               items:

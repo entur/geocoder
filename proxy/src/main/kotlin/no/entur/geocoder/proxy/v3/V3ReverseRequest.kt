@@ -29,6 +29,7 @@ data class V3ReverseRequest(
     init {
         require(lat in -90.0..90.0) { "Parameter 'lat' must be between -90 and 90" }
         require(lon in -180.0..180.0) { "Parameter 'lon' must be between -180 and 180" }
+        require(limit in 1..SearchDefaults.MAX_LIMIT) { "Parameter 'limit' must be between 1 and ${SearchDefaults.MAX_LIMIT}" }
     }
 
     companion object {

@@ -31,6 +31,7 @@ data class V3AutocompleteRequest(
     val debug: Boolean = false,
 ) : V3FilterParams {
     init {
+        require(limit in 1..SearchDefaults.MAX_LIMIT) { "Parameter 'limit' must be between 1 and ${SearchDefaults.MAX_LIMIT}" }
         val anyFocusParam = lat != null || lon != null || radius != null || weight != null
         require(!anyFocusParam || (lat != null && lon != null)) {
             "Focus parameters (lat, lon, radius, weight) form a bundle: lat and lon must both be set when any is provided"

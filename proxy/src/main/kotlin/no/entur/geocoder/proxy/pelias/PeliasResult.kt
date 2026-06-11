@@ -81,7 +81,7 @@ data class PeliasResult(
         data class EngineMetadata(
             val name: String = "Photon",
             val author: String = "Komoot",
-            val version: String = "0.7.0",
+            val version: String = "1.2.0",
         )
     }
 }

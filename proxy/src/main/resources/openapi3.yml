@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Geocoder
+  title: Geocoder v3
   version: 3.0.0
   description: Geocoding and reverse geocoding for Norwegian addresses and points of interest.
   contact:
@@ -51,7 +51,6 @@ paths:
         - $ref: '#/components/parameters/FareZones'
         - $ref: '#/components/parameters/FareZoneAuthorities'
         - $ref: '#/components/parameters/Multimodal'
-        - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
           description: Matching places
@@ -59,12 +58,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [10.7522, 59.9110]
+                    properties:
+                      id: "NSR:StopPlace:59872"
+                      names:
+                        default: "Oslo S"
+                        display: "Oslo S, Oslo"
+                      layer: "stopPlace"
+                      source: "nsr"
+                      fareZones: ["RUT:FareZone:1"]
+                      transportModes:
+                        - mode: "rail"
+                      stopPlaceTypes: ["railStation"]
+                metadata:
+                  query:
+                    text: "oslo s"
+                    limit: 10
+                    lang: "no"
+                  resultCount: 1
+                  timestamp: "2025-03-04T11:00:00Z"
         '400':
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                title: "Bad Request"
+                detail: "Unknown parameter(s): foo"
 
   /v3/reverse:
     get:
@@ -89,7 +117,6 @@ paths:
         - $ref: '#/components/parameters/FareZones'
         - $ref: '#/components/parameters/FareZoneAuthorities'
         - $ref: '#/components/parameters/Multimodal'
-        - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
           description: Nearby places
@@ -97,12 +124,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [10.7522, 59.9110]
+                    properties:
+                      id: "NSR:StopPlace:59872"
+                      names:
+                        default: "Oslo S"
+                        display: "Oslo S, Oslo"
+                      layer: "stopPlace"
+                      source: "nsr"
+                      distance: 0.142
+                metadata:
+                  query:
+                    lat: 59.9110
+                    lon: 10.7522
+                    limit: 10
+                    lang: "no"
+                  resultCount: 1
+                  timestamp: "2025-03-04T11:00:00Z"
         '400':
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                title: "Bad Request"
+                detail: "Parameter 'lat' is required"
 
   /v3/place:
     get:
@@ -114,7 +168,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Ids'
         - $ref: '#/components/parameters/Language'
-        - $ref: '#/components/parameters/ETClientName'
       responses:
         '200':
           description: Matching places
@@ -122,23 +175,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Result'
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [10.7522, 59.9110]
+                    properties:
+                      id: "NSR:StopPlace:59872"
+                      names:
+                        default: "Oslo S"
+                        display: "Oslo S, Oslo"
+                      layer: "stopPlace"
+                      source: "nsr"
+                metadata:
+                  query:
+                    limit: 10
+                    lang: "no"
+                  resultCount: 1
+                  timestamp: "2025-03-04T11:00:00Z"
         '400':
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Error'
+              example:
+                status: 400
+                title: "Bad Request"
+                detail: "Parameter 'ids' is required"
 
 components:
   parameters:
-    ETClientName:
-      name: Et-Client-Name
-      in: header
-      description: Client identifier
-      schema:
-        type: string
-      example: "my-example-application"
-
     Ids:
       name: ids
       in: query
@@ -156,11 +225,9 @@ components:
     Query:
       name: q
       in: query
-      required: true
-      description: Search query
+      description: Search query. May be omitted when at least one filter parameter is given, which lists all matching places instead (e.g. every airport, or every stop place in a fare zone).
       schema:
         type: string
-        minLength: 1
       example: "Oslo S"
 
     Limit:
@@ -667,6 +734,10 @@ components:
           items:
             type: string
         fareZoneAuthorities:
+          type: array
+          items:
+            type: string
+        stopPlaceTypes:
           type: array
           items:
             type: string

@@ -128,7 +128,7 @@ class PeliasResultTest {
 
         assertEquals("Photon", engine.name)
         assertEquals("Komoot", engine.author)
-        assertEquals("0.7.0", engine.version)
+        assertEquals("1.2.0", engine.version)
     }
 
     @Test
