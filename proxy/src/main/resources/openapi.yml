@@ -1,12 +1,12 @@
 openapi: 3.0.3
 info:
-  title: Geocoder v2 (deprecated)
+  title: Geocoder v1/v2 (deprecated)
   version: 2.0.0
   description: |
     Geocoding and reverse geocoding for Norwegian addresses and points of interest.
 
     A new v3 API is available. See the
-    [v2 to v3 migration guide](https://beta.developer.entur.no/docs/open-services/geocoder/migration-v2-v3)
+    [v1/v2 to v3 migration guide](https://beta.developer.entur.no/docs/open-services/geocoder/migration-v2-v3)
     for how the parameters and response format map.
   contact:
     name: Team Ruter og reiseplanlegging
@@ -20,7 +20,7 @@ info:
     audience: open
 
 externalDocs:
-  description: Geocoder v2 to v3 migration guide
+  description: Geocoder v1/v2 to v3 migration guide
   url: https://beta.developer.entur.no/docs/open-services/geocoder/migration-v2-v3
 
 servers:
