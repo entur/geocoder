@@ -6,7 +6,8 @@ SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 # the slim variant of this image has no TLS support. /srv must be owned
 # by 1000 so the unprivileged process can write photon_data/ at runtime.
 # hadolint ignore=DL3018
-RUN apk add --no-cache curl ca-certificates && \
+RUN apk upgrade --no-cache && \
+    apk add --no-cache curl ca-certificates && \
     install -d -o 1000 -g 1000 /srv
 
 WORKDIR /srv
