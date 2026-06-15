@@ -83,7 +83,7 @@ class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
                     PhotonResult(message = body)
                 }
             errorResult.copy(status = response.status)
-        }
+        }.withoutBlockedIds()
 
     suspend fun status(): Map<String, String> =
         try {

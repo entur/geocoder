@@ -4,6 +4,7 @@ import io.ktor.http.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 
 class PhotonResultTest {
     @Test
@@ -80,6 +81,51 @@ class PhotonResultTest {
         assertEquals("NOR", props.extra.country_a)
         assertEquals("point", props.extra.accuracy)
         assertEquals("legacy.source.osm,legacy.layer.venue,legacy.category.transport", props.extra.tags)
+    }
+
+    @Test
+    fun `withoutBlockedIds drops features whose id is blocked`() {
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {"type": "Point", "coordinates": [10.0, 60.0]},
+                        "properties": {"name": "Keep", "extra": {"id": "NSR:StopPlace:1"}}
+                    },
+                    {
+                        "geometry": {"type": "Point", "coordinates": [11.0, 61.0]},
+                        "properties": {"name": "Block", "extra": {"id": "NSR:StopPlace:64116"}}
+                    }
+                ]
+            }
+            """.trimIndent()
+
+        val result = PhotonResult.parse(json, Url("http://foo")).withoutBlockedIds()
+
+        assertEquals(1, result.features.size)
+        assertEquals("Keep", result.features[0].properties.name)
+    }
+
+    @Test
+    fun `withoutBlockedIds returns same instance when nothing is blocked`() {
+        val json =
+            """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "geometry": {"type": "Point", "coordinates": [10.0, 60.0]},
+                        "properties": {"name": "Keep", "extra": {"id": "NSR:StopPlace:1"}}
+                    }
+                ]
+            }
+            """.trimIndent()
+
+        val result = PhotonResult.parse(json, Url("http://foo"))
+
+        assertSame(result, result.withoutBlockedIds())
     }
 
     @Test

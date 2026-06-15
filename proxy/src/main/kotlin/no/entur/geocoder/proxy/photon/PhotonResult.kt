@@ -3,6 +3,7 @@ package no.entur.geocoder.proxy.photon
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
+import no.entur.geocoder.proxy.common.BlockedResultIds
 import no.entur.geocoder.proxy.common.Extra
 import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
 
@@ -22,6 +23,14 @@ data class PhotonResult(
             )
         }
     }
+
+    /** Drop any feature whose [PhotonProperties.extra] id is in [BlockedResultIds]. */
+    fun withoutBlockedIds(): PhotonResult =
+        if (features.none { BlockedResultIds.isBlocked(it.properties.extra.id) }) {
+            this
+        } else {
+            copy(features = features.filterNot { BlockedResultIds.isBlocked(it.properties.extra.id) })
+        }
 
     data class PhotonFeature(
         val type: String = "PhotonFeature",
