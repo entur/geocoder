@@ -39,4 +39,21 @@ class V3ResultSerializationTest {
         assertTrue("\"names\":" in json, json)
         assertFalse("\"name\":" in json, json)
     }
+
+    @Test
+    fun `stopPlaceRole is omitted when null and serialized as lowercase enum name when set`() {
+        val base =
+            V3Result.Place(
+                id = "NSR:StopPlace:337",
+                names = V3Result.Names(default = "X", display = "X"),
+                layer = V3Result.Layer.stopPlace,
+                source = "nsr",
+            )
+        val absent = JsonMapper.jacksonMapper.writeValueAsString(base)
+        assertFalse("\"stopPlaceRole\"" in absent, absent)
+
+        val present =
+            JsonMapper.jacksonMapper.writeValueAsString(base.copy(stopPlaceRole = V3Result.StopPlaceRole.parent))
+        assertTrue("\"stopPlaceRole\":\"parent\"" in present, present)
+    }
 }

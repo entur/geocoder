@@ -187,6 +187,7 @@ object V3ResultTransformer {
                             ?.split(";")
                             ?.filter { it.isNotBlank() }
                             ?.takeIf { it.isNotEmpty() },
+                    stopPlaceRole = parseStopPlaceRole(extra.stop_place_role),
                     source = mapProviderName(extra.source),
                     distance = distance,
                     description = parseDescription(extra.description),
@@ -236,6 +237,10 @@ object V3ResultTransformer {
 
     private fun String?.containsTag(tag: String): Boolean =
         this.orEmpty().splitToSequence(',', ';').any { it.trim() == tag }
+
+    /** Map `extra.stop_place_role` to the response enum; absent or unknown values give null. */
+    private fun parseStopPlaceRole(value: String?): V3Result.StopPlaceRole? =
+        V3Result.StopPlaceRole.entries.firstOrNull { it.name == value }
 
     private fun parseTransportModes(transportMode: String?): List<V3Result.TransportMode>? =
         transportMode

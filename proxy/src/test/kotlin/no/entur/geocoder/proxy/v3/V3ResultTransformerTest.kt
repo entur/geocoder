@@ -42,6 +42,42 @@ class V3ResultTransformerTest {
         assertEquals(V3Result.Layer.valueOf(expectedLayer), place.layer)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "parent, parent",
+        "child, child",
+        "standalone, standalone",
+    )
+    fun `stopPlaceRole is read from the extra stop_place_role field`(
+        raw: String,
+        expected: String,
+    ) {
+        val place = transformSingle(Extra(id = "NSR:StopPlace:1", source = Source.NSR, stop_place_role = raw))
+        assertEquals(V3Result.StopPlaceRole.valueOf(expected), place.stopPlaceRole)
+    }
+
+    @Test
+    fun `stopPlaceRole is omitted when extra has no stop_place_role (e g pre-reindex documents)`() {
+        val place = transformSingle(Extra(id = "NSR:StopPlace:1", source = Source.NSR, stop_place_role = null))
+        assertNull(place.stopPlaceRole)
+    }
+
+    @Test
+    fun `unknown stop_place_role value maps to null rather than throwing`() {
+        val place = transformSingle(Extra(id = "NSR:StopPlace:1", source = Source.NSR, stop_place_role = "bogus"))
+        assertNull(place.stopPlaceRole)
+    }
+
+    @Test
+    fun `StopPlaceRole enum names match the converter's emitted strings`() {
+        // Cross-repo contract: must match what the converter writes (StopPlaceRole::as_str);
+        // a rename on either side would silently null every role.
+        assertEquals(
+            listOf("parent", "child", "standalone"),
+            V3Result.StopPlaceRole.entries.map { it.name },
+        )
+    }
+
     @Test
     fun `display name appends locality`() {
         val place = transformSingle(Extra(id = "OSM:TopographicPlace:42", source = Source.OSM, locality = "Oslo"))

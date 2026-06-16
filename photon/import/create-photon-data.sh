@@ -31,6 +31,8 @@ fi
 IMPORT_THREADS="${PHOTON_IMPORT_THREADS:-5}"
 
 START_TIME=$(date +%s)
+# -extra-tags ALL is load-bearing: the v3 proxy reads extra.* fields (source, stop_place_role,
+# fare_zones, ...). Narrowing it to an allowlist would drop those from every response.
 java -jar "$PHOTON_JAR" \
         import \
         -j "$IMPORT_THREADS" \

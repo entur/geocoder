@@ -81,6 +81,7 @@ paths:
                       transportModes:
                         - mode: "rail"
                       stopPlaceTypes: ["railStation"]
+                      stopPlaceRole: "parent"
                 metadata:
                   query:
                     text: "oslo s"
@@ -143,6 +144,7 @@ paths:
                         display: "Oslo S, Oslo"
                       layer: "stopPlace"
                       source: "nsr"
+                      stopPlaceRole: "parent"
                       distance: 0.142
                 metadata:
                   query:
@@ -194,6 +196,7 @@ paths:
                         display: "Oslo S, Oslo"
                       layer: "stopPlace"
                       source: "nsr"
+                      stopPlaceRole: "parent"
                 metadata:
                   query:
                     limit: 10
@@ -565,6 +568,18 @@ components:
           items:
             type: string
           example: ["onstreetBus"]
+        stopPlaceRole:
+          type: string
+          description: >-
+            A stop place's role in the parent-child hierarchy: `parent` (aggregates child stops),
+            `child`, or `standalone`. Present on `stopPlace` features; absent on other layers and
+            on stop places not yet reindexed. Treat an absent or unrecognised value as unknown,
+            not `standalone`. (`parent`/`child` both mean multimodal.)
+          enum:
+            - parent
+            - child
+            - standalone
+          example: "parent"
         source:
           type: string
           description: Data source identifier (same values as the sources filter)

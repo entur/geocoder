@@ -19,4 +19,7 @@ data class Extra(
     val transport_mode: String? = null,
     // Semicolon-separated list of NeTEx StopPlaceType values, e.g. "onstreetBus;busStation"
     val stop_place_type: String? = null,
+    // Stop place hierarchy role ("parent"/"child"/"standalone"); set by the converter only for
+    // stop places, absent otherwise and on pre-reindex documents.
+    val stop_place_role: String? = null,
 )

@@ -39,6 +39,13 @@ data class V3Result(
         val fareZones: List<String>? = null,
         val transportModes: List<TransportMode>? = null,
         val stopPlaceTypes: List<String>? = null,
+        /**
+         * A stop place's role in the parent-child hierarchy: `parent` (aggregates child stops),
+         * `child`, or `standalone` (monomodal). Set on `stopPlace` features; absent on other
+         * layers and on stop places not yet reindexed. Treat an absent or unrecognised value as
+         * unknown, not `standalone`. (`parent`/`child` both mean multimodal.)
+         */
+        val stopPlaceRole: StopPlaceRole? = null,
         /** Distance from the reverse query point in kilometres (3-decimal precision). Present on reverse responses only. */
         val distance: BigDecimal? = null,
         /** Per-language description. Keys are ISO 639-2 alpha-3 language codes (e.g. `nor`, `eng`). */
@@ -76,6 +83,13 @@ data class V3Result(
         groupOfStopPlaces,
         poi,
         place,
+    }
+
+    // Member names are the wire values; must match the converter's StopPlaceRole::as_str. Pinned by a test.
+    enum class StopPlaceRole {
+        parent,
+        child,
+        standalone,
     }
 
     data class Metadata(
