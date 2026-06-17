@@ -14,7 +14,7 @@ git push origin prod-approved --force
 
 ### Proxy
 
-**Automatic** — Push to `main` → builds and deploys to dev → tst → prd, with acceptance tests after each.
+**Automatic** — Push to `main` → builds and deploys to dev. Further tst and prd deploys needs approval. All builds run acceptance tests after deployment.
 
 **Manual** — [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) also supports manual dispatch (target: `dev only` | `dev → tst → prd` | `tst → prd`).
 
