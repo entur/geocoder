@@ -22,17 +22,24 @@ git push origin prod-approved --force
 
 ### Photon
 
-**Scheduled** — Daily at 07:27 UTC: full data import + build + deploy to tst → prd. Checks out the `prod-approved` tag to avoid using untested commits.
+**Scheduled** — Daily at 06:27 UTC: full data import + build + deploy to tst → prd (no approval gates). Checks out the `prod-approved` tag to avoid using untested commits, and updates the `latest-prod.txt` pointer.
 
 **Manual:**
-- [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) — Import data, build Photon image, deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`)
-- [photon-rebuild.yml](https://github.com/entur/geocoder/actions/workflows/photon-rebuild.yml) — Rebuild Photon image from existing Nominatim data, deploy
+- [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) — Import data, build Photon image, deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`; optional `config`, default `converter-prod.json`)
 - [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) — Deploy an existing Photon image tag
 
 ### Sweden (dev only)
 
-- [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) — Import/rebuild/deploy Photon for Sweden
+- [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) — Import/build/deploy Photon for Sweden
 - [proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml) — Build/deploy Proxy for Sweden
+
+### Scheduled & monitoring
+
+- [cache-data-sources.yml](https://github.com/entur/geocoder/actions/workflows/cache-data-sources.yml) — Daily at 03:00 UTC: downloads the third-party source files (matrikkel, stedsnavn, custom POIs from poiman) plus PostHog popular-stops, verifies size, and uploads them to `gs://ent-geocoder-prd/data-sources/`. The nightly Photon import reads from this cache rather than hitting upstream directly.
+- [monitor-photon-data.yml](https://github.com/entur/geocoder/actions/workflows/monitor-photon-data.yml) — Daily at 08:22 UTC: checks `photonImportDate` from the prod `/v2/info` endpoint and alerts Slack if the data is older than 50h.
+- [api-docs.yml](https://github.com/entur/geocoder/actions/workflows/api-docs.yml) — Lints the OpenAPI specs (v2 `openapi.yml` + v3 `openapi3.yml`) on every push/PR touching `proxy/docs/**` or the specs; on push to `main` publishes both API specs and the docs to the [developer portal](https://beta.developer.entur.no/apis/public).
+
+Most workflows post a Slack notification on failure. The reusable [_generate-tag.yml](.github/workflows/_generate-tag.yml) and [_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) workflows back the build/deploy jobs; shared build steps live as composite actions under [.github/actions/](.github/actions/README.md).
 
 ### Photon data artifacts (GCS)
 
@@ -44,7 +51,7 @@ Built artifacts live in the public bucket `gs://ent-geocoder-prd/`:
 | `nominatim-data-se/`   | Sweden variant                               |
 | `photon-data/`         | `photon_data.tar.gz` per build (+ `.sha256`) |
 | `photon-data-se/`      | Sweden variant                               |
-| `data-sources/`        | Daily-refreshed third-party source files     |
+| `data-sources/`        | Daily-refreshed source files (written by `cache-data-sources.yml`) |
 
 Each build writes to `<prefix>/<tag>/<filename>`. The `<tag>` is generated once and shared between the docker image and the GCS upload, so `geocoder-photon:<tag>` always pairs with `gs://.../photon-data/<tag>/photon_data.tar.gz`. Pointer files at the prefix root track recent builds:
 
@@ -178,7 +185,7 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 * Go to [photon/import/download-photon-jar.sh](photon/import/download-photon-jar.sh) and
   update the `PHOTON_JAR` variable with the new link
 * Push your `geocoder` changes
-* Go to https://github.com/entur/geocoder/actions/workflows/photon-dev.yml and trigger the workflow for DEV deployment.
+* Go to [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) and trigger the workflow with target `dev only`.
 
 ## Links
 
