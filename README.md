@@ -43,7 +43,7 @@ Most workflows post a Slack notification on failure. The reusable [_generate-tag
 
 ### Photon data artifacts (GCS)
 
-Built artifacts live in the public bucket `gs://ent-geocoder-prd/`:
+Built artifacts live in the public bucket [gs://ent-geocoder-prd/](https://console.cloud.google.com/storage/browser/ent-geocoder-prd?project=ent-geocoder-prd):
 
 | Prefix                 | Contents                                     |
 | ---------------------- | -------------------------------------------- |
