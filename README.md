@@ -14,27 +14,27 @@ git push origin prod-approved --force
 
 ### Proxy
 
-**Automatic** — Push to `main` → builds and deploys to dev. Further tst and prd deploys needs approval. All builds run acceptance tests after deployment.
+**Automatic**
+- Push to `main` → builds and deploys to dev. Further tst and prd deploys needs approval. All builds run acceptance tests after deployment.
 
-**Manual** — [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) also supports manual dispatch (target: `dev only` | `dev → tst → prd` | `tst → prd`).
-
+**Manual**
+- [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) also supports manual dispatch (target: `dev only` | `dev → tst → prd` | `tst → prd`).
 - [proxy-deploy.yml](https://github.com/entur/geocoder/actions/workflows/proxy-deploy.yml) — Deploy an existing image tag
 
 ### Photon
 
-**Scheduled** — Daily at 06:27 UTC: full data import + build + deploy to tst → prd (no approval gates). Checks out the `prod-approved` tag to avoid using untested commits, and updates the `latest-prod.txt` pointer.
+**Scheduled**
+- Daily at 06:27 UTC: full data import + build + deploy to tst → prd (no approval gates). Checks out the `prod-approved` tag to avoid using untested commits, and updates the `latest-prod.txt` pointer.
 
 **Manual:**
 - [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) — Import data, build Photon image, deploy (target: `dev only` | `dev → tst → prd` | `tst → prd`; optional `config`, default `converter-prod.json`)
 - [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) — Deploy an existing Photon image tag
 
 ### Sweden (dev only)
-
 - [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) — Import/build/deploy Photon for Sweden
 - [proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml) — Build/deploy Proxy for Sweden
 
 ### Scheduled & monitoring
-
 - [cache-data-sources.yml](https://github.com/entur/geocoder/actions/workflows/cache-data-sources.yml) — Daily at 03:00 UTC: downloads the third-party source files (matrikkel, stedsnavn, custom POIs from poiman) plus PostHog popular-stops, verifies size, and uploads them to `gs://ent-geocoder-prd/data-sources/`. The nightly Photon import reads from this cache rather than hitting upstream directly.
 - [monitor-photon-data.yml](https://github.com/entur/geocoder/actions/workflows/monitor-photon-data.yml) — Daily at 08:22 UTC: checks `photonImportDate` from the prod `/v2/info` endpoint and alerts Slack if the data is older than 50h.
 - [api-docs.yml](https://github.com/entur/geocoder/actions/workflows/api-docs.yml) — Lints the OpenAPI specs (v2 `openapi.yml` + v3 `openapi3.yml`) on every push/PR touching `proxy/docs/**` or the specs; on push to `main` publishes both API specs and the docs to the [developer portal](https://beta.developer.entur.no/apis/public).
