@@ -5,6 +5,7 @@ import no.entur.geocoder.proxy.pelias.PeliasReverseRequest
 import no.entur.geocoder.proxy.v3.V3ReverseRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PhotonFilterBuilderTest {
@@ -167,5 +168,54 @@ class PhotonFilterBuilderTest {
         val includes = PhotonFilterBuilder.buildIncludes(req)
         // One comma-separated group so the types OR with each other.
         assertTrue(includes.contains("stop_place_type.railStation,stop_place_type.airport"), "Got: $includes")
+    }
+
+    @Test
+    fun `v3 layers and stopPlaceTypes compose as a union, not an exclusion`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.91,
+                lon = 10.75,
+                layers = listOf("stopPlace", "groupOfStopPlaces"),
+                stopPlaceTypes = listOf("railStation"),
+            )
+        val includes = PhotonFilterBuilder.buildIncludes(req)
+        // Two groups: the requested layers, AND (other layers + types). No standalone type group -
+        // that was the old exclusion that dropped requested groups.
+        assertTrue(includes.contains("layer.stopPlace,layer.groupOfStopPlaces"), "Got: $includes")
+        assertTrue(includes.contains("layer.groupOfStopPlaces,stop_place_type.railStation"), "Got: $includes")
+        assertFalse(includes.contains("stop_place_type.railStation"), "Got: $includes")
+    }
+
+    @Test
+    fun `v3 union ORs multiple stopPlaceTypes within the type group`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.91,
+                lon = 10.75,
+                layers = listOf("stopPlace", "groupOfStopPlaces"),
+                stopPlaceTypes = listOf("railStation", "airport"),
+            )
+        val includes = PhotonFilterBuilder.buildIncludes(req)
+        // Types share group 2 with the other layers, so they OR together.
+        assertTrue(
+            includes.contains("layer.groupOfStopPlaces,stop_place_type.railStation,stop_place_type.airport"),
+            "Got: $includes",
+        )
+    }
+
+    @Test
+    fun `v3 stopPlaceTypes are ignored when layers is given without the stopPlace layer`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.91,
+                lon = 10.75,
+                layers = listOf("groupOfStopPlaces"),
+                stopPlaceTypes = listOf("railStation"),
+            )
+        val includes = PhotonFilterBuilder.buildIncludes(req)
+        // stopPlace not requested, so types has nothing to constrain - just the layer filter.
+        assertTrue(includes.contains("layer.groupOfStopPlaces"), "Got: $includes")
+        assertFalse(includes.any { it.contains("stop_place_type.") }, "Got: $includes")
     }
 }

@@ -19,7 +19,11 @@ data class V3ReverseRequest(
     override val fareZones: List<String> = emptyList(),
     /** Fare zone authority codes. Maps to the converter's `fare_zone_authority.` indexed prefix. */
     override val fareZoneAuthorities: List<String> = emptyList(),
-    /** NeTEx stop place types (e.g. `railStation`, `airport`); restricts results to stop places of those types, excluding other layers. */
+    /**
+     * NeTEx stop place types (e.g. `railStation`, `airport`). Without `layers`, restricts results to
+     * these stop places and excludes other layers. With `layers`, constrains the `stopPlace` layer
+     * while other requested layers pass additively; ignored if `layers` omits `stopPlace`.
+     */
     override val stopPlaceTypes: List<String> = emptyList(),
     override val multimodal: String = "parent",
     /** Sort by distance from the query point (default) or by relevance when false. */

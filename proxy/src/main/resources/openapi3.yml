@@ -261,7 +261,7 @@ components:
     Layers:
       name: layers
       in: query
-      description: Layer filter
+      description: Layer filter. See `stopPlaceTypes` for how the two compose.
       style: form
       explode: false
       schema:
@@ -274,7 +274,12 @@ components:
     StopPlaceTypes:
       name: stopPlaceTypes
       in: query
-      description: Restrict results to stop places of these NeTEx types. Results from other layers (addresses, POIs, streets, places) are excluded.
+      description: >-
+        Select stop places of these NeTEx types. Without `layers`, returns only these stop places and
+        excludes other layers. With `layers`, constrains the `stopPlace` layer while other requested
+        layers are returned additively (e.g.
+        `layers=stopPlace,groupOfStopPlaces&stopPlaceTypes=railStation` returns rail stations plus
+        groups). Ignored when `layers` is set but omits `stopPlace`.
       style: form
       explode: false
       schema:
@@ -726,6 +731,7 @@ components:
 
     Filters:
       type: object
+      description: Echoes the request filters as sent, not the effective filter set.
       properties:
         layers:
           type: array

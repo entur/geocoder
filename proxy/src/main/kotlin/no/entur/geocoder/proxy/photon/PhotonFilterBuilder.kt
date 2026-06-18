@@ -14,6 +14,7 @@ import no.entur.geocoder.proxy.v3.V3FilterParams
 
 object PhotonFilterBuilder {
     private const val KVE_PREFIX = "KVE:TopographicPlace:"
+    private const val STOP_PLACE_LAYER = "stopPlace"
     private val DIGIT_ONLY_PATTERN = Regex("^\\d+$")
     private val HOUSE_NUMBER_HINT = Regex("(\\s\\d|\\d\\s)")
 
@@ -135,11 +136,24 @@ object PhotonFilterBuilder {
             if (params.sources.isNotEmpty()) {
                 add(params.sources.joinToString(",") { "source.${it.replace('-', '.')}" })
             }
-            if (params.layers.isNotEmpty()) {
-                add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
-            }
-            if (params.stopPlaceTypes.isNotEmpty()) {
-                add(params.stopPlaceTypes.joinToString(",") { Category.STOP_PLACE_TYPE_PREFIX + it })
+            when {
+                params.layers.contains(STOP_PLACE_LAYER) && params.stopPlaceTypes.isNotEmpty() -> {
+                    // Union, not exclusion: stopPlaceTypes constrains only the stopPlace layer;
+                    // other requested layers pass additively. Photon ANDs separate include params
+                    // and ORs within one, so the two groups below intersect to:
+                    //   layer in otherLayers OR (layer == stopPlace AND type in stopPlaceTypes)
+                    val otherLayers = params.layers.filterNot { it == STOP_PLACE_LAYER }
+                    add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
+                    add(
+                        (otherLayers.map { Category.LAYER_PREFIX + it } +
+                            params.stopPlaceTypes.map { Category.STOP_PLACE_TYPE_PREFIX + it }).joinToString(","),
+                    )
+                }
+                params.layers.isNotEmpty() ->
+                    // Also covers layers-without-stopPlace + types: types has nothing to constrain.
+                    add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
+                params.stopPlaceTypes.isNotEmpty() ->
+                    add(params.stopPlaceTypes.joinToString(",") { Category.STOP_PLACE_TYPE_PREFIX + it })
             }
         }
 
