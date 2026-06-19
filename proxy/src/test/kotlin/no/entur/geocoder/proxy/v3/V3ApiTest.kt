@@ -83,7 +83,12 @@ class V3ApiTest {
             application { setupRouting() }
             client.get("/v3/reverse?lat=59.91&lon=10.75&stopPlaceTypes=railStation,airport") {
             }
-            val includes = recordedRequests.single().url.parameters.getAll("include").orEmpty()
+            val includes =
+                recordedRequests
+                    .single()
+                    .url.parameters
+                    .getAll("include")
+                    .orEmpty()
             assertEquals(true, includes.contains("stop_place_type.railStation,stop_place_type.airport"), "Got: $includes")
         }
 

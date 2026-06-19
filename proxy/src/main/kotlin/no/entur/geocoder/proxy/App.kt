@@ -198,7 +198,7 @@ class App {
                 .getResourceAsStream(name)
                 ?.readBytes()
                 ?: throw IllegalStateException("$name not found")
-            )
+        )
 
         private val logger = LoggerFactory.getLogger("App")
         private val appMicrometerRegistry =

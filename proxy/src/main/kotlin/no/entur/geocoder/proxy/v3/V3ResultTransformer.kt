@@ -221,18 +221,25 @@ object V3ResultTransformer {
 
     private fun determineLayer(source: String?, osmKey: String?, tags: String?): V3Result.Layer =
         when (source) {
-            Source.KARTVERKET_ADRESSE -> V3Result.Layer.address
+            Source.KARTVERKET_ADRESSE -> {
+                V3Result.Layer.address
+            }
 
-            Source.KARTVERKET_STEDSNAVN -> V3Result.Layer.place
+            Source.KARTVERKET_STEDSNAVN -> {
+                V3Result.Layer.place
+            }
 
-            Source.NSR ->
+            Source.NSR -> {
                 if (tags.containsTag(Category.LAYER_GOSP)) {
                     V3Result.Layer.groupOfStopPlaces
                 } else {
                     V3Result.Layer.stopPlace
                 }
+            }
 
-            else -> if (osmKey == "highway") V3Result.Layer.street else V3Result.Layer.poi
+            else -> {
+                if (osmKey == "highway") V3Result.Layer.street else V3Result.Layer.poi
+            }
         }
 
     private fun String?.containsTag(tag: String): Boolean =
@@ -285,8 +292,7 @@ object V3ResultTransformer {
                     val lang = seg.take(colon).trim()
                     val text = seg.substring(colon + 1).trim()
                     if (lang.isNotEmpty() && text.isNotEmpty()) lang to text else null
-                }
-                .toMap()
+                }.toMap()
                 .takeIf { it.isNotEmpty() }
         } else {
             mapOf("nor" to raw.trim())

@@ -226,7 +226,6 @@ class PhotonReverseRequestTest {
         assertTrue(request.includes.any { it.startsWith("fare_zone_authority.RUT") })
     }
 
-
     @Test
     fun `from V3ReverseRequest passes distanceSort through`() {
         val sorted = PhotonReverseRequest.from(V3ReverseRequest(lat = 59.9, lon = 10.7))
@@ -245,30 +244,33 @@ class PhotonReverseRequestTest {
 
     @Test
     fun `from V3ReverseRequest includes addresses when sources is exactly the address source`() {
-        val req = V3ReverseRequest(
-            lat = 59.911491, lon = 10.757933,
-            sources = listOf("kartverket-matrikkelenadresse"),
-        )
+        val req =
+            V3ReverseRequest(
+                lat = 59.911491, lon = 10.757933,
+                sources = listOf("kartverket-matrikkelenadresse"),
+            )
         val request = PhotonReverseRequest.from(req)
         assertFalse(request.excludes.contains(Category.LAYER_ADDRESS))
     }
 
     @Test
     fun `from V3ReverseRequest still excludes addresses for stedsnavn source`() {
-        val req = V3ReverseRequest(
-            lat = 59.911491, lon = 10.757933,
-            sources = listOf("kartverket-stedsnavn"),
-        )
+        val req =
+            V3ReverseRequest(
+                lat = 59.911491, lon = 10.757933,
+                sources = listOf("kartverket-stedsnavn"),
+            )
         val request = PhotonReverseRequest.from(req)
         assertTrue(request.excludes.contains(Category.LAYER_ADDRESS))
     }
 
     @Test
     fun `from V3ReverseRequest includes addresses when layers contains address`() {
-        val req = V3ReverseRequest(
-            lat = 59.911491, lon = 10.757933,
-            layers = listOf("address"),
-        )
+        val req =
+            V3ReverseRequest(
+                lat = 59.911491, lon = 10.757933,
+                layers = listOf("address"),
+            )
         val request = PhotonReverseRequest.from(req)
         assertFalse(request.excludes.contains(Category.LAYER_ADDRESS))
     }

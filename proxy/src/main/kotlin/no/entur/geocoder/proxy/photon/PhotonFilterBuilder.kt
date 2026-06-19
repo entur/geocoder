@@ -83,8 +83,11 @@ object PhotonFilterBuilder {
                 // (pass 1) - both decide TariffZone vs FareZone the same way.
                 add(
                     tariffZones.joinToString(",") { ref ->
-                        if (ref.contains(":FareZone:")) Category.fareZoneIdCategory(ref)
-                        else Category.tariffZoneIdCategory(ref)
+                        if (ref.contains(":FareZone:")) {
+                            Category.fareZoneIdCategory(ref)
+                        } else {
+                            Category.tariffZoneIdCategory(ref)
+                        }
                     },
                 )
             }
@@ -145,15 +148,21 @@ object PhotonFilterBuilder {
                     val otherLayers = params.layers.filterNot { it == STOP_PLACE_LAYER }
                     add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
                     add(
-                        (otherLayers.map { Category.LAYER_PREFIX + it } +
-                            params.stopPlaceTypes.map { Category.STOP_PLACE_TYPE_PREFIX + it }).joinToString(","),
+                        (
+                            otherLayers.map { Category.LAYER_PREFIX + it } +
+                                params.stopPlaceTypes.map { Category.STOP_PLACE_TYPE_PREFIX + it }
+                        ).joinToString(","),
                     )
                 }
-                params.layers.isNotEmpty() ->
+
+                params.layers.isNotEmpty() -> {
                     // Also covers layers-without-stopPlace + types: types has nothing to constrain.
                     add(params.layers.joinToString(",") { Category.LAYER_PREFIX + it })
-                params.stopPlaceTypes.isNotEmpty() ->
+                }
+
+                params.stopPlaceTypes.isNotEmpty() -> {
                     add(params.stopPlaceTypes.joinToString(",") { Category.STOP_PLACE_TYPE_PREFIX + it })
+                }
             }
         }
 
@@ -166,8 +175,11 @@ object PhotonFilterBuilder {
     // Exclude addresses unless the query contains a house number or sources=<whatever>
     // (typically takes care of "Oslo C" returning addresses).
     private fun buildHouseNumberExclude(req: PeliasAutocompleteRequest): String? =
-        if (req.sources.contains(openaddresses.name)) null
-        else req.text.takeIf { !textHasHouseNumber(it) }?.let { Category.LAYER_ADDRESS }
+        if (req.sources.contains(openaddresses.name)) {
+            null
+        } else {
+            req.text.takeIf { !textHasHouseNumber(it) }?.let { Category.LAYER_ADDRESS }
+        }
 
     fun buildExcludes(req: PeliasReverseRequest): List<String> =
         listOfNotNull(

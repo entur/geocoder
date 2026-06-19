@@ -152,10 +152,11 @@ class V3ResultTransformerTest {
                     listOf(
                         PhotonFeature(
                             geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.0, 60.0)),
-                            properties = PhotonProperties(
-                                name = "Test",
-                                extra = Extra(id = "OSM:TopographicPlace:42", source = Source.OSM),
-                            ),
+                            properties =
+                                PhotonProperties(
+                                    name = "Test",
+                                    extra = Extra(id = "OSM:TopographicPlace:42", source = Source.OSM),
+                                ),
                         ),
                     ),
             )
@@ -270,7 +271,11 @@ class V3ResultTransformerTest {
                 photonResult,
                 V3ReverseRequest(lat = 59.91, lon = 10.75, stopPlaceTypes = listOf("railStation")),
             )
-        assertEquals(listOf("railStation"), withFilter.metadata.query.filters?.stopPlaceTypes)
+        assertEquals(
+            listOf("railStation"),
+            withFilter.metadata.query.filters
+                ?.stopPlaceTypes,
+        )
 
         val withoutFilters =
             V3ResultTransformer.parseAndTransform(
@@ -290,11 +295,12 @@ class V3ResultTransformerTest {
                     listOf(
                         PhotonFeature(
                             geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.75, 59.91)),
-                            properties = PhotonProperties(
-                                name = "Karl Johans gate",
-                                extent = listOf(10.73, 59.92, 10.76, 59.91),
-                                extra = Extra(id = "KVE:TopographicPlace:0301-Karl Johans gate", source = Source.KARTVERKET_ADRESSE),
-                            ),
+                            properties =
+                                PhotonProperties(
+                                    name = "Karl Johans gate",
+                                    extent = listOf(10.73, 59.92, 10.76, 59.91),
+                                    extra = Extra(id = "KVE:TopographicPlace:0301-Karl Johans gate", source = Source.KARTVERKET_ADRESSE),
+                                ),
                         ),
                     ),
             )
@@ -309,12 +315,17 @@ class V3ResultTransformerTest {
     fun `feature bbox is absent without photon extent`() {
         val photonResult =
             PhotonResult(
-                features = listOf(
-                    PhotonFeature(
-                        geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.0, 60.0)),
-                        properties = PhotonProperties(name = "Test", extra = Extra(id = "OSM:TopographicPlace:42", source = Source.OSM)),
+                features =
+                    listOf(
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.0, 60.0)),
+                            properties =
+                                PhotonProperties(
+                                    name = "Test",
+                                    extra = Extra(id = "OSM:TopographicPlace:42", source = Source.OSM),
+                                ),
+                        ),
                     ),
-                ),
             )
         val feature = V3ResultTransformer.parseAndTransform(photonResult, V3AutocompleteRequest(q = "x")).features.first()
         assertNull(feature.bbox)

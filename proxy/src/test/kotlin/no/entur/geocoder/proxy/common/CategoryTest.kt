@@ -53,17 +53,18 @@ class CategoryTest {
             val segments = s.split('.')
             if (segments.size < 2) return false
             return segments.all { seg ->
-                seg.isNotEmpty() && seg.all { c -> c.isLetterOrDigit() && c.code < 128 || c == '_' || c == '-' }
+                seg.isNotEmpty() && seg.all { c -> (c.isLetterOrDigit() && c.code < 128) || c == '_' || c == '-' }
             }
         }
-        val inputs = listOf(
-            "KVE:TopographicPlace:0301-Karl Johans gate",
-            "KVE:TopographicPlace:3407-Fahlstrøms plass",
-            "KVE:PlaceName:434810",
-            "KVE:Borough:34200205",
-            "NSR:StopPlace:337",
-            "OSM:TopographicPlace:545260792",
-        )
+        val inputs =
+            listOf(
+                "KVE:TopographicPlace:0301-Karl Johans gate",
+                "KVE:TopographicPlace:3407-Fahlstrøms plass",
+                "KVE:PlaceName:434810",
+                "KVE:Borough:34200205",
+                "NSR:StopPlace:337",
+                "OSM:TopographicPlace:545260792",
+            )
         for (input in inputs) {
             val out = input.asCategory()
             assertTrue(matchesPhotonPattern(out), "asCategory($input) = $out does not match Photon CATEGORY_PATTERN")

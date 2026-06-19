@@ -63,10 +63,11 @@ data class V3ReverseRequest(
                 fareZoneAuthorities = req.csv("fareZoneAuthorities"),
                 stopPlaceTypes = req.csv("stopPlaceTypes"),
                 multimodal = req["multimodal"] ?: "parent",
-                distanceSort = req["distanceSort"]?.let {
-                    it.toBooleanStrictOrNull()
-                        ?: throw IllegalArgumentException("Parameter 'distanceSort' must be true or false")
-                } ?: true,
+                distanceSort =
+                    req["distanceSort"]?.let {
+                        it.toBooleanStrictOrNull()
+                            ?: throw IllegalArgumentException("Parameter 'distanceSort' must be true or false")
+                    } ?: true,
                 debug = req["debug"].toBoolean(),
             )
         }

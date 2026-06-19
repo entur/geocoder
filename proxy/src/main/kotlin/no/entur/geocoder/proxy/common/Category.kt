@@ -68,7 +68,8 @@ object Category {
     private val transliterations: Map<Int, String> by lazy {
         checkNotNull(Category::class.java.getResourceAsStream("/transliteration.csv")) {
             "transliteration.csv missing from classpath"
-        }.bufferedReader().readLines()
+        }.bufferedReader()
+            .readLines()
             .asSequence()
             .map { it.trim() }
             .filter { it.isNotEmpty() && !it.startsWith("#") }
@@ -101,11 +102,18 @@ object Category {
             val cp = this.codePointAt(i)
             i += Character.charCount(cp)
             when {
-                cp == ':'.code -> out.append('.')
+                cp == ':'.code -> {
+                    out.append('.')
+                }
+
                 cp in 'a'.code..'z'.code || cp in 'A'.code..'Z'.code ||
-                    cp in '0'.code..'9'.code || cp == '_'.code || cp == '-'.code ->
+                    cp in '0'.code..'9'.code || cp == '_'.code || cp == '-'.code -> {
                     out.appendCodePoint(cp)
-                else -> out.append(transliterations[cp] ?: "_")
+                }
+
+                else -> {
+                    out.append(transliterations[cp] ?: "_")
+                }
             }
         }
         return out.toString()

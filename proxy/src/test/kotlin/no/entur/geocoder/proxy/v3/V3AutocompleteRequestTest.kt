@@ -7,7 +7,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class V3AutocompleteRequestTest {
-
     @Test
     fun `photonZoom returns null when no focus point`() {
         val req = V3AutocompleteRequest(q = "oslo")
