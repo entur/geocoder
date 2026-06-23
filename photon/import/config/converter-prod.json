@@ -69,6 +69,7 @@
       {"key": "amenity", "value": "townhall", "priority": 1},
       {"key": "tourism", "value": "attraction", "priority": 1},
       {"key": "name", "value": "Entur AS", "priority": 1},
+      {"key": "name", "value": "Ruter AS", "priority": 1},
       {"key": "landuse", "value": "military", "priority": 1, "useEntrance": true},
       {"key": "landuse", "value": "quarry", "priority": 1, "useEntrance": true}
     ],
