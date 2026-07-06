@@ -1,7 +1,7 @@
 #
 # API Documentation Workflow
 #
-# Api specs end up at https://beta.developer.entur.no/apis/public
+# Api specs end up at https://developer.entur.no/apis/public
 #
 # Lint runs on push/PR. Publish on push to main or manual dispatch.
 #

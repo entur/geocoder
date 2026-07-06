@@ -4,7 +4,7 @@ Geocoding and reverse geocoding for Norwegian addresses and points of interest.
 
 ## API Docs
 
-[Api Docs](https://beta.developer.entur.no/apis/geocoder)
+[Api Docs](https://developer.entur.no/apis/geocoder)
 
 ## Example
 

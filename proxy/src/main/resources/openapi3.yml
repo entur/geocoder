@@ -17,7 +17,7 @@ info:
 
 externalDocs:
   description: Geocoder v3 documentation and migration guide
-  url: https://beta.developer.entur.no/docs/open-services/geocoder
+  url: https://developer.entur.no/docs/open-services/geocoder
 
 servers:
   - url: https://api.entur.io/geocoder
