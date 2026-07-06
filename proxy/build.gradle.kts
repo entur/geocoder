@@ -86,6 +86,20 @@ val gitHashProvider =
         .map { it.trim() }
 
 tasks.withType<ShadowJar> {
+    // INCLUDE is required so Shadow's transformers see every colliding copy of a
+    // file. Under the default EXCLUDE, duplicates are dropped before the transformer
+    // runs - which silently breaks service merging (e.g. Jackson's KotlinModule gets
+    // dropped) and floods the build with warnings.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    // Merge META-INF/services so no ServiceLoader provider (GeoTools SPIs, Jackson
+    // modules) is lost when the dependencies' copies collide.
+    mergeServiceFiles()
+
+    // Nothing compiles against this runnable app jar, so the compile-time-only
+    // .kotlin_module metadata is dead weight - drop it from the fat jar.
+    exclude("**/*.kotlin_module")
+
     manifest {
         attributes(mapOf("Implementation-Version" to gitHashProvider))
     }
