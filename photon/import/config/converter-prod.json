@@ -78,6 +78,13 @@
   "stedsnavn": {
     "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/Basisdata_0000_Norge_25833_Stedsnavn_GML.zip" },
     "defaultValue": 1.0,
+    "typePopularity": {
+      "by": 300,
+      "tettsted": 30,
+      "bydel": 8,
+      "tettbebyggelse": 2,
+      "tettsteddel": 1
+    },
     "rankAddress": 16,
     "minLines": 1500
   },
@@ -98,6 +105,7 @@
     "input": { "url": "https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip" },
     "defaultValue": 50,
     "rankAddress": 30,
+    "foreignImportanceFactor": 0.5,
     "minLines": 40000,
     "stopTypeFactors": {
       "airport": 150.0,
