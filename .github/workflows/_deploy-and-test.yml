@@ -63,7 +63,7 @@ jobs:
     env:
       GHA_HELM_DEPLOY_REGISTRY: eu.gcr.io/entur-system-1287
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Helm
         uses: azure/setup-helm@v5

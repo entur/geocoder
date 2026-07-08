@@ -58,7 +58,7 @@ jobs:
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
@@ -88,7 +88,7 @@ jobs:
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build Photon image
         id: build
         uses: ./.github/actions/build-photon-image
