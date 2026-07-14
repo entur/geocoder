@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.7.3"
+VERSION="v0.7.4"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -83,7 +83,7 @@ echo "Using config: $CONFIG_FILE"
 START_TIME=$(date +%s)
 
 rm -f nominatim.ndjson
-"$BINARY" build -c "$CONFIG_FILE" -o nominatim.ndjson --cache-dir "$CACHE_DIR" -f
+"$BINARY" build -c "$CONFIG_FILE" -o nominatim.ndjson --warn-if-stale=24 --cache-dir "$CACHE_DIR" -f
 
 END_TIME=$(date +%s)
 echo "Created nominatim.ndjson in $((END_TIME - START_TIME)) seconds."
