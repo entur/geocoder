@@ -90,7 +90,7 @@
   },
   "matrikkel": {
     "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/Basisdata_0000_Norge_25833_MatrikkelenAdresse_CSV.zip" },
-    "addressPopularity": 1.0,
+    "addressPopularity": 6.0,
     "streetPopularity": 2.0,
     "rankAddress": 26,
     "minLines": 2000000
