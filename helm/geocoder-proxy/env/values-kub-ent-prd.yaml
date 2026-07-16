@@ -1,17 +1,9 @@
 common:
   env: prd
-  replicas: 4
   ingress:
     host: geocoder-proxy.entur.io
     trafficType: api
-  hpa:
-    spec:
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 80
-      maxReplicas: 10
-      minReplicas: 4
+  deployment:
+    minReplicas: 4
+    maxReplicas: 10
+    cpuUtilization: 80

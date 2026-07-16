@@ -3,6 +3,8 @@ common:
   ingress:
     host: geocoder-proxy-se.dev.entur.io
     trafficType: public
+  deployment:
+    minReplicas: 1
   container:
     env:
       - name: PHOTON_URL

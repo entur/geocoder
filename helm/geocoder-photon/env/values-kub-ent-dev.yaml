@@ -1,2 +1,5 @@
 common:
   env: dev
+  deployment:
+    minReplicas: 1
+    maxReplicas: 2  # photon pods are heavy; cap non-prod fan-out

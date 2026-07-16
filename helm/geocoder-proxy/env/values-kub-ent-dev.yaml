@@ -3,3 +3,5 @@ common:
   ingress:
     host: geocoder-proxy.dev.entur.io
     trafficType: api
+  deployment:
+    minReplicas: 1
