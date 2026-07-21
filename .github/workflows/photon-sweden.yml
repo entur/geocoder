@@ -123,7 +123,7 @@ jobs:
     if: failure()
     runs-on: ubuntu-latest
     steps:
-      - uses: slackapi/slack-github-action@v3
+      - uses: slackapi/slack-github-action@v4
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
           webhook-type: incoming-webhook
