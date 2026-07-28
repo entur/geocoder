@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm") version "2.4.10" apply false
     alias(libs.plugins.ktlint)
-    alias(libs.plugins.versions)
 }
 
 subprojects {
@@ -34,12 +33,5 @@ configurations.configureEach {
         if (requested.group == "com.pinterest.ktlint") {
             useVersion("1.8.0")
         }
-    }
-}
-
-// https://github.com/ben-manes/gradle-versions-plugin/issues/968
-tasks.dependencyUpdates {
-    doFirst {
-        gradle.startParameter.isParallelProjectExecutionEnabled = false
     }
 }

@@ -1,14 +1,13 @@
 [versions]
-ben-manes-ver = "0.54.0"
 countries = "3.0.0"
-geotools = "34.2"
-jackson = "2.21.1"
+geotools = "35.0"
+jackson = "2.22.1"
 kotlin = "2.4.10"
 ktlint-gradle = "14.2.0"
-ktor = "3.4.3"
-logback = "1.5.32"
+ktor = "3.5.1"
+logback = "1.6.0"
 logback-encoder = "9.0"
-micrometer = "1.16.4"
+micrometer = "1.17.0"
 shadow = "9.6.1"
 
 [libraries]
@@ -45,6 +44,5 @@ ktor-server-metrics-micrometer = { module = "io.ktor:ktor-server-metrics-microme
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version.ref = "ben-manes-ver" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
