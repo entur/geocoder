@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Geocoder v3
+  title: Geocoder
   version: 3.0.0
   description: |
     Geocoding and reverse geocoding for Norwegian addresses and points of interest.
@@ -16,7 +16,7 @@ info:
     audience: open
 
 externalDocs:
-  description: Geocoder v3 documentation and migration guide
+  description: Geocoder documentation and v3 migration guide
   url: https://developer.entur.no/docs/open-services/geocoder
 
 servers:

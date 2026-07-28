@@ -13,13 +13,13 @@ on:
     branches: [ main ]
     paths:
       - 'proxy/docs/**'
-      - 'proxy/src/main/resources/openapi*.yml'
+      - 'proxy/src/main/resources/openapi3.yml'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
   pull_request:
     paths:
       - 'proxy/docs/**'
-      - 'proxy/src/main/resources/openapi*.yml'
+      - 'proxy/src/main/resources/openapi3.yml'
       - 'proxy/.spectral.yml'
       - '.github/workflows/api-docs.yml'
   workflow_dispatch:
@@ -39,14 +39,6 @@ jobs:
     secrets: inherit
     with:
       path: ${{ matrix.spec }}
-
-  api-publish:
-    if: github.event_name != 'pull_request'
-    needs: api-lint
-    uses: entur/gha-api/.github/workflows/publish.yml@v6
-    secrets: inherit
-    with:
-      path: proxy/src/main/resources/openapi.yml
 
   api-publish-v3:
     if: github.event_name != 'pull_request'
