@@ -37,7 +37,7 @@ git push origin prod-approved --force
 ### Scheduled & monitoring
 - [cache-data-sources.yml](https://github.com/entur/geocoder/actions/workflows/cache-data-sources.yml) — Daily at 03:00 UTC: downloads the third-party source files (matrikkel, stedsnavn, custom POIs from poiman) plus PostHog popular-stops, verifies size, and uploads them to `gs://ent-geocoder-prd/data-sources/`. The nightly Photon import reads from this cache rather than hitting upstream directly.
 - [monitor-photon-data.yml](https://github.com/entur/geocoder/actions/workflows/monitor-photon-data.yml) — Daily at 08:22 UTC: checks `photonImportDate` from the prod `/v2/info` endpoint and alerts Slack if the data is older than 50h.
-- [api-docs.yml](https://github.com/entur/geocoder/actions/workflows/api-docs.yml) — Lints the OpenAPI specs (v2 `openapi.yml` + v3 `openapi3.yml`) on every push/PR touching `proxy/docs/**` or the specs; on push to `main` publishes both API specs and the docs to the [developer portal](https://developer.entur.no/apis/public).
+- [api-docs.yml](https://github.com/entur/geocoder/actions/workflows/api-docs.yml) — Lints both OpenAPI specs (v2 `openapi.yml` + v3 `openapi3.yml`) on every push/PR touching `proxy/docs/**`, `openapi3.yml` or `.spectral.yml`; on push to `main` publishes the v3 spec to [developer.entur.no/apis/geocoder](https://developer.entur.no/apis/geocoder) and `proxy/docs/` to [the docs portal](https://developer.entur.no/docs/open-services/geocoder). The v2 spec is linted but no longer published.
 
 Most workflows post a Slack notification on failure. The reusable [_generate-tag.yml](.github/workflows/_generate-tag.yml) and [_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) workflows back the build/deploy jobs; shared build steps live as composite actions under [.github/actions/](.github/actions/README.md).
 
@@ -126,31 +126,47 @@ java -jar build/libs/proxy-all.jar
 
 Now try some example requests:
 ```bash
+curl -s 'http://localhost:8080/v3/autocomplete?q=sk%C3%B8yen%20stasjon&limit=20'
+curl -s 'http://localhost:8080/v3/reverse?lat=59.92&lon=10.67&radius=1&limit=10&layers=address,locality'
+
+# v2 (Pelias-compatible) takes different parameter names
 curl -s 'http://localhost:8080/v2/autocomplete?text=sk%C3%B8yen%20stasjon&size=20'
-curl -s 'http://localhost:8080/v2/reverse?point.lat=59.92&point.lon=10.67&boundary.circle.radius=1&size=10&layers=address%2Clocality'
 ```
 Adding `&debug=true` will also reveal native Photon results with `importance` (input weight) and `score` (calculated weight).
 
-You can also access Photon directly:
+You can also access Photon directly. Category values are case-sensitive, so `layer.stopPlace`
+matches while `layer.stopplace` silently returns nothing:
 ```bash
-curl -s 'http://localhost:2322/api?q=Berglyveien&include=layer.stopplace'
+curl -s 'http://localhost:2322/api?q=Berglyveien&include=layer.stopPlace'
 ```
-Or use the opensearch endpoint:
+Or use the opensearch endpoint. Document ids are the entity id with `:` replaced by `-`
+(`NSR-StopPlace-58404`, `KVE-PostalAddress-12191345`), not numeric osm ids:
 ```bash
-curl -s 'http://localhost:9201/photon/_mapping' | jq .       # Available fields
-curl -s 'http://localhost:9201/photon/_doc/719158973' | jq . # Get document by ID
+curl -s 'http://localhost:9201/photon/_mapping' | jq .   # Available fields
+curl -s 'http://localhost:9201/photon/_doc/NSR-StopPlace-58404' | jq .
+```
+Handy when checking what the converter actually wrote, e.g. the indexed alt names a multimodal
+parent inherited from its children:
+```bash
+curl -s 'http://localhost:9201/photon/_doc/NSR-StopPlace-58404' | jq -c '._source.name'
+{"default":"Nationaltheatret","alt":"Nationaltheatret stasjon;Nasjonalteatret;Nationaltheatret"}
 ```
 
 ### Debugging data in k8s / GKE
 
 Accessing the opensearch queries in k8s:
 ```bash
-kubectl --context dev port-forward geocoder-photon-85994c94dd-6lqhv -n geocoder 9201
-curl -s 'https://geocoder-photon.dev.entur.io/api?q=ullerud' |jq  '.features[].properties.osm_id' |head -1
-200127208213
-curl -s 'http://localhost:9201/photon/_doc/200127208213' |jq -c "[._source.importance, ._source.name.default]"
-[0.23010299956639815,"Ullerud terrasse"]
+kubectl --context dev port-forward <geocoder-photon-pod> -n geocoder 9201
+
+# Take extra.id from the API response and swap ':' for '-' to get the document id
+ID=$(curl -s 'https://geocoder-photon.dev.entur.io/api?q=ullerud' \
+  | jq -r '.features[0].properties.extra.id' | tr ':' '-')
+echo $ID
+NSR-StopPlace-5496
+curl -s "http://localhost:9201/photon/_doc/$ID" | jq -c "[._source.importance, ._source.name.default]"
+[0.078586,"Ullerud"]
 ```
+`osm_id` is 0 for NSR documents, so it is not a usable key. Use `extra.id`.
 
 ### Verifying score and importance
 
@@ -159,12 +175,12 @@ We set the `importance` field in the Nominatim data, while `score` is calculated
 ```
 $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
   | jq -c '.geocoding.debug.raw_data[] | [.localeTags.name.default, .infos.importance, .score]'
-["Oslo",1.0,51.235104]
-["Oslo lufthavn",0.347712,26.492702]
-["Oslo S",0.330103,25.840235]
-["Oslo bussterminal",0.330103,24.307642]
+["Oslo",0.92,2.8717440524466067]
+["Oslo S",0.538821,2.323909030548797]
+["Oslo",0.27596,2.27596]
+["Oslo lufthavn",0.550358,2.006965529061908]
 ```
-<sub><sup>(Debug shows three more results than we ask for, see PhotonAutocompleteRequest.RESULT_PRUNING_HEADROOM)</sup></sub>
+<sub><sup>(Debug shows three more results than we ask for, see PhotonAutocompleteRequest.RESULT_PRUNING_HEADROOM. Both the importance and the score change with every index build, so treat the numbers as illustrative. The two "Oslo" rows are the group of stop places and the locality.)</sup></sub>
 ### Using a patched Photon version
 
 #### Build and release patched Photon
@@ -193,24 +209,18 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 * [Photon metrics](https://grafana.entur.org/d/VpZ62_2Wk/jvm-overview-prometheus?orgId=1&var-datasource=000000002&var-label=app&var-name=geocoder-photon&var-prometheus_group=kub-ent-dev-001&from=now-6h&to=now)
 * [Proxy metrics](https://grafana.entur.org/d/VpZ62_2Wk/jvm-overview-prometheus?orgId=1&var-datasource=000000002&var-label=app&var-name=geocoder-proxy&var-prometheus_group=kub-ent-dev-001&from=now-6h&to=now)
-* [v1 vs v2 metrics](https://grafana.entur.org/d/bf2mxeovemi9sc/geocoder-v1-vs-v2?orgId=1&var-cluster_environment=dev&from=now-30m&to=now)
-* [pelias parameter usage](https://grafana.entur.org/d/bez56ipo02t4we/geocoder-v1-endpoint-parameter-usage?orgId=1&refresh=30s)
 
 ### Internal references
 
-* [v1 vs v2 comparison tool (bau)](https://ent-bau-dev.web.app/)
-* [bau repo](https://github.com/entur/bau)
-* [Boost calculation in kakka](https://github.com/entur/kakka/blob/f8dbc8225e0cd84c013f6f4695a60e9f0b82c280/src/main/java/no/entur/kakka/geocoder/routes/pelias/mapper/netex/StopPlaceToPeliasMapper.java#L120)
-* [Boost config in kakka](https://github.com/entur/kakka/blob/master/helm/kakka/env/values-kub-ent-prd.yaml#L38)
+* [nominatim-converter](https://github.com/entur/nominatim-converter): builds the index this proxy queries. Importance lives in `src/common/importance.rs`, categories in `src/common/category.rs`
+* [entur/photon](https://github.com/entur/photon): the patched Photon fork that does the actual ranking. [PhotonDocSerializer](https://github.com/entur/photon/blob/master/src/main/java/de/komoot/photon/opensearch/PhotonDocSerializer.java) decides which name fields get indexed and at what priority
 * [geocoder acceptance tests](https://github.com/entur/geocoder-acceptance-tests)
-* [pelias-api @ entur](https://github.com/entur/pelias-api)
+* [v2 vs v3 comparison tool (bau)](https://ent-bau-dev.web.app/) and the [bau repo](https://github.com/entur/bau)
 
 ### External references
 
-* [photon](https://photon.komoot.de/)
+* [photon](https://photon.komoot.io/)
 * [photon pelias adapter](https://github.com/stadtulm/photon-pelias-adapter)
-* [list of photon alt names](https://github.com/komoot/photon/blob/master/app/opensearch/src/main/java/de/komoot/photon/opensearch/PhotonDocSerializer.java#L99)
 * [OSM dumps for photon](https://download1.graphhopper.com/public/experimental/extracts/by-country-code/no/) from graphhopper
 * [Nominatim DB fields](https://nominatim.org/release-docs/latest/develop/Database-Layout/) (database layout)
-* [Photon JSON import PR](https://github.com/komoot/photon/pull/885) (outdated)
 * [Nominatim search tool](https://github.com/osm-search/Nominatim)

@@ -2,92 +2,105 @@
 
 Guidelines for AI coding assistants working on the Geocoder project.
 
-## Entur Standards
+## Entur standards
 
-Read and follow the Entur platform standards at:
-https://github.com/entur/ai/blob/main/AGENTS.md
+Read and follow https://github.com/entur/ai/blob/main/AGENTS.md, plus the docs it links for
+the task at hand (e.g. java.md, helm.md, docker.md).
 
-When working on a specific task, also read the relevant docs
-linked from that file (e.g. java.md, helm.md, docker.md).
+## Layout
 
-## Project Overview
+- `proxy/` - the only Gradle module. Ktor HTTP server exposing v2 (Pelias-compatible) and v3
+  APIs. Packages under `no.entur.geocoder.proxy`: `common`, `health`, `pelias`, `photon`, `v3`.
+- `photon/` - not a Gradle module: Photon config, import scripts, Dockerfile, dev scripts.
+- `helm/` - charts for `geocoder-proxy` and `geocoder-photon`.
 
-Geocoder is a Norwegian geocoding service with three modules:
-- **proxy/** - Ktor HTTP API server providing v2 (Pelias-compatible) and v3 APIs
-- **photon/** - Photon runtime: config, import scripts, Docker build, and dev convenience scripts
-- **common/** - Shared domain models and utilities
+The proxy transforms requests and responses. It does not rank: scoring lives in the Photon
+fork (separate repo), and the proxy only filters, prunes and reshapes what Photon returns.
 
-The proxy forwards requests to Photon (an OpenStreetMap-based search engine) after transforming request/response formats.
-
-## Build Commands
+## Build
 
 ```bash
-./gradlew build          # Build all modules with tests
-./gradlew test           # Run tests only
-./gradlew ktlintCheck    # Check code style
-./gradlew ktlintFormat   # Auto-fix code style
-./gradlew :proxy:build   # Build specific module
+./gradlew build          # all modules with tests
+./gradlew test
+./gradlew ktlintCheck
+./gradlew ktlintFormat
 ```
 
-## Code Conventions
+Running Photon and the proxy locally, including building an index: see README.md.
 
-### Kotlin Style
-- Max line length: 140 characters
-- Package structure: `no.entur.geocoder.{module}.{feature}`
-- Use data classes for DTOs and value objects
-- Use companion objects for factory methods and constants
+## Cross-repo invariants
 
-### Architecture Patterns
-- All HTTP handlers are suspend functions (coroutine-based)
-- Request transformation pipeline: User Request → Internal Request → Photon → Internal Response → User Response
-- Keep request/response models separate for each API version (v2, v3, photon)
-- v3 API uses camelCase for all JSON keys and query parameters — no snake_case
-- When changing v3 API code, ensure the implementation matches `openapi3.yml` (parameter names, defaults, response schemas)
+These fail silently. Nothing here produces a compile error or a red test when it drifts, only
+wrong query results at runtime.
 
-### Testing
-- Tests use JUnit Jupiter with Kotlin Test assertions
-- Use Ktor TestHost for API testing
-- Test files mirror source structure
+| In this repo | Must agree with |
+| --- | --- |
+| `common/Category.kt` string constants | `nominatim-converter/src/common/category.rs` |
+| `proxy/src/main/resources/transliteration.csv` | the converter's copy, byte-identical. Changing it invalidates the index and needs a reindex |
+| `V3Result.StopPlaceRole` enum names | the converter's `StopPlaceRole::as_str` (pinned by a test) |
+| the `:FareZone:` branch in `PhotonFilterBuilder` | the converter's tariff/fare category split |
+| v3 request and response code | `proxy/src/main/resources/openapi3.yml` (parameter names, defaults, schemas) |
 
-## Important Areas
+## Conventions
 
-### Coordinate Handling
-- Use BigDecimal for coordinate precision in JSON serialization
-- Coordinates are in WGS84 (EPSG:4326) for external APIs
+- Kotlin, max line 140. `.editorconfig` holds the limit and disables several ktlint standard
+  rules; check there before "fixing" style.
+- HTTP handlers are suspend functions.
+- Pipeline: user request -> internal request -> Photon -> internal response -> user response.
+  Request and response models stay separate per API version (`pelias`, `v3`, `photon`).
+- v3 JSON keys and query parameters are camelCase. Never snake_case.
+- Coordinates are WGS84 (EPSG:4326) and serialize through BigDecimal to pin scale
+  (`Util.toBigDecimalWithScale`), so precision does not drift between versions.
+- Tests use `kotlin.test` assertions; endpoint tests use Ktor `testApplication`.
 
-### Category System
-Categories use prefixes for filtering:
-- `osm.*` - OpenStreetMap categories
-- `source.kartverket.*` - Norwegian mapping data
-- `tariff_zone_id.*` - Transit zone filtering
-- Maintain backward compatibility with legacy prefixes
+## Categories
 
-### Error Handling
-- v2: Centralized in `ErrorHandler.kt`, returns Pelias-style error responses
-- v3: Route-level error handling in `App.kt` (`v3respond`), returns RFC 9457 `application/problem+json` with `status`, `title`, `detail`
+Categories are the filter mechanism: the converter writes them into the index and the proxy
+turns query parameters into `include`/`exclude` category filters. Prefixes are declared in
+`common/Category.kt` (`layer.`, `country.`, `tariff_zone_id.`, `stop_place_type.`,
+`legacy.category.`, `county_gid.` and so on), plus `source.<name>` built from the `sources`
+parameter.
 
-### Photon Data Flow
-- Build artifacts (`nominatim.ndjson.gz`, `photon_data.tar.gz`) live in public GCS bucket `ent-geocoder-prd` at `<prefix>/<tag>/<file>`. Each artifact has a `.sha256` sidecar.
-- The photon container fetches `photon_data.tar.gz` from `$PHOTON_DATA_URL` on startup, verifies the sidecar, atomic-extracts to `photon_data/`, and writes a `.ready` sentinel.
-- `build-photon-image` action generates one tag and passes it to both `docker-build-push` and `upload-gcs-artifact`, so the photon image tag and the data tag are always identical. `_deploy-and-test.yml` derives the data URL from the image tag - workflows do not thread it.
-- `helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render if `PHOTON_DATA_URL` is missing - a manual `helm upgrade` without injection never reaches the cluster.
+Values are case-sensitive and mostly camelCase after the prefix: `layer.stopPlace`, not
+`layer.stopplace`. A wrong case silently matches nothing.
 
-## Things to Avoid
+Photon accepts only `[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+`, so `String.asCategory()` maps colons
+to dots and transliterates the rest. It must produce byte-identical output to the converter's
+`as_category`.
 
-- Don't break Pelias API compatibility in v2 endpoints
-- Don't load entire PBF files into memory (use streaming/Sequence)
-- Don't remove legacy category prefixes without migration plan
-- Don't change boost/popularity weights without understanding impact on search ranking
+## Error handling
 
-## Key Files
+- v2: `ErrorHandler.kt`, Pelias-style error bodies.
+- v3: `v3respond` in `App.kt`, RFC 9457 `application/problem+json` with `status`, `title`,
+  `detail`.
+
+## Photon data flow
+
+The image tag and the data tag are generated once and shared, so `geocoder-photon:<tag>` always
+pairs with `photon-data/<tag>/photon_data.tar.gz`. The container fetches `$PHOTON_DATA_URL` on
+startup, verifies the `.sha256` sidecar, extracts atomically, and writes a `photon_data/.ready`
+sentinel. `helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render
+when the URL is missing, so a manual `helm upgrade` without injection never reaches the cluster.
+Bucket layout and rollback: README.md.
+
+## Avoid
+
+- Breaking Pelias compatibility in v2 endpoints.
+- Removing legacy category prefixes without a migration plan.
+- Changing boost, popularity or importance without measuring the ranking effect. The viable
+  bands are narrow, and the geocoder-acceptance-tests suite is the check that catches it.
+- Writing to a local `photon` index you still want to compare against (`_update` and friends).
+  It perturbs tie-broken rankings irreversibly. Rebuild, or work on a copy.
+
+## Key files
 
 | Purpose | Location |
-|---------|----------|
-| Server entry & routing | `proxy/src/main/kotlin/no/entur/geocoder/proxy/App.kt` |
-| Pelias API implementation | `proxy/src/main/kotlin/no/entur/geocoder/proxy/pelias/PeliasApi.kt` |
+| --- | --- |
+| Server entry and routing | `proxy/src/main/kotlin/no/entur/geocoder/proxy/App.kt` |
+| Category constants and `asCategory` | `proxy/src/main/kotlin/no/entur/geocoder/proxy/common/Category.kt` |
+| Query parameter to category filters | `proxy/src/main/kotlin/no/entur/geocoder/proxy/photon/PhotonFilterBuilder.kt` |
 | Photon client | `proxy/src/main/kotlin/no/entur/geocoder/proxy/photon/PhotonApi.kt` |
-| Photon import scripts | `photon/import/` |
-| Import config | `photon/import/config/` |
-| OpenAPI spec (v2) | `proxy/src/main/resources/openapi.yml` |
-| OpenAPI spec (v3) | `proxy/src/main/resources/openapi3.yml` |
+| Pelias API implementation | `proxy/src/main/kotlin/no/entur/geocoder/proxy/pelias/PeliasApi.kt` |
+| OpenAPI specs | `proxy/src/main/resources/openapi.yml` (v2), `openapi3.yml` (v3) |
+| Photon import scripts and config | `photon/import/`, `photon/import/config/` |
 | Dependency versions | `gradle/libs.versions.toml` |
