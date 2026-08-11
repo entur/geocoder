@@ -4,6 +4,12 @@ plugins {
     kotlin("jvm")
     application
     alias(libs.plugins.shadow)
+    id("org.jlleitschuh.gradle.ktlint")
+}
+
+ktlint {
+    version = "1.8.0"
+    ignoreFailures = true
 }
 
 application {
@@ -53,8 +59,8 @@ dependencies {
 configurations.configureEach {
     resolutionStrategy.eachDependency {
         if (requested.group == "io.netty") {
-            useVersion("4.2.12.Final")
-            because("force latest version to fix CVE-2025-67735")
+            useVersion("4.2.16.Final")
+            because("force latest version to fix CVE-2026-56819")
         }
         if (requested.group.startsWith("tools.jackson")) {
             useVersion("3.1.1")
