@@ -63,8 +63,8 @@ configurations.configureEach {
             because("force latest version to fix CVE-2026-56819")
         }
         if (requested.group.startsWith("tools.jackson")) {
-            useVersion("3.1.1")
-            because("force latest version to fix GHSA-2m67-wjpj-xhg9")
+            useVersion("3.1.4")
+            because("force latest version to fix CVE-2026-59888")
         }
     }
 }
