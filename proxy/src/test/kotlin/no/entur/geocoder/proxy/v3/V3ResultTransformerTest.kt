@@ -263,6 +263,21 @@ class V3ResultTransformerTest {
     }
 
     @Test
+    fun `categories are deduplicated`() {
+        val place =
+            transformSingle(
+                Extra(
+                    id = "OSM:TopographicPlace:42",
+                    source = Source.OSM,
+                    // amenity=hospital + healthcare=hospital both reach the index as
+                    // legacy.category.hospital.
+                    tags = "legacy.source.whosonfirst,legacy.category.poi,legacy.category.hospital,legacy.category.hospital",
+                ),
+            )
+        assertEquals(listOf("poi", "hospital"), place.categories)
+    }
+
+    @Test
     fun `filters echo includes stopPlaceTypes and omits empty filters`() {
         val photonResult = PhotonResult(features = emptyList())
 

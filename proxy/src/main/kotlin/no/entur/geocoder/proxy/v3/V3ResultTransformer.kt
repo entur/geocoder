@@ -174,7 +174,10 @@ object V3ResultTransformer {
                             ?.split(",", ";")
                             ?.filter { it.startsWith("legacy.category.") }
                             ?.map { it.substringAfterLast('.') }
-                            ?.filter { it.isNotBlank() },
+                            ?.filter { it.isNotBlank() }
+                            // OSM entities carry the same value on several tags, so the
+                            // index holds repeats.
+                            ?.distinct(),
                     fareZones =
                         extra.fare_zones
                             ?.split(",", ";")
