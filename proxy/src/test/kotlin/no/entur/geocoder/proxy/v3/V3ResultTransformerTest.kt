@@ -263,6 +263,21 @@ class V3ResultTransformerTest {
     }
 
     @Test
+    fun `stopPlaceTypes are deduplicated`() {
+        // The converter emits one entry per child stop, so a parent with several
+        // bus children repeats onstreetBus.
+        val place =
+            transformSingle(
+                Extra(
+                    id = "NSR:StopPlace:1",
+                    source = Source.NSR,
+                    stop_place_type = "onstreetBus;onstreetBus;railStation;onstreetBus",
+                ),
+            )
+        assertEquals(listOf("onstreetBus", "railStation"), place.stopPlaceTypes)
+    }
+
+    @Test
     fun `categories are deduplicated`() {
         val place =
             transformSingle(

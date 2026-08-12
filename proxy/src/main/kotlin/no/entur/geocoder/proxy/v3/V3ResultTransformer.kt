@@ -189,6 +189,8 @@ object V3ResultTransformer {
                         extra.stop_place_type
                             ?.split(";")
                             ?.filter { it.isNotBlank() }
+                            // A parent stop repeats a type once per child stop of that type.
+                            ?.distinct()
                             ?.takeIf { it.isNotEmpty() },
                     stopPlaceRole = parseStopPlaceRole(extra.stop_place_role),
                     source = mapProviderName(extra.source),
