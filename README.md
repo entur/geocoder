@@ -31,6 +31,11 @@ git push origin prod-approved --force
 - [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) — Deploy an existing Photon image tag
 
 ### Sweden (dev only)
+
+**Scheduled**
+- [photon-sweden-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden-scheduled.yml) — Mondays at 05:27 UTC: full data import + build + deploy to dev. Tracks `main` (Sweden never reaches prod, so there is no `prod-approved` tag) and updates `latest.txt`. Also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window, so a running pod's `photon_data.tar.gz` can't be deleted out from under it.
+
+**Manual:**
 - [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) — Import/build/deploy Photon for Sweden
 - [proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml) — Build/deploy Proxy for Sweden
 

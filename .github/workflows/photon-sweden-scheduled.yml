@@ -1,0 +1,102 @@
+name: Photon Sweden — Scheduled Import
+
+on:
+  schedule:
+    # Run full build every Monday (5:27 UTC is 6:27 CET or 7:27 CEST). Kept ahead of the
+    # Norway import at 6:27 UTC so the two don't compete for the 8-core runner group.
+    # Monday so a failure notification lands before the working week rather than over
+    # the weekend.
+    - cron: '27 5 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}"
+  cancel-in-progress: true
+
+# Sweden is dev-only, so this tracks main instead of the `prod-approved` tag the Norway
+# schedule uses, and leaves the `latest.txt` pointer alone rather than writing latest-prod.
+# The weekly refresh also keeps photon-data-se/ inside the bucket's 90-day lifecycle
+# window; without it the deployed image outlives its photon_data.tar.gz and the pod can
+# no longer start after a restart.
+
+jobs:
+  generate-tag:
+    name: Generate Tag
+    uses: ./.github/workflows/_generate-tag.yml
+
+  nominatim-data:
+    name: Nominatim Data
+    needs: generate-tag
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build nominatim data
+        id: build
+        uses: ./.github/actions/build-nominatim-data
+        with:
+          config: converter-sweden-test.json
+          suffix: -se
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
+          lantmateriet_user: ${{ secrets.LANTMATERIET_USER }}
+          lantmateriet_pass: ${{ secrets.LANTMATERIET_PASS }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  photon:
+    name: Photon Image
+    needs: [generate-tag, nominatim-data]
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build Photon image
+        id: build
+        uses: ./.github/actions/build-photon-image
+        with:
+          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
+          suffix: -se
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  deploy-dev:
+    name: Dev
+    needs: photon
+    uses: ./.github/workflows/_deploy-and-test.yml
+    with:
+      environment: dev
+      image: "geocoder-photon-se:${{ needs.photon.outputs.image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon-se
+      values: values-kub-ent-dev-se.yaml
+      photon_data_prefix: photon-data-se
+      require_approval: false
+      run_tests: false
+    secrets: inherit
+
+  notify-slack:
+    needs: [ generate-tag, nominatim-data, photon, deploy-dev ]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v4
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
