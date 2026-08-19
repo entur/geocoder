@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.7.8"
+VERSION="v0.8.0"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
@@ -38,7 +38,8 @@ if [ ! -f "$BINARY" ]; then
         *) fail "Unsupported OS: $OS" ;;
     esac
     echo "Downloading nominatim-converter $VERSION..."
-    curl -sfL --retry 2 -A "entur-geocoder" "$BASE_URL/$ARTIFACT" -o "$BINARY"
+    curl -sfL --retry 2 -A "entur-geocoder" "$BASE_URL/$ARTIFACT" -o "$BINARY" \
+        || fail "could not download nominatim-converter $VERSION - is that release published?"
     chmod +x "$BINARY"
 fi
 

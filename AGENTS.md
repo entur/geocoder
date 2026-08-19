@@ -38,7 +38,8 @@ wrong query results at runtime.
 | `common/Category.kt` string constants | `nominatim-converter/src/common/category.rs` |
 | `proxy/src/main/resources/transliteration.csv` | the converter's copy, byte-identical. Changing it invalidates the index and needs a reindex |
 | `V3Result.StopPlaceRole` enum names | the converter's `StopPlaceRole::as_str` (pinned by a test) |
-| the `:FareZone:` branch in `PhotonFilterBuilder` | the converter's tariff/fare category split |
+| the `:FareZone:` branch in `PhotonFilterBuilder` | the converter's `tariff_zone_refs` shape check |
+| `VERSION` in `photon/import/create-nominatim-data.sh` | the config keys in `photon/import/config/converter-*.json`. The converter rejects unknown keys, so a new key needs its release published and the pin bumped in the same commit; rollbacks move both together |
 | v3 request and response code | `proxy/src/main/resources/openapi3.yml` (parameter names, defaults, schemas) |
 
 ## Conventions
@@ -85,7 +86,9 @@ Bucket layout and rollback: README.md.
 
 ## Avoid
 
-- Breaking Pelias compatibility in v2 endpoints.
+- Breaking Pelias compatibility in v2 endpoints. Known exception, from moving fare zones to
+  their own source: v2 `tariff_zones` reorders on 934 stops and gains one entry on
+  `NSR:StopPlace:63766`, where NSR held a stale zone version. No stop loses a zone.
 - Removing legacy category prefixes without a migration plan.
 - Changing boost, popularity or importance without measuring the ranking effect. The viable
   bands are narrow, and the geocoder-acceptance-tests suite is the check that catches it.

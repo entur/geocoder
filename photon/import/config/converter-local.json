@@ -93,6 +93,7 @@
   },
   "stopPlace": {
     "input": { "url": "https://storage.googleapis.com/marduk-production/tiamat/03_Oslo_latest.zip" },
+    "fareZones": { "input": { "url": "https://api.entur.io/distance/netex/fare-zones" } },
     "defaultValue": 50,
     "rankAddress": 30,
     "minLines": 50,

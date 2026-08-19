@@ -73,14 +73,14 @@ object PhotonFilterBuilder {
                 add(boundaryLocalityIds.joinToString(",") { Category.localityIdsCategory(normalizeTopographicPlaceId(it)) })
             }
             if (tariffZones.isNotEmpty()) {
-                // v2 backwards-compat: real NeTEx data has both :TariffZone: and :FareZone: refs
-                // inside <TariffZones>, and v2 callers pass either shape. The converter splits the
-                // two into distinct indexed prefixes (tariff_zone_id. vs fare_zone_id.), so route
-                // each input ref to its matching prefix here.
+                // v2 backwards-compat: v2 callers pass either shape. The converter indexes the
+                // two under distinct prefixes (tariff_zone_id. from NSR's <TariffZones>,
+                // fare_zone_id. from the fare zone export), so route each input ref to its
+                // matching prefix here.
                 //
                 // The `:FareZone:` substring branch MUST stay in sync with
-                // nominatim-converter/src/source/stopplace/convert.rs::append_tariff_zone_categories
-                // (pass 1) - both decide TariffZone vs FareZone the same way.
+                // nominatim-converter/src/source/stopplace/convert.rs::tariff_zone_refs - both
+                // decide TariffZone vs FareZone the same way.
                 add(
                     tariffZones.joinToString(",") { ref ->
                         if (ref.contains(":FareZone:")) {

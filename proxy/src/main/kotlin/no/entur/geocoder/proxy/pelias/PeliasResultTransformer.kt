@@ -162,9 +162,9 @@ object PeliasResultTransformer {
                     label = createLabel(props),
                     category = transformCategory(extra),
                     mode = transformTransportExtra(extra),
-                    // v2 backwards-compat: keep surfacing every TariffZoneRef regardless of shape.
-                    // The converter now splits :TariffZone: refs into extra.tariff_zones and
-                    // :FareZone: refs into extra.fare_zones; merge both for v2.
+                    // v2 backwards-compat: keep surfacing both zone kinds in one field.
+                    // extra.tariff_zones comes from NSR, extra.fare_zones from the fare zone
+                    // export; merge them for v2.
                     tariff_zones =
                         listOfNotNull(extra.tariff_zones, extra.fare_zones)
                             .flatMap { it.split(",", ";") }
