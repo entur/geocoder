@@ -99,7 +99,7 @@
     "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/events_norway_poi.xml" },
     "importance": 0.01,
     "rankAddress": 30,
-    "minLines": 5
+    "minLines": 1
   },
   "stopPlace": {
     "input": { "url": "https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip" },
