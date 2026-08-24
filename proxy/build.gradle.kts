@@ -1,4 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResourceTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.MergeLicenseResourceTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoundResourceTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
 
 plugins {
     kotlin("jvm")
@@ -101,6 +105,45 @@ tasks.withType<ShadowJar> {
     // Merge META-INF/services so no ServiceLoader provider (GeoTools SPIs, Jackson
     // modules) is lost when the dependencies' copies collide.
     mergeServiceFiles()
+
+    // Aggregate the dependencies' LICENSE and NOTICE files instead of shipping one colliding
+    // copy per jar. These includes add to the transformer's own defaults; about.html carries
+    // the EPL notices in the EMF jars. No SPDX id: the aggregate mixes several licences, and
+    // the header would declare the whole file as one of them.
+    transform<MergeLicenseResourceTransformer> {
+        artifactLicense.set(layout.settingsDirectory.file("LICENSE.md"))
+        artifactLicenseSpdxId.set("")
+        include("about.html", "META-INF/*-LICENSE")
+    }
+    transform<ApacheNoticeResourceTransformer> {
+        addHeader.set(false)
+        projectName.set("Entur geocoder proxy")
+        organizationName.set("Entur AS")
+        organizationURL.set("https://entur.no/")
+        // Without an explicit copyright the transformer stamps the current year, which is
+        // not a task input - cached and fresh builds would then disagree.
+        copyright.set("Entur geocoder proxy\nCopyright 2025 Entur AS\n")
+    }
+
+    // Netty's build info is module-prefixed per jar, and the three EMF plugin.properties have
+    // near-disjoint keys, so merging each set loses nothing. Merging matters for the EMF one:
+    // only one copy of a duplicated name is reachable, so picking a copy strands the others'
+    // keys and EMFPlugin.getString then throws. paths also keeps this off other .properties.
+    transform<PropertiesFileTransformer> {
+        paths.addAll("META-INF/io.netty.versions.properties", """^plugin\.properties$""")
+    }
+
+    // Eclipse plugin descriptors and branding from the EMF jars GeoTools pulls in. Nothing
+    // reads them outside OSGi, and only one copy was reachable in the jar anyway.
+    transform<PreserveFirstFoundResourceTransformer> {
+        include(
+            "plugin.xml",
+            "about.ini",
+            "about.mappings",
+            "about.properties",
+            "modeling32.png",
+        )
+    }
 
     // Nothing compiles against this runnable app jar, so the compile-time-only
     // .kotlin_module metadata is dead weight - drop it from the fat jar.
