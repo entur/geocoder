@@ -355,6 +355,36 @@ class PeliasResultTransformerTest {
     }
 
     @Test
+    fun `bbox spans the returned features only, not the pruning headroom`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.0, 60.0)),
+                            properties = PhotonProperties(name = "A", extra = Extra(id = "1")),
+                        ),
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(10.1, 60.1)),
+                            properties = PhotonProperties(name = "B", extra = Extra(id = "2")),
+                        ),
+                        PhotonFeature(
+                            geometry = PhotonGeometry(type = "Point", coordinates = listOf(30.0, 70.0)),
+                            properties = PhotonProperties(name = "beyond size", extra = Extra(id = "3")),
+                        ),
+                    ),
+            )
+
+        val result = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("x", size = 2))
+
+        assertEquals(2, result.features.size)
+        assertEquals(
+            listOf("10.000000", "60.000000", "10.100000", "60.100000"),
+            result.bbox?.map { it.toPlainString() },
+        )
+    }
+
+    @Test
     fun `bbox handles negative coordinates`() {
         // Regression: the old Double.MIN_VALUE sentinel broke max-calculation for
         // negative lon/lat (Jan Mayen, lon ~-8.5, is in the Norway OSM extract).

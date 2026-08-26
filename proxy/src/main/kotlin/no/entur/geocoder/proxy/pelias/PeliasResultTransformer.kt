@@ -68,17 +68,15 @@ object PeliasResultTransformer {
     ): PeliasResult {
         val errors = photonResult.message?.let { listOf(it) }
 
-        val features =
+        val photonFeatures =
             if (dropDuplicatePlaces) PhotonResultFilter.dropPlacesCoveredByGosp(photonResult.features) else photonResult.features
 
-        val transformedFeatures =
-            features.map { feature ->
-                val distance = coord?.let { calculateDistanceKm(feature.geometry, coord) }
-                transformFeature(feature, distance)
-            }
-
-        // v2 quirk: the bbox spans every fetched feature, including the pruned ones and those beyond size
-        val bbox = calculateBoundingBox(photonResult.features.map { it.geometry.coordinates })
+        val features =
+            photonFeatures
+                .map { feature ->
+                    val distance = coord?.let { calculateDistanceKm(feature.geometry, coord) }
+                    transformFeature(feature, distance)
+                }.take(expectedSize)
 
         val debugInfo =
             if (debug && photonResult.properties.isNotEmpty()) {
@@ -89,20 +87,21 @@ object PeliasResultTransformer {
 
         return PeliasResult(
             geocoding = GeocodingMetadata(debug = debugInfo, errors = errors),
-            features = transformedFeatures.take(expectedSize),
-            bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
+            features = features,
+            bbox = calculateBoundingBox(features)?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )
     }
 
-    private fun calculateBoundingBox(coordinates: List<List<Double>>): List<BigDecimal>? {
-        val points = coordinates.filter { it.size >= 2 }
+    /** Spans the returned features only, not the extra ones fetched as pruning headroom. */
+    private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {
+        val points = features.map { it.geometry.coordinates }.filter { it.size >= 2 }
         if (points.isEmpty()) return null
         return listOf(
             points.minOf { it[0] }, // minLon
             points.minOf { it[1] }, // minLat
             points.maxOf { it[0] }, // maxLon
             points.maxOf { it[1] }, // maxLat
-        ).map { it.toBigDecimalWithScale() }
+        )
     }
 
     fun transformFeature(feature: PhotonFeature, distance: Double?): PeliasFeature {
