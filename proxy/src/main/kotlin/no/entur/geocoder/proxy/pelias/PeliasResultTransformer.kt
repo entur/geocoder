@@ -14,6 +14,7 @@ import no.entur.geocoder.proxy.common.Text.OSM_TAG_SEPARATOR
 import no.entur.geocoder.proxy.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.pelias.PeliasResult.*
 import no.entur.geocoder.proxy.photon.PhotonResult
+import no.entur.geocoder.proxy.photon.PhotonResultFilter
 import no.entur.geocoder.proxy.photon.PhotonResult.*
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -40,6 +41,7 @@ object PeliasResultTransformer {
             expectedSize = request.size,
             coord = coordOrNull(request.focus?.lat, request.focus?.lon),
             debug = request.debug,
+            dropDuplicatePlaces = true,
         )
 
     fun parseAndTransform(result: PhotonResult, request: PeliasReverseRequest): PeliasResult =
@@ -62,16 +64,21 @@ object PeliasResultTransformer {
         expectedSize: Int,
         coord: Coordinate? = null,
         debug: Boolean = false,
+        dropDuplicatePlaces: Boolean = false,
     ): PeliasResult {
         val errors = photonResult.message?.let { listOf(it) }
 
+        val features =
+            if (dropDuplicatePlaces) PhotonResultFilter.dropPlacesCoveredByGosp(photonResult.features) else photonResult.features
+
         val transformedFeatures =
-            photonResult.features.map { feature ->
+            features.map { feature ->
                 val distance = coord?.let { calculateDistanceKm(feature.geometry, coord) }
                 transformFeature(feature, distance)
             }
 
-        val bbox = calculateBoundingBox(transformedFeatures)
+        // v2 quirk: the bbox spans every fetched feature, including the pruned ones and those beyond size
+        val bbox = calculateBoundingBox(photonResult.features.map { it.geometry.coordinates })
 
         val debugInfo =
             if (debug && photonResult.properties.isNotEmpty()) {
@@ -82,35 +89,20 @@ object PeliasResultTransformer {
 
         return PeliasResult(
             geocoding = GeocodingMetadata(debug = debugInfo, errors = errors),
-            features = filterCityIfGospIsPresent(transformedFeatures, expectedSize),
+            features = transformedFeatures.take(expectedSize),
             bbox = bbox?.map { it.setScale(6, RoundingMode.HALF_UP) },
         )
     }
 
-    /**
-     * We're making room for more results by using PhotonAutocompleteRequest#RESULT_PRUNING_HEADROOM in the request
-     */
-    private fun filterCityIfGospIsPresent(features: List<PeliasFeature>, expectedSize: Int): List<PeliasFeature> {
-        val gospList =
-            features
-                .filter { it.properties.category?.contains(GOSP) == true }
-                .map { it.properties.name }
-        val filtered =
-            features.filter {
-                !(it.properties.category?.contains("by") == true && gospList.contains(it.properties.name))
-            }
-        return filtered.take(expectedSize)
-    }
-
-    private fun calculateBoundingBox(features: List<PeliasFeature>): List<BigDecimal>? {
-        val points = features.map { it.geometry.coordinates }.filter { it.size >= 2 }
+    private fun calculateBoundingBox(coordinates: List<List<Double>>): List<BigDecimal>? {
+        val points = coordinates.filter { it.size >= 2 }
         if (points.isEmpty()) return null
         return listOf(
             points.minOf { it[0] }, // minLon
             points.minOf { it[1] }, // minLat
             points.maxOf { it[0] }, // maxLon
             points.maxOf { it[1] }, // maxLat
-        )
+        ).map { it.toBigDecimalWithScale() }
     }
 
     fun transformFeature(feature: PhotonFeature, distance: Double?): PeliasFeature {

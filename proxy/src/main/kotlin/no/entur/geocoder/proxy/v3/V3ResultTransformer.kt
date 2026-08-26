@@ -1,6 +1,7 @@
 package no.entur.geocoder.proxy.v3
 
 import no.entur.geocoder.proxy.common.Category
+import no.entur.geocoder.proxy.common.Category.containsTag
 import no.entur.geocoder.proxy.common.Coordinate
 import no.entur.geocoder.proxy.common.Country
 import no.entur.geocoder.proxy.common.Extra
@@ -10,6 +11,7 @@ import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.common.Util.toBigDecimalWithScale
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.PhotonFeature
+import no.entur.geocoder.proxy.photon.PhotonResultFilter
 import no.entur.geocoder.proxy.v3.V3Result.Metadata
 import no.entur.geocoder.proxy.v3.V3Result.QueryInfo
 import java.math.BigDecimal
@@ -20,7 +22,11 @@ object V3ResultTransformer {
         result: PhotonResult,
         req: V3AutocompleteRequest,
     ): V3Result {
-        val features = filterCityIfGospIsPresent(result.features.map { transformFeature(it) }).take(req.limit)
+        val features =
+            PhotonResultFilter
+                .dropPlacesCoveredByGosp(result.features)
+                .map { transformFeature(it) }
+                .take(req.limit)
 
         return V3Result(
             features = features,
@@ -247,9 +253,6 @@ object V3ResultTransformer {
             }
         }
 
-    private fun String?.containsTag(tag: String): Boolean =
-        this.orEmpty().splitToSequence(',', ';').any { it.trim() == tag }
-
     /** Map `extra.stop_place_role` to the response enum; absent or unknown values give null. */
     private fun parseStopPlaceRole(value: String?): V3Result.StopPlaceRole? =
         V3Result.StopPlaceRole.entries.firstOrNull { it.name == value }
@@ -269,18 +272,6 @@ object V3ResultTransformer {
 
     private fun mapToLayer(type: String): V3Result.Layer? =
         V3Result.Layer.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }
-
-    private fun filterCityIfGospIsPresent(features: List<V3Result.Feature>): List<V3Result.Feature> {
-        val gospNames =
-            features
-                .filter { it.properties.layer == V3Result.Layer.groupOfStopPlaces }
-                .map { it.properties.names.default }
-                .toSet()
-        if (gospNames.isEmpty()) return features
-        return features.filter { f ->
-            !(f.properties.categories?.contains("by") == true && f.properties.names.default in gospNames)
-        }
-    }
 
     private val langPrefix = Regex("^[a-z]{3}:")
 

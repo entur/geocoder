@@ -1,6 +1,8 @@
 package no.entur.geocoder.proxy.pelias
 
 import no.entur.geocoder.proxy.common.Coordinate
+import no.entur.geocoder.proxy.common.Category
+import no.entur.geocoder.proxy.common.Category.GOSP
 import no.entur.geocoder.proxy.common.Extra
 import no.entur.geocoder.proxy.common.Source
 import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
@@ -551,6 +553,129 @@ class PeliasResultTransformerTest {
         assertEquals(expectedId.trim(), props.id)
         assertEquals(expectedId.trim(), props.source_id)
     }
+
+    @Test
+    fun `stedsnavn place is dropped when a GOSP shares its name and municipality`() {
+        // Sogndal is a "tettsted", not a "by", so a category-specific filter missed it.
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospPhotonFeature("Sogndal"),
+                        stedsnavnPhotonFeature("Sogndal", "tettsted"),
+                        stedsnavnPhotonFeature("Sogndalsfjøra", "tettsted"),
+                    ),
+            )
+        val features = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("sogndal")).features
+        assertEquals(listOf("Sogndal", "Sogndalsfjøra"), features.map { it.properties.name })
+        assertEquals(listOf(GOSP), features.first().properties.category)
+        // The v2 wire fields cannot tell the two apart, hence the Photon-side source check.
+        assertEquals(listOf("address", "address"), features.map { it.properties.layer })
+    }
+
+    @Test
+    fun `stedsnavn place is dropped when only the locality names differ`() {
+        // Bilingual kommunenavn: the place says "Harstad - Hárstták" where the GOSP says "Harstad".
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospPhotonFeature("Harstad", locality = "Harstad", localityGid = "KVE:TopographicPlace:5503"),
+                        stedsnavnPhotonFeature(
+                            "Harstad",
+                            "by",
+                            locality = "Harstad - Hárstták",
+                            localityGid = "KVE:TopographicPlace:5503",
+                        ),
+                    ),
+            )
+        val features = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("harstad")).features
+        assertEquals(1, features.size)
+    }
+
+    @Test
+    fun `stedsnavn place is kept when the GOSP is in another municipality`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospPhotonFeature("Sandvika", localityGid = "KVE:TopographicPlace:3024"),
+                        stedsnavnPhotonFeature("Sandvika", "tettsted", localityGid = "KVE:TopographicPlace:1868"),
+                    ),
+            )
+        val features = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("sandvika")).features
+        assertEquals(2, features.size)
+    }
+
+    @Test
+    fun `dropping a duplicate makes room for the next result within size`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospPhotonFeature("Sogndal"),
+                        stedsnavnPhotonFeature("Sogndal", "tettsted"),
+                        stedsnavnPhotonFeature("Sogndalsfjøra", "tettsted"),
+                    ),
+            )
+        val features = PeliasResultTransformer.parseAndTransform(photonResult, PeliasAutocompleteRequest("sogndal", size = 2)).features
+        assertEquals(listOf("Sogndal", "Sogndalsfjøra"), features.map { it.properties.name })
+    }
+
+    @Test
+    fun `place and reverse keep the duplicate - only autocomplete prunes`() {
+        // An id lookup must return every id it was asked for, and reverse has no headroom to backfill from.
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospPhotonFeature("Sogndal"),
+                        stedsnavnPhotonFeature("Sogndal", "tettsted"),
+                    ),
+            )
+        val place =
+            PeliasResultTransformer.parseAndTransform(
+                photonResult,
+                PeliasPlaceRequest(ids = listOf("NSR:GroupOfStopPlaces:1", "whosonfirst:address:1")),
+            )
+        assertEquals(2, place.features.size)
+
+        val reverse = PeliasResultTransformer.parseAndTransform(photonResult, PeliasReverseRequest(lat = 61.2, lon = 7.1, size = 2, multiModal = "parent"))
+        assertEquals(2, reverse.features.size)
+    }
+
+    private fun gospPhotonFeature(
+        name: String,
+        locality: String = "Sogndal",
+        localityGid: String = "KVE:TopographicPlace:4640",
+    ) = createPhotonFeature(
+        name = name,
+        extra =
+            Extra(
+                id = "NSR:GroupOfStopPlaces:1",
+                source = Source.NSR,
+                locality = locality,
+                locality_gid = localityGid,
+                tags = "${Category.LAYER_GOSP},legacy.category.$GOSP,legacy.source.whosonfirst,legacy.layer.address",
+            ),
+    )
+
+    private fun stedsnavnPhotonFeature(
+        name: String,
+        type: String,
+        locality: String = "Sogndal",
+        localityGid: String = "KVE:TopographicPlace:4640",
+    ) = createPhotonFeature(
+        name = name,
+        extra =
+            Extra(
+                id = "KVE:PlaceName:1",
+                source = Source.KARTVERKET_STEDSNAVN,
+                locality = locality,
+                locality_gid = localityGid,
+                tags = "legacy.category.$type,legacy.source.whosonfirst,legacy.layer.address",
+            ),
+    )
 
     private fun createPhotonResult(
         name: String? = "Test",

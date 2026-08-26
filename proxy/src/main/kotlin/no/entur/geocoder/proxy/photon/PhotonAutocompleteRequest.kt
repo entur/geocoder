@@ -31,12 +31,10 @@ data class PhotonAutocompleteRequest(
 ) {
     companion object {
         /**
-         * We drop the city (by) if a GOSP exists with the same name. This can only be done after fetching,
-         * so we fetch one extra and drop the last result if there is a match.
+         * We drop stedsnavn places that duplicate a GOSP, which can only be done after fetching,
+         * so we fetch extra results to prune from. See PeliasResultTransformer#filterPlaceIfGospIsPresent()
          *
          * Also fetching more than requested to work around https://github.com/komoot/photon/issues/1061
-         *
-         * see PeliasResultTransformer#filterCityIfGospIsPresent()
          */
         const val RESULT_PRUNING_HEADROOM = 30
 
@@ -52,7 +50,7 @@ data class PhotonAutocompleteRequest(
 
             return PhotonAutocompleteRequest(
                 query = handleText(req.text),
-                limit = req.size + RESULT_PRUNING_HEADROOM, // We ask for more since we prune away 'by' when there's already a matching GOSP
+                limit = req.size + RESULT_PRUNING_HEADROOM, // We ask for more since we prune duplicates of a matching GOSP
                 language = handleLang(req.lang),
                 includes = includes,
                 excludes = excludes,

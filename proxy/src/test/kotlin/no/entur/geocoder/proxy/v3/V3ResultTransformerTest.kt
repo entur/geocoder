@@ -293,6 +293,115 @@ class V3ResultTransformerTest {
     }
 
     @Test
+    fun `stedsnavn place is dropped when a GOSP shares its name and municipality`() {
+        // Sogndal and Asker are "tettsted", not "by", so a category-specific filter missed them.
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospFeature("Sogndal"),
+                        placeFeature("Sogndal", "tettsted"),
+                        placeFeature("Sogndalsfjøra", "tettsted"),
+                    ),
+            )
+        val features = transformAutocomplete(photonResult)
+        assertEquals(listOf("Sogndal", "Sogndalsfjøra"), features.map { it.properties.names.default })
+        assertEquals(V3Result.Layer.groupOfStopPlaces, features.first().properties.layer)
+    }
+
+    @Test
+    fun `stedsnavn place is dropped when only the locality names differ`() {
+        // Bilingual kommunenavn: the place says "Harstad - Hárstták" where the GOSP says "Harstad",
+        // so the municipality has to be compared by id.
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospFeature("Harstad", locality = "Harstad", localityGid = "KVE:TopographicPlace:5503"),
+                        placeFeature("Harstad", "by", locality = "Harstad - Hárstták", localityGid = "KVE:TopographicPlace:5503"),
+                    ),
+            )
+        assertEquals(1, transformAutocomplete(photonResult).size)
+    }
+
+    @Test
+    fun `stedsnavn place is kept when the GOSP is in another municipality`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospFeature("Sandvika", localityGid = "KVE:TopographicPlace:3024"),
+                        placeFeature("Sandvika", "tettsted", localityGid = "KVE:TopographicPlace:1868"),
+                    ),
+            )
+        assertEquals(2, transformAutocomplete(photonResult).size)
+    }
+
+    @Test
+    fun `stedsnavn place is kept when no GOSP shares its name`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospFeature("Bergen"),
+                        placeFeature("Sogndal", "tettsted"),
+                    ),
+            )
+        assertEquals(2, transformAutocomplete(photonResult).size)
+    }
+
+    @Test
+    fun `a stop place sharing the GOSP name is kept`() {
+        // Only stedsnavn places are duplicates of a GOSP; its member stops are not.
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospFeature("Sogndal"),
+                        stopPlaceFeature("Sogndal"),
+                        placeFeature("Sogndal", "tettsted"),
+                    ),
+            )
+        val features = transformAutocomplete(photonResult)
+        assertEquals(
+            listOf(V3Result.Layer.groupOfStopPlaces, V3Result.Layer.stopPlace),
+            features.map { it.properties.layer },
+        )
+    }
+
+    @Test
+    fun `stedsnavn place is dropped even when it outranks the GOSP`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        placeFeature("Sogndal", "tettsted"),
+                        gospFeature("Sogndal"),
+                    ),
+            )
+        val features = transformAutocomplete(photonResult)
+        assertEquals(V3Result.Layer.groupOfStopPlaces, features.single().properties.layer)
+    }
+
+    @Test
+    fun `dropping a duplicate makes room for the next result within the limit`() {
+        val photonResult =
+            PhotonResult(
+                features =
+                    listOf(
+                        gospFeature("Sogndal"),
+                        placeFeature("Sogndal", "tettsted"),
+                        placeFeature("Sogndalsfjøra", "tettsted"),
+                    ),
+            )
+        val features = V3ResultTransformer.parseAndTransform(photonResult, V3AutocompleteRequest(q = "sogndal", limit = 2)).features
+        assertEquals(listOf("Sogndal", "Sogndalsfjøra"), features.map { it.properties.names.default })
+    }
+
+    private fun transformAutocomplete(photonResult: PhotonResult) =
+        V3ResultTransformer.parseAndTransform(photonResult, V3AutocompleteRequest(q = "x")).features
+
+    @Test
     fun `filters echo includes stopPlaceTypes and omits empty filters`() {
         val photonResult = PhotonResult(features = emptyList())
 
@@ -386,6 +495,55 @@ class V3ResultTransformerTest {
         assertEquals(BigDecimal("-18.100000"), bbox[2]) // maxLon
         assertEquals(BigDecimal("65.700000"), bbox[3]) // maxLat
     }
+
+    private fun gospFeature(
+        name: String,
+        locality: String = "Sogndal",
+        localityGid: String = "KVE:TopographicPlace:4640",
+    ) = feature(
+        name,
+        Extra(
+            id = "NSR:GroupOfStopPlaces:1",
+            source = Source.NSR,
+            locality = locality,
+            locality_gid = localityGid,
+            tags = "${Category.LAYER_GOSP},legacy.category.GroupOfStopPlaces",
+        ),
+    )
+
+    private fun stopPlaceFeature(name: String, localityGid: String = "KVE:TopographicPlace:4640") =
+        feature(
+            name,
+            Extra(
+                id = "NSR:StopPlace:1",
+                source = Source.NSR,
+                locality = "Sogndal",
+                locality_gid = localityGid,
+                tags = "${Category.LAYER_STOP_PLACE},legacy.layer.venue",
+            ),
+        )
+
+    private fun placeFeature(
+        name: String,
+        type: String,
+        locality: String = "Sogndal",
+        localityGid: String = "KVE:TopographicPlace:4640",
+    ) = feature(
+        name,
+        Extra(
+            id = "KVE:PlaceName:1",
+            source = Source.KARTVERKET_STEDSNAVN,
+            locality = locality,
+            locality_gid = localityGid,
+            tags = "legacy.category.$type,legacy.source.whosonfirst,legacy.layer.address",
+        ),
+    )
+
+    private fun feature(name: String, extra: Extra) =
+        PhotonFeature(
+            geometry = PhotonGeometry(type = "Point", coordinates = listOf(7.1, 61.2)),
+            properties = PhotonProperties(name = name, extra = extra),
+        )
 
     private fun transformSingle(
         extra: Extra,

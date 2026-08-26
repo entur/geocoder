@@ -49,6 +49,10 @@ object Category {
      */
     const val LEGACY_CATEGORY_PREFIX = "legacy.category."
 
+    /** The index packs categories, layers and sources into one comma or semicolon separated field. */
+    fun String?.containsTag(tag: String): Boolean =
+        this.orEmpty().splitToSequence(',', ';').any { it.trim() == tag }
+
     fun tariffZoneIdCategory(ref: String) = TARIFF_ZONE_ID_PREFIX + ref.asCategory()
 
     fun fareZoneIdCategory(ref: String) = FARE_ZONE_ID_PREFIX + ref.asCategory()
