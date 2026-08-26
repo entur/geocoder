@@ -1,0 +1,131 @@
+name: Photon Denmark — Import, Build & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Build mode'
+        required: true
+        type: choice
+        options:
+          - 'Download data → Photon image → deploy'
+          - 'Use existing data → Photon image → deploy'
+          - 'Deploy specified Photon image'
+      nominatim_data_tag:
+        description: 'Nominatim data tag (only for "Use existing data")'
+        required: false
+        type: string
+      photon_image_tag:
+        description: 'Photon image tag (only for "Deploy specified")'
+        required: false
+        type: string
+
+concurrency:
+  group: "${{ github.workflow }}"
+  cancel-in-progress: true
+
+jobs:
+  log-inputs:
+    name: Log Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual inputs
+        run: |
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Build:** \`${{ inputs.build }}\`"
+            echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag || 'not specified' }}\`"
+            echo "**Photon image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Always runs (even in "Use existing data" mode), so photon's image tag is always fresh
+  # for this run and doesn't collide with a previously published docker image. The
+  # nominatim-data tag from a prior build remains separate (passed via inputs.nominatim_data_tag).
+  generate-tag:
+    name: Generate Tag
+    if: inputs.build != 'Deploy specified Photon image'
+    uses: ./.github/workflows/_generate-tag.yml
+
+  nominatim-data:
+    name: Nominatim Data
+    needs: generate-tag
+    if: inputs.build == 'Download data → Photon image → deploy'
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build nominatim data
+        id: build
+        uses: ./.github/actions/build-nominatim-data
+        with:
+          config: converter-denmark-test.json
+          suffix: -dk
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
+          lantmateriet_user: ${{ secrets.LANTMATERIET_USER }}
+          lantmateriet_pass: ${{ secrets.LANTMATERIET_PASS }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  photon:
+    name: Photon Image
+    needs: [generate-tag, nominatim-data]
+    if: |
+      !cancelled() &&
+      (needs.nominatim-data.result == 'success' || inputs.build == 'Use existing data → Photon image → deploy')
+    runs-on:
+      group: grp-ubuntu-24.04-8core-x64
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build Photon image
+        id: build
+        uses: ./.github/actions/build-photon-image
+        with:
+          nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || inputs.nominatim_data_tag }}
+          suffix: -dk
+          build_tag: ${{ needs.generate-tag.outputs.tag }}
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  deploy-dev:
+    name: Dev
+    needs: photon
+    if: |
+      !cancelled() &&
+      (needs.photon.result == 'success' || inputs.build == 'Deploy specified Photon image')
+    uses: ./.github/workflows/_deploy-and-test.yml
+    with:
+      environment: dev
+      image: "geocoder-photon-dk:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
+      chart: helm/geocoder-photon
+      namespace: geocoder
+      release_name: geocoder-photon-dk
+      values: values-kub-ent-dev-dk.yaml
+      photon_data_prefix: photon-data-dk
+      require_approval: false
+      run_tests: false
+    secrets: inherit
+
+  notify-slack:
+    needs: [ generate-tag, nominatim-data, photon, deploy-dev ]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v4
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

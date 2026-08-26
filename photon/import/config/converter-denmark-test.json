@@ -1,6 +1,6 @@
 {
   "stopPlace": {
-    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/test-data/2026-02-03_stop_places_filtered.xml.zip" },
+    "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/test-data/2026-08-26-danmark.zip" },
     "defaultValue": 50,
     "rankAddress": 30,
     "minLines": 40000,
@@ -21,12 +21,5 @@
     "groupOfStopPlaces": {
       "rankAddress": 30
     }
-  },
-  "belagenhet": {
-    "input": { "municipality": "all" },
-    "addressPopularity": 20.0,
-    "streetPopularity": 20.0,
-    "rankAddress": 26,
-    "minLines": 3000000
   }
 }

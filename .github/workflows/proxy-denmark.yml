@@ -1,0 +1,87 @@
+name: Proxy Denmark — Build & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Build mode'
+        required: true
+        type: choice
+        options:
+          - 'Build and deploy'
+          - 'Deploy specified image'
+      image_tag:
+        description: 'Image tag (only for "Deploy specified")'
+        required: false
+        type: string
+
+concurrency:
+  group: "${{ github.workflow }}"
+  cancel-in-progress: true
+
+jobs:
+  log-inputs:
+    name: Log Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log manual inputs
+        run: |
+          {
+            echo "### Manual Workflow Inputs"
+            echo "**Build:** \`${{ inputs.build }}\`"
+            echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build-push:
+    name: Proxy
+    if: inputs.build == 'Build and deploy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 600
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      security-events: write
+      pull-requests: write
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build Proxy image
+        id: build
+        uses: ./.github/actions/build-proxy-image
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+  deploy-dev:
+    name: Dev
+    needs: build-push
+    if: |
+      !cancelled() &&
+      (needs.build-push.result == 'success' || inputs.build == 'Deploy specified image')
+    uses: ./.github/workflows/_deploy-and-test.yml
+    with:
+      environment: dev
+      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
+      chart: helm/geocoder-proxy
+      namespace: geocoder
+      release_name: geocoder-proxy-dk
+      values: values-kub-ent-dev-dk.yaml
+      require_approval: false
+      run_tests: false
+    secrets: inherit
+
+  notify-slack:
+    needs: deploy-dev
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v4
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "❌ *${{ github.workflow }}* failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"

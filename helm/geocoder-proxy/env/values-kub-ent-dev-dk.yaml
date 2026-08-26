@@ -1,0 +1,11 @@
+common:
+  env: dev
+  ingress:
+    host: geocoder-proxy-dk.dev.entur.io
+    trafficType: public
+  deployment:
+    minReplicas: 1
+  container:
+    env:
+      - name: PHOTON_URL
+        value: http://geocoder-photon-dk
