@@ -30,15 +30,16 @@ One command converts every source with `converter-prod.json`, builds the index a
 Photon. It downloads the whole country, so expect it to take a while.
 
 ```bash
-./gradlew build
-
 cd photon
 ./import/download-photon-jar.sh
 ./full-local-reimport-and-start.sh
 
-# In another terminal - or run no.entur.geocoder.proxy.AppKt from your IDE
-cd ../proxy && java -jar build/libs/proxy-all.jar
+# In another terminal, from the repo root - or run no.entur.geocoder.proxy.AppKt from your IDE
+./gradlew :proxy:run
 ```
+
+Started from a console the proxy talks to `http://localhost:2322`; set `PHOTON_URL` to point it
+somewhere else.
 
 ### Complex
 
