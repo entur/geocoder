@@ -6,8 +6,9 @@ import kotlinx.coroutines.withTimeout
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest
 import org.slf4j.LoggerFactory
+import kotlin.time.Duration.Companion.milliseconds
 
-class HealthCheck(private val photonApi: PhotonApi) {
+class HealthCheck(private val photonApi: PhotonApi, private val readinessQuery: String = DEFAULT_READINESS_QUERY) {
     private val logger = LoggerFactory.getLogger(HealthCheck::class.java)
 
     fun liveness(): HealthResponse =
@@ -16,7 +17,7 @@ class HealthCheck(private val photonApi: PhotonApi) {
     suspend fun readiness(): HealthResponse {
         val reason =
             try {
-                withTimeout(5000) {
+                withTimeout(5000.milliseconds) {
                     checkPhotonHealth()
                 }
             } catch (_: TimeoutCancellationException) {
@@ -43,9 +44,7 @@ class HealthCheck(private val photonApi: PhotonApi) {
     }
 
     private suspend fun checkPhotonHealth(): String? {
-        val query = "Oslo"
-        val req = PhotonAutocompleteRequest("Oslo", 1)
-        val result = photonApi.request(req)
+        val result = photonApi.request(PhotonAutocompleteRequest(readinessQuery, 1))
 
         if (!result.status.isSuccess()) {
             logger.warn("Photon not ready: ${result.status}")
@@ -56,7 +55,7 @@ class HealthCheck(private val photonApi: PhotonApi) {
             result.features
                 .first()
                 .properties.name
-                ?.contains(query) == false
+                ?.contains(readinessQuery, ignoreCase = true) == false
         ) {
             logger.warn("Photon ready but returned no results for test query")
             return "No results returned"
@@ -80,4 +79,8 @@ class HealthCheck(private val photonApi: PhotonApi) {
     )
 
     data class HealthResponse(val message: Any, val status: HttpStatusCode = HttpStatusCode.OK)
+
+    companion object {
+        const val DEFAULT_READINESS_QUERY = "Oslo"
+    }
 }

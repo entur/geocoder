@@ -41,20 +41,28 @@ class App {
         }
     val proxyPort = System.getenv("SERVER_PORT")?.toIntOrNull() ?: 8080
 
+    // Must match a place in the deployed index, so non-Norwegian data sets need their own query
+    val readinessQuery = System.getenv("READINESS_QUERY") ?: HealthCheck.DEFAULT_READINESS_QUERY
+
     fun startServer() {
         logger.info("Starting geocoder-proxy on port $proxyPort, forwarding to $photonBaseUrl")
 
         embeddedServer(Netty, port = proxyPort) {
-            configureApp(httpClient, photonBaseUrl, appMicrometerRegistry)
+            configureApp(httpClient, photonBaseUrl, appMicrometerRegistry, readinessQuery)
         }.start(wait = true)
     }
 
     companion object {
-        fun Application.configureApp(client: HttpClient, photonBaseUrl: String, micrometerRegistry: PrometheusMeterRegistry) {
+        fun Application.configureApp(
+            client: HttpClient,
+            photonBaseUrl: String,
+            micrometerRegistry: PrometheusMeterRegistry,
+            readinessQuery: String = HealthCheck.DEFAULT_READINESS_QUERY,
+        ) {
             val photonApi = PhotonApi(client, photonBaseUrl)
             val api = PeliasApi(photonApi)
             val v3api = V3Api(photonApi)
-            val healthCheck = HealthCheck(photonApi)
+            val healthCheck = HealthCheck(photonApi, readinessQuery)
 
             // Align with CORS config in Apigee:
             // See https://console.cloud.google.com/apigee/proxies/geocoder/develop/32/policies/assignMessage.addCors?project=ent-apigee-shr-001

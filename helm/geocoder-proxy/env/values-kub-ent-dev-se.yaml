@@ -9,3 +9,5 @@ common:
     env:
       - name: PHOTON_URL
         value: http://geocoder-photon-se
+      - name: READINESS_QUERY
+        value: Stockholm

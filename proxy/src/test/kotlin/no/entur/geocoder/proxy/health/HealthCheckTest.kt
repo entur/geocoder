@@ -20,6 +20,7 @@ import no.entur.geocoder.proxy.photon.PhotonApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Tests for HealthCheck endpoints.
@@ -32,12 +33,15 @@ class HealthCheckTest {
         private const val READINESS_ENDPOINT = "/readiness"
         private const val SUCCESS_RESPONSE =
             """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10.75,59.91]},"properties":{"name":"Oslo","extra":{"id":"KVE:TopographicPlace:1"}}}]}"""
+        private const val DANISH_RESPONSE =
+            """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[12.6,55.67]},"properties":{"name":"Københavns Busterminal","extra":{"id":"REJ:StopPlace:1"}}}]}"""
     }
 
     /** Configures test application with health check endpoint. */
     private fun ApplicationTestBuilder.setupHealthCheckEndpoint(
         endpoint: String,
         photonUrl: String = DEFAULT_PHOTON_URL,
+        readinessQuery: String = HealthCheck.DEFAULT_READINESS_QUERY,
         mockEngineHandler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ) {
         application {
@@ -50,7 +54,7 @@ class HealthCheckTest {
                 get(endpoint) {
                     val client = HttpClient(MockEngine(mockEngineHandler))
                     val photonApi = PhotonApi(client, photonUrl)
-                    val healthCheck = HealthCheck(photonApi)
+                    val healthCheck = HealthCheck(photonApi, readinessQuery)
                     val response =
                         when (endpoint) {
                             LIVENESS_ENDPOINT -> healthCheck.liveness()
@@ -99,7 +103,7 @@ class HealthCheckTest {
 
     /** Creates a timeout response handler (exceeds 5 second timeout). */
     private fun createTimeoutResponse(): suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData = {
-        delay(6000) // Exceeds the 5 second timeout
+        delay(6000.milliseconds) // Exceeds the 5 second timeout
         respond("OK", HttpStatusCode.OK)
     }
 
@@ -200,6 +204,25 @@ class HealthCheckTest {
                 respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
             }
             performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
+        }
+
+    @Test
+    fun `readiness check uses configured query`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, readinessQuery = "København") { request ->
+                assertTrue(request.url.parameters["q"] == "København")
+                respond(DANISH_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.OK, "UP")
+        }
+
+    @Test
+    fun `readiness check returns DOWN when result does not match configured query`() =
+        testApplication {
+            setupHealthCheckEndpoint(READINESS_ENDPOINT, readinessQuery = "København") {
+                respond(SUCCESS_RESPONSE, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
+            performHealthCheckAndValidate(READINESS_ENDPOINT, HttpStatusCode.ServiceUnavailable, "DOWN", "No results returned")
         }
 
     @Test
