@@ -9,6 +9,14 @@ inputs:
     description: 'Suffix for image names (e.g., -se for geocoder-photon-se)'
     required: false
     default: ''
+  nominatim_data_min_size_mb:
+    description: 'Minimum accepted size of the downloaded nominatim.ndjson.gz in MB'
+    required: false
+    default: '150'
+  photon_data_min_size_mb:
+    description: 'Minimum accepted size of photon_data.tar.gz in MB'
+    required: false
+    default: '500'
   workload_identity_provider:
     description: 'GCP Workload Identity Provider'
     required: true
@@ -50,7 +58,7 @@ runs:
         tag: ${{ inputs.nominatim_data_tag }}
         filename: nominatim.ndjson.gz
         destination: photon
-        min_size_mb: 150
+        min_size_mb: ${{ inputs.nominatim_data_min_size_mb }}
 
     - name: Create Photon Data
       shell: bash
@@ -87,7 +95,7 @@ runs:
         prefix: photon-data${{ inputs.suffix }}
         file_path: photon/photon_data.tar.gz
         tag: ${{ inputs.build_tag }}
-        min_size_mb: 500
+        min_size_mb: ${{ inputs.photon_data_min_size_mb }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
         latest_tag: ${{ inputs.latest_tag }}

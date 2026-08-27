@@ -10,6 +10,10 @@ inputs:
     description: 'Suffix for image name (e.g., -se for geocoder-nominatim-data-se)'
     required: false
     default: ''
+  min_size_mb:
+    description: 'Minimum accepted size of nominatim.ndjson.gz in MB'
+    required: false
+    default: '150'
   lantmateriet_user:
     description: 'Lantmäteriet Geotorget username (for Swedish address data)'
     required: false
@@ -69,7 +73,7 @@ runs:
       with:
         prefix: nominatim-data${{ inputs.suffix }}
         file_path: photon/nominatim.ndjson.gz
-        min_size_mb: 150
+        min_size_mb: ${{ inputs.min_size_mb }}
         tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}

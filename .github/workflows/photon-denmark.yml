@@ -65,6 +65,7 @@ jobs:
         with:
           config: converter-denmark-test.json
           suffix: -dk
+          min_size_mb: 2
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           lantmateriet_user: ${{ secrets.LANTMATERIET_USER }}
           lantmateriet_pass: ${{ secrets.LANTMATERIET_PASS }}
@@ -95,6 +96,8 @@ jobs:
         with:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag || inputs.nominatim_data_tag }}
           suffix: -dk
+          nominatim_data_min_size_mb: 2
+          photon_data_min_size_mb: 5
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
