@@ -3,7 +3,7 @@
     "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/test-data/2026-08-26-danmark.zip" },
     "defaultValue": 50,
     "rankAddress": 30,
-    "minLines": 40000,
+    "minLines": 20000,
     "stopTypeFactors": {
       "airport": 150.0,
       "busStation": 20.0,
