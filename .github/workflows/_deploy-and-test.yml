@@ -109,7 +109,7 @@ jobs:
           environment: ${{ inputs.environment }}
 
       - name: Helm deploy
-        uses: entur/gha-helm/.github/actions/helm-deploy@v1
+        uses: entur/gha-helm/.github/actions/helm-deploy@v2
         with:
           image: ${{ inputs.image }}
           chart: ${{ inputs.chart }}
