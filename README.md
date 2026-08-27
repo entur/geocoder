@@ -24,27 +24,46 @@ curl "https://api.entur.io/geocoder/v3/autocomplete?q=Oslo+S"
 
 ## Running locally
 
+### Simple
+
+One command converts every source with `converter-prod.json`, builds the index and starts
+Photon. It downloads the whole country, so expect it to take a while.
+
 ```bash
 ./gradlew build
 
 cd photon
 ./import/download-photon-jar.sh
-
-# EITHER build the data yourself (fetches the nominatim-converter binary automatically)
-./import/create-nominatim-data.sh import/config/converter-prod.json -z
-./import/create-photon-data.sh nominatim.ndjson.gz
-
-# OR download what CI last built
-./download-latest-nominatim-data.sh                      # just the ndjson
-rm -rf photon_data && ./download-latest-photon-data.sh   # the finished index
-
-./photon-start.sh
+./full-local-reimport-and-start.sh
 
 # In another terminal - or run no.entur.geocoder.proxy.AppKt from your IDE
 cd ../proxy && java -jar build/libs/proxy-all.jar
 ```
 
-Then:
+### Complex
+
+The same steps one at a time, for a different config, or to skip the conversion and use what CI
+built:
+
+```bash
+cd photon
+./import/download-photon-jar.sh
+
+# EITHER convert the data - import/config/converter-{prod,dev,local,sweden-test,denmark-test}.json
+./import/create-nominatim-data.sh import/config/converter-local.json -z
+
+# OR take the ndjson CI last built
+./download-latest-nominatim-data.sh
+
+./import/create-photon-data.sh nominatim.ndjson.gz
+
+# OR skip both and take CI's finished index
+rm -rf photon_data && ./download-latest-photon-data.sh
+
+./photon-start.sh
+```
+
+### Trying it out
 
 ```bash
 curl -s 'http://localhost:8080/v3/autocomplete?q=sk%C3%B8yen%20stasjon&limit=20'
