@@ -14,6 +14,8 @@ info:
   license:
     name: EUPL-1.2
     url: https://opensource.org/licenses/EUPL-1.2
+  x-deprecated: true
+  x-sunset: '2031-08-31'
   x-entur-metadata:
     id: geocoder-v2
     owner: team-ror
