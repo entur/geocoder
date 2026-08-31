@@ -33,7 +33,7 @@ jobs:
     strategy:
       matrix:
         spec:
-          - proxy/src/main/resources/openapi.yml
+          - proxy/src/main/resources/openapi2.yml
           - proxy/src/main/resources/openapi3.yml
     uses: entur/gha-api/.github/workflows/lint.yml@v6
     secrets: inherit

@@ -137,7 +137,7 @@ class App {
                 }
 
                 get("/v2/openapi.yaml") {
-                    val openapi = readFile("openapi.yml")
+                    val openapi = readFile("openapi2.yml")
                     call.respondText(String(openapi), contentType = ContentType.parse("application/yaml"))
                 }
 

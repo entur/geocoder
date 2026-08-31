@@ -104,6 +104,6 @@ Bucket layout and rollback: README.md.
 | Query parameter to category filters | `proxy/src/main/kotlin/no/entur/geocoder/proxy/photon/PhotonFilterBuilder.kt` |
 | Photon client | `proxy/src/main/kotlin/no/entur/geocoder/proxy/photon/PhotonApi.kt` |
 | Pelias API implementation | `proxy/src/main/kotlin/no/entur/geocoder/proxy/pelias/PeliasApi.kt` |
-| OpenAPI specs | `proxy/src/main/resources/openapi.yml` (v2), `openapi3.yml` (v3) |
+| OpenAPI specs | `proxy/src/main/resources/openapi2.yml` (v2), `openapi3.yml` (v3) |
 | Photon import scripts and config | `photon/import/`, `photon/import/config/` |
 | Dependency versions | `gradle/libs.versions.toml` |
