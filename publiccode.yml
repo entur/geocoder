@@ -1,0 +1,70 @@
+# publiccode.yml metadata, see https://yml.publiccode.tools/
+publiccodeYmlVersion: "0.7.0"
+
+name: Entur Geocoder
+url: https://github.com/entur/geocoder
+landingURL: https://developer.entur.no/apis/geocoder
+
+platforms:
+  - web
+  - linux
+
+categories:
+  - geographic-information-systems
+
+developmentStatus: stable
+softwareType: standalone/backend
+
+organisation:
+  name: Entur AS
+  uri: https://entur.no
+
+usedBy:
+  - Norway (nationwide), Entur AS
+
+intendedAudience:
+  scope:
+    - transportation
+  countries:
+    - NO
+
+description:
+  en:
+    localisedName: Entur Geocoder
+    shortDescription: Autocomplete and reverse geocoding for Norwegian stop
+      places, addresses, place names and points of interest.
+    longDescription: >
+      The search service behind journey planning in Norway, used by Entur's own
+      apps and by third parties through the open API at api.entur.io. A patched
+      Photon backend on OpenSearch with a Ktor proxy in front, serving a v3 API
+      and a Pelias-compatible v2. The index is rebuilt nightly from national
+      registries and OpenStreetMap by nominatim-converter.
+    documentation: https://developer.entur.no/docs/open-services/geocoder
+    apiDocumentation: https://developer.entur.no/apis/geocoder
+    features:
+      - Autocomplete over stop places, addresses, streets, place names and points of interest
+      - Reverse geocoding by coordinate
+      - Filtering by layer, stop place type, source, county, locality and fare zone
+      - Ranking weighted by passenger numbers
+      - Pelias-compatible v2 API for existing clients
+
+legal:
+  license: EUPL-1.2
+  mainCopyrightOwner: Entur AS
+
+maintenance:
+  type: internal
+  contacts:
+    - name: Entur ROR (Open Data and Journey Planning)
+      email: kollektivdata@entur.org
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - "no"
+    - en
+
+dependsOn:
+  open:
+    - name: Photon
+    - name: OpenSearch
