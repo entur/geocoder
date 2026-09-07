@@ -38,7 +38,12 @@ jobs:
     steps:
       - name: Download ${{ matrix.source.name }}
         run: |
-          curl -fL --retry 3 --retry-delay 10 -A "entur-geocoder" -o "${{ matrix.source.filename }}" "${{ matrix.source.url }}"
+          # --http1.1: geonorge resets HTTP/2 streams mid-transfer (curl exit 92).
+          # --retry-all-errors: plain --retry does not consider exit 92 retryable.
+          # --speed-limit/--speed-time: abort a stalled transfer so it gets retried.
+          curl -fL --http1.1 --retry 5 --retry-delay 15 --retry-all-errors \
+            --speed-limit 10240 --speed-time 60 \
+            -A "entur-geocoder" -o "${{ matrix.source.filename }}" "${{ matrix.source.url }}"
           ls -lh "${{ matrix.source.filename }}"
 
       - name: Verify file size
