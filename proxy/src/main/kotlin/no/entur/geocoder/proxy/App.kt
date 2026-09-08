@@ -25,6 +25,10 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.Environment.CONSOLE
 import no.entur.geocoder.proxy.health.HealthCheck
+import no.entur.geocoder.proxy.metrics.REQUEST_METRIC
+import no.entur.geocoder.proxy.metrics.exceptionName
+import no.entur.geocoder.proxy.metrics.outcome
+import no.entur.geocoder.proxy.metrics.springBootTags
 import no.entur.geocoder.proxy.pelias.PeliasApi
 import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.v3.V3Api
@@ -88,9 +92,17 @@ class App {
                     call.respond(error.status, error.result)
                 }
             }
+            // Shared recording rules expect Spring Boot's labels, not Ktor's. Micrometer warns
+            // if a filter arrives after the meters, so register before installing the plugin.
+            micrometerRegistry.config().meterFilter(springBootTags)
+
             install(MicrometerMetrics) {
-                metricName = "http.server.requests"
+                metricName = REQUEST_METRIC
                 registry = micrometerRegistry
+                timers { call, cause ->
+                    tag("outcome", outcome(call.response.status()))
+                    tag("exception", exceptionName(cause))
+                }
                 meterBinders =
                     listOf(
                         ClassLoaderMetrics(),

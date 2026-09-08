@@ -240,6 +240,8 @@ Ranking happens inside Photon, so most search tuning lands in the fork rather th
 
 ## Links
 
+**Metrics** - other teams' recording rules select on Spring Boot's labels for `http.server.requests` (`uri`, `status`, `method`, `outcome`, `exception`). Photon's Javalin plugin emits those names already, but Ktor calls the route label `route`, so the proxy remaps it in [RequestMetrics.kt](proxy/src/main/kotlin/no/entur/geocoder/proxy/metrics/RequestMetrics.kt).
+
 **Dashboards** - [Photon metrics](https://grafana.entur.org/d/VpZ62_2Wk/jvm-overview-prometheus?orgId=1&var-datasource=000000002&var-label=app&var-name=geocoder-photon&var-prometheus_group=kub-ent-dev-001&from=now-6h&to=now) ·
 [Proxy metrics](https://grafana.entur.org/d/VpZ62_2Wk/jvm-overview-prometheus?orgId=1&var-datasource=000000002&var-label=app&var-name=geocoder-proxy&var-prometheus_group=kub-ent-dev-001&from=now-6h&to=now)
 

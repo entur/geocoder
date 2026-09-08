@@ -156,4 +156,74 @@ class AppTest {
             assertEquals("3", params["limit"])
             assertEquals("no", params["lang"])
         }
+
+    @Test
+    fun `request timer uses Spring Boot labels`() =
+        testApplication {
+            val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            val mockEngine =
+                MockEngine {
+                    respond(
+                        content = samplePhotonResponse,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, Json.toString()),
+                    )
+                }
+
+            application {
+                configureApp(
+                    client = HttpClient(mockEngine),
+                    photonBaseUrl = "http://photon-test",
+                    micrometerRegistry = registry,
+                )
+            }
+
+            client.get("/v2/autocomplete") { parameter("text", "test_query") }
+            client.get("/no/such/route")
+
+            assertEquals(
+                setOf(
+                    requestLabels("SUCCESS", "200", "/v2/autocomplete"),
+                    requestLabels("CLIENT_ERROR", "404", "NOT_FOUND"),
+                ),
+                registry.requestTimerLabels(),
+            )
+        }
+
+    @Test
+    fun `request timer names the exception when photon fails`() =
+        testApplication {
+            val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+            val mockEngine = MockEngine { throw IllegalStateException("photon is down") }
+
+            application {
+                configureApp(
+                    client = HttpClient(mockEngine),
+                    photonBaseUrl = "http://photon-test",
+                    micrometerRegistry = registry,
+                )
+            }
+
+            client.get("/v2/autocomplete") { parameter("text", "test_query") }
+
+            assertEquals(
+                setOf(requestLabels("SERVER_ERROR", "500", "/v2/autocomplete", "IllegalStateException")),
+                registry.requestTimerLabels(),
+            )
+        }
+
+    private fun requestLabels(outcome: String, status: String, uri: String, exception: String = "none") =
+        mapOf(
+            "exception" to exception,
+            "method" to "GET",
+            "outcome" to outcome,
+            "status" to status,
+            "uri" to uri,
+        )
+
+    private fun PrometheusMeterRegistry.requestTimerLabels() =
+        find("http.server.requests")
+            .timers()
+            .map { timer -> timer.id.tags.associate { it.key to it.value } }
+            .toSet()
 }
