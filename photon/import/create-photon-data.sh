@@ -31,8 +31,9 @@ fi
 IMPORT_THREADS="${PHOTON_IMPORT_THREADS:-5}"
 
 START_TIME=$(date +%s)
-# scandinavian_folding replaces the default asciifolding+german_normalization: folds aa like å,
-# so "aal" finds Ål. Baked into the index settings, so changing it requires a full reimport.
+# scandinavian_folding replaces german_normalization, which applies German aa/ae/oe rules to
+# Norwegian names; it folds aa like å, so "aal" finds Ål. asciifolding still has to run after it
+# to strip Sámi and allé accents. Baked into the index settings, so changing it needs a reimport.
 # -extra-tags ALL is load-bearing: the v3 proxy reads extra.* fields (source, stop_place_role,
 # fare_zones, ...). Narrowing it to an allowlist would drop those from every response.
 java -jar "$PHOTON_JAR" \
@@ -40,7 +41,7 @@ java -jar "$PHOTON_JAR" \
         -j "$IMPORT_THREADS" \
         -import-file "$IMPORT_FILE" \
         -languages no,en \
-        -normalization-filters lowercase,scandinavian_folding \
+        -normalization-filters lowercase,scandinavian_folding,asciifolding \
         -extra-tags ALL
 END_TIME=$(date +%s)
 echo "Created photon_data in $((END_TIME - START_TIME)) seconds."
