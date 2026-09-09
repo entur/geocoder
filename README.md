@@ -191,11 +191,11 @@ between the docker image and the GCS upload, so `geocoder-photon:<tag>` always p
 recent builds: `latest.txt` (most recent build from any branch) and `latest-prod.txt` (most
 recent build deployed to prod, written by `photon-scheduled.yml`).
 
-The photon container fetches `photon_data.tar.gz` from `$PHOTON_DATA_URL` on startup, verifies
-its `.sha256` sidecar, and writes a `photon_data/.ready` sentinel after extraction so in-place
-restarts skip the download. CI derives the URL from the image tag in
-[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) and injects it into the helm
-values; `templates/photon-data-validation.yaml` fails the render if it is missing.
+A `fetch-photon-data` init container downloads `photon_data.tar.gz` from `$PHOTON_DATA_URL`,
+verifies its `.sha256` sidecar, and extracts it into a shared `emptyDir` the distroless photon
+container serves from (so the runtime image needs no shell/curl/tar). CI derives the URL from the
+image tag in [_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) and injects it into
+the helm values; `templates/photon-data-validation.yaml` fails the render if it is missing.
 
 ### Rolling back
 

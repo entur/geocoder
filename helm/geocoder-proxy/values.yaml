@@ -47,7 +47,9 @@ common:
           failureThreshold: 3
     lifecycle:
       preStop:
-        exec:
-          command: ["/bin/sh", "-c", "sleep 5"]  # Allow time for connections to drain
+        # Native sleep handler (k8s 1.30+): the distroless image has no /bin/sh
+        # for an exec hook. Allows time for connections to drain before SIGTERM.
+        sleep:
+          seconds: 5
   postgres: # sets up a postgres proxy so you can connect to your postgresql instance via localhost on the pod
     enabled: false
