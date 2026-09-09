@@ -15,26 +15,33 @@ common:
     maxUnavailable: 0%  # Ensure at least one pod is always available
     maxSurge: 25%  # Allow 25% extra pods during rollout
     minReadySeconds: 10  # Wait 10 seconds after pod is ready before marking it available
+    volumes:
+      - name: photon-data
+        emptyDir:
+          # Holds the extracted photon_data plus the in-flight tarball during the
+          # init container's download. Also bounded by the container ephemeral
+          # limit; this is a secondary guard.
+          sizeLimit: 6Gi
   container:
     image: <+artifacts.primary.image>  # CD tool replaces with the actual image
     cpu: 2
     memory: 3072 # request==limit in v2; 3072 keeps the v1 hard limit (was 1.2x2560)
-    # Sized for the extracted photon_data (a few GB) plus headroom for the
-    # in-flight tarball during download/extract.
+    # photon_data (a few GB) now lives in the shared emptyDir mounted below; the
+    # container writable layer only needs JVM temp/log headroom.
     ephemeralStorage: 4Gi
     ephemeralStorageLimit: 8Gi
-    env:
-      # __PHOTON_DATA_URL__ is substituted by .github/workflows/_deploy-and-test.yml
-      # before helm runs. templates/photon-data-validation.yaml fails the helm
-      # render if the placeholder remains (e.g. manual `helm upgrade` without
-      # substitution).
-      - name: PHOTON_DATA_URL
-        value: "__PHOTON_DATA_URL__"
+    # The fetch-photon-data init container extracts photon_data into this shared
+    # volume; the pod's fsGroup (1000) lets the serve process read it and write
+    # OpenSearch lock files here.
+    volumeMounts:
+      - name: photon-data
+        mountPath: /srv/photon_data
+        subPath: photon_data
     probes:
       enabled: true
       spec:
-        # Budget covers: photon_data download (~hundreds of MB) + tar extract +
-        # JVM startup + index mmap warmup. 5s * 180 = 15 min ceiling.
+        # photon_data download+extract runs in the init container; this budget
+        # covers JVM startup + index mmap warmup. 5s * 180 = 15 min ceiling.
         startupProbe:
           tcpSocket:
             port: 2322
@@ -56,5 +63,56 @@ common:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
+  initContainers:
+    # Fetches and verifies photon_data into the shared volume so the main
+    # container can stay distroless (no curl/tar/shell at runtime). Mirrors the
+    # download half of photon/photon-start.sh, which is now only used for local
+    # runs. Inherits the pod securityContext (runAsUser/fsGroup 1000), so the
+    # extracted files are group-writable by the serve container.
+    - name: fetch-photon-data
+      image: curlimages/curl:8.11.1
+      imagePullPolicy: IfNotPresent
+      # Pod securityContext already sets runAsUser/runAsNonRoot/fsGroup/seccomp;
+      # these are the container-only fields PSA "restricted" still requires
+      # (readOnlyRootFilesystem is extra hardening - all writes go to /work).
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      env:
+        # __PHOTON_DATA_URL__ is substituted by .github/workflows/_deploy-and-test.yml
+        # before helm runs. templates/photon-data-validation.yaml fails the render
+        # if the placeholder remains (e.g. a manual `helm upgrade` without it).
+        - name: PHOTON_DATA_URL
+          value: "__PHOTON_DATA_URL__"
+      volumeMounts:
+        - name: photon-data
+          mountPath: /work
+      command: ["sh", "-euc"]
+      args:
+        - |
+          set -o pipefail  # so a failed curl in a pipe isn't masked by tr
+          DATA_DIR=/work/photon_data
+          TARBALL=/work/incoming.tar.gz
+          echo "Downloading $PHOTON_DATA_URL"
+          curl -fL --retry 3 --retry-delay 10 --connect-timeout 30 \
+            -A entur-geocoder -o "$TARBALL" "$PHOTON_DATA_URL"
+          EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 \
+            -A entur-geocoder "${PHOTON_DATA_URL}.sha256" | tr -d '[:space:]')
+          ACTUAL=$(sha256sum "$TARBALL" | awk '{print $1}')
+          if [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "checksum mismatch: expected $EXPECTED got $ACTUAL" >&2
+            exit 1
+          fi
+          echo "checksum verified ($ACTUAL)"
+          # Stage then rename so a crash mid-extract can't leave a half-tree that
+          # photon then serves.
+          rm -rf "$DATA_DIR" /work/staging
+          mkdir -p /work/staging
+          tar -xzf "$TARBALL" -C /work/staging
+          mv /work/staging "$DATA_DIR"
+          rm -f "$TARBALL"
+          echo "Extracted $(find "$DATA_DIR" -type f | wc -l) files"
   postgres: # sets up a postgres proxy so you can connect to your postgresql instance via localhost on the pod
     enabled: false

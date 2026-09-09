@@ -3,11 +3,14 @@ Fails `helm template / install / upgrade` when PHOTON_DATA_URL still
 contains placeholder sentinels. CI substitutes them via
 .github/workflows/_deploy-and-test.yml. For a manual deploy from a
 workstation, supply an overlay values file with the resolved URL - see
-README "Photon data artifacts (GCS)".
+README "Photon data artifacts (GCS)". The URL lives on the
+fetch-photon-data init container, which downloads the index.
 */ -}}
 {{- $url := "" -}}
-{{- range (.Values.common.container.env | default list) -}}
-  {{- if eq .name "PHOTON_DATA_URL" -}}{{- $url = .value -}}{{- end -}}
+{{- range (.Values.common.initContainers | default list) -}}
+  {{- range (.env | default list) -}}
+    {{- if eq .name "PHOTON_DATA_URL" -}}{{- $url = .value -}}{{- end -}}
+  {{- end -}}
 {{- end -}}
 {{- if or (eq $url "") (eq $url "__PHOTON_DATA_URL__") -}}
   {{- fail "PHOTON_DATA_URL is not substituted. CI normally fills it in; for a manual deploy supply an overlay values file - see README." -}}

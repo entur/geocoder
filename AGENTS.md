@@ -78,9 +78,10 @@ to dots and transliterates the rest. It must produce byte-identical output to th
 ## Photon data flow
 
 The image tag and the data tag are generated once and shared, so `geocoder-photon:<tag>` always
-pairs with `photon-data/<tag>/photon_data.tar.gz`. The container fetches `$PHOTON_DATA_URL` on
-startup, verifies the `.sha256` sidecar, extracts atomically, and writes a `photon_data/.ready`
-sentinel. `helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render
+pairs with `photon-data/<tag>/photon_data.tar.gz`. A `fetch-photon-data` init container fetches
+`$PHOTON_DATA_URL`, verifies the `.sha256` sidecar, and extracts atomically into a shared
+`emptyDir` the distroless photon container serves from.
+`helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render
 when the URL is missing, so a manual `helm upgrade` without injection never reaches the cluster.
 Bucket layout and rollback: README.md.
 
