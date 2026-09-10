@@ -15,7 +15,6 @@ photon_data*
 nominatim.ndjson.gz
 nominatim.ndjson
 photon*jar
-Chart.lock
 /photon/import/build
 /photon/import/tmp
 .claude
