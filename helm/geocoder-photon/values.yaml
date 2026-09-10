@@ -15,6 +15,8 @@ common:
     maxUnavailable: 0%  # Ensure at least one pod is always available
     maxSurge: 25%  # Allow 25% extra pods during rollout
     minReadySeconds: 10  # Wait 10 seconds after pod is ready before marking it available
+    # Drain window: preStop sleeps 20s before SIGTERM, so keep grace above that.
+    terminationGracePeriodSeconds: 40
     volumes:
       - name: photon-data
         emptyDir:
@@ -63,6 +65,12 @@ common:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
+    # Stay up 20s after endpoint removal so pooled proxy connections drain before
+    # the JVM exits. Native SleepAction: no shell, works in the distroless image.
+    lifecycle:
+      preStop:
+        sleep:
+          seconds: 20
   initContainers:
     # Fetches and verifies photon_data into the shared volume so the main
     # container can stay distroless (no curl/tar/shell at runtime). Mirrors the
