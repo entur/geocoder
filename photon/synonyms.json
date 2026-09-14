@@ -1,0 +1,13 @@
+{
+  "search_synonyms": [
+    "gt,gt.,gate,gata",
+    "kirke,kyrkje",
+    "sykehus,sjukehus",
+    "sykehjem,sjukeheim",
+    "ost,aust",
+    "ostre,austre",
+    "sor,syd",
+    "sore,sondre",
+    "lufthavn,lufthamn,flyplass"
+  ]
+}

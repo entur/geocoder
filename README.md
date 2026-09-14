@@ -228,6 +228,19 @@ Applied once per bucket. The `matchesSuffix` filter spares the `latest*.txt` poi
 }
 ```
 
+## Query synonyms
+
+[photon/synonyms.json](photon/synonyms.json) goes to `serve` via `-synonym-file`;
+`synonyms-se.json` / `synonyms-dk.json` are picked by the `SYNONYM_FILE` build arg. Applied at
+query time, but editing one still costs a reimport, since image and data are built together.
+
+- Single tokens, no spaces. CI rejects the rest.
+- `gt` and `gt.` are separate terms, both needed.
+- Only add a rule that measurably changes a result. Prefixes (`pl`) and one-character variants
+  (`ferje`/`ferge`) already match; `vgs` and `stasjon,station` were measured and rejected.
+- Compounds are one token, so `kirkevn` is out of reach. That needs
+  [photon#97](https://github.com/komoot/photon/issues/97).
+
 ## Releasing a patched Photon
 
 Ranking happens inside Photon, so most search tuning lands in the fork rather than here.

@@ -2,7 +2,11 @@ FROM gcr.io/distroless/java25-debian13:nonroot
 
 WORKDIR /srv
 
+# Query synonyms are per-country; the build passes synonyms-se.json / synonyms-dk.json
+# for those deployments. See "Query synonyms" in the README.
+ARG SYNONYM_FILE=synonyms.json
 COPY photon.jar ./
+COPY ${SYNONYM_FILE} synonyms.json
 
 # photon_data is fetched by the `fetch-photon-data` init container (see
 # helm/geocoder-photon/values.yaml) and shared in via a volume mounted at
@@ -23,5 +27,6 @@ ENTRYPOINT ["java", \
   "-XX:+ExitOnOutOfMemoryError", \
   "-jar", "photon.jar", \
   "serve", "-default-language", "no", \
+  "-synonym-file", "synonyms.json", \
   "-listen-ip", "0.0.0.0", "-listen-port", "2322", \
   "-metrics-enable", "prometheus"]

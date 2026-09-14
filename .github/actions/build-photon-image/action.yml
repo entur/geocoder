@@ -60,6 +60,16 @@ runs:
         destination: photon
         min_size_mb: ${{ inputs.nominatim_data_min_size_mb }}
 
+    - name: Validate synonym file
+      shell: bash
+      working-directory: photon
+      # Photon reads this at serve time; a malformed file crashloops the pod and
+      # would only surface after the import below. Fail here instead.
+      run: |
+        SYN="synonyms${{ inputs.suffix }}.json"
+        jq -e '.search_synonyms | arrays and all(type == "string" and (contains(" ") | not))' "$SYN" > /dev/null
+        jq -e 'keys - ["search_synonyms", "classification_terms"] | length == 0' "$SYN" > /dev/null
+
     - name: Create Photon Data
       shell: bash
       working-directory: photon
@@ -105,6 +115,7 @@ runs:
       with:
         image_name: geocoder-photon${{ inputs.suffix }}
         context: photon
+        build_args: SYNONYM_FILE=synonyms${{ inputs.suffix }}.json
         push: true
         tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
