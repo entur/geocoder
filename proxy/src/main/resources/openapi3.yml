@@ -37,7 +37,7 @@ paths:
         - Autocomplete
       summary: Autocomplete search
       description: Search for places by text query
-      operationId: autocompleteV3
+      operationId: autocomplete
       parameters:
         - $ref: '#/components/parameters/Query'
         - $ref: '#/components/parameters/AutocompleteLatitude'
@@ -106,7 +106,7 @@ paths:
         - Reverse
       summary: Reverse geocode
       description: Convert coordinates to places
-      operationId: reverseV3
+      operationId: reverse
       parameters:
         - $ref: '#/components/parameters/Latitude'
         - $ref: '#/components/parameters/Longitude'
@@ -171,7 +171,7 @@ paths:
         - Place
       summary: Place lookup
       description: Look up one or more places by ID
-      operationId: placeV3
+      operationId: place
       parameters:
         - $ref: '#/components/parameters/Ids'
         - $ref: '#/components/parameters/Language'
