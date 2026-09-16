@@ -292,7 +292,10 @@ components:
     Sources:
       name: sources
       in: query
-      description: Data source filter
+      description: >-
+        Data source filter. These are v3 names; v2 source values (`whosonfirst`, `geonames`,
+        `openaddresses`) are not accepted and match nothing. Omit the parameter to search all
+        sources. Use `layers` to filter by result type.
       style: form
       explode: false
       schema:
@@ -341,7 +344,7 @@ components:
     FareZones:
       name: fareZones
       in: query
-      description: "Fare zone IDs filter. Refs must be FareZone-shaped (e.g. `RUT:FareZone:1`); legacy `TariffZone` refs are not supported."
+      description: "Fare zone IDs filter. Refs must be FareZone-shaped (e.g. `RUT:FareZone:1`); legacy `TariffZone` refs are not supported. A multimodal parent matches if any of its child stops is in the zone."
       style: form
       explode: false
       schema:
@@ -560,6 +563,9 @@ components:
           example: ["restaurant"]
         fareZones:
           type: array
+          description: >-
+            Zones the place is in; they overlap, so a stop can be in several. A multimodal parent
+            lists its own plus its children's, so use `multimodal=child` for per-departure zones.
           items:
             type: string
           example: ["RUT:FareZone:4"]
