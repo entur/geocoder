@@ -70,7 +70,14 @@ data class V3AutocompleteRequest(
     }
 
     companion object {
-        private const val DEFAULT_RADIUS_KM = 50.0
+        // Photon's score is near flat inside the radius (it falls only 10% across the whole of it)
+        // and decays exponentially outside, so the radius is the distance below which places count
+        // as equally near. The old 50 km gave a 55 km plateau covering most of eastern Norway:
+        // from Jernbanetorget, Lillestrøm (17 km) ranked above Sandvika (12.8 km). 25 km is the
+        // geometric midpoint of zoom 11's band (16.8-37.0 km), so it is the value least sensitive
+        // to that rounding. Going tighter costs distant exact name matches their place on page 1,
+        // which the acceptance suite's "os" case pins.
+        private const val DEFAULT_RADIUS_KM = 25.0
         private const val DEFAULT_WEIGHT = 0.5
 
         internal val ALLOWED_PARAMS =
