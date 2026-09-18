@@ -2,7 +2,7 @@
 
 set -eu
 
-VERSION="v0.8.2"
+VERSION="v0.8.3"
 
 SCRIPTDIR=$(cd "$(dirname "$0")"; pwd)
 PHOTONDIR=$(cd "$SCRIPTDIR/.."; pwd)
