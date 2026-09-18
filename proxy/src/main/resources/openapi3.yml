@@ -405,8 +405,8 @@ components:
         type: number
         format: double
         minimum: 0
-        default: 50
-      example: 50
+        default: 25
+      example: 25
 
     AutocompleteWeight:
       name: weight
