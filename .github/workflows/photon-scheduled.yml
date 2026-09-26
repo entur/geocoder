@@ -3,33 +3,71 @@ name: Photon — Scheduled Import
 on:
   schedule:
     # Run full build every day (6:27 UTC is 7:27 CET or 8:27 CEST)
-    # Uses the `prod-approved` tag to avoid picking up untested commits from main.
     - cron: '27 6 * * *'
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit to build (default: whatever prd is running)'
+        required: false
+        type: string
 
 concurrency:
   group: "${{ github.workflow }}"
   cancel-in-progress: true
 
-env:
-  LATEST_TAG: latest-prod
-
-# All checkouts and the generate-tag reusable workflow use the `prod-approved` tag
-# (moved by proxy CI after a successful prod deploy) so the scheduled rebuild runs
-# against the same code that's currently in prod, not whatever happens to be on main.
-# Hardcoded in three places below because reusable-workflow `with:` blocks can't read
-# the workflow-level `env` context.
+# Builds the commit behind photon-data/latest-prod.txt, which the prd deploy moves after
+# acceptance tests pass, so the unattended run never picks up untested main.
+# The deploy jobs still check out the workflow ref, so chart and tests come from main.
 
 jobs:
+  resolve-prod-ref:
+    name: Resolve Prod Ref
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Resolve ref from the build running in prd
+        id: resolve
+        shell: bash
+        env:
+          OVERRIDE: ${{ inputs.ref }}
+          POINTER: https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.txt
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            SOURCE="workflow_dispatch input"
+            SHORT="$OVERRIDE"
+          else
+            SOURCE=$(curl -fsSL --retry 3 --retry-delay 5 -A entur-geocoder "$POINTER" | tr -d '[:space:]')
+            SHORT=$(./.github/scripts/resolve-prod-ref.sh "$SOURCE")
+          fi
+
+          # actions/checkout needs the full SHA, and an empty ref would silently
+          # fall back to main.
+          REF=$(git rev-parse "${SHORT}^{commit}")
+
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Prod Ref"
+            echo "**Source:** \`$SOURCE\`"
+            echo "**Building from:** \`$REF\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   generate-tag:
     name: Generate Tag
+    needs: resolve-prod-ref
     uses: ./.github/workflows/_generate-tag.yml
     with:
-      ref: prod-approved
+      ref: ${{ needs.resolve-prod-ref.outputs.ref }}
 
   nominatim-data:
     name: Nominatim Data
-    needs: generate-tag
+    needs: [resolve-prod-ref, generate-tag]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -40,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: prod-approved
+          ref: ${{ needs.resolve-prod-ref.outputs.ref }}
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
@@ -48,11 +86,10 @@ jobs:
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          latest_tag: ${{ env.LATEST_TAG }}
 
   photon:
     name: Photon Image
-    needs: [generate-tag, nominatim-data]
+    needs: [resolve-prod-ref, generate-tag, nominatim-data]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -66,7 +103,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: prod-approved
+          ref: ${{ needs.resolve-prod-ref.outputs.ref }}
       - name: Build Photon image
         id: build
         uses: ./.github/actions/build-photon-image
@@ -75,7 +112,6 @@ jobs:
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          latest_tag: ${{ env.LATEST_TAG }}
 
   deploy-tst:
     name: Staging
@@ -111,7 +147,7 @@ jobs:
     secrets: inherit
 
   notify-slack:
-    needs: [ generate-tag, nominatim-data, photon, deploy-tst, deploy-prd ]
+    needs: [ resolve-prod-ref, generate-tag, nominatim-data, photon, deploy-tst, deploy-prd ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

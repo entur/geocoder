@@ -132,21 +132,25 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 ## Deployment
 
-All deployment runs from `main`. The daily import uses the `prod-approved` tag - remember to
-move it when a commit is ready for production:
+All deployment runs from `main`. The daily import is the exception: it rebuilds the index from
+the commit named by `photon-data/latest-prod.txt`, which a prd deploy moves once its acceptance
+tests pass. A merge to `main` therefore does not reach the unattended nightly on its own - to
+promote code into it, run `photon.yml` and approve it through to prd, and the next night picks
+the new commit up by itself. `photon-deploy.yml` does the same without a fresh import, if a
+`dev only` run has already built the image you want. To see what prod is missing:
 
-```
-git tag -f prod-approved [sha]
-git push origin prod-approved --force
+```bash
+git log --oneline "$(curl -s https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.txt \
+  | sed 's/.*-SHA//')"..main
 ```
 
 | Workflow | Trigger | What it does |
 | -------- | ------- | ------------ |
 | [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) | push to `main`, manual | Builds and deploys the proxy to dev; tst and prd need approval. Manual dispatch takes a target (`dev only` \| `dev → tst → prd` \| `tst → prd`) |
 | [proxy-deploy.yml](https://github.com/entur/geocoder/actions/workflows/proxy-deploy.yml) | manual | Deploys an existing proxy image tag |
-| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 06:27 UTC | Full import + build + deploy to tst → prd, no approval gates. Checks out `prod-approved` and updates the `latest-prod.txt` pointer |
-| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets; optional `config`, default `converter-prod.json`) |
-| [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag |
+| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 06:27 UTC | Full import + build + deploy to tst → prd, no approval gates. Builds from the commit behind `latest-prod.txt`; manual dispatch takes an optional `ref` to override it |
+| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets, default `dev → tst → prd`; optional `config`, default `converter-prod.json`). tst and prd need approval |
+| [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag; tst and prd need approval |
 
 All builds run acceptance tests after deployment, and most workflows post to Slack on failure.
 The reusable [_generate-tag.yml](.github/workflows/_generate-tag.yml) and
@@ -158,7 +162,7 @@ deploy jobs; shared steps live as composite actions under
 
 [photon-sweden-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden-scheduled.yml)
 runs a full Swedish import and deploy to dev every Monday at 05:27 UTC. It tracks `main` -
-Sweden never reaches prod, so there is no `prod-approved` tag - and updates `latest.txt`. It
+Sweden never reaches prod, so there is no prd image to build from - and updates `latest.txt`. It
 also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window, so a running pod's
 `photon_data.tar.gz` can't be deleted out from under it. The manual counterparts are
 [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) and
@@ -188,8 +192,13 @@ Built artifacts live in the public bucket [gs://ent-geocoder-prd/](https://conso
 Each build writes to `<prefix>/<tag>/<filename>`. The `<tag>` is generated once and shared
 between the docker image and the GCS upload, so `geocoder-photon:<tag>` always pairs with
 `gs://.../photon-data/<tag>/photon_data.tar.gz`. Two pointer files at the prefix root track
-recent builds: `latest.txt` (most recent build from any branch) and `latest-prod.txt` (most
-recent build deployed to prod, written by `photon-scheduled.yml`).
+recent builds: `latest.txt` (most recent build, written by every build) and `latest-prod.txt`
+(the last build that passed acceptance tests in prd, moved by the `record` job in
+[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml)). When a prd deploy succeeds but
+its tests fail, prd is running a build that `latest-prod.txt` does not name - deliberately, so
+the nightly keeps rebuilding the last known-good commit. The `record` job also re-reads the tag
+running in prd and skips the write if a later run has superseded it, so the pointer never names
+a build prd has moved off.
 
 A `fetch-photon-data` init container downloads `photon_data.tar.gz` from `$PHOTON_DATA_URL`,
 verifies its `.sha256` sidecar, and extracts it into a shared `emptyDir` the distroless photon
@@ -205,6 +214,15 @@ curl -s https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.
 
 # Re-deploy a known-good image - the data is paired automatically
 gh workflow run photon-deploy.yml -f target='tst → prd' -f image_tag=<previous-tag>
+```
+
+That also moves the pointer, so the nightly follows. If the pointer itself is unusable (the
+commit is gone, or the object was truncated) the nightly fails every morning until it is fixed.
+Unblock tonight's run with an explicit commit, then repair the pointer for good with a prd
+deploy:
+
+```bash
+gh workflow run photon-scheduled.yml -f ref=<sha>
 ```
 
 ### 90-day lifecycle rule

@@ -122,3 +122,91 @@ jobs:
         uses: ./.github/actions/acceptance-tests
         with:
           environment: ${{ inputs.environment }}
+
+  record:
+    name: Record Prod Build
+    needs: deploy
+    # Only a prd build that passed its tests may move the pointer the nightly rebuilds
+    # from. Separate job so a failed write doesn't read as a failed prd deploy.
+    # The three prd entry points have independent concurrency groups, so a run can be
+    # superseded while its tests are still running; hence the check against the cluster.
+    if: |
+      inputs.environment == 'prd' &&
+      inputs.photon_data_prefix != '' &&
+      inputs.run_tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate with Google Cloud
+        uses: entur/gha-meta/.github/actions/cloud-auth@v1
+        with:
+          environment: ${{ inputs.environment }}
+          gcp_workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Authenticate with Kubernetes
+        uses: entur/gha-meta/.github/actions/k8s-auth@v1
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Verify this build should be recorded
+        id: verify
+        shell: bash
+        env:
+          IMAGE: ${{ inputs.image }}
+          RELEASE: ${{ inputs.release_name }}
+          NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          TAG="${IMAGE##*:}"
+          SHORT=$(./.github/scripts/resolve-prod-ref.sh "$TAG")   # also rejects alias tags
+          LIVE=$(kubectl get deployment "$RELEASE" -n "$NAMESPACE" \
+            -o jsonpath='{range .spec.template.spec.containers[*]}{.image}{"\n"}{end}' \
+            | grep "${IMAGE%%:*}:")
+
+          if [ "${LIVE##*:}" != "$TAG" ]; then
+            echo "::warning::prd runs ${LIVE##*:}, not $TAG; a later run superseded this one"
+            echo "record=false" >> "$GITHUB_OUTPUT"
+          elif ! git merge-base --is-ancestor "$SHORT" origin/main; then
+            echo "::warning::$TAG was not built from main, so the nightly would rebuild unreviewed code; leaving the pointer where it is"
+            echo "record=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "record=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # CI credentials, because the bucket belongs to CI rather than to prd. Last, so
+      # they never shadow the prd ones above.
+      - name: Authenticate for the pointer write
+        if: steps.verify.outputs.record == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+      - name: Move latest-prod pointers
+        if: steps.verify.outputs.record == 'true'
+        shell: bash
+        env:
+          IMAGE: ${{ inputs.image }}
+          PREFIX: ${{ inputs.photon_data_prefix }}
+        run: |
+          TAG="${IMAGE##*:}"
+          [ "$PREFIX" = photon-data ] || { echo "::error::unexpected prefix $PREFIX"; exit 1; }
+
+          # photon-data last: the nightly reads that one, so a failed second write
+          # leaves it on the previous known-good build.
+          for P in nominatim-data photon-data; do
+            echo "$TAG" | gcloud storage cp \
+              --content-type=text/plain \
+              --cache-control="no-cache, max-age=0" \
+              - "gs://ent-geocoder-prd/$P/latest-prod.txt"
+          done
+
+          echo "\`latest-prod.txt\` now names \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"

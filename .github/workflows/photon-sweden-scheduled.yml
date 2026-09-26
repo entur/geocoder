@@ -13,8 +13,8 @@ concurrency:
   group: "${{ github.workflow }}"
   cancel-in-progress: true
 
-# Sweden is dev-only, so this tracks main instead of the `prod-approved` tag the Norway
-# schedule uses, and leaves the `latest.txt` pointer alone rather than writing latest-prod.
+# Sweden is dev-only, so this tracks main rather than a deployed build, and nothing
+# writes photon-data-se/latest-prod.txt.
 # The weekly refresh also keeps photon-data-se/ inside the bucket's 90-day lifecycle
 # window; without it the deployed image outlives its photon_data.tar.gz and the pod can
 # no longer start after a restart.
