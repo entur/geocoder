@@ -7,6 +7,7 @@ on:
         description: 'Deploy target'
         required: true
         type: choice
+        default: 'dev → tst → prd'
         options:
           - 'dev only'
           - 'dev → tst → prd'
