@@ -23,10 +23,6 @@ inputs:
   service_account:
     description: 'GCP Service Account'
     required: true
-  latest_tag:
-    description: 'Override the latest tag (default: "latest")'
-    required: false
-    default: 'latest'
   build_tag:
     description: 'Shared per-run build tag (produced by the _generate-tag.yml reusable workflow). Used for both the photon_data.tar.gz upload and the docker image, so _deploy-and-test.yml can derive the data URL from the image tag.'
     required: true
@@ -45,70 +41,16 @@ runs:
         dockerfile: photon/Dockerfile
         ignore: "DL3018,DL3059"
 
-    - name: Set up JDK
-      uses: actions/setup-java@v5
+    - name: Build Photon data
+      uses: ./.github/actions/build-photon-data
       with:
-        distribution: liberica
-        java-version: 25
-
-    - name: Download nominatim data
-      uses: ./.github/actions/download-gcs-artifact
-      with:
-        prefix: nominatim-data${{ inputs.suffix }}
-        tag: ${{ inputs.nominatim_data_tag }}
-        filename: nominatim.ndjson.gz
-        destination: photon
-        min_size_mb: ${{ inputs.nominatim_data_min_size_mb }}
-
-    - name: Validate synonym file
-      shell: bash
-      working-directory: photon
-      # Photon reads this at serve time; a malformed file crashloops the pod and
-      # would only surface after the import below. Fail here instead.
-      run: |
-        SYN="synonyms${{ inputs.suffix }}.json"
-        jq -e '.search_synonyms | arrays and all(type == "string" and (contains(" ") | not))' "$SYN" > /dev/null
-        jq -e 'keys - ["search_synonyms", "classification_terms"] | length == 0' "$SYN" > /dev/null
-
-    - name: Create Photon Data
-      shell: bash
-      working-directory: photon
-      run: |
-        ./import/download-photon-jar.sh
-        ./import/create-photon-data.sh nominatim.ndjson.gz
-
-    - name: Summarize
-      shell: bash
-      working-directory: photon
-      run: |
-        echo "### Photon Data" >> "$GITHUB_STEP_SUMMARY"
-        if [ -d photon_data ]; then
-          DIR_SIZE=$(du -sm photon_data | cut -f1)
-          FILE_COUNT=$(find photon_data -type f | wc -l | tr -d ' ')
-          echo "**Data:** ${DIR_SIZE}M (${FILE_COUNT} files)" >> "$GITHUB_STEP_SUMMARY"
-        else
-          echo "❌ photon_data not found" >> "$GITHUB_STEP_SUMMARY"
-          exit 1
-        fi
-
-    - name: Package photon_data
-      shell: bash
-      working-directory: photon
-      # Tar contents-only (no leading "photon_data/" path) so consumers
-      # extract directly into a target directory without --strip-components.
-      run: tar -czf photon_data.tar.gz -C photon_data .
-
-    - name: Upload photon_data to GCS
-      id: upload-photon-data
-      uses: ./.github/actions/upload-gcs-artifact
-      with:
-        prefix: photon-data${{ inputs.suffix }}
-        file_path: photon/photon_data.tar.gz
-        tag: ${{ inputs.build_tag }}
-        min_size_mb: ${{ inputs.photon_data_min_size_mb }}
+        nominatim_data_tag: ${{ inputs.nominatim_data_tag }}
+        suffix: ${{ inputs.suffix }}
+        nominatim_data_min_size_mb: ${{ inputs.nominatim_data_min_size_mb }}
+        photon_data_min_size_mb: ${{ inputs.photon_data_min_size_mb }}
+        build_tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
-        latest_tag: ${{ inputs.latest_tag }}
 
     - name: Create and Push Photon image
       uses: ./.github/actions/docker-build-push
@@ -120,10 +62,9 @@ runs:
         tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
-        latest_tag: ${{ inputs.latest_tag }}
 
     - name: Security Scan
-      # Always runs — this action always pushes
+      # Always runs - this action always pushes
       uses: ./.github/actions/docker-scan
       with:
         image: "geocoder-photon${{ inputs.suffix }}:${{ inputs.build_tag }}"

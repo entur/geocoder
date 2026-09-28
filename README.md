@@ -64,6 +64,11 @@ rm -rf photon_data && ./download-latest-photon-data.sh
 ./photon-start.sh
 ```
 
+Both download scripts take `[suffix] [tag]` and default to `latest-prod`, the index prd serves.
+Pass `latest` for the newest build of any kind, or a full tag. `latest-prod` was imported with
+prd's `photon.jar`, which can be older than the one `download-photon-jar.sh` pins; if Photon
+refuses to open the index, that is why - take a data tag from the same build as your jar.
+
 ### Trying it out
 
 ```bash
@@ -132,21 +137,29 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 ## Deployment
 
-All deployment runs from `main`. The daily import uses the `prod-approved` tag - remember to
-move it when a commit is ready for production:
+All deployment runs from `main`. The daily import is the exception, and it builds no image: it
+reads the build prd is running, re-imports the index from the commit named in its image tag,
+and rolls the pods onto the new data. A merge to `main` therefore does not reach the unattended
+nightly on its own - to promote code into it, run `photon.yml` and approve it through to prd,
+and every night after that refreshes the data for the new commit.
+`photon-deploy.yml` promotes an image you already built, without a fresh import. The import
+jobs run entirely from prd's commit, build actions included, so a change under
+`.github/actions/` that the import uses also needs a promote before the nightly picks it up;
+only the chart and the acceptance tests come from `main` every night. To see what prod is
+missing:
 
-```
-git tag -f prod-approved [sha]
-git push origin prod-approved --force
+```bash
+git log --oneline "$(curl -s https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.txt \
+  | sed 's/.*-SHA//')"..origin/main
 ```
 
 | Workflow | Trigger | What it does |
 | -------- | ------- | ------------ |
 | [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) | push to `main`, manual | Builds and deploys the proxy to dev; tst and prd need approval. Manual dispatch takes a target (`dev only` \| `dev → tst → prd` \| `tst → prd`) |
 | [proxy-deploy.yml](https://github.com/entur/geocoder/actions/workflows/proxy-deploy.yml) | manual | Deploys an existing proxy image tag |
-| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 06:27 UTC | Full import + build + deploy to tst → prd, no approval gates. Checks out `prod-approved` and updates the `latest-prod.txt` pointer |
-| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets; optional `config`, default `converter-prod.json`) |
-| [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag |
+| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 06:27 UTC | Re-imports the index for the build prd runs and deploys it to tst → prd, no approval gates and no new image. tst gets prd's image too, so it is a prd clone rather than a preview of `main`. Manual dispatch takes an optional `image_tag`, which also deploys that image and therefore needs the usual tst and prd approvals |
+| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets, default `dev → tst → prd`; optional `config`, default `converter-prod.json`). tst and prd need approval |
+| [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag, optionally pairing it with a different `photon_data_tag`; tst and prd need approval |
 
 All builds run acceptance tests after deployment, and most workflows post to Slack on failure.
 The reusable [_generate-tag.yml](.github/workflows/_generate-tag.yml) and
@@ -157,8 +170,9 @@ deploy jobs; shared steps live as composite actions under
 ### Other countries (dev only)
 
 [photon-sweden-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden-scheduled.yml)
-runs a full Swedish import and deploy to dev every Monday at 05:27 UTC. It tracks `main` -
-Sweden never reaches prod, so there is no `prod-approved` tag - and updates `latest.txt`. It
+runs a full Swedish import and deploy to dev every Monday at 05:27 UTC. It tracks `main` and
+builds a fresh image every run rather than refreshing data under an existing one, and updates
+`latest.txt`. Sweden never reaches prod, so there is no prd build to follow. It
 also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window, so a running pod's
 `photon_data.tar.gz` can't be deleted out from under it. The manual counterparts are
 [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) and
@@ -185,27 +199,51 @@ Built artifacts live in the public bucket [gs://ent-geocoder-prd/](https://conso
 | `photon-data-se/`    | Sweden variant                                |
 | `data-sources/`      | Daily-refreshed source files                  |
 
-Each build writes to `<prefix>/<tag>/<filename>`. The `<tag>` is generated once and shared
-between the docker image and the GCS upload, so `geocoder-photon:<tag>` always pairs with
-`gs://.../photon-data/<tag>/photon_data.tar.gz`. Two pointer files at the prefix root track
-recent builds: `latest.txt` (most recent build from any branch) and `latest-prod.txt` (most
-recent build deployed to prod, written by `photon-scheduled.yml`).
+Each build writes to `<prefix>/<tag>/<filename>`. A full build generates one tag and gives it
+to both the docker image and the GCS upload, so `geocoder-photon:<tag>` pairs with
+`gs://.../photon-data/<tag>/photon_data.tar.gz`. The nightly breaks that pairing on purpose:
+it uploads new data under a new tag while prd keeps the image it already runs. Either way the
+tag's `-SHA` suffix names the commit the data was imported from.
+
+Two pointer files at the prefix root track recent builds: `latest.txt` (most recent build,
+written by every build) and `latest-prod.txt` (the data prd is serving, written by
+`photon-scheduled.yml` once the prd deploy succeeds). Both are informational - nothing reads
+them to decide what to build, and `latest-prod.txt` lags until the next nightly after a manual
+promote, since only the nightly writes it. The authoritative answer is on the running pods:
+
+```bash
+kubectl --context prd -n geocoder get deployment geocoder-photon \
+  -o jsonpath='{.spec.template.spec.initContainers[*].env[?(@.name=="PHOTON_DATA_URL")].value}'
+```
 
 A `fetch-photon-data` init container downloads `photon_data.tar.gz` from `$PHOTON_DATA_URL`,
 verifies its `.sha256` sidecar, and extracts it into a shared `emptyDir` the distroless photon
-container serves from (so the runtime image needs no shell/curl/tar). CI derives the URL from the
-image tag in [_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) and injects it into
-the helm values; `templates/photon-data-validation.yaml` fails the render if it is missing.
+container serves from (so the runtime image needs no shell/curl/tar). CI resolves the URL in
+[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) from `photon_data_tag`, falling
+back to the image tag, and injects it into the helm values;
+`templates/photon-data-validation.yaml` fails the render if it is missing. The URL lives in the
+pod template, so moving it is what rolls the pods onto new data.
 
 ### Rolling back
 
-```bash
-# See the current pointer
-curl -s https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.txt
+Image and data roll independently.
 
-# Re-deploy a known-good image - the data is paired automatically
+```bash
+# What prd is pinned to (image) and serving (data)
+kubectl --context prd -n geocoder get deployment geocoder-photon -o jsonpath='\
+{.spec.template.spec.containers[0].image}{"\n"}\
+{.spec.template.spec.initContainers[*].env[?(@.name=="PHOTON_DATA_URL")].value}{"\n"}'
+
+# Bad data, good image: re-deploy the running image with an earlier index
+gh workflow run photon-deploy.yml -f target='tst → prd' \
+  -f image_tag=<current-tag> -f photon_data_tag=<previous-data-tag>
+
+# Bad image: go back to a known-good one. Drop photon_data_tag only if that image's own
+# data is still inside the 90-day window; otherwise name a data tag its jar can read.
 gh workflow run photon-deploy.yml -f target='tst → prd' -f image_tag=<previous-tag>
 ```
+
+The next nightly follows whatever image prd ends up on.
 
 ### 90-day lifecycle rule
 
@@ -232,7 +270,8 @@ Applied once per bucket. The `matchesSuffix` filter spares the `latest*.txt` poi
 
 [photon/synonyms.json](photon/synonyms.json) goes to `serve` via `-synonym-file`;
 `synonyms-se.json` / `synonyms-dk.json` are picked by the `SYNONYM_FILE` build arg. Applied at
-query time, but editing one still costs a reimport, since image and data are built together.
+query time and baked into the image, so editing one needs no reimport but does need a `photon.yml`
+run promoted to prd - the nightly reuses prd's image and will not pick it up.
 
 - Single tokens, no spaces. CI rejects the rest.
 - `gt` and `gt.` are separate terms, both needed.
@@ -248,8 +287,9 @@ Ranking happens inside Photon, so most search tuning lands in the fork rather th
 1. Make the change in a checkout of [komoot/photon](https://github.com/komoot/photon) and build it with `./gradlew build`.
 2. Create a tag and push it to [entur/photon](https://github.com/entur/photon) with `git push --tags entur`.
 3. Draft a release at [entur/photon/releases/new](https://github.com/entur/photon/releases/new), select the tag, attach `photon-<tag>.jar` from Photon's `target/`, check "Set as a pre-release" and publish.
-4. Copy the asset link and update `PHOTON_JAR` in [photon/import/download-photon-jar.sh](photon/import/download-photon-jar.sh).
+4. Copy the asset link and update `PHOTON_JAR` and `PHOTON_JAR_SHA256` in [photon/import/download-photon-jar.sh](photon/import/download-photon-jar.sh).
 5. Push, then run [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) with target `dev only`.
+6. Once dev looks right, promote it to prd. The nightly imports from the commit prd runs, so an unpromoted jar never reaches production.
 
 ## Links
 

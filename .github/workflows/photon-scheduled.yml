@@ -2,34 +2,107 @@ name: Photon — Scheduled Import
 
 on:
   schedule:
-    # Run full build every day (6:27 UTC is 7:27 CET or 8:27 CEST)
-    # Uses the `prod-approved` tag to avoid picking up untested commits from main.
+    # Run the import every day (6:27 UTC is 7:27 CET or 8:27 CEST)
     - cron: '27 6 * * *'
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Photon build tag to refresh the data for. Supplying one also deploys that image, so tst and prd then need approval. Default: whatever prd runs.'
+        required: false
+        type: string
 
 concurrency:
   group: "${{ github.workflow }}"
   cancel-in-progress: true
 
-env:
-  LATEST_TAG: latest-prod
-
-# All checkouts and the generate-tag reusable workflow use the `prod-approved` tag
-# (moved by proxy CI after a successful prod deploy) so the scheduled rebuild runs
-# against the same code that's currently in prod, not whatever happens to be on main.
-# Hardcoded in three places below because reusable-workflow `with:` blocks can't read
-# the workflow-level `env` context.
+# Refreshes the index without rebuilding the image: the pods fetch photon_data.tar.gz at
+# startup, so a helm upgrade that only moves PHOTON_DATA_URL rolls them onto new data.
+# The import jobs check out the commit prd's image was built from, so jar, converter, flags
+# and build actions are the ones that produced that image and untested main never runs
+# unattended. prd's image tag only moves when a human promotes, and so does this.
+# The deploy jobs check out the workflow ref, so chart and tests come from main.
 
 jobs:
+  resolve-prod-release:
+    name: Resolve Prod Release
+    runs-on: ubuntu-latest
+    environment: prd
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate with Google Cloud
+        uses: entur/gha-meta/.github/actions/cloud-auth@v1
+        with:
+          environment: prd
+          gcp_workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Authenticate with Kubernetes
+        uses: entur/gha-meta/.github/actions/k8s-auth@v1
+        with:
+          environment: prd
+
+      - name: Read the build running in prd
+        id: resolve
+        shell: bash
+        env:
+          OVERRIDE: ${{ inputs.image_tag }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            TAG="$OVERRIDE"
+          else
+            # -m1: a second matching container would make TAG multi-line and the
+            # expansion below would silently return the wrong tag.
+            IMAGE=$(kubectl get deployment geocoder-photon -n geocoder \
+              -o jsonpath='{range .spec.template.spec.containers[*]}{.image}{"\n"}{end}' \
+              | grep -m1 geocoder-photon:)
+            TAG="${IMAGE##*:}"
+          fi
+
+          SHORT=$(./.github/scripts/resolve-prod-ref.sh "$TAG")   # rejects alias tags
+          if ! REF=$(git rev-parse --verify --quiet "$SHORT^{commit}"); then
+            # A build promoted from a branch that was deleted afterwards is unreachable
+            # from refs/heads, but its PR head still carries the commit.
+            git fetch --no-tags --quiet origin '+refs/pull/*/head:refs/remotes/origin/pr/*' || true
+            REF=$(git rev-parse --verify --quiet "$SHORT^{commit}") || {
+              echo "::error::prd runs $TAG, whose commit is not in this repo; promote a main build with photon.yml"
+              exit 1
+            }
+          fi
+
+          echo "image_tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Prod Release"
+            echo "**Image:** \`geocoder-photon:$TAG\`"
+            echo "**Importing from:** \`$REF\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Not fatal: prd already runs this commit, so refusing would only let its
+          # data go stale.
+          if ! git merge-base --is-ancestor "$REF" origin/main; then
+            echo "::warning::$TAG was not built from main; rebuilding its data anyway"
+            echo "**Note:** not built from main" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   generate-tag:
     name: Generate Tag
+    needs: resolve-prod-release
     uses: ./.github/workflows/_generate-tag.yml
     with:
-      ref: prod-approved
+      ref: ${{ needs.resolve-prod-release.outputs.ref }}
 
   nominatim-data:
     name: Nominatim Data
-    needs: generate-tag
+    needs: [resolve-prod-release, generate-tag]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -40,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: prod-approved
+          ref: ${{ needs.resolve-prod-release.outputs.ref }}
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
@@ -48,70 +121,107 @@ jobs:
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          latest_tag: ${{ env.LATEST_TAG }}
 
-  photon:
-    name: Photon Image
-    needs: [generate-tag, nominatim-data]
+  photon-data:
+    name: Photon Data
+    needs: [resolve-prod-release, generate-tag, nominatim-data]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
-      actions: read
       contents: read
       id-token: write
-      security-events: write
-      pull-requests: write
     outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
+      data_tag: ${{ steps.build.outputs.data_tag }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: prod-approved
-      - name: Build Photon image
+          ref: ${{ needs.resolve-prod-release.outputs.ref }}
+      - name: Build Photon data
         id: build
-        uses: ./.github/actions/build-photon-image
+        uses: ./.github/actions/build-photon-data
         with:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-          latest_tag: ${{ env.LATEST_TAG }}
 
   deploy-tst:
     name: Staging
-    needs: photon
+    needs: [resolve-prod-release, photon-data]
+    # tst gets prd's image too, so the tests run against the same jar prd will use.
     uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: tst
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.resolve-prod-release.outputs.image_tag }}"
+      photon_data_tag: ${{ needs.photon-data.outputs.data_tag }}
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
       values: values-kub-ent-tst.yaml
       photon_data_prefix: photon-data
-      require_approval: false
+      # Unattended for the cron path, which never moves prd's image. Supplying
+      # image_tag makes this a promote, so gate it like photon-deploy.yml does.
+      require_approval: ${{ inputs.image_tag != '' }}
     secrets: inherit
 
   deploy-prd:
     name: Prod
-    needs: [ photon, deploy-tst ]
+    needs: [resolve-prod-release, photon-data, deploy-tst]
     if: |
       !cancelled() &&
       needs.deploy-tst.result == 'success'
     uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: prd
-      image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
+      image: "geocoder-photon:${{ needs.resolve-prod-release.outputs.image_tag }}"
+      photon_data_tag: ${{ needs.photon-data.outputs.data_tag }}
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon
       values: values-kub-ent-prd.yaml
       photon_data_prefix: photon-data
-      require_approval: false
+      # Unattended for the cron path, which never moves prd's image. Supplying
+      # image_tag makes this a promote, so gate it like photon-deploy.yml does.
+      require_approval: ${{ inputs.image_tag != '' }}
     secrets: inherit
 
+  record:
+    name: Record Prod Data
+    needs: [photon-data, deploy-prd]
+    # Informational only - nothing decides what to build from it. The authoritative
+    # answer is PHOTON_DATA_URL on the running pods; this is the public copy that
+    # photon/download-latest-*-data.sh reads.
+    if: needs.deploy-prd.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Move latest-prod pointers
+        shell: bash
+        env:
+          TAG: ${{ needs.photon-data.outputs.data_tag }}
+        run: |
+          [ -n "$TAG" ] || { echo "::error::empty data tag"; exit 1; }
+
+          for P in nominatim-data photon-data; do
+            echo "$TAG" | gcloud storage cp \
+              --content-type=text/plain \
+              --cache-control="no-cache, max-age=0" \
+              - "gs://ent-geocoder-prd/$P/latest-prod.txt"
+          done
+
+          echo "\`latest-prod.txt\` now names \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
   notify-slack:
-    needs: [ generate-tag, nominatim-data, photon, deploy-tst, deploy-prd ]
+    needs: [ resolve-prod-release, generate-tag, nominatim-data, photon-data, deploy-tst, deploy-prd, record ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

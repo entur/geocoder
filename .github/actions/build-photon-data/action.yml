@@ -1,0 +1,103 @@
+name: 'Build Photon Data'
+description: 'Download nominatim data, run the Photon import, and upload photon_data.tar.gz'
+
+inputs:
+  nominatim_data_tag:
+    description: 'Tag of the nominatim data image to use'
+    required: true
+  suffix:
+    description: 'Suffix for artifact prefixes (e.g., -se for photon-data-se)'
+    required: false
+    default: ''
+  nominatim_data_min_size_mb:
+    description: 'Minimum accepted size of the downloaded nominatim.ndjson.gz in MB'
+    required: false
+    default: '150'
+  photon_data_min_size_mb:
+    description: 'Minimum accepted size of photon_data.tar.gz in MB'
+    required: false
+    default: '500'
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  service_account:
+    description: 'GCP Service Account'
+    required: true
+  build_tag:
+    description: 'Shared per-run build tag (produced by the _generate-tag.yml reusable workflow)'
+    required: true
+
+outputs:
+  data_tag:
+    description: 'Tag of the uploaded photon_data.tar.gz (== inputs.build_tag)'
+    value: ${{ inputs.build_tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        distribution: liberica
+        java-version: 25
+
+    - name: Download nominatim data
+      uses: ./.github/actions/download-gcs-artifact
+      with:
+        prefix: nominatim-data${{ inputs.suffix }}
+        tag: ${{ inputs.nominatim_data_tag }}
+        filename: nominatim.ndjson.gz
+        destination: photon
+        min_size_mb: ${{ inputs.nominatim_data_min_size_mb }}
+
+    - name: Validate synonym file
+      shell: bash
+      working-directory: photon
+      run: |
+        SYN="synonyms${{ inputs.suffix }}.json"
+        jq -e '.search_synonyms | arrays and all(type == "string" and (contains(" ") | not))' "$SYN" > /dev/null
+        jq -e 'keys - ["search_synonyms", "classification_terms"] | length == 0' "$SYN" > /dev/null
+
+    - name: Download photon.jar
+      shell: bash
+      working-directory: photon
+      run: |
+        ./import/download-photon-jar.sh
+        echo "**photon.jar sha256:** \`$(sha256sum photon.jar | awk '{print $1}')\`" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Create Photon Data
+      shell: bash
+      working-directory: photon
+      run: ./import/create-photon-data.sh nominatim.ndjson.gz
+
+    - name: Summarize
+      shell: bash
+      working-directory: photon
+      run: |
+        echo "### Photon Data" >> "$GITHUB_STEP_SUMMARY"
+        if [ -d photon_data ]; then
+          DIR_SIZE=$(du -sm photon_data | cut -f1)
+          FILE_COUNT=$(find photon_data -type f | wc -l | tr -d ' ')
+          echo "**Data:** ${DIR_SIZE}M (${FILE_COUNT} files)" >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "❌ photon_data not found" >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+        fi
+
+    - name: Package photon_data
+      shell: bash
+      working-directory: photon
+      # Tar contents-only (no leading "photon_data/" path) so consumers
+      # extract directly into a target directory without --strip-components.
+      run: tar -czf photon_data.tar.gz -C photon_data .
+
+    - name: Upload photon_data to GCS
+      id: upload-photon-data
+      uses: ./.github/actions/upload-gcs-artifact
+      with:
+        prefix: photon-data${{ inputs.suffix }}
+        file_path: photon/photon_data.tar.gz
+        tag: ${{ inputs.build_tag }}
+        min_size_mb: ${{ inputs.photon_data_min_size_mb }}
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        service_account: ${{ inputs.service_account }}
