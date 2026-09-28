@@ -26,10 +26,6 @@ inputs:
   service_account:
     description: 'GCP Service Account'
     required: true
-  latest_tag:
-    description: 'Override the latest tag (default: "latest")'
-    required: false
-    default: 'latest'
   build_tag:
     description: 'Shared per-run build tag (produced by the _generate-tag.yml reusable workflow)'
     required: true
@@ -77,4 +73,3 @@ runs:
         tag: ${{ inputs.build_tag }}
         workload_identity_provider: ${{ inputs.workload_identity_provider }}
         service_account: ${{ inputs.service_account }}
-        latest_tag: ${{ inputs.latest_tag }}

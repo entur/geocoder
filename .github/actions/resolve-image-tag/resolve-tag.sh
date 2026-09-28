@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# Resolve a Docker image tag alias (e.g. 'latest-prod') to its semantic
+# Resolve a Docker image tag alias (e.g. 'latest') to its semantic
 # version (e.g. 'main.20260427-102029-SHAd8b8b92'). When the input is
 # already a semantic tag, return it unchanged.
 #
