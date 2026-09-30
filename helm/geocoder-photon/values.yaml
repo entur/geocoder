@@ -106,9 +106,12 @@ common:
           echo "Downloading $PHOTON_DATA_URL"
           # --no-progress-meter: the progress bar goes to stderr and gets
           # logged as ERROR in Cloud Logging even on success.
+          # --speed-*: abort a stalled transfer instead of holding the rollout
+          # until helm times out; --retry treats that as transient.
           curl -fL --no-progress-meter --retry 3 --retry-delay 10 --connect-timeout 30 \
+            --speed-limit 102400 --speed-time 60 --max-time 900 \
             -A entur-geocoder -o "$TARBALL" "$PHOTON_DATA_URL"
-          EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 \
+          EXPECTED=$(curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 60 \
             -A entur-geocoder "${PHOTON_DATA_URL}.sha256" | tr -d '[:space:]')
           ACTUAL=$(sha256sum "$TARBALL" | awk '{print $1}')
           if [ "$EXPECTED" != "$ACTUAL" ]; then

@@ -59,7 +59,8 @@ jobs:
       !cancelled() &&
       (needs.approval.result == 'success' || needs.approval.result == 'skipped')
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # helm-deploy waits up to 13m and then rolls back for up to 13m more.
+    timeout-minutes: 45
     environment: ${{ inputs.environment }}
     permissions:
       contents: write
@@ -91,8 +92,10 @@ jobs:
           # An image tag can now outlive the data uploaded beside it (90-day bucket
           # lifecycle). Without this the init containers just fail and the rollout
           # stalls until helm times out and rolls back.
-          curl -fsI -A entur-geocoder "$PHOTON_DATA_URL" > /dev/null
-          curl -fsI -A entur-geocoder "$PHOTON_DATA_URL.sha256" > /dev/null
+          for F in "$PHOTON_DATA_URL" "$PHOTON_DATA_URL.sha256"; do
+            curl -fsI --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 60 \
+              -A entur-geocoder "$F" > /dev/null
+          done
 
           sed -i "s|__PHOTON_DATA_URL__|${PHOTON_DATA_URL}|g" "$CHART/values.yaml"
 
