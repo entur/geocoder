@@ -81,7 +81,9 @@ A full build generates one tag and gives it to both the image and the data uploa
 `geocoder-photon:<tag>` pairs with `photon-data/<tag>/photon_data.tar.gz`. The nightly
 decouples them on purpose: it builds no image, uploads new data under a new tag, and redeploys
 the image prd already runs. prd's image tag is the pin and only moves when a human promotes
-through `photon.yml` or `photon-deploy.yml`. A `fetch-photon-data` init container fetches
+through `photon.yml` or `photon-deploy.yml`. Sweden's weekly (`photon-sweden-scheduled.yml`)
+does the same in dev and its pin moves only through `photon-sweden.yml`; Denmark has no
+scheduled refresh. A `fetch-photon-data` init container fetches
 `$PHOTON_DATA_URL`, verifies the `.sha256` sidecar, and extracts atomically into a shared
 `emptyDir` the distroless photon container serves from.
 `helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render

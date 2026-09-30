@@ -1,0 +1,108 @@
+name: "~ Resolve Deployed Release"
+
+# Reads which build an environment runs and the commit it was built from, so a data-only
+# refresh imports with exactly that build. The image name is taken to equal the release name.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      release_name:
+        description: 'Deployment to read, e.g. geocoder-photon-se'
+        type: string
+        required: true
+      namespace:
+        type: string
+        required: false
+        default: geocoder
+      image_tag:
+        description: 'Use this tag instead of reading the cluster'
+        type: string
+        required: false
+        default: ''
+      promote_with:
+        description: 'Workflow to name in the error when the running build is not in this repo, e.g. photon.yml'
+        type: string
+        required: true
+    outputs:
+      image_tag:
+        value: ${{ jobs.resolve.outputs.image_tag }}
+      ref:
+        value: ${{ jobs.resolve.outputs.ref }}
+
+jobs:
+  resolve:
+    name: Resolve
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate with Google Cloud
+        uses: entur/gha-meta/.github/actions/cloud-auth@v1
+        with:
+          environment: ${{ inputs.environment }}
+          gcp_workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_service_account: ${{ vars.SERVICE_ACCOUNT }}
+
+      - name: Authenticate with Kubernetes
+        uses: entur/gha-meta/.github/actions/k8s-auth@v1
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Read the deployed build
+        id: resolve
+        shell: bash
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          RELEASE: ${{ inputs.release_name }}
+          NAMESPACE: ${{ inputs.namespace }}
+          OVERRIDE: ${{ inputs.image_tag }}
+          PROMOTE_WITH: ${{ inputs.promote_with }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            TAG="$OVERRIDE"
+          else
+            # -m1: a second match would make TAG multi-line
+            IMAGE=$(kubectl get deployment "$RELEASE" -n "$NAMESPACE" \
+              -o jsonpath='{range .spec.template.spec.containers[*]}{.image}{"\n"}{end}' \
+              | grep -m1 "/$RELEASE:" || true)
+            [ -n "$IMAGE" ] || { echo "::error::no container image matching /$RELEASE: on deployment $RELEASE"; exit 1; }
+            TAG="${IMAGE##*:}"
+          fi
+
+          SHORT=$(./.github/scripts/resolve-build-ref.sh "$TAG")   # rejects alias tags
+          if ! REF=$(git rev-parse --verify --quiet "$SHORT^{commit}"); then
+            # A build promoted from a branch that was deleted afterwards is unreachable
+            # from refs/heads, but its PR head still carries the commit.
+            git fetch --no-tags --quiet origin '+refs/pull/*/head:refs/remotes/origin/pr/*' || true
+            REF=$(git rev-parse --verify --quiet "$SHORT^{commit}") || {
+              echo "::error::$ENVIRONMENT runs $TAG, whose commit is not in this repo; promote a main build with $PROMOTE_WITH"
+              exit 1
+            }
+          fi
+
+          echo "image_tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Deployed build ($ENVIRONMENT)"
+            echo "**Image:** \`$RELEASE:$TAG\`"
+            echo "**Importing from:** \`$REF\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Not fatal: the environment already runs this commit, so refusing would
+          # only let its data go stale.
+          if ! git merge-base --is-ancestor "$REF" origin/main; then
+            echo "::warning::$TAG was not built from main; rebuilding its data anyway"
+            echo "**Note:** not built from main" >> "$GITHUB_STEP_SUMMARY"
+          fi

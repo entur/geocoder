@@ -3,12 +3,13 @@
 # Useful for local debugging - downloads the file into the current directory.
 # Usage: ./download-latest-nominatim-data.sh [suffix] [tag]
 #   suffix: e.g. '-se' for country-specific data (default: none)
-#   tag:    'latest-prod' (default), 'latest', or a specific timestamped tag
+#   tag:    'latest-prod' (default; 'latest' when a suffix is given, since only the
+#           Norwegian prefixes have a latest-prod pointer), 'latest', or a timestamped tag
 
 set -euo pipefail
 
 SUFFIX=${1:-}
-TAG_INPUT=${2:-latest-prod}
+TAG_INPUT=${2:-$([ -n "$SUFFIX" ] && echo latest || echo latest-prod)}
 
 BUCKET=ent-geocoder-prd
 PREFIX="nominatim-data${SUFFIX}"

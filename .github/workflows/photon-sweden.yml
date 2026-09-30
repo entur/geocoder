@@ -19,6 +19,10 @@ on:
         description: 'Photon image tag (only for "Deploy specified")'
         required: false
         type: string
+      photon_data_tag:
+        description: 'photon_data tag to load (only for "Deploy specified"; default: same as the image tag)'
+        required: false
+        type: string
 
 concurrency:
   group: "${{ github.workflow }}"
@@ -36,6 +40,7 @@ jobs:
             echo "**Build:** \`${{ inputs.build }}\`"
             echo "**Nominatim data tag:** \`${{ inputs.nominatim_data_tag || 'not specified' }}\`"
             echo "**Photon image tag:** \`${{ inputs.photon_image_tag || 'not specified' }}\`"
+            echo "**Photon data tag:** \`${{ inputs.photon_data_tag || 'same as image' }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # Always runs (even in "Use existing data" mode), so photon's image tag is always fresh
@@ -109,6 +114,7 @@ jobs:
     with:
       environment: dev
       image: "geocoder-photon-se:${{ needs.photon.outputs.image_tag || inputs.photon_image_tag }}"
+      photon_data_tag: ${{ inputs.photon_data_tag }}
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon-se

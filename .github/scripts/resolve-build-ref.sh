@@ -3,13 +3,13 @@
 # reference. Tags are <branch>.<UTC-timestamp>-SHA<short>, see generate-tag.sh.
 # Aliases like latest-prod carry no commit and are rejected.
 #
-# Usage: ./resolve-prod-ref.sh <build-tag|image-reference>
+# Usage: ./resolve-build-ref.sh <build-tag|image-reference>
 
 set -euo pipefail
 
 REF=${1:-}
 if [ -z "$REF" ]; then
-  echo "Usage: resolve-prod-ref.sh <build-tag|image-reference>" >&2
+  echo "Usage: resolve-build-ref.sh <build-tag|image-reference>" >&2
   exit 1
 fi
 

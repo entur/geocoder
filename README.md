@@ -65,7 +65,8 @@ rm -rf photon_data && ./download-latest-photon-data.sh
 ```
 
 Both download scripts take `[suffix] [tag]` and default to `latest-prod`, the index prd serves.
-Pass `latest` for the newest build of any kind, or a full tag. `latest-prod` was imported with
+Pass `latest` for the newest build of any kind, or a full tag. Only the Norwegian prefixes have
+a `latest-prod` pointer; with a suffix the scripts default to `latest`. `latest-prod` was imported with
 prd's `photon.jar`, which can be older than the one `download-photon-jar.sh` pins; if Photon
 refuses to open the index, that is why - take a data tag from the same build as your jar.
 
@@ -137,9 +138,9 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 ## Deployment
 
-All deployment runs from `main`. The daily import is the exception, and it builds no image: it
-reads the build prd is running, re-imports the index from the commit named in its image tag,
-and rolls the pods onto the new data. A merge to `main` therefore does not reach the unattended
+All deployment runs from `main`. The scheduled imports are the exception, and they build no
+image. The daily one reads the build prd is running, re-imports the index from the commit named
+in its image tag, and rolls the pods onto the new data. A merge to `main` therefore does not reach the unattended
 nightly on its own - to promote code into it, run `photon.yml` and approve it through to prd,
 and every night after that refreshes the data for the new commit.
 `photon-deploy.yml` promotes an image you already built, without a fresh import. The import
@@ -162,24 +163,31 @@ git log --oneline "$(curl -s https://storage.googleapis.com/ent-geocoder-prd/pho
 | [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag, optionally pairing it with a different `photon_data_tag`; tst and prd need approval |
 
 All builds run acceptance tests after deployment, and most workflows post to Slack on failure.
-The reusable [_generate-tag.yml](.github/workflows/_generate-tag.yml) and
-[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) workflows back the build and
+The reusable [_resolve-release.yml](.github/workflows/_resolve-release.yml),
+[_generate-tag.yml](.github/workflows/_generate-tag.yml) and
+[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) workflows back the resolve, build and
 deploy jobs; shared steps live as composite actions under
 [.github/actions/](.github/actions/README.md).
 
 ### Other countries (dev only)
 
 [photon-sweden-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden-scheduled.yml)
-runs a full Swedish import and deploy to dev every Monday at 05:27 UTC. It tracks `main` and
-builds a fresh image every run rather than refreshing data under an existing one, and updates
-`latest.txt`. Sweden never reaches prod, so there is no prd build to follow. It
-also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window, so a running pod's
-`photon_data.tar.gz` can't be deleted out from under it. The manual counterparts are
+re-imports the Swedish index every Monday at 05:27 UTC the same way the Norwegian nightly
+does, for the build dev runs: no new image, and a merge to `main` (or any change on the import
+side: `.github/actions/`, the converter pin, `download-photon-jar.sh`, `synonyms-se.json`)
+reaches Sweden only when `photon-sweden.yml` builds an image from it, with "Download data" or
+"Use existing data" and the weekly's `nominatim-data-se` tag. "Deploy specified Photon image"
+only moves the image, and takes a `photon_data_tag` for the same reason `photon-deploy.yml`
+does. The weekly run also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window,
+so a running pod's `photon_data.tar.gz` can't be deleted out from under it. The manual
+counterparts are
 [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) and
 [proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml).
 Denmark has manual-only equivalents,
 [photon-denmark.yml](https://github.com/entur/geocoder/actions/workflows/photon-denmark.yml) and
-[proxy-denmark.yml](https://github.com/entur/geocoder/actions/workflows/proxy-denmark.yml).
+[proxy-denmark.yml](https://github.com/entur/geocoder/actions/workflows/proxy-denmark.yml), and
+no scheduled refresh: `photon-data-dk/` expires 90 days after the last run, after which the pod
+cannot restart until `photon-denmark.yml` is run again.
 
 ### Scheduled checks
 
@@ -243,7 +251,9 @@ gh workflow run photon-deploy.yml -f target='tst → prd' \
 gh workflow run photon-deploy.yml -f target='tst → prd' -f image_tag=<previous-tag>
 ```
 
-The next nightly follows whatever image prd ends up on.
+The next nightly follows whatever image prd ends up on. Sweden works the same way with
+`photon-sweden.yml` in "Deploy specified Photon image" mode, its `photon_image_tag` and
+`photon_data_tag`, and `--context dev` with `geocoder-photon-se`.
 
 ### 90-day lifecycle rule
 

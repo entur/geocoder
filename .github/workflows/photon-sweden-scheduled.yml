@@ -2,32 +2,46 @@ name: Photon Sweden — Scheduled Import
 
 on:
   schedule:
-    # Run full build every Monday (5:27 UTC is 6:27 CET or 7:27 CEST). Kept ahead of the
-    # Norway import at 6:27 UTC so the two don't compete for the 8-core runner group.
-    # Monday so a failure notification lands before the working week rather than over
-    # the weekend.
+    # Weekly (5:27 UTC is 6:27 CET or 7:27 CEST). Kept ahead of the Norway import at 6:27
+    # UTC so the two don't compete for the 8-core runner group. Monday so a failure
+    # notification lands before the working week rather than over the weekend.
     - cron: '27 5 * * 1'
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Photon Sweden build tag to refresh the data for. Supplying one also deploys that image. Default: whatever dev runs.'
+        required: false
+        type: string
 
 concurrency:
   group: "${{ github.workflow }}"
   cancel-in-progress: true
 
-# Sweden is dev-only, so this tracks main rather than a deployed build, and still builds a
-# fresh image every run instead of refreshing the data under an existing one. Nothing writes
-# photon-data-se/latest-prod.txt.
-# The weekly refresh also keeps photon-data-se/ inside the bucket's 90-day lifecycle
-# window; without it the deployed image outlives its photon_data.tar.gz and the pod can
-# no longer start after a restart.
+# Same shape as photon-scheduled.yml, for dev only: refreshes the index under the image dev
+# already runs, so a merge to main reaches Sweden only through photon-sweden.yml. The weekly
+# run also keeps photon-data-se/ inside the bucket's 90-day lifecycle window; without it the
+# deployed image outlives its photon_data.tar.gz and the pod can no longer start after a restart.
 
 jobs:
+  resolve-dev-release:
+    name: Resolve Dev Release
+    uses: ./.github/workflows/_resolve-release.yml
+    with:
+      environment: dev
+      release_name: geocoder-photon-se
+      image_tag: ${{ inputs.image_tag }}
+      promote_with: photon-sweden.yml
+
   generate-tag:
     name: Generate Tag
+    needs: resolve-dev-release
     uses: ./.github/workflows/_generate-tag.yml
+    with:
+      ref: ${{ needs.resolve-dev-release.outputs.ref }}
 
   nominatim-data:
     name: Nominatim Data
-    needs: generate-tag
+    needs: [resolve-dev-release, generate-tag]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
@@ -37,6 +51,8 @@ jobs:
       image_tag: ${{ steps.build.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve-dev-release.outputs.ref }}
       - name: Build nominatim data
         id: build
         uses: ./.github/actions/build-nominatim-data
@@ -49,24 +65,23 @@ jobs:
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
 
-  photon:
-    name: Photon Image
-    needs: [generate-tag, nominatim-data]
+  photon-data:
+    name: Photon Data
+    needs: [resolve-dev-release, generate-tag, nominatim-data]
     runs-on:
       group: grp-ubuntu-24.04-8core-x64
     permissions:
-      actions: read
       contents: read
       id-token: write
-      security-events: write
-      pull-requests: write
     outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
+      data_tag: ${{ steps.build.outputs.data_tag }}
     steps:
       - uses: actions/checkout@v7
-      - name: Build Photon image
+        with:
+          ref: ${{ needs.resolve-dev-release.outputs.ref }}
+      - name: Build Photon data
         id: build
-        uses: ./.github/actions/build-photon-image
+        uses: ./.github/actions/build-photon-data
         with:
           nominatim_data_tag: ${{ needs.nominatim-data.outputs.image_tag }}
           suffix: -se
@@ -76,11 +91,12 @@ jobs:
 
   deploy-dev:
     name: Dev
-    needs: photon
+    needs: [resolve-dev-release, photon-data]
     uses: ./.github/workflows/_deploy-and-test.yml
     with:
       environment: dev
-      image: "geocoder-photon-se:${{ needs.photon.outputs.image_tag }}"
+      image: "geocoder-photon-se:${{ needs.resolve-dev-release.outputs.image_tag }}"
+      photon_data_tag: ${{ needs.photon-data.outputs.data_tag }}
       chart: helm/geocoder-photon
       namespace: geocoder
       release_name: geocoder-photon-se
@@ -91,7 +107,7 @@ jobs:
     secrets: inherit
 
   notify-slack:
-    needs: [ generate-tag, nominatim-data, photon, deploy-dev ]
+    needs: [ resolve-dev-release, generate-tag, nominatim-data, photon-data, deploy-dev ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

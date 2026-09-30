@@ -25,73 +25,12 @@ concurrency:
 jobs:
   resolve-prod-release:
     name: Resolve Prod Release
-    runs-on: ubuntu-latest
-    environment: prd
-    permissions:
-      contents: read
-      id-token: write
-    outputs:
-      image_tag: ${{ steps.resolve.outputs.image_tag }}
-      ref: ${{ steps.resolve.outputs.ref }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Authenticate with Google Cloud
-        uses: entur/gha-meta/.github/actions/cloud-auth@v1
-        with:
-          environment: prd
-          gcp_workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-          gcp_service_account: ${{ vars.SERVICE_ACCOUNT }}
-
-      - name: Authenticate with Kubernetes
-        uses: entur/gha-meta/.github/actions/k8s-auth@v1
-        with:
-          environment: prd
-
-      - name: Read the build running in prd
-        id: resolve
-        shell: bash
-        env:
-          OVERRIDE: ${{ inputs.image_tag }}
-        run: |
-          if [ -n "$OVERRIDE" ]; then
-            TAG="$OVERRIDE"
-          else
-            # -m1: a second matching container would make TAG multi-line and the
-            # expansion below would silently return the wrong tag.
-            IMAGE=$(kubectl get deployment geocoder-photon -n geocoder \
-              -o jsonpath='{range .spec.template.spec.containers[*]}{.image}{"\n"}{end}' \
-              | grep -m1 geocoder-photon:)
-            TAG="${IMAGE##*:}"
-          fi
-
-          SHORT=$(./.github/scripts/resolve-prod-ref.sh "$TAG")   # rejects alias tags
-          if ! REF=$(git rev-parse --verify --quiet "$SHORT^{commit}"); then
-            # A build promoted from a branch that was deleted afterwards is unreachable
-            # from refs/heads, but its PR head still carries the commit.
-            git fetch --no-tags --quiet origin '+refs/pull/*/head:refs/remotes/origin/pr/*' || true
-            REF=$(git rev-parse --verify --quiet "$SHORT^{commit}") || {
-              echo "::error::prd runs $TAG, whose commit is not in this repo; promote a main build with photon.yml"
-              exit 1
-            }
-          fi
-
-          echo "image_tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
-          {
-            echo "### Prod Release"
-            echo "**Image:** \`geocoder-photon:$TAG\`"
-            echo "**Importing from:** \`$REF\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          # Not fatal: prd already runs this commit, so refusing would only let its
-          # data go stale.
-          if ! git merge-base --is-ancestor "$REF" origin/main; then
-            echo "::warning::$TAG was not built from main; rebuilding its data anyway"
-            echo "**Note:** not built from main" >> "$GITHUB_STEP_SUMMARY"
-          fi
+    uses: ./.github/workflows/_resolve-release.yml
+    with:
+      environment: prd
+      release_name: geocoder-photon
+      image_tag: ${{ inputs.image_tag }}
+      promote_with: photon.yml
 
   generate-tag:
     name: Generate Tag
