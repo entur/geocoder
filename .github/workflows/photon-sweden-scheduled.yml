@@ -2,9 +2,9 @@ name: Photon Sweden — Scheduled Import
 
 on:
   schedule:
-    # Weekly (5:27 UTC is 6:27 CET or 7:27 CEST). Kept ahead of the Norway import at 6:27
-    # UTC so the two don't compete for the 8-core runner group. Monday so a failure
-    # notification lands before the working week rather than over the weekend.
+    # Weekly (5:27 UTC is 6:27 CET or 7:27 CEST), two hours after the Norway import so the
+    # two don't compete for the 8-core runner group. Monday so a failure notification lands
+    # before the working week rather than over the weekend.
     - cron: '27 5 * * 1'
   workflow_dispatch:
     inputs:
