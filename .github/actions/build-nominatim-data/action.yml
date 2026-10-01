@@ -1,5 +1,5 @@
 name: 'Build Nominatim Data'
-description: 'Download converter, run import, and upload nominatim data as artifact'
+description: 'Run nominatim-converter and upload nominatim.ndjson.gz to nominatim-data<suffix>/<build_tag>/'
 
 inputs:
   config:
@@ -7,7 +7,7 @@ inputs:
     required: false
     default: 'converter-prod.json'
   suffix:
-    description: 'Suffix for image name (e.g., -se for geocoder-nominatim-data-se)'
+    description: 'GCS prefix suffix, e.g. -se for nominatim-data-se'
     required: false
     default: ''
   min_size_mb:
@@ -32,7 +32,7 @@ inputs:
 
 outputs:
   image_tag:
-    description: 'The tag of the uploaded nominatim data image'
+    description: 'Tag nominatim.ndjson.gz was uploaded under (== inputs.build_tag)'
     value: ${{ steps.upload-nominatim-data.outputs.tag }}
 
 runs:

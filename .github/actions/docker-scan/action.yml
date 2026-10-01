@@ -1,14 +1,10 @@
 name: Docker Security Scan
-description: Runs Docker security scan
+description: 'Grype-scan an image in eu.gcr.io/entur-system-1287 and upload the SARIF to the Security tab; never fails the job'
 
 inputs:
   image:
     description: "Image name with tag (e.g. image:tag)"
     required: true
-  registry:
-    description: 'Docker registry URL'
-    required: false
-    default: 'eu.gcr.io/entur-system-1287'
   workload_identity_provider:
     description: 'GCP Workload Identity Provider'
     required: true
@@ -27,19 +23,17 @@ runs:
 
     - name: Configure Docker for GCR
       shell: bash
-      run: |
-        REGISTRY_DOMAIN=$(echo "${{ inputs.registry }}" | cut -d'/' -f1)
-        gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
+      run: gcloud auth configure-docker eu.gcr.io --quiet
 
     - name: Pull image from GCR
       shell: bash
-      run: docker pull ${{ inputs.registry }}/${{ inputs.image }}
+      run: docker pull eu.gcr.io/entur-system-1287/${{ inputs.image }}
 
     - name: Scan for vulnerabilities
       uses: anchore/scan-action@v7
       id: scan
       with:
-        image: ${{ inputs.registry }}/${{ inputs.image }}
+        image: eu.gcr.io/entur-system-1287/${{ inputs.image }}
         by-cve: true
         fail-build: false
         severity-cutoff: critical
@@ -56,7 +50,7 @@ runs:
       if: always()
       run: |
         echo "### Docker Security Scan" >> "$GITHUB_STEP_SUMMARY"
-        echo "**In:** image=\`${{ inputs.image }}\` registry=\`${{ inputs.registry }}\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "**In:** image=\`${{ inputs.image }}\`" >> "$GITHUB_STEP_SUMMARY"
         echo "**Status:** ${{ steps.scan.outcome }}" >> "$GITHUB_STEP_SUMMARY"
         if [ "${{ steps.scan.outputs.success }}" = "false" ]; then
           echo "⚠️ Critical vulnerabilities detected!" >> "$GITHUB_STEP_SUMMARY"

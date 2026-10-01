@@ -30,7 +30,6 @@ jobs:
       environment: prd
       release_name: geocoder-photon
       image_tag: ${{ inputs.image_tag }}
-      promote_with: photon.yml
 
   generate-tag:
     name: Generate Tag
@@ -94,9 +93,7 @@ jobs:
       image: "geocoder-photon:${{ needs.resolve-prod-release.outputs.image_tag }}"
       photon_data_tag: ${{ needs.photon-data.outputs.data_tag }}
       chart: helm/geocoder-photon
-      namespace: geocoder
       release_name: geocoder-photon
-      values: values-kub-ent-tst.yaml
       photon_data_prefix: photon-data
       # Unattended for the cron path, which never moves prd's image. Supplying
       # image_tag makes this a promote, so gate it like photon-deploy.yml does.
@@ -115,52 +112,13 @@ jobs:
       image: "geocoder-photon:${{ needs.resolve-prod-release.outputs.image_tag }}"
       photon_data_tag: ${{ needs.photon-data.outputs.data_tag }}
       chart: helm/geocoder-photon
-      namespace: geocoder
       release_name: geocoder-photon
-      values: values-kub-ent-prd.yaml
       photon_data_prefix: photon-data
-      # Unattended for the cron path, which never moves prd's image. Supplying
-      # image_tag makes this a promote, so gate it like photon-deploy.yml does.
       require_approval: ${{ inputs.image_tag != '' }}
     secrets: inherit
 
-  record:
-    name: Record Prod Data
-    needs: [photon-data, deploy-prd]
-    # Informational only - nothing decides what to build from it. The authoritative
-    # answer is PHOTON_DATA_URL on the running pods; this is the public copy that
-    # photon/download-latest-*-data.sh reads.
-    if: needs.deploy-prd.result == 'success'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
-
-      - uses: google-github-actions/setup-gcloud@v3
-
-      - name: Move latest-prod pointers
-        shell: bash
-        env:
-          TAG: ${{ needs.photon-data.outputs.data_tag }}
-        run: |
-          [ -n "$TAG" ] || { echo "::error::empty data tag"; exit 1; }
-
-          for P in nominatim-data photon-data; do
-            echo "$TAG" | gcloud storage cp \
-              --content-type=text/plain \
-              --cache-control="no-cache, max-age=0" \
-              - "gs://ent-geocoder-prd/$P/latest-prod.txt"
-          done
-
-          echo "\`latest-prod.txt\` now names \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
-
   notify-slack:
-    needs: [ resolve-prod-release, generate-tag, nominatim-data, photon-data, deploy-tst, deploy-prd, record ]
+    needs: [ resolve-prod-release, generate-tag, nominatim-data, photon-data, deploy-tst, deploy-prd ]
     if: failure()
     runs-on: ubuntu-latest
     steps:

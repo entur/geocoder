@@ -54,10 +54,9 @@ jobs:
     timeout-minutes: 600
     permissions:
       actions: read
-      contents: write
+      contents: read
       id-token: write
       security-events: write
-      pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
 
@@ -83,9 +82,7 @@ jobs:
       environment: dev
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-proxy
-      namespace: geocoder
       release_name: geocoder-proxy
-      values: values-kub-ent-dev.yaml
       require_approval: false
     secrets: inherit
 
@@ -102,7 +99,6 @@ jobs:
       environment: tst
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-proxy
-      namespace: geocoder
       release_name: geocoder-proxy
     secrets: inherit
 
@@ -117,7 +113,6 @@ jobs:
       environment: prd
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
       chart: helm/geocoder-proxy
-      namespace: geocoder
       release_name: geocoder-proxy
     secrets: inherit
 

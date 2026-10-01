@@ -1,9 +1,9 @@
 name: 'Build Photon Image'
-description: 'Download nominatim data, create Photon data, and build Docker image'
+description: 'Build the Photon index from a nominatim-data tag, then build, push and scan geocoder-photon<suffix>'
 
 inputs:
   nominatim_data_tag:
-    description: 'Tag of the nominatim data image to use'
+    description: 'Tag under nominatim-data<suffix>/ to import from'
     required: true
   suffix:
     description: 'Suffix for image names (e.g., -se for geocoder-photon-se)'
@@ -24,7 +24,7 @@ inputs:
     description: 'GCP Service Account'
     required: true
   build_tag:
-    description: 'Shared per-run build tag (produced by the _generate-tag.yml reusable workflow). Used for both the photon_data.tar.gz upload and the docker image, so _deploy-and-test.yml can derive the data URL from the image tag.'
+    description: 'Per-run build tag from _generate-tag.yml; names both the photon_data upload and the image, so a deploy derives the data URL from the image tag'
     required: true
 
 outputs:

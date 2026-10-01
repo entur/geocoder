@@ -30,7 +30,6 @@ jobs:
       environment: dev
       release_name: geocoder-photon-se
       image_tag: ${{ inputs.image_tag }}
-      promote_with: photon-sweden.yml
 
   generate-tag:
     name: Generate Tag
@@ -98,7 +97,6 @@ jobs:
       image: "geocoder-photon-se:${{ needs.resolve-dev-release.outputs.image_tag }}"
       photon_data_tag: ${{ needs.photon-data.outputs.data_tag }}
       chart: helm/geocoder-photon
-      namespace: geocoder
       release_name: geocoder-photon-se
       values: values-kub-ent-dev-se.yaml
       photon_data_prefix: photon-data-se

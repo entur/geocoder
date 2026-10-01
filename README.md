@@ -64,11 +64,11 @@ rm -rf photon_data && ./download-latest-photon-data.sh
 ./photon-start.sh
 ```
 
-Both download scripts take `[suffix] [tag]` and default to `latest-prod`, the index prd serves.
-Pass `latest` for the newest build of any kind, or a full tag. Only the Norwegian prefixes have
-a `latest-prod` pointer; with a suffix the scripts default to `latest`. `latest-prod` was imported with
-prd's `photon.jar`, which can be older than the one `download-photon-jar.sh` pins; if Photon
-refuses to open the index, that is why - take a data tag from the same build as your jar.
+Both download scripts take `[suffix] [tag]` and default to the newest build in the bucket.
+Pass `prod` for the index prd serves (read from the cluster, so it needs prd access) or a full
+tag. An index was imported with the `photon.jar` of its own build, which can differ from the one
+`download-photon-jar.sh` pins; if Photon refuses to open it, that is why - take a data tag from
+the same build as your jar.
 
 ### Trying it out
 
@@ -150,16 +150,15 @@ only the chart and the acceptance tests come from `main` every night. To see wha
 missing:
 
 ```bash
-git log --oneline "$(curl -s https://storage.googleapis.com/ent-geocoder-prd/photon-data/latest-prod.txt \
-  | sed 's/.*-SHA//')"..origin/main
+git log --oneline "$(kubectl --context prd -n geocoder get deployment geocoder-photon \
+  -o jsonpath='{.spec.template.spec.containers[0].image}' | sed 's/.*-SHA//')"..origin/main
 ```
 
 | Workflow | Trigger | What it does |
 | -------- | ------- | ------------ |
 | [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) | push to `main`, manual | Builds and deploys the proxy to dev; tst and prd need approval. Manual dispatch takes a target (`dev only` \| `dev → tst → prd` \| `tst → prd`) |
-| [proxy-deploy.yml](https://github.com/entur/geocoder/actions/workflows/proxy-deploy.yml) | manual | Deploys an existing proxy image tag |
 | [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 06:27 UTC | Re-imports the index for the build prd runs and deploys it to tst → prd, no approval gates and no new image. tst gets prd's image too, so it is a prd clone rather than a preview of `main`. Manual dispatch takes an optional `image_tag`, which also deploys that image and therefore needs the usual tst and prd approvals |
-| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets, default `dev → tst → prd`; optional `config`, default `converter-prod.json`). tst and prd need approval |
+| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets, default `dev → tst → prd`). tst and prd need approval |
 | [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag, optionally pairing it with a different `photon_data_tag`; tst and prd need approval |
 
 All builds run acceptance tests after deployment, and most workflows post to Slack on failure.
@@ -167,7 +166,7 @@ The reusable [_resolve-release.yml](.github/workflows/_resolve-release.yml),
 [_generate-tag.yml](.github/workflows/_generate-tag.yml) and
 [_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) workflows back the resolve, build and
 deploy jobs; shared steps live as composite actions under
-[.github/actions/](.github/actions/README.md).
+[.github/actions/](.github/actions), each described in its `action.yml`.
 
 ### Other countries (dev only)
 
@@ -175,10 +174,8 @@ deploy jobs; shared steps live as composite actions under
 re-imports the Swedish index every Monday at 05:27 UTC the same way the Norwegian nightly
 does, for the build dev runs: no new image, and a merge to `main` (or any change on the import
 side: `.github/actions/`, the converter pin, `download-photon-jar.sh`, `synonyms-se.json`)
-reaches Sweden only when `photon-sweden.yml` builds an image from it, with "Download data" or
-"Use existing data" and the weekly's `nominatim-data-se` tag. "Deploy specified Photon image"
-only moves the image, and takes a `photon_data_tag` for the same reason `photon-deploy.yml`
-does. The weekly run also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window,
+reaches Sweden only when `photon-sweden.yml` builds and deploys an image from it. The weekly
+run also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window,
 so a running pod's `photon_data.tar.gz` can't be deleted out from under it. The manual
 counterparts are
 [photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) and
@@ -203,8 +200,10 @@ Built artifacts live in the public bucket [gs://ent-geocoder-prd/](https://conso
 | -------------------- | --------------------------------------------- |
 | `nominatim-data/`    | `nominatim.ndjson.gz` per build (+ `.sha256`) |
 | `nominatim-data-se/` | Sweden variant                                |
+| `nominatim-data-dk/` | Denmark variant                               |
 | `photon-data/`       | `photon_data.tar.gz` per build (+ `.sha256`)  |
 | `photon-data-se/`    | Sweden variant                                |
+| `photon-data-dk/`    | Denmark variant                               |
 | `data-sources/`      | Daily-refreshed source files                  |
 
 Each build writes to `<prefix>/<tag>/<filename>`. A full build generates one tag and gives it
@@ -213,11 +212,8 @@ to both the docker image and the GCS upload, so `geocoder-photon:<tag>` pairs wi
 it uploads new data under a new tag while prd keeps the image it already runs. Either way the
 tag's `-SHA` suffix names the commit the data was imported from.
 
-Two pointer files at the prefix root track recent builds: `latest.txt` (most recent build,
-written by every build) and `latest-prod.txt` (the data prd is serving, written by
-`photon-scheduled.yml` once the prd deploy succeeds). Both are informational - nothing reads
-them to decide what to build, and `latest-prod.txt` lags until the next nightly after a manual
-promote, since only the nightly writes it. The authoritative answer is on the running pods:
+There are no pointer files; the bucket listing is public, so the newest build is the last
+`main.*` prefix, and what prd serves is on the running pods:
 
 ```bash
 kubectl --context prd -n geocoder get deployment geocoder-photon \
@@ -251,13 +247,23 @@ gh workflow run photon-deploy.yml -f target='tst → prd' \
 gh workflow run photon-deploy.yml -f target='tst → prd' -f image_tag=<previous-tag>
 ```
 
-The next nightly follows whatever image prd ends up on. Sweden works the same way with
-`photon-sweden.yml` in "Deploy specified Photon image" mode, its `photon_image_tag` and
-`photon_data_tag`, and `--context dev` with `geocoder-photon-se`.
+In an emergency, skip the workflow: `kubectl --context prd -n geocoder rollout undo
+deployment/geocoder-photon` puts the previous image and data URL back in seconds (ten
+ReplicaSets are kept; `--to-revision` reaches older ones), with no approval, pre-flight or
+tests. `helm --kube-context prd -n geocoder rollback geocoder-photon` does the same and keeps
+`helm history` truthful. Run the acceptance tests afterwards (`npm run v3prd` in
+geocoder-acceptance-tests), or dispatch `photon-scheduled.yml` for a tested refresh under the
+rolled-back image. The next nightly follows whatever image prd ends up on either way.
+
+The proxy has no deploy-only workflow: revert on `main` and let `proxy.yml` roll it through
+dev, tst and prd, or `rollout undo deployment/geocoder-proxy` for the same emergency path.
+Sweden rolls back by dispatching `photon-sweden-scheduled.yml` with the earlier `image_tag`,
+which re-imports fresh data for it and deploys both, so bad source data cannot be undone that
+way. Denmark has only `photon-denmark.yml`, a full rebuild.
 
 ### 90-day lifecycle rule
 
-Applied once per bucket. The `matchesSuffix` filter spares the `latest*.txt` pointer files.
+Applied once per bucket; `matchesSuffix` limits it to the data objects.
 
 ```json
 {

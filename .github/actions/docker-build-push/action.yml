@@ -1,5 +1,5 @@
 name: Docker Build and Push
-description: Runs docker build and push
+description: 'Build <context>/Dockerfile and push eu.gcr.io/entur-system-1287/<image_name>:<tag>; fails if the tag already exists'
 
 inputs:
   image_name:
@@ -8,9 +8,6 @@ inputs:
   context:
     description: "Build context"
     default: "."
-  dockerfile:
-    description: "Path to Dockerfile"
-    default: "Dockerfile"
   build_args:
     description: "Build arguments (KEY=VALUE, one per line)"
   push:
@@ -22,16 +19,8 @@ inputs:
   service_account:
     description: 'GCP Service Account'
     required: true
-  registry:
-    description: 'Docker registry URL'
-    required: false
-    default: 'eu.gcr.io/entur-system-1287'
-  latest_tag:
-    description: 'Override the latest tag (default: "latest")'
-    required: false
-    default: 'latest'
   tag:
-    description: 'Override the auto-generated image tag (use to pair with a sibling upload-gcs-artifact tag)'
+    description: 'Build tag to use; omitted, one is generated (the proxy, whose image is its only artifact)'
     required: false
     default: ''
 
@@ -56,38 +45,42 @@ runs:
     - name: Configure Docker for GCR
       shell: bash
       if: ${{ inputs.push == 'true' }}
-      run: |
-        REGISTRY_DOMAIN=$(echo "${{ inputs.registry }}" | cut -d'/' -f1)
-        gcloud auth configure-docker ${REGISTRY_DOMAIN} --quiet
+      run: gcloud auth configure-docker eu.gcr.io --quiet
 
-    - name: Generate image tag
+    - name: Set image tag
       id: set-tag
-      uses: ./.github/actions/generate-image-tag
-      with:
-        image_name: ${{ inputs.image_name }}
-        latest_tag: ${{ inputs.latest_tag }}
-        tag: ${{ inputs.tag }}
+      shell: bash
+      env:
+        OVERRIDE: ${{ inputs.tag }}
+        IMAGE_NAME: ${{ inputs.image_name }}
+      run: |
+        if [ -n "$OVERRIDE" ]; then
+          TAG="$OVERRIDE"
+        else
+          TAG=$("$GITHUB_WORKSPACE/.github/scripts/generate-tag.sh" "$(git rev-parse HEAD)" "${GITHUB_REF_NAME:-detached}")
+        fi
+        echo "image_tag=$TAG" >> "$GITHUB_OUTPUT"
+        echo "image=eu.gcr.io/entur-system-1287/$IMAGE_NAME" >> "$GITHUB_OUTPUT"
 
     - name: Check if image already exists
       if: ${{ inputs.push == 'true' }}
       shell: bash
+      env:
+        IMAGE: ${{ steps.set-tag.outputs.image }}:${{ steps.set-tag.outputs.image_tag }}
       run: |
-        if gcloud container images describe "${{ steps.set-tag.outputs.full_image }}" > /dev/null 2>&1; then
-          echo "::error::Image ${{ steps.set-tag.outputs.full_image }} already exists in registry"
+        if gcloud container images describe "$IMAGE" > /dev/null 2>&1; then
+          echo "::error::Image $IMAGE already exists in registry"
           exit 1
         fi
-        echo "Image ${{ steps.set-tag.outputs.full_image }} does not exist, will build and push"
 
     - name: Build and push to GCR
       uses: docker/build-push-action@v7
       id: build-push
       with:
         context: ${{ inputs.context }}
-        file: ${{ inputs.context }}/${{ inputs.dockerfile }}
+        file: ${{ inputs.context }}/Dockerfile
         push: ${{ inputs.push }}
-        tags: |
-          ${{ steps.set-tag.outputs.full_image }}
-          ${{ steps.set-tag.outputs.base_image }}:${{ steps.set-tag.outputs.latest_tag }}
+        tags: ${{ steps.set-tag.outputs.image }}:${{ steps.set-tag.outputs.image_tag }}
         build-args: ${{ inputs.build_args }}
         provenance: false
 

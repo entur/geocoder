@@ -13,19 +13,11 @@ on:
         description: 'Deployment to read, e.g. geocoder-photon-se'
         type: string
         required: true
-      namespace:
-        type: string
-        required: false
-        default: geocoder
       image_tag:
         description: 'Use this tag instead of reading the cluster'
         type: string
         required: false
         default: ''
-      promote_with:
-        description: 'Workflow to name in the error when the running build is not in this repo, e.g. photon.yml'
-        type: string
-        required: true
     outputs:
       image_tag:
         value: ${{ jobs.resolve.outputs.image_tag }}
@@ -66,15 +58,13 @@ jobs:
         env:
           ENVIRONMENT: ${{ inputs.environment }}
           RELEASE: ${{ inputs.release_name }}
-          NAMESPACE: ${{ inputs.namespace }}
           OVERRIDE: ${{ inputs.image_tag }}
-          PROMOTE_WITH: ${{ inputs.promote_with }}
         run: |
           if [ -n "$OVERRIDE" ]; then
             TAG="$OVERRIDE"
           else
             # -m1: a second match would make TAG multi-line
-            IMAGE=$(kubectl get deployment "$RELEASE" -n "$NAMESPACE" \
+            IMAGE=$(kubectl get deployment "$RELEASE" -n geocoder \
               -o jsonpath='{range .spec.template.spec.containers[*]}{.image}{"\n"}{end}' \
               | grep -m1 "/$RELEASE:" || true)
             [ -n "$IMAGE" ] || { echo "::error::no container image matching /$RELEASE: on deployment $RELEASE"; exit 1; }
@@ -87,7 +77,7 @@ jobs:
             # from refs/heads, but its PR head still carries the commit.
             git fetch --no-tags --quiet origin '+refs/pull/*/head:refs/remotes/origin/pr/*' || true
             REF=$(git rev-parse --verify --quiet "$SHORT^{commit}") || {
-              echo "::error::$ENVIRONMENT runs $TAG, whose commit is not in this repo; promote a main build with $PROMOTE_WITH"
+              echo "::error::$ENVIRONMENT runs $TAG, whose commit is not in this repo; promote a main build with the country's photon workflow first"
               exit 1
             }
           fi

@@ -58,6 +58,8 @@ jobs:
             text: "${{ steps.check.outputs.message }} | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
 
       - name: Summary
+        env:
+          MESSAGE: ${{ steps.check.outputs.message }}
         run: |
           echo "alert=${{ steps.check.outputs.alert }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ steps.check.outputs.message }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "$MESSAGE" >> "$GITHUB_STEP_SUMMARY"
