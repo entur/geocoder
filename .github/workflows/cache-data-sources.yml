@@ -2,8 +2,8 @@ name: Cache Data Sources to GCS
 
 on:
   schedule:
-    # 03:00 UTC is 04:00 CET or 05:00 CEST
-    - cron: '0 3 * * *'
+    # 02:00 UTC is 03:00 CET or 04:00 CEST
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 concurrency:

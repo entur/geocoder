@@ -157,7 +157,7 @@ git log --oneline "$(kubectl --context prd -n geocoder get deployment geocoder-p
 | Workflow | Trigger | What it does |
 | -------- | ------- | ------------ |
 | [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) | push to `main`, manual | Builds and deploys the proxy to dev; tst and prd need approval. Manual dispatch takes a target (`dev only` \| `dev → tst → prd` \| `tst → prd`) |
-| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 06:27 UTC | Re-imports the index for the build prd runs and deploys it to tst → prd, no approval gates and no new image. tst gets prd's image too, so it is a prd clone rather than a preview of `main`. Manual dispatch takes an optional `image_tag`, which also deploys that image and therefore needs the usual tst and prd approvals |
+| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 03:27 UTC | Re-imports the index for the build prd runs and deploys it to tst → prd, no approval gates and no new image. tst gets prd's image too, so it is a prd clone rather than a preview of `main`. Manual dispatch takes an optional `image_tag`, which also deploys that image and therefore needs the usual tst and prd approvals |
 | [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets, default `dev → tst → prd`). tst and prd need approval |
 | [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag, optionally pairing it with a different `photon_data_tag`; tst and prd need approval |
 

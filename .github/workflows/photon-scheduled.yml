@@ -2,7 +2,7 @@ name: Photon — Scheduled Import
 
 on:
   schedule:
-    # Run the import every day (6:27 UTC is 7:27 CET or 8:27 CEST)
+    # Run the import every day (3:27 UTC is 4:27 CET or 5:27 CEST)
     - cron: '27 3 * * *'
   workflow_dispatch:
     inputs:
