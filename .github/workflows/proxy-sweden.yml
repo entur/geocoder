@@ -25,11 +25,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Log manual inputs
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           {
             echo "### Manual Workflow Inputs"
             echo "**Build:** \`${{ inputs.build }}\`"
-            echo "**Image tag:** \`${{ inputs.image_tag || 'not specified' }}\`"
+            echo "**Image tag:** \`${IMAGE_TAG:-not specified}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   build-push:
@@ -42,7 +44,6 @@ jobs:
       contents: read
       id-token: write
       security-events: write
-      pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
 
@@ -67,7 +68,6 @@ jobs:
       environment: dev
       image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag || inputs.image_tag }}"
       chart: helm/geocoder-proxy
-      namespace: geocoder
       release_name: geocoder-proxy-se
       values: values-kub-ent-dev-se.yaml
       require_approval: false

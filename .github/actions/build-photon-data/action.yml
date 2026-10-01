@@ -3,7 +3,7 @@ description: 'Download nominatim data, run the Photon import, and upload photon_
 
 inputs:
   nominatim_data_tag:
-    description: 'Tag of the nominatim data image to use'
+    description: 'Tag under nominatim-data<suffix>/ to import from'
     required: true
   suffix:
     description: 'Suffix for artifact prefixes (e.g., -se for photon-data-se)'

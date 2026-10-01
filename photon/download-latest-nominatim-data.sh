@@ -3,23 +3,31 @@
 # Useful for local debugging - downloads the file into the current directory.
 # Usage: ./download-latest-nominatim-data.sh [suffix] [tag]
 #   suffix: e.g. '-se' for country-specific data (default: none)
-#   tag:    'latest-prod' (default; 'latest' when a suffix is given, since only the
-#           Norwegian prefixes have a latest-prod pointer), 'latest', or a timestamped tag
+#   tag:    a build tag, 'prod' for what prd serves (needs kubectl access to prd, Norway
+#           only), or omitted for the newest build in the bucket
 
 set -euo pipefail
 
 SUFFIX=${1:-}
-TAG_INPUT=${2:-$([ -n "$SUFFIX" ] && echo latest || echo latest-prod)}
+TAG_INPUT=${2:-}
 
 BUCKET=ent-geocoder-prd
 PREFIX="nominatim-data${SUFFIX}"
 FILENAME="nominatim.ndjson.gz"
 
 case "$TAG_INPUT" in
-  latest|latest-prod)
-    POINTER_URL="https://storage.googleapis.com/${BUCKET}/${PREFIX}/${TAG_INPUT}.txt"
-    echo "Resolving $TAG_INPUT pointer: $POINTER_URL"
-    TAG=$(curl -fsSL -A "entur-geocoder" "$POINTER_URL" | tr -d '[:space:]')
+  "")
+    # Tags sort chronologically, so the last main.* prefix in the listing is the newest build.
+    LIST_URL="https://storage.googleapis.com/storage/v1/b/${BUCKET}/o?prefix=${PREFIX}/main.&delimiter=/&fields=prefixes"
+    TAG=$(curl -fsSL -A "entur-geocoder" "$LIST_URL" | grep -o "${PREFIX}/main\.[^/\"]*" | sort | tail -1 | sed "s|^${PREFIX}/||")
+    [ -n "$TAG" ] || { echo "no builds under ${PREFIX}/" >&2; exit 1; }
+    echo "Newest build: $TAG"
+    ;;
+  prod)
+    DATA_URL=$(kubectl --context prd -n geocoder get deployment geocoder-photon \
+      -o jsonpath='{.spec.template.spec.initContainers[*].env[?(@.name=="PHOTON_DATA_URL")].value}')
+    TAG=$(basename "$(dirname "$DATA_URL")")
+    echo "prd serves: $TAG"
     ;;
   *)
     TAG="$TAG_INPUT"

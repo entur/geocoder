@@ -12,11 +12,6 @@ on:
           - 'dev only'
           - 'dev → tst → prd'
           - 'tst → prd'
-      config:
-        description: 'Nominatim config'
-        required: false
-        type: string
-        default: 'converter-prod.json'
 
 concurrency:
   group: "${{ github.workflow }}-${{ inputs.target }}"
@@ -32,7 +27,6 @@ jobs:
           {
             echo "### Manual Workflow Inputs"
             echo "**Target:** \`${{ inputs.target }}\`"
-            echo "**Config:** \`${{ inputs.config }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   generate-tag:
@@ -55,7 +49,6 @@ jobs:
         id: build
         uses: ./.github/actions/build-nominatim-data
         with:
-          config: ${{ inputs.config }}
           build_tag: ${{ needs.generate-tag.outputs.tag }}
           workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
@@ -70,7 +63,6 @@ jobs:
       contents: read
       id-token: write
       security-events: write
-      pull-requests: write
     outputs:
       image_tag: ${{ steps.build.outputs.image_tag }}
     steps:
@@ -93,9 +85,7 @@ jobs:
       environment: dev
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
       chart: helm/geocoder-photon
-      namespace: geocoder
       release_name: geocoder-photon
-      values: values-kub-ent-dev.yaml
       photon_data_prefix: photon-data
       require_approval: false
     secrets: inherit
@@ -113,9 +103,7 @@ jobs:
       environment: tst
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
       chart: helm/geocoder-photon
-      namespace: geocoder
       release_name: geocoder-photon
-      values: values-kub-ent-tst.yaml
       photon_data_prefix: photon-data
     secrets: inherit
 
@@ -130,9 +118,7 @@ jobs:
       environment: prd
       image: "geocoder-photon:${{ needs.photon.outputs.image_tag }}"
       chart: helm/geocoder-photon
-      namespace: geocoder
       release_name: geocoder-photon
-      values: values-kub-ent-prd.yaml
       photon_data_prefix: photon-data
     secrets: inherit
 

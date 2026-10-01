@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Extract the geocoder commit from a build tag, with or without a leading image
 # reference. Tags are <branch>.<UTC-timestamp>-SHA<short>, see generate-tag.sh.
-# Aliases like latest-prod carry no commit and are rejected.
+# Aliases like latest carry no commit and are rejected.
 #
 # Usage: ./resolve-build-ref.sh <build-tag|image-reference>
 
