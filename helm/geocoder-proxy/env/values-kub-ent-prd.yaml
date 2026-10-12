@@ -1,9 +1,0 @@
-common:
-  env: prd
-  ingress:
-    host: geocoder-proxy.entur.io
-    trafficType: api
-  deployment:
-    minReplicas: 4
-    maxReplicas: 10
-    cpuUtilization: 80

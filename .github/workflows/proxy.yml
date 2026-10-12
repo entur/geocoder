@@ -8,122 +8,86 @@ on:
       - 'gradle/**'
       - '*gradle*'
       - '.github/workflows/proxy.yml'
-      - '.github/workflows/_deploy-and-test.yml'
-      - '.github/actions/**'
       - '!**/*.md'
-      - 'helm/geocoder-proxy/**'
   pull_request:
     paths:
       - 'proxy/**'
       - 'gradle/**'
       - '*gradle*'
       - '.github/workflows/proxy.yml'
-      - '.github/workflows/_deploy-and-test.yml'
-      - '.github/actions/**'
       - '!**/*.md'
-      - 'helm/geocoder-proxy/**'
-  workflow_dispatch:
-    inputs:
-      target:
-        description: 'Deploy target'
-        required: true
-        type: choice
-        options:
-          - 'dev only'
-          - 'dev → tst → prd'
-          - 'tst → prd'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  log-inputs:
-    name: Log Inputs
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log manual inputs
-        run: |
-          echo "### Manual Workflow Inputs" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`${{ inputs.target }}\`" >> "$GITHUB_STEP_SUMMARY"
-
-  build-push:
+  build:
     name: Proxy
     runs-on: ubuntu-latest
-    timeout-minutes: 600
+    timeout-minutes: 30
     permissions:
-      actions: read
       contents: read
-      id-token: write
-      security-events: write
     outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
-
+      image_artifact: geocoder-proxy
     steps:
       - uses: actions/checkout@v7
 
-      - name: Build Proxy image
-        id: build
-        uses: ./.github/actions/build-proxy-image
+      - name: Dockerfile lint
+        uses: hadolint/hadolint-action@v3.3.0
         with:
-          push: ${{ github.event_name != 'pull_request' }}
-          workload_identity_provider: ${{ vars.CI_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.CI_SERVICE_ACCOUNT }}
+          dockerfile: proxy/Dockerfile
+          ignore: "DL3018,DL3059"
 
-  deploy-dev:
-    name: Dev
-    needs: build-push
-    if: |
-      github.event_name != 'pull_request' &&
-      inputs.target != 'tst → prd'
-    uses: ./.github/workflows/_deploy-and-test.yml
+      - uses: entur/ror-gha-workflows/.github/actions/gradle-cache@v1.2.1
+        with:
+          java-version: '25'
+
+      - name: Build with Gradle
+        run: ./gradlew --no-daemon :proxy:build
+
+      # PRs only: on main, entur/geocoder-deployment-config builds, scans and pushes the
+      # image it deploys. The artifact layout is what gha-security's docker-scan expects.
+      - if: github.event_name == 'pull_request'
+        uses: docker/setup-buildx-action@v4
+      - if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v7
+        with:
+          context: proxy
+          tags: geocoder-proxy
+          outputs: type=docker,dest=/tmp/geocoder-proxy.tar
+          push: false
+          provenance: false
+      - if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: geocoder-proxy
+          path: /tmp/geocoder-proxy.tar
+          retention-days: 1
+
+  scan:
+    if: github.event_name == 'pull_request'
+    needs: build
+    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
     with:
-      environment: dev
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
-      chart: helm/geocoder-proxy
-      release_name: geocoder-proxy
-      require_approval: false
-    secrets: inherit
+      image_artifact: ${{ needs.build.outputs.image_artifact }}
 
-  deploy-tst:
-    name: Staging
-    needs: [ build-push, deploy-dev ]
-    if: |
-      !cancelled() &&
-      inputs.target != 'dev only' &&
-      needs.build-push.result == 'success' &&
-      (inputs.target == 'tst → prd' || needs.deploy-dev.result == 'success')
-    uses: ./.github/workflows/_deploy-and-test.yml
-    with:
-      environment: tst
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
-      chart: helm/geocoder-proxy
-      release_name: geocoder-proxy
-    secrets: inherit
-
-  deploy-prd:
-    name: Prod
-    needs: [ build-push, deploy-tst ]
-    if: |
-      !cancelled() &&
-      needs.deploy-tst.result == 'success'
-    uses: ./.github/workflows/_deploy-and-test.yml
-    with:
-      environment: prd
-      image: "geocoder-proxy:${{ needs.build-push.outputs.image_tag }}"
-      chart: helm/geocoder-proxy
-      release_name: geocoder-proxy
-    secrets: inherit
-
-  notify-slack:
-    needs: [ deploy-dev, deploy-tst, deploy-prd ]
-    if: failure()
-    runs-on: ubuntu-latest
+  # Build, push and deploy happen in the private entur/geocoder-deployment-config.
+  trigger-deploy:
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && github.repository_owner == 'entur' }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: deploy-trigger
+    permissions: {}
     steps:
-      - uses: slackapi/slack-github-action@v4
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL_HENRIK }}
-          webhook-type: incoming-webhook
-          payload: |
-            text: "❌ *${{ github.workflow }}*${{ inputs.target && format(' ({0})', inputs.target) || '' }} failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|run>"
+      - env:
+          GH_TOKEN: ${{ secrets.DEPLOY_TRIGGER_TOKEN }}
+        # REST dispatch with an explicit ref: the token only has Actions access,
+        # which `gh workflow run`'s default-branch lookup can't use. A missing
+        # run link must not fail the job once the dispatch went through.
+        run: |
+          out=$(gh api -X POST repos/entur/geocoder-deployment-config/actions/workflows/proxy.yml/dispatches \
+            -f ref=main -f "inputs[ref]=$GITHUB_SHA" -f "inputs[target]=dev → tst → prd" -F return_run_details=true)
+          url=$(jq -r '.html_url // empty' <<<"$out" 2>/dev/null || true)
+          echo "Deploy run: ${url:-https://github.com/entur/geocoder-deployment-config/actions/workflows/proxy.yml}" | tee -a "$GITHUB_STEP_SUMMARY"

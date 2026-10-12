@@ -109,17 +109,6 @@ $ curl -s 'http://localhost:9201/photon/_doc/NSR-StopPlace-58404' | jq -c '._sou
 {"default":"Nationaltheatret","alt":"Nationaltheatret stasjon;Nasjonalteatret;Nationaltheatret"}
 ```
 
-The same works against a pod in GKE via a port-forward:
-
-```bash
-kubectl --context dev port-forward <geocoder-photon-pod> -n geocoder 9201
-
-ID=$(curl -s 'https://geocoder-photon.dev.entur.io/api?q=ullerud' \
-  | jq -r '.features[0].properties.extra.id' | tr ':' '-')      # NSR-StopPlace-5496
-curl -s "http://localhost:9201/photon/_doc/$ID" | jq -c "[._source.importance, ._source.name.default]"
-[0.078586,"Ullerud"]
-```
-
 ### Score vs. importance
 
 `importance` is set by the converter in the Nominatim data; `score` is what Photon computes
@@ -138,63 +127,15 @@ $ curl -s 'http://localhost:8080/v2/autocomplete?text=Oslo&debug=true&size=1' \
 
 ## Deployment
 
-All deployment runs from `main`. The scheduled imports are the exception, and they build no
-image. The daily one reads the build prd is running, re-imports the index from the commit named
-in its image tag, and rolls the pods onto the new data. A merge to `main` therefore does not reach the unattended
-nightly on its own - to promote code into it, run `photon.yml` and approve it through to prd,
-and every night after that refreshes the data for the new commit.
-`photon-deploy.yml` promotes an image you already built, without a fresh import. The import
-jobs run entirely from prd's commit, build actions included, so a change under
-`.github/actions/` that the import uses also needs a promote before the nightly picks it up;
-only the chart and the acceptance tests come from `main` every night. To see what prod is
-missing:
-
-```bash
-git log --oneline "$(kubectl --context prd -n geocoder get deployment geocoder-photon \
-  -o jsonpath='{.spec.template.spec.containers[0].image}' | sed 's/.*-SHA//')"..origin/main
-```
-
-| Workflow | Trigger | What it does |
-| -------- | ------- | ------------ |
-| [proxy.yml](https://github.com/entur/geocoder/actions/workflows/proxy.yml) | push to `main`, manual | Builds and deploys the proxy to dev; tst and prd need approval. Manual dispatch takes a target (`dev only` \| `dev → tst → prd` \| `tst → prd`) |
-| [photon-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-scheduled.yml) | daily 03:27 UTC | Re-imports the index for the build prd runs and deploys it to tst → prd, no approval gates and no new image. tst gets prd's image too, so it is a prd clone rather than a preview of `main`. Manual dispatch takes an optional `image_tag`, which also deploys that image and therefore needs the usual tst and prd approvals |
-| [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) | manual | Import, build image, deploy (same targets, default `dev → tst → prd`). tst and prd need approval |
-| [photon-deploy.yml](https://github.com/entur/geocoder/actions/workflows/photon-deploy.yml) | manual | Deploys an existing Photon image tag, optionally pairing it with a different `photon_data_tag`; tst and prd need approval |
-
-All builds run acceptance tests after deployment, and most workflows post to Slack on failure.
-The reusable [_resolve-release.yml](.github/workflows/_resolve-release.yml),
-[_generate-tag.yml](.github/workflows/_generate-tag.yml) and
-[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) workflows back the resolve, build and
-deploy jobs; shared steps live as composite actions under
-[.github/actions/](.github/actions), each described in its `action.yml`.
-
-### Other countries (dev only)
-
-[photon-sweden-scheduled.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden-scheduled.yml)
-re-imports the Swedish index every Monday at 05:27 UTC the same way the Norwegian nightly
-does, for the build dev runs: no new image, and a merge to `main` (or any change on the import
-side: `.github/actions/`, the converter pin, `download-photon-jar.sh`, `synonyms-se.json`)
-reaches Sweden only when `photon-sweden.yml` builds and deploys an image from it. The weekly
-run also keeps `photon-data-se/` inside the bucket's 90-day lifecycle window,
-so a running pod's `photon_data.tar.gz` can't be deleted out from under it. The manual
-counterparts are
-[photon-sweden.yml](https://github.com/entur/geocoder/actions/workflows/photon-sweden.yml) and
-[proxy-sweden.yml](https://github.com/entur/geocoder/actions/workflows/proxy-sweden.yml).
-Denmark has manual-only equivalents,
-[photon-denmark.yml](https://github.com/entur/geocoder/actions/workflows/photon-denmark.yml) and
-[proxy-denmark.yml](https://github.com/entur/geocoder/actions/workflows/proxy-denmark.yml), and
-no scheduled refresh: `photon-data-dk/` expires 90 days after the last run, after which the pod
-cannot restart until `photon-denmark.yml` is run again.
-
-### Scheduled checks
-
-- [cache-data-sources.yml](https://github.com/entur/geocoder/actions/workflows/cache-data-sources.yml) - daily 03:00 UTC: downloads the third-party sources (matrikkel, stedsnavn, custom POIs from poiman) plus PostHog popular-stops, verifies size, and uploads them to `gs://ent-geocoder-prd/data-sources/`. The nightly import reads from this cache rather than hitting upstream directly.
-- [monitor-photon-data.yml](https://github.com/entur/geocoder/actions/workflows/monitor-photon-data.yml) - daily 08:22 UTC: checks `photonImportDate` from the prod `/v2/info` endpoint and alerts Slack if the data is older than 50h.
-- [api-docs.yml](https://github.com/entur/geocoder/actions/workflows/api-docs.yml) - lints both OpenAPI specs on every push/PR touching `proxy/docs/**`, `openapi3.yml` or `.spectral.yml`; on push to `main` publishes the v3 spec to [developer.entur.no/apis/geocoder](https://developer.entur.no/apis/geocoder) and `proxy/docs/` to [the docs portal](https://developer.entur.no/docs/open-services/geocoder). The v2 spec is linted but no longer published.
+Images are built, pushed and deployed from the private
+[entur/geocoder-deployment-config](https://github.com/entur/geocoder-deployment-config), which
+also runs the nightly import. A push to `main` touching the proxy triggers a proxy deploy there
+(dev, then tst and prd after approval); Photon builds are started by hand. This repo runs lint,
+tests and, on pull requests, Docker builds and scans.
 
 ## Data artifacts (GCS)
 
-Built artifacts live in the public bucket [gs://ent-geocoder-prd/](https://console.cloud.google.com/storage/browser/ent-geocoder-prd?project=ent-geocoder-prd):
+Built artifacts live in the public bucket `ent-geocoder-prd`:
 
 | Prefix               | Contents                                      |
 | -------------------- | --------------------------------------------- |
@@ -206,88 +147,18 @@ Built artifacts live in the public bucket [gs://ent-geocoder-prd/](https://conso
 | `photon-data-dk/`    | Denmark variant                               |
 | `data-sources/`      | Daily-refreshed source files                  |
 
-Each build writes to `<prefix>/<tag>/<filename>`. A full build generates one tag and gives it
-to both the docker image and the GCS upload, so `geocoder-photon:<tag>` pairs with
-`gs://.../photon-data/<tag>/photon_data.tar.gz`. The nightly breaks that pairing on purpose:
-it uploads new data under a new tag while prd keeps the image it already runs. Either way the
-tag's `-SHA` suffix names the commit the data was imported from.
-
-There are no pointer files; the bucket listing is public, so the newest build is the last
-`main.*` prefix, and what prd serves is on the running pods:
-
-```bash
-kubectl --context prd -n geocoder get deployment geocoder-photon \
-  -o jsonpath='{.spec.template.spec.initContainers[*].env[?(@.name=="PHOTON_DATA_URL")].value}'
-```
-
-A `fetch-photon-data` init container downloads `photon_data.tar.gz` from `$PHOTON_DATA_URL`,
-verifies its `.sha256` sidecar, and extracts it into a shared `emptyDir` the distroless photon
-container serves from (so the runtime image needs no shell/curl/tar). CI resolves the URL in
-[_deploy-and-test.yml](.github/workflows/_deploy-and-test.yml) from `photon_data_tag`, falling
-back to the image tag, and injects it into the helm values;
-`templates/photon-data-validation.yaml` fails the render if it is missing. The URL lives in the
-pod template, so moving it is what rolls the pods onto new data.
-
-### Rolling back
-
-Image and data roll independently.
-
-```bash
-# What prd is pinned to (image) and serving (data)
-kubectl --context prd -n geocoder get deployment geocoder-photon -o jsonpath='\
-{.spec.template.spec.containers[0].image}{"\n"}\
-{.spec.template.spec.initContainers[*].env[?(@.name=="PHOTON_DATA_URL")].value}{"\n"}'
-
-# Bad data, good image: re-deploy the running image with an earlier index
-gh workflow run photon-deploy.yml -f target='tst → prd' \
-  -f image_tag=<current-tag> -f photon_data_tag=<previous-data-tag>
-
-# Bad image: go back to a known-good one. Drop photon_data_tag only if that image's own
-# data is still inside the 90-day window; otherwise name a data tag its jar can read.
-gh workflow run photon-deploy.yml -f target='tst → prd' -f image_tag=<previous-tag>
-```
-
-In an emergency, skip the workflow: `kubectl --context prd -n geocoder rollout undo
-deployment/geocoder-photon` puts the previous image and data URL back in seconds (ten
-ReplicaSets are kept; `--to-revision` reaches older ones), with no approval, pre-flight or
-tests. `helm --kube-context prd -n geocoder rollback geocoder-photon` does the same and keeps
-`helm history` truthful. Run the acceptance tests afterwards (`npm run v3prd` in
-geocoder-acceptance-tests), or dispatch `photon-scheduled.yml` for a tested refresh under the
-rolled-back image. The next nightly follows whatever image prd ends up on either way.
-
-The proxy has no deploy-only workflow: revert on `main` and let `proxy.yml` roll it through
-dev, tst and prd, or `rollout undo deployment/geocoder-proxy` for the same emergency path.
-Sweden rolls back by dispatching `photon-sweden-scheduled.yml` with the earlier `image_tag`,
-which re-imports fresh data for it and deploys both, so bad source data cannot be undone that
-way. Denmark has only `photon-denmark.yml`, a full rebuild.
-
-### 90-day lifecycle rule
-
-Applied once per bucket; `matchesSuffix` limits it to the data objects.
-
-```json
-{
-  "lifecycle": {
-    "rule": [
-      {
-        "action": {"type": "Delete"},
-        "condition": {
-          "age": 90,
-          "matchesPrefix": ["nominatim-data", "photon-data"],
-          "matchesSuffix": [".gz", ".sha256"]
-        }
-      }
-    ]
-  }
-}
-```
+Each build writes to `<prefix>/<tag>/<filename>`. A full build gives one tag to both the docker
+image and the upload, so `geocoder-photon:<tag>` pairs with `photon-data/<tag>/photon_data.tar.gz`.
+The nightly uploads new data under a new tag while prd keeps the image it runs. Either way the
+tag's `-SHA` suffix names the commit the data was imported from. The newest build is the last
+`main.*` prefix; objects expire after 90 days.
 
 ## Query synonyms
 
 [photon/synonyms.json](photon/synonyms.json) goes to `serve` via `-synonym-file`;
 `synonyms-se.json` / `synonyms-dk.json` are picked by the `SYNONYM_FILE` build arg. Applied at
-query time and baked into the image, so editing one needs no reimport but does need a `photon.yml`
-run promoted to prd - the nightly reuses prd's image and will not pick it up.
+query time and baked into the image, so editing one needs no reimport but does need a Photon build
+promoted to prd - the nightly reuses prd's image and will not pick it up.
 
 - Single tokens, no spaces. CI rejects the rest.
 - `gt` and `gt.` are separate terms, both needed.
@@ -304,7 +175,7 @@ Ranking happens inside Photon, so most search tuning lands in the fork rather th
 2. Create a tag and push it to [entur/photon](https://github.com/entur/photon) with `git push --tags entur`.
 3. Draft a release at [entur/photon/releases/new](https://github.com/entur/photon/releases/new), select the tag, attach `photon-<tag>.jar` from Photon's `target/`, check "Set as a pre-release" and publish.
 4. Copy the asset link and update `PHOTON_JAR` and `PHOTON_JAR_SHA256` in [photon/import/download-photon-jar.sh](photon/import/download-photon-jar.sh).
-5. Push, then run [photon.yml](https://github.com/entur/geocoder/actions/workflows/photon.yml) with target `dev only`.
+5. Push, then run `photon.yml` in entur/geocoder-deployment-config with target `dev only`.
 6. Once dev looks right, promote it to prd. The nightly imports from the commit prd runs, so an unpromoted jar never reaches production.
 
 ## Links

@@ -1,7 +1,0 @@
-common:
-  env: tst
-  ingress:
-    host: geocoder-proxy.staging.entur.io
-    trafficType: api
-  deployment:
-    minReplicas: 1

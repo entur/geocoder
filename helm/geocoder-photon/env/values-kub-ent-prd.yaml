@@ -1,6 +1,0 @@
-common:
-  env: prd
-  deployment:
-    minReplicas: 6
-    maxReplicas: 10
-    cpuUtilization: 80

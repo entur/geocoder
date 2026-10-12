@@ -185,7 +185,7 @@ class App {
                     call.respond(readiness.status, readiness.message)
                 }
 
-                // Under /v2 to expose it through apigee to .github/workflows/monitor-photon-data.yml
+                // Under /v2 to expose it through apigee to monitor-photon-data.yml in geocoder-deployment-config
                 get("/v2/info") {
                     val info = healthCheck.info()
                     call.respond(info)

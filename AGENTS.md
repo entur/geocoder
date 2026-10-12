@@ -12,7 +12,7 @@ the task at hand (e.g. java.md, helm.md, docker.md).
 - `proxy/` - the only Gradle module. Ktor HTTP server exposing v2 (Pelias-compatible) and v3
   APIs. Packages under `no.entur.geocoder.proxy`: `common`, `health`, `pelias`, `photon`, `v3`.
 - `photon/` - not a Gradle module: Photon config, import scripts, Dockerfile, dev scripts.
-- `helm/` - charts for `geocoder-proxy` and `geocoder-photon`.
+- Helm charts, CI/CD and the import pipeline live in the private entur/geocoder-deployment-config.
 
 The proxy transforms requests and responses. It does not rank: scoring lives in the Photon
 fork (separate repo), and the proxy only filters, prunes and reshapes what Photon returns.
@@ -80,15 +80,8 @@ to dots and transliterates the rest. It must produce byte-identical output to th
 A full build generates one tag and gives it to both the image and the data upload, so
 `geocoder-photon:<tag>` pairs with `photon-data/<tag>/photon_data.tar.gz`. The nightly
 decouples them on purpose: it builds no image, uploads new data under a new tag, and redeploys
-the image prd already runs. prd's image tag is the pin and only moves when a human promotes:
-`photon.yml`, `photon-deploy.yml`, or `photon-scheduled.yml` given an `image_tag`. Sweden's
-weekly (`photon-sweden-scheduled.yml`) does the same in dev; its pin moves through
-`photon-sweden.yml` or the weekly's `image_tag`. Denmark has no scheduled refresh. A `fetch-photon-data` init container fetches
-`$PHOTON_DATA_URL`, verifies the `.sha256` sidecar, and extracts atomically into a shared
-`emptyDir` the distroless photon container serves from.
-`helm/geocoder-photon/templates/photon-data-validation.yaml` fails the helm render
-when the URL is missing, so a manual `helm upgrade` without injection never reaches the cluster.
-Bucket layout and rollback: README.md.
+the image prd already runs, importing with the commit in that image's tag. Workflows, charts
+and rollback live in entur/geocoder-deployment-config; bucket layout in README.md.
 
 ## Avoid
 
