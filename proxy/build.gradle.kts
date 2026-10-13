@@ -153,3 +153,4 @@ tasks.withType<ShadowJar> {
         attributes(mapOf("Implementation-Version" to gitHashProvider))
     }
 }
+
