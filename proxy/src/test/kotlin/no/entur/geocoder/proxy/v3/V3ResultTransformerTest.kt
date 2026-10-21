@@ -18,11 +18,13 @@ class V3ResultTransformerTest {
     @ParameterizedTest
     @CsvSource(
         "kartverket-matrikkelenadresse, , , , address",
+        "lantmateriet-belagenhetsadress, , , , address",
         "kartverket-stedsnavn, , , , place",
         "nsr, , stop_position, , stopPlace",
         "nsr, , railway_station, , stopPlace",
         "nsr, , yes, legacy.layer.venue, stopPlace",
         "nsr, , , ${Category.LAYER_GOSP}, groupOfStopPlaces",
+        "ssr, , railway_station, , stopPlace",
         "openstreetmap, highway, , , street",
         "openstreetmap, amenity, , , poi",
     )

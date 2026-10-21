@@ -232,7 +232,7 @@ object V3ResultTransformer {
 
     private fun determineLayer(source: String?, osmKey: String?, tags: String?): V3Result.Layer =
         when (source) {
-            Source.KARTVERKET_ADRESSE -> {
+            Source.KARTVERKET_ADRESSE, Source.LANTMATERIET_ADRESSE -> {
                 V3Result.Layer.address
             }
 
@@ -240,7 +240,7 @@ object V3ResultTransformer {
                 V3Result.Layer.place
             }
 
-            Source.NSR -> {
+            Source.NSR, Source.SSR -> {
                 if (tags.containsTag(Category.LAYER_GOSP)) {
                     V3Result.Layer.groupOfStopPlaces
                 } else {

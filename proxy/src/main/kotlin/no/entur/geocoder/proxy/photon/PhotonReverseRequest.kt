@@ -39,7 +39,7 @@ data class PhotonReverseRequest(
 
             val callerWantsAddresses =
                 req.layers.contains("address") ||
-                    req.sources.contains(Source.KARTVERKET_ADRESSE)
+                    req.sources.any { it in Source.ADDRESSES }
             val excludeAddresses = if (callerWantsAddresses) null else Category.LAYER_ADDRESS
 
             return PhotonReverseRequest(

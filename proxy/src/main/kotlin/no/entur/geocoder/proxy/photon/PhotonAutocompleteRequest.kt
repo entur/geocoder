@@ -112,7 +112,7 @@ data class PhotonAutocompleteRequest(
         fun from(req: V3AutocompleteRequest): PhotonAutocompleteRequest {
             val includes = PhotonFilterBuilder.buildIncludes(req)
 
-            val callerWantsAddresses = req.sources.contains(Source.KARTVERKET_ADRESSE)
+            val callerWantsAddresses = req.sources.any { it in Source.ADDRESSES }
             val excludeAddresses =
                 if (callerWantsAddresses) {
                     null

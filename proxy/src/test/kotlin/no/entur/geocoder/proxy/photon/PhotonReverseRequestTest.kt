@@ -254,6 +254,17 @@ class PhotonReverseRequestTest {
     }
 
     @Test
+    fun `from V3ReverseRequest includes addresses for the swedish address source`() {
+        val req =
+            V3ReverseRequest(
+                lat = 59.3326, lon = 18.0649,
+                sources = listOf("lantmateriet-belagenhetsadress"),
+            )
+        val request = PhotonReverseRequest.from(req)
+        assertFalse(request.excludes.contains(Category.LAYER_ADDRESS))
+    }
+
+    @Test
     fun `from V3ReverseRequest still excludes addresses for stedsnavn source`() {
         val req =
             V3ReverseRequest(
