@@ -50,7 +50,7 @@ built:
 cd photon
 ./import/download-photon-jar.sh
 
-# EITHER convert the data - import/config/converter-{prod,dev,local,sweden-test,denmark-test}.json
+# EITHER convert the data - import/config/converter-{prod,dev,local,nordic,sweden-test,denmark-test}.json
 ./import/create-nominatim-data.sh import/config/converter-local.json -z
 
 # OR take the ndjson CI last built
@@ -137,15 +137,17 @@ tests and, on pull requests, Docker builds and scans.
 
 Built artifacts live in the public bucket `ent-geocoder-prd`:
 
-| Prefix               | Contents                                      |
-| -------------------- | --------------------------------------------- |
-| `nominatim-data/`    | `nominatim.ndjson.gz` per build (+ `.sha256`) |
-| `nominatim-data-se/` | Sweden variant                                |
-| `nominatim-data-dk/` | Denmark variant                               |
-| `photon-data/`       | `photon_data.tar.gz` per build (+ `.sha256`)  |
-| `photon-data-se/`    | Sweden variant                                |
-| `photon-data-dk/`    | Denmark variant                               |
-| `data-sources/`      | Daily-refreshed source files                  |
+| Prefix                   | Contents                                      |
+| ------------------------ | --------------------------------------------- |
+| `nominatim-data/`        | `nominatim.ndjson.gz` per build (+ `.sha256`) |
+| `nominatim-data-se/`     | Sweden variant                                |
+| `nominatim-data-dk/`     | Denmark variant                               |
+| `nominatim-data-nordic/` | Norway + Sweden variant                       |
+| `photon-data/`           | `photon_data.tar.gz` per build (+ `.sha256`)  |
+| `photon-data-se/`        | Sweden variant                                |
+| `photon-data-dk/`        | Denmark variant                               |
+| `photon-data-nordic/`    | Norway + Sweden variant                       |
+| `data-sources/`          | Daily-refreshed source files                  |
 
 Each build writes to `<prefix>/<tag>/<filename>`. A full build gives one tag to both the docker
 image and the upload, so `geocoder-photon:<tag>` pairs with `photon-data/<tag>/photon_data.tar.gz`.
@@ -156,9 +158,9 @@ tag's `-SHA` suffix names the commit the data was imported from. The newest buil
 ## Query synonyms
 
 [photon/synonyms.json](photon/synonyms.json) goes to `serve` via `-synonym-file`;
-`synonyms-se.json` / `synonyms-dk.json` are picked by the `SYNONYM_FILE` build arg. Applied at
-query time and baked into the image, so editing one needs no reimport but does need a Photon build
-promoted to prd - the nightly reuses prd's image and will not pick it up.
+`synonyms-se.json` / `synonyms-dk.json` are picked by the `SYNONYM_FILE` build arg (Nordic uses
+`synonyms.json`). Applied at query time and baked into the image, so editing one needs no reimport
+but does need a Photon build promoted to prd - the nightly reuses prd's image and will not pick it up.
 
 - Single tokens, no spaces. CI rejects the rest.
 - `gt` and `gt.` are separate terms, both needed.
