@@ -39,7 +39,7 @@ jobs:
           dockerfile: proxy/Dockerfile
           ignore: "DL3018,DL3059"
 
-      - uses: entur/ror-gha-workflows/.github/actions/gradle-cache@v1.2.1
+      - uses: entur/ror-gha-workflows/.github/actions/gradle-cache@v1.2.2
         with:
           java-version: '25'
 
