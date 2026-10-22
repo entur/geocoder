@@ -25,11 +25,11 @@ data class PhotonResult(
     }
 
     /** Drop any feature whose [PhotonProperties.extra] id is in [BlockedResultIds]. */
-    fun withoutBlockedIds(): PhotonResult =
-        if (features.none { BlockedResultIds.isBlocked(it.properties.extra.id) }) {
+    fun withoutBlockedIds(blocked: Set<String> = BlockedResultIds.ids): PhotonResult =
+        if (features.none { BlockedResultIds.isBlocked(it.properties.extra.id, blocked) }) {
             this
         } else {
-            copy(features = features.filterNot { BlockedResultIds.isBlocked(it.properties.extra.id) })
+            copy(features = features.filterNot { BlockedResultIds.isBlocked(it.properties.extra.id, blocked) })
         }
 
     data class PhotonFeature(

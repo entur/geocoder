@@ -102,7 +102,7 @@ class PhotonResultTest {
             }
             """.trimIndent()
 
-        val result = PhotonResult.parse(json, Url("http://foo")).withoutBlockedIds()
+        val result = PhotonResult.parse(json, Url("http://foo")).withoutBlockedIds(setOf("NSR:StopPlace:64116"))
 
         assertEquals(1, result.features.size)
         assertEquals("Keep", result.features[0].properties.name)
@@ -125,7 +125,7 @@ class PhotonResultTest {
 
         val result = PhotonResult.parse(json, Url("http://foo"))
 
-        assertSame(result, result.withoutBlockedIds())
+        assertSame(result, result.withoutBlockedIds(setOf("NSR:StopPlace:64116")))
     }
 
     @Test
