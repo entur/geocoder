@@ -1,7 +1,5 @@
 package no.entur.geocoder.proxy
 
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.databind.JsonMappingException
 import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.BadGateway
@@ -11,6 +9,8 @@ import io.ktor.http.HttpStatusCode.Companion.ServiceUnavailable
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import org.slf4j.LoggerFactory
+import tools.jackson.core.JacksonException
+import tools.jackson.core.exc.JacksonIOException
 import java.io.IOException
 
 object ErrorHandler {
@@ -18,7 +18,7 @@ object ErrorHandler {
 
     fun handleError(e: Exception, operation: String): PeliasError =
         when (e) {
-            is JsonParseException, is JsonMappingException -> {
+            is JacksonException if e !is JacksonIOException -> {
                 logger.error("JSON parsing error: ${e.message}")
                 toError(
                     "Invalid response from backend. The geocoding service returned an unexpected response. Please check your parameters",
@@ -36,7 +36,7 @@ object ErrorHandler {
                 toError("Backend service error. The geocoding backend is experiencing issues", BadGateway)
             }
 
-            is IOException -> {
+            is IOException, is JacksonIOException -> {
                 logger.error("I/O error: ${e.message}")
                 toError("Connection failed. Unable to connect to geocoding service", ServiceUnavailable)
             }

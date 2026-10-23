@@ -1,11 +1,11 @@
 package no.entur.geocoder.proxy.photon
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import no.entur.geocoder.proxy.common.BlockedResultIds
 import no.entur.geocoder.proxy.common.Extra
-import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Jackson.jacksonMapper
+import tools.jackson.module.kotlin.readValue
 
 data class PhotonResult(
     val type: String = "FeatureCollection",

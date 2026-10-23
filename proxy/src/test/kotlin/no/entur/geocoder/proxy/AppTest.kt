@@ -1,6 +1,5 @@
 package no.entur.geocoder.proxy
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
@@ -11,14 +10,16 @@ import io.ktor.server.testing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.common.Category.LEGACY_CATEGORY_PREFIX
-import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Jackson.jacksonMapper
 import no.entur.geocoder.proxy.common.LegacyLayer.address
 import no.entur.geocoder.proxy.common.LegacySource.openstreetmap
 import no.entur.geocoder.proxy.App.Companion.configureApp
 import no.entur.geocoder.proxy.pelias.PeliasResult
 import no.entur.geocoder.proxy.photon.PhotonAutocompleteRequest.Companion.RESULT_PRUNING_HEADROOM
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class AppTest {
@@ -155,6 +156,29 @@ class AppTest {
             assertEquals("100.0", params["radius"])
             assertEquals("3", params["limit"])
             assertEquals("no", params["lang"])
+        }
+
+    @Test
+    fun `malformed photon response returns bad gateway`() =
+        testApplication {
+            val mockEngine =
+                MockEngine {
+                    respond("not json", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, Json.toString()))
+                }
+
+            application {
+                configureApp(
+                    client = HttpClient(mockEngine),
+                    photonBaseUrl = "http://photon-test",
+                    micrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
+                )
+            }
+
+            val response = client.get("/v2/autocomplete") { parameter("text", "test_query") }
+
+            assertEquals(HttpStatusCode.BadGateway, response.status)
+            val result: PeliasResult = jacksonMapper.readValue(response.bodyAsText())
+            assertContains(result.geocoding.errors.orEmpty().single(), "Invalid response from backend")
         }
 
     @Test

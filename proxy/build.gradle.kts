@@ -37,8 +37,6 @@ dependencies {
     implementation(libs.country.boundaries)
     implementation(libs.jackson.kotlin)
     implementation(libs.jackson.databind)
-    implementation(libs.jackson.xml)
-    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cors)
@@ -49,14 +47,12 @@ dependencies {
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.metrics)
     implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.jackson3)
     implementation(libs.ktor.server.metrics.micrometer)
     implementation(libs.micrometer.registry.prometheus)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.kotlin.test)
 }
 
@@ -65,10 +61,6 @@ configurations.configureEach {
         if (requested.group == "io.netty") {
             useVersion("4.2.19.Final")
             because("force latest version to fix CVE-2026-56819")
-        }
-        if (requested.group.startsWith("tools.jackson")) {
-            useVersion("3.2.4")
-            because("force latest version to fix CVE-2026-59888")
         }
     }
 }

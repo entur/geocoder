@@ -1,7 +1,10 @@
 package no.entur.geocoder.proxy
 
-import com.fasterxml.jackson.core.JsonParseException
 import io.ktor.http.*
+import tools.jackson.core.exc.JacksonIOException
+import tools.jackson.core.exc.StreamConstraintsException
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.databind.exc.MismatchedInputException
 import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -9,13 +12,40 @@ import kotlin.test.assertEquals
 
 class ErrorHandlerTest {
     @Test
-    fun `handleError creates error for JsonParseException`() {
-        val exception = JsonParseException(null, "Invalid JSON")
+    fun `handleError creates error for StreamReadException`() {
+        val exception = StreamReadException(null, "Invalid JSON")
         val error = ErrorHandler.handleError(exception, "geocoding")
 
         assertContains(msg(error), "Invalid response from backend")
         assertEquals(HttpStatusCode.BadGateway, error.status)
         assertContains(msg(error), "unexpected response")
+    }
+
+    @Test
+    fun `handleError creates error for DatabindException`() {
+        val exception = MismatchedInputException.from(null, Int::class.java, "Wrong type")
+        val error = ErrorHandler.handleError(exception, "geocoding")
+
+        assertContains(msg(error), "Invalid response from backend")
+        assertEquals(HttpStatusCode.BadGateway, error.status)
+    }
+
+    @Test
+    fun `handleError creates error for StreamConstraintsException`() {
+        val exception = StreamConstraintsException("Nesting too deep")
+        val error = ErrorHandler.handleError(exception, "geocoding")
+
+        assertContains(msg(error), "Invalid response from backend")
+        assertEquals(HttpStatusCode.BadGateway, error.status)
+    }
+
+    @Test
+    fun `handleError treats JacksonIOException as IOException`() {
+        val exception = JacksonIOException.construct(IOException("Connection reset"))
+        val error = ErrorHandler.handleError(exception, "geocoding")
+
+        assertContains(msg(error), "Unable to connect to geocoding service")
+        assertEquals(HttpStatusCode.ServiceUnavailable, error.status)
     }
 
     @Test

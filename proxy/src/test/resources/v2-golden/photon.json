@@ -1,0 +1,572 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400719192574,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo lufthavn",
+        "county": "Akershus",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "busStation",
+          "locality": "Ullensaker",
+          "accuracy": "point",
+          "description": "nor:Beskrivelse;eng:Description",
+          "source": "nsr",
+          "tariff_zones": "INN:TariffZone:421,RUT:TariffZone:4N,RUT:FareZone:1",
+          "id": "NSR:StopPlace:5357",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.busStation,legacy.source.whosonfirst",
+          "stop_place_role": "parent",
+          "transport_mode": "bus:localBus;rail",
+          "stop_place_type": "onstreetBus;railStation",
+          "fare_zones": "RUT:FareZone:4,RUT:FareZone:1",
+          "alt_name": "Alt;Alias",
+          "borough": "Frogner",
+          "borough_gid": "borough:0301"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.097244,
+          60.193473
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400719161018,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo bussterminal",
+        "county": "Oslo",
+        "extra": {
+          "alt_name": "Oslo Bus Terminal",
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "busStation",
+          "locality": "Oslo",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "OST:TariffZone:227,BRA:TariffZone:311,INN:FareZone:214,RUT:TariffZone:1,OST:FareZone:15,INN:TariffZone:3000,BRA:FareZone:31,RUT:FareZone:4",
+          "id": "NSR:StopPlace:6505",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "legacy.category.poi,legacy.category.street",
+          "stop_place_role": "child"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.757994,
+          59.911768
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400854485675,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo S",
+        "county": "Oslo",
+        "extra": {
+          "alt_name": "Oslo Central station;Oslo Centralstation",
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "railStation",
+          "locality": "Oslo",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "OST:TariffZone:227,BRA:TariffZone:311,RUT:TariffZone:1,RUT:FareZone:4",
+          "id": "NSR:StopPlace:337",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.railStation,legacy.source.whosonfirst"
+        },
+        "extent": [
+          10.70,
+          59.95,
+          10.80,
+          59.90
+        ],
+        "street": "Karl Johans gate",
+        "housenumber": "22B",
+        "postcode": "0159"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.753276,
+          59.910925
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400820939607,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Osli",
+        "county": "Nordland",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Hattfjelldal",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "NOR:FareZone:67,NOR:TariffZone:8260",
+          "id": "NSR:StopPlace:47350",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetBus,legacy.source.whosonfirst",
+          "stop_place_role": "parent",
+          "transport_mode": "bus:localBus;rail",
+          "stop_place_type": "onstreetBus;railStation",
+          "fare_zones": "RUT:FareZone:4,RUT:FareZone:1",
+          "alt_name": "Alt;Alias",
+          "description": "nor:Beskrivelse;eng:Description",
+          "borough": "Frogner",
+          "borough_gid": "borough:0301"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.170231,
+          65.67665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400854486541,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo lufthavn stasjon",
+        "county": "Akershus",
+        "extra": {
+          "alt_name": "Gardermoen;Oslo Airport Gardermoen",
+          "locality_gid": "KVE:TopographicPlace:3209",
+          "country_a": "NOR",
+          "transport_modes": "railStation",
+          "locality": "Ullensaker",
+          "accuracy": "point",
+          "description": "Gardermoen",
+          "source": "nsr",
+          "tariff_zones": "INN:TariffZone:421,RUT:TariffZone:4N,RUT:FareZone:1",
+          "id": "NSR:StopPlace:269",
+          "county_gid": "KVE:TopographicPlace:32",
+          "tags": "legacy.category.poi,legacy.category.street",
+          "stop_place_role": "child"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.096735,
+          60.192981
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400719105067,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslia",
+        "county": "Innlandet",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:3430",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Os",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "INN:FareZone:120,INN:TariffZone:514",
+          "id": "NSR:StopPlace:8171",
+          "county_gid": "KVE:TopographicPlace:34",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetBus,legacy.source.whosonfirst"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.171837,
+          62.503884
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400821920718,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Osland",
+        "county": "Vestland",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Askvoll",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "SKY:TariffZone:H,SKY:FareZone:14",
+          "id": "NSR:StopPlace:35578",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetBus,legacy.source.whosonfirst",
+          "stop_place_role": "parent",
+          "transport_mode": "bus:localBus;rail",
+          "stop_place_type": "onstreetBus;railStation",
+          "fare_zones": "RUT:FareZone:4,RUT:FareZone:1",
+          "alt_name": "Alt;Alias",
+          "description": "nor:Beskrivelse;eng:Description",
+          "borough": "Frogner",
+          "borough_gid": "borough:0301"
+        },
+        "extent": [
+          10.70,
+          59.95,
+          10.80,
+          59.90
+        ],
+        "street": "Karl Johans gate",
+        "housenumber": "22B",
+        "postcode": "0159"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.215177,
+          61.434351
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400719192580,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo lufthavn",
+        "county": "Akershus",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:3209",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Ullensaker",
+          "accuracy": "point",
+          "description": "avgangshall, øvre plan",
+          "source": "nsr",
+          "tariff_zones": "INN:TariffZone:421,RUT:TariffZone:4N,RUT:FareZone:1",
+          "id": "NSR:StopPlace:5351",
+          "county_gid": "KVE:TopographicPlace:32",
+          "tags": "legacy.category.poi,legacy.category.street",
+          "stop_place_role": "child"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.099174,
+          60.193376
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 4001185245392,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo S Trelastgata",
+        "county": "Oslo",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Oslo",
+          "accuracy": "point",
+          "description": "ved spor 19",
+          "source": "nsr",
+          "tariff_zones": "OST:TariffZone:227,BRA:TariffZone:311,RUT:TariffZone:1,RUT:FareZone:4",
+          "id": "NSR:StopPlace:2",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetBus,legacy.source.whosonfirst"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.755165,
+          59.909584
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400719160925,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo Hospital",
+        "county": "Oslo",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "onstreetTram",
+          "locality": "Oslo",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "OST:TariffZone:227,RUT:TariffZone:1,RUT:FareZone:4",
+          "id": "NSR:StopPlace:6535",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetTram,legacy.source.whosonfirst",
+          "stop_place_role": "parent",
+          "transport_mode": "bus:localBus;rail",
+          "stop_place_type": "onstreetBus;railStation",
+          "fare_zones": "RUT:FareZone:4,RUT:FareZone:1",
+          "alt_name": "Alt;Alias",
+          "description": "nor:Beskrivelse;eng:Description",
+          "borough": "Frogner",
+          "borough_gid": "borough:0301"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.767492,
+          59.903213
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400822811568,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Osland",
+        "county": "Rogaland",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:1114",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Bjerkreim",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "KOL:TariffZone:450,AKT:TariffZone:450,KOL:FareZone:6",
+          "id": "NSR:StopPlace:26875",
+          "county_gid": "KVE:TopographicPlace:11",
+          "tags": "legacy.category.poi,legacy.category.street",
+          "stop_place_role": "child"
+        },
+        "extent": [
+          10.70,
+          59.95,
+          10.80,
+          59.90
+        ],
+        "street": "Karl Johans gate",
+        "housenumber": "22B",
+        "postcode": "0159"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.905194,
+          58.655363
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400854481892,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Oslo lufthavn",
+        "county": "Akershus",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:3209",
+          "country_a": "NOR",
+          "transport_modes": "airport",
+          "locality": "Ullensaker",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "INN:TariffZone:421,RUT:TariffZone:4N,RUT:FareZone:1",
+          "id": "NSR:StopPlace:718",
+          "county_gid": "KVE:TopographicPlace:32",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.airport,legacy.source.whosonfirst"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.099378,
+          60.193916
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400821866073,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Osland",
+        "county": "Vestland",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:0301",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Høyanger",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "SKY:FareZone:7,SKY:TariffZone:G",
+          "id": "NSR:StopPlace:37030",
+          "county_gid": "KVE:TopographicPlace:03",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetBus,legacy.source.whosonfirst",
+          "stop_place_role": "parent",
+          "transport_mode": "bus:localBus;rail",
+          "stop_place_type": "onstreetBus;railStation",
+          "fare_zones": "RUT:FareZone:4,RUT:FareZone:1",
+          "alt_name": "Alt;Alias",
+          "description": "nor:Beskrivelse;eng:Description",
+          "borough": "Frogner",
+          "borough_gid": "borough:0301"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.802341,
+          61.072669
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400820939607,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Osli",
+        "county": "Nordland",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:1826",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Hattfjelldal",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "NOR:FareZone:67,NOR:TariffZone:8260",
+          "id": "NSR:StopPlace:47350",
+          "county_gid": "KVE:TopographicPlace:18",
+          "tags": "legacy.category.poi,legacy.category.street",
+          "stop_place_role": "child"
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.170231,
+          65.67665
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 400820939607,
+        "osm_key": "public_transport",
+        "osm_value": "stop_place",
+        "type": "house",
+        "countrycode": "NO",
+        "name": "Osli",
+        "county": "Nordland",
+        "extra": {
+          "locality_gid": "KVE:TopographicPlace:1826",
+          "country_a": "NOR",
+          "transport_modes": "onstreetBus",
+          "locality": "Hattfjelldal",
+          "accuracy": "point",
+          "source": "nsr",
+          "tariff_zones": "NOR:FareZone:67,NOR:TariffZone:8260",
+          "id": "NSR:StopPlace:47350",
+          "county_gid": "KVE:TopographicPlace:18",
+          "tags": "osm.public_transport.stop_place,legacy.layer.venue,legacy.category.onstreetBus,legacy.source.whosonfirst"
+        },
+        "extent": [
+          10.70,
+          59.95,
+          10.80,
+          59.90
+        ],
+        "street": "Karl Johans gate",
+        "housenumber": "22B",
+        "postcode": "0159"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.170231,
+          65.67665
+        ]
+      }
+    }
+  ]
+}
