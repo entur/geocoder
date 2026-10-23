@@ -1,6 +1,6 @@
 package no.entur.geocoder.proxy.v3
 
-import no.entur.geocoder.proxy.common.JsonMapper
+import no.entur.geocoder.proxy.common.Jackson
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -14,7 +14,7 @@ class V3ResultSerializationTest {
     @Test
     fun `query echo uses request parameter names`() {
         val json =
-            JsonMapper.jacksonMapper.writeValueAsString(
+            Jackson.jacksonMapper.writeValueAsString(
                 V3Result.QueryInfo(lat = 59.911, lon = 10.752, limit = 10, lang = "no"),
             )
         assertTrue("\"lat\":" in json, json)
@@ -28,7 +28,7 @@ class V3ResultSerializationTest {
     @Test
     fun `place serializes names (plural) not name`() {
         val json =
-            JsonMapper.jacksonMapper.writeValueAsString(
+            Jackson.jacksonMapper.writeValueAsString(
                 V3Result.Place(
                     id = "NSR:StopPlace:337",
                     names = V3Result.Names(default = "Nationaltheatret", display = "Nationaltheatret, Oslo"),
@@ -49,11 +49,11 @@ class V3ResultSerializationTest {
                 layer = V3Result.Layer.stopPlace,
                 source = "nsr",
             )
-        val absent = JsonMapper.jacksonMapper.writeValueAsString(base)
+        val absent = Jackson.jacksonMapper.writeValueAsString(base)
         assertFalse("\"stopPlaceRole\"" in absent, absent)
 
         val present =
-            JsonMapper.jacksonMapper.writeValueAsString(base.copy(stopPlaceRole = V3Result.StopPlaceRole.parent))
+            Jackson.jacksonMapper.writeValueAsString(base.copy(stopPlaceRole = V3Result.StopPlaceRole.parent))
         assertTrue("\"stopPlaceRole\":\"parent\"" in present, present)
     }
 }

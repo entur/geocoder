@@ -1,16 +1,15 @@
 package no.entur.geocoder.proxy
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson3.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
@@ -24,6 +23,7 @@ import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.entur.geocoder.proxy.Environment.CONSOLE
+import no.entur.geocoder.proxy.common.Jackson.jacksonMapper
 import no.entur.geocoder.proxy.health.HealthCheck
 import no.entur.geocoder.proxy.metrics.REQUEST_METRIC
 import no.entur.geocoder.proxy.metrics.exceptionName
@@ -34,8 +34,6 @@ import no.entur.geocoder.proxy.photon.PhotonApi
 import no.entur.geocoder.proxy.v3.V3Api
 import no.entur.geocoder.proxy.v3.V3Result
 import org.slf4j.LoggerFactory
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
 
 class App {
     val photonBaseUrl =
@@ -81,10 +79,8 @@ class App {
                 allowHeader("x-correlation-id")
                 allowHeader("x-requested-with")
             }
-            install(ServerContentNegotiation) {
-                jackson {
-                    setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-                }
+            install(ContentNegotiation) {
+                register(ContentType.Application.Json, JacksonConverter(jacksonMapper))
             }
             install(StatusPages) {
                 exception<Exception> { call, cause ->
@@ -208,9 +204,6 @@ class App {
                 install(UserAgent) {
                     agent = "entur-geocoder-proxy"
                 }
-                install(ClientContentNegotiation) {
-                    jackson()
-                }
             }
 
         private fun readFile(name: String): ByteArray = (
@@ -231,8 +224,6 @@ class App {
         private val Double.seconds: Double get() = this * 1_000_000_000.0
 
         private val problemJson = ContentType.parse("application/problem+json")
-        private val objectMapper =
-            ObjectMapper().setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
 
         private suspend fun v3respond(call: ApplicationCall, block: suspend () -> V3Result) {
             try {
@@ -248,7 +239,7 @@ class App {
                             error.result.geocoding.errors
                                 ?.firstOrNull(),
                     )
-                call.respondText(objectMapper.writeValueAsString(body), problemJson, status)
+                call.respondText(jacksonMapper.writeValueAsString(body), problemJson, status)
             }
         }
     }

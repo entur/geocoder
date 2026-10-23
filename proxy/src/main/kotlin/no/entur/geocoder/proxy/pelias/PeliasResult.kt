@@ -1,9 +1,9 @@
 package no.entur.geocoder.proxy.pelias
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.annotation.JsonSerialize
 import java.math.BigDecimal
 
 data class PeliasResult(
@@ -54,10 +54,10 @@ data class PeliasResult(
         val description: List<Map<String, String>>? = null,
     )
 
-    class PairAsObjectSerializer : JsonSerializer<Pair<String, String?>>() {
-        override fun serialize(value: Pair<String, String?>, gen: JsonGenerator, serializers: SerializerProvider) {
+    class PairAsObjectSerializer : ValueSerializer<Pair<String, String?>>() {
+        override fun serialize(value: Pair<String, String?>, gen: JsonGenerator, ctxt: SerializationContext) {
             gen.writeStartObject()
-            gen.writeFieldName(value.first)
+            gen.writeName(value.first)
             if (value.second != null) gen.writeString(value.second) else gen.writeNull()
             gen.writeEndObject()
         }

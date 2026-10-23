@@ -5,7 +5,7 @@ import no.entur.geocoder.proxy.common.Category
 import no.entur.geocoder.proxy.common.Category.GOSP
 import no.entur.geocoder.proxy.common.Extra
 import no.entur.geocoder.proxy.common.Source
-import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Jackson.jacksonMapper
 import no.entur.geocoder.proxy.pelias.PeliasAutocompleteRequest.FocusParams
 import no.entur.geocoder.proxy.photon.PhotonResult
 import no.entur.geocoder.proxy.photon.PhotonResult.*

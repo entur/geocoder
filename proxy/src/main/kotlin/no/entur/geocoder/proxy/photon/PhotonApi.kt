@@ -1,12 +1,12 @@
 package no.entur.geocoder.proxy.photon
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Jackson.jacksonMapper
 import no.entur.geocoder.proxy.common.Util.within
+import tools.jackson.module.kotlin.readValue
 
 class PhotonApi(private val client: HttpClient, private val baseUrl: String) {
     /**

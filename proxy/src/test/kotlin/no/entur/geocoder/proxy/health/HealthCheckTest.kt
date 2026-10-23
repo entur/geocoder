@@ -1,22 +1,21 @@
 package no.entur.geocoder.proxy.health
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson3.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.delay
-import no.entur.geocoder.proxy.common.JsonMapper.jacksonMapper
+import no.entur.geocoder.proxy.common.Jackson.jacksonMapper
 import no.entur.geocoder.proxy.health.HealthCheck.HealthResponse
 import no.entur.geocoder.proxy.photon.PhotonApi
+import tools.jackson.module.kotlin.readValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -46,9 +45,7 @@ class HealthCheckTest {
     ) {
         application {
             install(ContentNegotiation) {
-                jackson {
-                    setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-                }
+                register(ContentType.Application.Json, JacksonConverter(jacksonMapper))
             }
             routing {
                 get(endpoint) {
