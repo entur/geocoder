@@ -21,6 +21,9 @@ concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Proxy
@@ -28,8 +31,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    outputs:
-      image_artifact: geocoder-proxy
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -46,36 +47,48 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew --no-daemon :proxy:build
 
-      # PRs only: on main, entur/geocoder-deployment-config builds, scans and pushes the
-      # image it deploys. The artifact layout is what gha-security's docker-scan expects.
-      - if: github.event_name == 'pull_request'
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      - if: github.event_name == 'pull_request'
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: proxy
-          tags: geocoder-proxy
-          outputs: type=docker,dest=/tmp/geocoder-proxy.tar
-          push: false
-          provenance: false
-      - if: github.event_name == 'pull_request'
+      - if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: geocoder-proxy
-          path: /tmp/geocoder-proxy.tar
+          name: proxy-jar
+          path: proxy/build/libs
           retention-days: 1
 
-  scan:
-    if: github.event_name == 'pull_request'
+  # The image entur/geocoder-deployment-config scans, pushes to GAR and deploys
+  # (it downloads the `geocoder-proxy` artifact from this run). No GCP: the job
+  # only gets id-token because gha-docker's build.yml asks for it.
+  docker-build:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     needs: build
+    permissions:
+      contents: read
+      id-token: write
+    uses: entur/gha-docker/.github/workflows/build.yml@a1d476b895a271d0fe8557f1b763529b64fb0554 # v1.14.0
+    with:
+      authenticate: false
+      image_name: geocoder-proxy
+      context: proxy
+      dockerfile: proxy/Dockerfile
+      build_artifact_name: proxy-jar
+      build_artifact_path: proxy/build/libs
+
+  scan:
+    needs: docker-build
+    # What docker-scan.yml asks for: SARIF upload, PR comment, issues.
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      security-events: write
+      actions: read
     uses: entur/gha-security/.github/workflows/docker-scan.yml@0962fb4f3f9004eeaea88582db8639e140ec6fda # v2.17.1
     with:
-      image_artifact: ${{ needs.build.outputs.image_artifact }}
+      image_artifact: ${{ needs.docker-build.outputs.image_artifact }}
 
-  # Build, push and deploy happen in the private entur/geocoder-deployment-config.
+  # Push and deploy happen in the internal entur/geocoder-deployment-config.
   trigger-deploy:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && github.repository_owner == 'entur' }}
-    needs: build
+    needs: [build, docker-build]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: deploy-trigger
@@ -88,6 +101,6 @@ jobs:
         # run link must not fail the job once the dispatch went through.
         run: |
           out=$(gh api -X POST repos/entur/geocoder-deployment-config/actions/workflows/proxy.yml/dispatches \
-            -f ref=main -f "inputs[ref]=$GITHUB_SHA" -f "inputs[target]=dev → tst → prd" -F return_run_details=true)
+            -f ref=main -f "inputs[run_id]=$GITHUB_RUN_ID" -F return_run_details=true)
           url=$(jq -r '.html_url // empty' <<<"$out" 2>/dev/null || true)
           echo "Deploy run: ${url:-https://github.com/entur/geocoder-deployment-config/actions/workflows/proxy.yml}" | tee -a "$GITHUB_STEP_SUMMARY"
