@@ -83,3 +83,5 @@ jobs:
     uses: entur/gha-security/.github/workflows/docker-scan.yml@0962fb4f3f9004eeaea88582db8639e140ec6fda # v2.17.1
     with:
       image_artifact: ${{ needs.docker-build.outputs.image_artifact }}
+      # photon.jar is a downloaded release Dependabot doesn't see, so scan /srv too.
+      include_docker_workdir: true
