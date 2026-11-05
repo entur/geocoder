@@ -1,4 +1,5 @@
 {
+  "countryImportanceFactors": { "*": 0.5, "no": 1.0 },
   "usage": { "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/popular-stops.csv" } },
   "osm": {
     "input": { "url": "https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf" },
@@ -106,7 +107,6 @@
     "fareZones": { "input": { "url": "https://api.entur.io/distance/netex/fare-zones" } },
     "defaultValue": 50,
     "rankAddress": 30,
-    "foreignImportanceFactor": 0.5,
     "minLines": 40000,
     "stopTypeFactors": {
       "airport": 150.0,

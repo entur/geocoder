@@ -1,4 +1,5 @@
 {
+  "countryImportanceFactors": { "*": 0.5, "no": 1.0, "se": 0.6 },
   "usage": { "input": { "url": "https://storage.googleapis.com/ent-geocoder-prd/data-sources/popular-stops.csv" } },
   "osm": {
     "input": [
@@ -111,10 +112,9 @@
     ],
     "fareZones": { "input": { "url": "https://api.entur.io/distance/netex/fare-zones" } },
     "dedupe": { "input": { "url": "https://raw.githubusercontent.com/entur/geocoder-data/main/dedupe-no-se.csv" } },
-    "domesticCountries": ["no", "se"],
+    "countryRegisters": { "no": "nsr" },
     "defaultValue": 50,
     "rankAddress": 30,
-    "foreignImportanceFactor": 0.5,
     "minLines": 40000,
     "stopTypeFactors": {
       "airport": 150.0,
