@@ -1,0 +1,87 @@
+name: Photon PR check
+
+# Photon images and their data are built together in the internal
+# entur/geocoder-deployment-config (the index must be built and served by the
+# same photon.jar), so nothing is handed over from here. This only checks a PR
+# that changes the image: Dockerfile, synonym files, the photon.jar pin.
+
+on:
+  pull_request:
+    paths:
+      - 'photon/Dockerfile'
+      - 'photon/.dockerignore'
+      - 'photon/synonyms*.json'
+      - 'photon/import/download-photon-jar.sh'
+      - '.github/workflows/photon.yml'
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Photon
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Dockerfile lint
+        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: photon/Dockerfile
+          ignore: "DL3018,DL3059"
+
+      # Same checks as the deploy repo's build-photon-data action.
+      - name: Validate synonym files
+        working-directory: photon
+        run: |
+          for SYN in synonyms*.json; do
+            jq -e '.search_synonyms | arrays and all(type == "string" and (contains(" ") | not))' "$SYN" > /dev/null
+            jq -e 'keys - ["search_synonyms", "classification_terms"] | length == 0' "$SYN" > /dev/null
+            echo "$SYN ok"
+          done
+
+      # Fails on a wrong URL or sha256 pin.
+      - name: Download photon.jar
+        working-directory: photon
+        run: ./import/download-photon-jar.sh
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: photon-jar
+          path: photon/photon.jar
+          retention-days: 1
+
+  # No GCP: the job only gets id-token because gha-docker's build.yml asks for it.
+  docker-build:
+    needs: check
+    permissions:
+      contents: read
+      id-token: write
+    uses: entur/gha-docker/.github/workflows/build.yml@a1d476b895a271d0fe8557f1b763529b64fb0554 # v1.14.0
+    with:
+      authenticate: false
+      image_name: geocoder-photon
+      context: photon
+      dockerfile: photon/Dockerfile
+      build_artifact_name: photon-jar
+      build_artifact_path: photon
+
+  scan:
+    needs: docker-build
+    # What docker-scan.yml asks for: SARIF upload, PR comment, issues.
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      security-events: write
+      actions: read
+    uses: entur/gha-security/.github/workflows/docker-scan.yml@0962fb4f3f9004eeaea88582db8639e140ec6fda # v2.17.1
+    with:
+      image_artifact: ${{ needs.docker-build.outputs.image_artifact }}
+      # photon.jar is a downloaded release Dependabot doesn't see, so scan /srv too.
+      include_docker_workdir: true
