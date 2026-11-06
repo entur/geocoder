@@ -112,7 +112,7 @@
     ],
     "fareZones": { "input": { "url": "https://api.entur.io/distance/netex/fare-zones" } },
     "dedupe": { "input": { "url": "https://raw.githubusercontent.com/entur/geocoder-data/main/dedupe-no-se.csv" } },
-    "countryRegisters": { "no": "nsr" },
+    "countryRegisters": { "no": "nsr", "se": "ssr" },
     "defaultValue": 50,
     "rankAddress": 30,
     "minLines": 40000,
