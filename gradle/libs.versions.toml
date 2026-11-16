@@ -1,7 +1,7 @@
 [versions]
 countries = "3.0.0"
 geotools = "35.2"
-jackson = "3.2.4"
+jackson = "3.3.0"
 kotlin = "2.4.21"
 ktlint-gradle = "14.2.0"
 ktor = "3.6.1"
