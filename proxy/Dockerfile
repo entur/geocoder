@@ -9,6 +9,6 @@ COPY ./build/libs/proxy-all.jar proxy.jar
 # helm/geocoder-proxy/values.yaml (helm request >= 50% above heap).
 ENTRYPOINT ["java", \
   "-Xms640m", "-Xmx640m", \
-  "-XX:+UseG1GC", "-XX:+ExitOnOutOfMemoryError", "-XX:MaxGCPauseMillis=75", \
+  "-XX:+UseG1GC", "-XX:+ExitOnOutOfMemoryError", "-XX:MaxGCPauseMillis=75", "-XX:-UseBASE64Intrinsics", \
   "--enable-native-access=ALL-UNNAMED", \
   "-jar", "proxy.jar"]

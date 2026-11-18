@@ -25,6 +25,7 @@ ENTRYPOINT ["java", \
   "-Xms1536m", "-Xmx1536m", \
   "-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-XX:MaxGCPauseMillis=75", \
   "-XX:+ExitOnOutOfMemoryError", \
+  "-XX:-UseBASE64Intrinsics", \
   "-jar", "photon.jar", \
   "serve", "-default-language", "no", \
   "-synonym-file", "synonyms.json", \
