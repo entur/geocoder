@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/java25-debian13:nonroot@sha256:a90a5fadd78dc37b643da72dca2f744ef67eba625eca7227a5b375b548e6b1c2
+FROM gcr.io/distroless/java25-debian13:nonroot@sha256:573ef04c0f84aaf4b34e0cb6eeef91c25a83290334586c4c44ef41ecae13a25e
 
 WORKDIR /srv
 
@@ -9,6 +9,6 @@ COPY ./build/libs/proxy-all.jar proxy.jar
 # helm/geocoder-proxy/values.yaml (helm request >= 50% above heap).
 ENTRYPOINT ["java", \
   "-Xms640m", "-Xmx640m", \
-  "-XX:+UseG1GC", "-XX:+ExitOnOutOfMemoryError", "-XX:MaxGCPauseMillis=75", "-XX:-UseBASE64Intrinsics", \
+  "-XX:+UseG1GC", "-XX:+ExitOnOutOfMemoryError", "-XX:MaxGCPauseMillis=75", \
   "--enable-native-access=ALL-UNNAMED", \
   "-jar", "proxy.jar"]
