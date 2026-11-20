@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/java25-debian13:nonroot@sha256:a90a5fadd78dc37b643da72dca2f744ef67eba625eca7227a5b375b548e6b1c2
+FROM gcr.io/distroless/java25-debian13:nonroot@sha256:573ef04c0f84aaf4b34e0cb6eeef91c25a83290334586c4c44ef41ecae13a25e
 
 WORKDIR /srv
 
@@ -25,7 +25,6 @@ ENTRYPOINT ["java", \
   "-Xms1536m", "-Xmx1536m", \
   "-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-XX:MaxGCPauseMillis=75", \
   "-XX:+ExitOnOutOfMemoryError", \
-  "-XX:-UseBASE64Intrinsics", \
   "-jar", "photon.jar", \
   "serve", "-default-language", "no", \
   "-synonym-file", "synonyms.json", \
