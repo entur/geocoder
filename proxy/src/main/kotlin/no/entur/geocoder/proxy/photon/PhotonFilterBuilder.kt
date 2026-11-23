@@ -16,7 +16,7 @@ object PhotonFilterBuilder {
     private const val KVE_PREFIX = "KVE:TopographicPlace:"
     private const val STOP_PLACE_LAYER = "stopPlace"
     private val DIGIT_ONLY_PATTERN = Regex("^\\d+$")
-    private val HOUSE_NUMBER_HINT = Regex("(\\s\\d|\\d\\s)")
+    private val HOUSE_NUMBER_HINT = Regex("(\\s\\d|\\d\\p{L}?\\s)")
 
     fun textHasHouseNumber(text: String): Boolean = HOUSE_NUMBER_HINT.containsMatchIn(text)
 

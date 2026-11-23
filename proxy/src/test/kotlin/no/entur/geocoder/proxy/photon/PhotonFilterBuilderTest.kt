@@ -98,6 +98,14 @@ class PhotonFilterBuilderTest {
     }
 
     @Test
+    fun `textHasHouseNumber accepts leading house numbers with a letter`() {
+        listOf("62 Jens Bjelkes gate", "62C Jens Bjelkes gate", "62c Jens Bjelkes gate", "Jens Bjelkes gate 62C")
+            .forEach { assertTrue(PhotonFilterBuilder.textHasHouseNumber(it), it) }
+        listOf("Oslo S", "Jens Bjelkes gate", "62C")
+            .forEach { assertFalse(PhotonFilterBuilder.textHasHouseNumber(it), it) }
+    }
+
+    @Test
     fun `buildMultimodalExclude handles different modes`() {
         data class MultimodalTest(val mode: String, val expected: String?)
 
