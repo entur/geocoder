@@ -4,7 +4,7 @@
   "osm": {
     "input": [
       { "url": "https://storage.googleapis.com/ror-osmdata-prd/osm-data/norway-latest.osm.pbf" },
-      { "url": "https://download.geofabrik.de/europe/sweden-latest.osm.pbf" }
+      { "url": "https://storage.googleapis.com/ror-osmdata-prd/osm-data/sweden-latest.osm.pbf" }
     ],
     "defaultValue": 0.5,
     "rankAddress": {
