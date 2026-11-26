@@ -108,7 +108,7 @@
   "stopPlace": {
     "input": [
       { "url": "https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip" },
-      { "url": "https://storage.googleapis.com/ror-kumarbi-tiamat-dev/stops_sweden_latest.zip" }
+      { "url": "https://storage.googleapis.com/ror-kumarbi-public-output-dev/stops_sweden_latest.zip" }
     ],
     "dedupe": { "input": { "url": "https://raw.githubusercontent.com/entur/geocoder-data/main/dedupe-no-se.csv" } },
     "countryRegisters": { "no": "nsr", "se": "ssr" },
