@@ -35,7 +35,7 @@ jobs:
         spec:
           - proxy/src/main/resources/openapi2.yml
           - proxy/src/main/resources/openapi3.yml
-    uses: entur/gha-api/.github/workflows/lint.yml@v6
+    uses: entur/gha-api/.github/workflows/lint.yml@v6.12.3
     with:
       path: ${{ matrix.spec }}
       # The analytics upload needs GCP credentials this public repo doesn't have.

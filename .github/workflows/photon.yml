@@ -80,7 +80,7 @@ jobs:
       pull-requests: write
       security-events: write
       actions: read
-    uses: entur/gha-security/.github/workflows/docker-scan.yml@0962fb4f3f9004eeaea88582db8639e140ec6fda # v2.17.1
+    uses: entur/gha-security/.github/workflows/docker-scan.yml@7394713c33c9be7a83918d04ac95544891301557 # v2.18.0
     with:
       image_artifact: ${{ needs.docker-build.outputs.image_artifact }}
       # photon.jar is a downloaded release Dependabot doesn't see, so scan /srv too.
