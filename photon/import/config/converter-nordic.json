@@ -110,7 +110,6 @@
       { "url": "https://storage.googleapis.com/marduk-production/tiamat/Current_latest.zip" },
       { "url": "https://storage.googleapis.com/ror-kumarbi-tiamat-dev/stops_sweden_latest.zip" }
     ],
-    "fareZones": { "input": { "url": "https://api.entur.io/distance/netex/fare-zones" } },
     "dedupe": { "input": { "url": "https://raw.githubusercontent.com/entur/geocoder-data/main/dedupe-no-se.csv" } },
     "countryRegisters": { "no": "nsr", "se": "ssr" },
     "countryRegistersKeepModes": ["air", "water"],
